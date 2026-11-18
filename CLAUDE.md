@@ -50,7 +50,7 @@ assets/  docs/           (docs/, tools/, research/ carry a .gdignore)
 - UI: screens extend `Screen`, overlays go on the scene's `ScreenStack`, rows inside `FitScrollContainer`; one default focus, explicit focus neighbours, `ui_cancel` works (UI-001).
 - Saves: `SaveService.save_slot(slot, payload, reason)` with an allowed reason; never mid-run; payloads hold ids and numbers only (TECH-001 §7).
 - Warnings are errors here: give a variable an explicit type when its value comes from a `Dictionary`/`Array`/`Variant`.
-- **Generated assets only (D-13, D-14):** never add or reference image, texture, font or audio files in game code, scenes or data. Visuals = vector draw calls or shaders with `Pal` colours (ART-001 §14); text = `PixelText`; sound = `SfxSynth`/`AudioService` synthesis (AUDIO-001 §11). PNGs under `assets/sprites/` are local-only reference: not in git, Godot-ignored, never shipped — never re-add them. `tests/test_generated_assets_only.gd` enforces this.
+- **Generated assets only (D-13, D-14):** never add or reference image, texture, font or audio files in game code, scenes or data. Visuals = vector draw calls or shaders with `Pal` colours (ART-001 §14); text = `PixelText`; sound = code: chirp sources `audio/src/*.cx.js` rendered to `assets/audio/generated/` (never hand-edit renders; never `sample()`), or runtime `SfxSynth` (AUDIO-001 §11, §11.7). PNGs under `assets/sprites/` are local-only reference: not in git, Godot-ignored, never shipped — never re-add them. `tests/test_generated_assets_only.gd` enforces this.
 - Gameplay collision is separate from sprites and animation; animation fires events, it never owns hit truth.
 - Every player-visible string goes through `tr()` with a stable key. No raw errors, IDs, enum names or paths on screen. (Diegetic HUD "lies" are authored content per WARP-001 §4.2, not debug output; Steady Ledger must always be honest.)
 
@@ -60,6 +60,7 @@ assets/  docs/           (docs/, tools/, research/ carry a .gdignore)
 GODOT=tools\godot\Godot_v4.7.2-stable_win64_console.exe
 %GODOT% --headless --path . --import                        # first run / after asset changes
 %GODOT% --headless --path . -s addons/gdUnit4/bin/GdUnitCmdTool.gd -a core -a features -a scenes -a tests --ignoreHeadlessMode -c   # all tests (GdUnit4 v6.2.3)
+node .claude/skills/chirp-game-audio/bin/chirp.js build audio/src/cabinet.cx.js --out assets/audio/generated   # rebuild sounds after editing a .cx.js, then --import
 %GODOT% --headless --path . --quit-after 600 -- --smoke     # boot smoke: must print "BOOT_SMOKE: reached route 'cabinet'", exit 0, no ERROR lines
 ```
 Expected `ERROR`/`WARNING` lines in the test log come only from negative-path tests (corrupt save, unknown route); the smoke log must have none.

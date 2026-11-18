@@ -22,6 +22,16 @@ Controls: **WASD** move · **mouse** aim · **left click** Arc-Lance (mine and s
 
 Tips: fire in calm bursts — over-firing a geode (9 hits in 1.2 s) shatters it and scatters the glass where the Grubs can steal it. Shoot Grubs that are carrying glass. Acolytes' censers lag a quarter-second behind you: keep moving.
 
+## Sound tools (chirp)
+
+Every sound is code (GDD D-14). Authored sounds live in `audio/src/*.cx.js` and are rendered by [chirp](https://github.com/uilianks/chirp) into `assets/audio/generated/` (committed, so playing the game needs nothing extra). To edit sounds you need Node ≥ 22.18 and chirp, installed once per machine as a project Claude Code skill:
+
+```
+git clone https://github.com/uilianks/chirp .claude/skills/chirp-game-audio
+cd .claude/skills/chirp-game-audio && npm install
+```
+Then, from the repo root: `node .claude/skills/chirp-game-audio/bin/chirp.js serve audio/src/cabinet.cx.js` to listen live (http://127.0.0.1:4330), and `... build audio/src/cabinet.cx.js --out assets/audio/generated` to re-render. Never use chirp's `sample()` (recordings are not allowed). Details: AUDIO-001 §11.7.
+
 ## Layout
 
 | Folder | Holds |

@@ -64,3 +64,8 @@ desktop.ini
 /assets/sprites/*
 !/assets/sprites/.gdignore
 !/assets/sprites/SPRITE_MANIFEST.csv
+
+# --- chirp (sound as code, D-14) ------------------------------------------------
+# The tool is a third-party Node project installed per machine (README); its renders are committed.
+/.claude/skills/chirp-game-audio/
+/assets/audio/generated/_preview/

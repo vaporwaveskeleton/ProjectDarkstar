@@ -288,7 +288,8 @@ Current: **v1.2 (2026-11-17)** — applied by the main session under owner-deleg
 | Shader parts | `shaders/parts/*.gdshader` | SDF bodies, flesh, veins, glass, Shroud; output quantised to the palette | planned |
 | Post | `shaders/crt.gdshader` (built); WarpComposer passes (TECH-001 §5.1) | costume, tear, desaturation, tier distortion | partly built |
 | Type | `core/ui/pixel_text.gd` (Cabinet face, built); Ledger and Litany glyph data (planned) | all game text | partly built |
-| Sound | `core/audio/sfx_synth.gd` + `autoload/audio_service.gd` (built: arcade cues, chant bed); music sequencer, voice and soundscape synthesis (planned, AUDIO-001 §11) | every sound | partly built |
+| Sound (build time) | **chirp**: `audio/src/*.cx.js` → `assets/audio/generated/` (built: 20 cabinet cues + chant bed; AUDIO-001 §11.7) | authored cues, music, ambience | built for Act 0 |
+| Sound (runtime) | `core/audio/sfx_synth.gd` + `autoload/audio_service.gd` (fallback for every cue); voice and warp-morph synthesis (planned, AUDIO-001 §11) | anything that morphs live | partly built |
 
 **Adding a part:**
 1. Write the generator class with ART-002's id and sockets.
@@ -299,4 +300,4 @@ Current: **v1.2 (2026-11-17)** — applied by the main session under owner-deleg
 
 The raster PNG with the same id, if one exists, is the visual target.
 
-**What must never happen:** a `Texture2D`, image, font or audio file referenced from `features/`, `scenes/`, `core/`, `autoload/` or `data/`. The test above fails the build if it does. `assets/sprites/` carries a `.gdignore`, so Godot never imports or exports it; `assets/reference/` is not in git (TECH-001 §10).
+**What must never happen:** a `Texture2D`, image or font file, an audio file outside `assets/audio/generated/`, or a recording in a chirp source, referenced from `features/`, `scenes/`, `core/`, `autoload/` or `data/`. The test above fails the build if it does. `assets/sprites/` carries a `.gdignore`, so Godot never imports or exports it; `assets/reference/` is not in git (TECH-001 §10).

@@ -1061,6 +1061,7 @@ The score's job is to **decompose**: the arcade chiptune rots into the Choir's l
 
 | Engine | Technique | Used for | Status |
 |---|---|---|---|
+| **chirp** (build time) | a synth DSL (`.cx.js`) rendered to WAV: tones, FM, filtered noise, envelopes, arps, vibrato, tracker patterns, built-in drums, reverb/delay/crush/drive/chorus/limiter; seamless loops with WAV loop points | authored cues, music stems, ambience beds and per-tier variants — see §11.7 | **built**: all 20 cabinet cues and the chant bed (`audio/src/cabinet.cx.js`) |
 | `SfxSynth.tone` | oscillators (square with duty, saw, triangle, sine), sample-and-hold noise, pitch sweeps, vibrato, AD envelope | every T0 arcade cue (A, B, I families), shots, pickups, explosions | **built** |
 | `SfxSynth.mix` | sample summing with clipping | chords, layered hits, the glass chime | **built** |
 | Chant bed | held minor chord of detuned saw/triangle/sine voices, looped | the Choir's presence (§5), positional level from `AudioService.set_chant` | **built** (first version) |
@@ -1089,3 +1090,24 @@ The litany (§5.1) is nine vowel targets. Each unit class gets a register and a 
 
 ### 11.6 What §9 becomes
 §9's counts still size the work: 41 stems, 164 lines, 16 chant variants, 81 cues, 8 beds. But each item is now a **patch or pattern** in code, not a recording. The staffing is a sound programmer and synth designer, not a composer plus voice session (PROD-001). The hours in §9.1 are not re-estimated here; PROD-001 owns the schedule.
+
+### 11.7 chirp: build-time synthesis (D-14 amendment, 2026-11-18)
+
+[chirp](https://github.com/uilianks/chirp) (MIT) is a sound-as-code tool: a small JavaScript DSL that renders WAVs, loops, songs and previews, built for an agent that reads spectrograms instead of hearing. D-14 is amended to allow it: **audio rendered from committed code is generated audio.**
+
+| Rule | Detail |
+|---|---|
+| Sources | `audio/src/*.cx.js`, committed. One file per area (`cabinet.cx.js` = Act 0). Each `sfx("id", …)` id is the cue id `AudioService.play(&"id")` uses |
+| Output | `assets/audio/generated/sfx/<id>.wav` and `music/<id>.wav`: 16-bit 44.1 kHz; loops carry a WAV `smpl` loop that Godot imports as looping. Committed (Git LFS, per `.gitattributes`), so the game builds without Node. Never hand-edited: change the source and rebuild |
+| Forbidden | `sample()` and sample-based `inst()` (they play recordings). A test fails the build if a source uses them |
+| Previews | `assets/audio/generated/_preview/*.png` (waveform + spectrogram): Godot-ignored by chirp, git-ignored here, read during authoring only |
+| Runtime fallback | `AudioService` plays the chirp render of a cue when it exists, else the `SfxSynth` version |
+| What stays runtime | anything that must morph continuously with Warp Tier or Composure (§11.1): drones, the chant's rot, the voice's degradation. chirp renders tier variants; the runtime layer sweeps between them |
+
+Commands (from the repo root; the tool lives in `.claude/skills/chirp-game-audio/`, git-ignored, installed per README):
+```
+node .claude/skills/chirp-game-audio/bin/chirp.js build audio/src/<file>.cx.js --out assets/audio/generated
+node .claude/skills/chirp-game-audio/bin/chirp.js info audio/src/cabinet.cx.js charge_lost
+node .claude/skills/chirp-game-audio/bin/chirp.js serve audio/src/cabinet.cx.js      # live player, http://127.0.0.1:4330
+```
+Level targets: SFX peaks −6 to −14 dBFS; only the entity's set pieces (`wake_hit`, `entity_unmade`) run to the limiter. First build (2026-11-18): 21 sounds, no clipping, the B06 glass chime measured at 1,201 Hz.
