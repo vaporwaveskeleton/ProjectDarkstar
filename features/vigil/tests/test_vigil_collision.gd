@@ -69,6 +69,7 @@ func test_live_hitbox_lands_one_hit_per_window_then_breaches() -> void:
 	var v := _vigil(runner)
 	var hull := (v.health.stats as HealthStats).duplicate() as HealthStats
 	hull.max_hp = 2
+	hull.invulnerable_after_hit_s = 0.0   # isolate the window rule; grace has its own test
 	v.health.stats = hull
 	v.health.reset()
 	var breached := [false]
@@ -97,3 +98,22 @@ func test_live_hitbox_lands_one_hit_per_window_then_breaches() -> void:
 	assert_bool(v.motor.enabled).is_false()
 	assert_str((runner.find_child("HullLabel") as Label).text).is_equal("Hull breached")
 	hb.queue_free()
+
+
+func test_plating_grace_blocks_a_second_window_then_expires() -> void:
+	# SYS-001 §1.2 Post-hit grace: only relevant while Hull HP >= 2 (plating).
+	var runner := scene_runner(SCENE)
+	await runner.simulate_frames(1)
+	var v := _vigil(runner)
+	var hull := (v.health.stats as HealthStats).duplicate() as HealthStats
+	hull.max_hp = 3
+	v.health.stats = hull
+	v.health.reset()
+	assert_float(hull.invulnerable_after_hit_s).is_greater(0.0)
+	v.health.apply_hit(HitInfo.make(1, 1, 1))
+	assert_bool(v.health.apply_hit(HitInfo.make(1, 2, 1))).is_false()   # inside grace
+	var ticks := ceili(hull.invulnerable_after_hit_s * Engine.physics_ticks_per_second) + 2
+	for i in ticks:
+		await get_tree().physics_frame
+	assert_bool(v.health.apply_hit(HitInfo.make(1, 2, 1))).is_true()
+	assert_int(v.health.current_hp).is_equal(1)

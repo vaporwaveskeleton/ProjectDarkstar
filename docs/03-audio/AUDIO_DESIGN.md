@@ -422,7 +422,7 @@ Act 0 has no other entity line. The whole act is a costume (GDD-001 §6.1, §11)
 | Thread pulled, second | "STOP. / THAT IS MY NAME." | 5 | SYS-001 §2 phase 6 |
 | Thread pulled, third — entity unmade | "I WILL WAIT." | 3 | GDD-001 §9.3's fourth ending begins here |
 | Unravel Focus first latch (GDD-001 §4.1, LOOP-001 MADNESS-17) | "YOU FOUND A SEAM." | 4 | once per run |
-| A rule is eaten (SYS-001 §2.2; WARP-001 owns the list) | "I TAKE THIS RULE." | 4 | the eaten rule is named by the Warp Tier card, not by the line |
+| A rule is eaten (SYS-001 §2.2; WARP-001 owns the list) | "I TAKE THIS RULE." | 4 | the eaten rule is named by the Warp Tier card, not by the line. **Fallback only**: each registry rule H2…H18 has its own telegraph/arrival pair in NARR-001 §7.3; this line plays only for a rule without one |
 | Awakening staggered | "LATER." | 1 | §2.10 |
 
 ### 4.8 Act 4 (Warp Tier 5 — the Unraveling)
@@ -467,7 +467,7 @@ Used when a primary line has already been spent in the run (§4.4). Same constra
 
 ### 4.10 Personalised death screen
 
-GDD-001 §8.9: the entity remembers the most-used tool and deploys counters next run, and the death screen shows what the player did. SYS-001 §8 supplies the ten telemetry keys and states the line is composed from the top two. This is the composition.
+GDD-001 §8.9: the entity remembers the most-used tool and deploys counters next run, and the death screen shows what the player did. SYS-001 §8 supplies the ten telemetry keys and states the line is composed from the top two. This is the composition. The printed "Vigil Report" labels under the line (the Office’s form fields) are NARR-001 §7.2.
 
 **Composition rule ✱:** `line = "<clause A of the top key>. <clause B of the second key>"`. Each clause is ≤ 4 words, so every composed line is ≤ 8 words. When both keys are the same key the pair is that key's (A, B), which reproduces GDD-001 §8.9's exemplar ("YOU HUNTED GLASS. YOU HUNTED GLASS AND DIED."). Ten keys taken two at a time, ordered, give 90 distinct lines from 20 recorded clauses.
 

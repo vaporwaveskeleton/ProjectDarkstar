@@ -1,9 +1,9 @@
 # DARKSTAR — Systems Bible (Numbers)
 
-**Doc ID:** SYS-001 · **Version:** 1.1 · **Status:** Authoritative for all numbers · **Last updated:** 2026-11-17
+**Doc ID:** SYS-001 · **Version:** 1.2 · **Status:** Authoritative for all numbers · **Last updated:** 2026-11-17
 **Owner:** Design (systems) · **Upstream:** `GDD_DARKSTAR_v0.2.md` (GDD-001) · **Downstream:** every other doc in this set
 **Data target:** `docs/04-production/TECH_ARCHITECTURE.md` §6 (data-driven tables) — every table below maps 1:1 to a `.tres`/JSON resource.
-**Rev 1.1 (2026-11-17):** the Anchor field rows in §1.1 (owner decision D-11 of GDD-001 §18); the warp-owned numbers WARP-001 asked for in its §8 R-01 to R-05, added to §6, §9 and §10; and the §2.2 eaten-rule pointer corrected from WARP-001 §6 to §3. **No pre-existing number in this doc was changed by that revision.**
+**Rev 1.1 (2026-11-17):** the Anchor field rows in §1.1 (owner decision D-11 of GDD-001 §18); **rev 1.2 (2026-11-17, owner-delegated rulings R-01, R-04, R-10, R-11, R-14):** §1.2 post-hit grace, §9 resolution closed to 640×360, hitbox diameter and entity exception, on-screen caps; §2.2 ninth-sky Hunger as one +2 row, §6 Hourglass budget/death cost/refund, §7.2 Codex stamp note, §7.5 Fragments and Threads (LOOP-001 LR-09…LR-13); the warp-owned numbers WARP-001 asked for in its §8 R-01 to R-05, added to §6, §9 and §10; and the §2.2 eaten-rule pointer corrected from WARP-001 §6 to §3. **No pre-existing number in this doc was changed by that revision.**
 
 ---
 
@@ -46,13 +46,14 @@ Conventions used everywhere:
 | `anchor` ring radius (HULL-9 chain) | 190 px | 256 px (HULL-10, +35%); 436 px ceiling (HULL-13) | ✱ first-pass. The ring deliberately out-reaches the 340 px lantern ceiling once paid for. |
 | `anchor_freeze` duration | 6.0 s | 8.0 s (HULL-16) | ✱ Choir units inside stop moving, chanting and firing; elites and Heralds freeze for half duration. It never damages: a stall, not a kill, per GDD-001 §8.7. |
 | `anchor_rearm` | 20 s | 14 s (HULL-12) | ✱ the timer starts when the freeze lands, not when the field is raised. |
-| `anchor` exclusions and cap | Sepulchre and The Penitent are never frozen; max 6 units per cast | — | ✱ frozen units still count against §4 spawn budgets and the §9 contact budget (row not yet written — see TECH-001 §11 Q-T14). Stopping a deposit is WARD-6's job, not the ring's. |
+| `anchor` exclusions and cap | Sepulchre and The Penitent are never frozen; max 6 units per cast | — | ✱ frozen units still count against §4 spawn budgets and the §9 contact budget (`Simultaneous hostile contacts`). Stopping a deposit is WARD-6's job, not the ring's. |
 
 ### 1.2 Hull, lantern and the dark
 
 | Field | Base | Upgraded ceiling | Notes |
 |---|---|---|---|
 | Hull HP | 1 🔒 | 2 (plating node, HULL-4) | Default run stays one-hit; HP is the exception, not the curve |
+| Post-hit grace | 0.75 s ✱ | — | applies only while Hull HP ≥ 2 (plating). The hit that removes plating grants it; at 1 HP it never matters. `ds_vigil.hull.invulnerable_after_hit_s` (TECH-001 §3.4). Owner-delegated ruling R-11, 2026-11-17 |
 | Lantern radius (up) | 260 px | 340 px (LANTERN-3) | Light is the mining *and* stealth axis |
 | Mining speed, lantern up | 100% | — | 🔒 baseline |
 | Mining speed, lantern down | 65% (−35%) 🔒 | 85% (`Dark Lantern`, LANTERN-5) | Below T3, mining in the dark is disabled without the node |
@@ -153,9 +154,8 @@ Formal name **Nhael'Gharoth, the Waking Dark**; Choir names "the Hollow King", "
 
 | Hunger | Change |
 |---|---|
-| +1 per Hard Unmaking 🔒 (GDD §7.4) | speed, hits, counter-behaviour |
+| +2 when the ninth sky closes = Hard Unmaking +1 🔒 (GDD §7.4) plus Iteration lost +1 (GDD §9.3 ending 1). One event, +2 total — never read as +3 (LOOP-001 LR-12) | speed, hits, counter-behaviour |
 | +1 per sector eaten | |
-| +1 per iteration that ends in a loss (ending 1: +2) | |
 | **Eaten rule** every 2 Hunger 🔒 | one rule removed/mutated; WARP-001 **§3** owns the list and order (pointer corrected 2026-11-17 — this line used to say §6, which is WARP-001's decisions section) |
 | Counter-behaviour table (H ≥ 4) | H4: Grubs intercept charges on a line; H6: Acolyte turret lead-in +15%; H8: Deacon mimics your last Sigil; H10: Listener hunts your *lantern*, not your gun |
 
@@ -249,6 +249,9 @@ Runs are 5 Seams assembled from authored **Encounter Kits** (GDD §8.8, 32 kits 
 | Field | Value |
 |---|---|
 | Seams per run | 5 🔒 |
+| Hourglass Clock budget | 120 loop-minutes per **Iteration** at Entropy 0 🔒 (GDD §6.2); a sky darkens each time one ninth is spent (13⅓ loop-min, derived); only the ninth ends the run (LOOP-001 §6.5) |
+| Death clock cost | `10 + 2 × (Seam index − 1)` loop-minutes ✱ (Seam 1 = 10, Seam 5 = 18; GDD §6.2 range) |
+| Run-won refund | +15 loop-minutes ✱, never above the 120 budget (LOOP-001 LR-09) |
 | Run length target | 25–35 min 🔒 |
 | Seam clear time | 4–6 min ✱ |
 | Seam sealing under **H2** (a warp-eaten rule) | `seam_close_after` = **20 s** ✱ — the seam you crossed seals 20 s after your crossing. While sealed, the boundary refuses the crossing and the Vigil slides along the edge, with no input lock. Seams re-open at the sector boundary; a sealed seam is never a permanent wall. Requested by WARP-001 §8 R-01; the rule itself is WARP-001 §3.2 H2 |
@@ -288,7 +291,7 @@ Score is **Ember's primary input**: `Ember = floor(score / 200)` plus milestone 
 | Score 40k–90k → Ember | 200–450 |
 | Seam clears (4 × 40) | 160 |
 | Choir elites / Heralds | 60–200 |
-| Codex firsts (2–5 × 20 Ink) | 40–100 Ink |
+| Codex firsts (2–5 × 20 Ink) | 40–100 Ink — 20 Ink is per Codex **stamp** (first read of an entry); Ilse Marrow’s marginalia and `cx_vigil_` entries pay 0 (LOOP-001 §8, LR-13) |
 | Run-Sigil picks | 3 (choose-1-of-3, 1 paid reroll each) |
 | **Run total** | **~450–800 Ember, 40–100 Ink** |
 
@@ -307,6 +310,27 @@ Score is **Ember's primary input**: `Ember = floor(score / 200)` plus milestone 
 
 Hunger raises the entity only. It never reduces player currency (GDD P4: progress is guaranteed).
 
+### 7.5 Fragments of Unraveling and the Threads ✱ (LOOP-001 §9.4, LR-10)
+
+| Fragment source | Fragments | Cap |
+|---|---:|---|
+| Waking unmade at Warp T ≥ 3 | 1 ✱ | once per run |
+| … and at Warp T ≥ 4 | +1 (2 total) ✱ | once per run |
+| Rite boss cleared at Warp T ≥ 4 | 1 ✱ | once per run |
+| Named Herald, first defeat of each per Iteration | 1 ✱ | 6 per Iteration |
+| Hard Unmaking | 3 for Hard Unmakings 1–4; 6 from the fifth on ✱ | per Iteration |
+| Ending 2–5 seen for the first time | 2 ✱ | 4 lifetime |
+
+| Thread | Fragment cost | Also requires |
+|---|---:|---|
+| I | 4 ✱ | 1 Hard Unmaking witnessed |
+| II | 6 ✱ | 2 |
+| III | 8 ✱ | 3 |
+| IV | 10 ✱ | 4 |
+| V | 12 ✱ | 5 — Act 4 opens when Thread V is bought |
+
+**Ember overflow valve:** once every Ember node of the Lantern Tree is owned, banked Ember converts to Unwritten Ink at 20 : 1 ✱ (LOOP-001 LR-11), so Ember never becomes a dead currency.
+
 ---
 
 ## 8. Save, telemetry and forward-progress invariants 🔒
@@ -317,7 +341,7 @@ Hunger raises the entity only. It never reduces player currency (GDD P4: progres
 | Run power (Sigils, Charges, relics) | lost on death, always |
 | Soft-lock | impossible: after 3 deaths in the same Seam, that kit is re-rolled and a Penitent is attached (invisible mercy, GDD §8.9) |
 | Telemetry keys (entity dialogue inputs) | `glass_hunted`, `charges_thrown`, `charges_lost`, `shrine_purged`, `hollow_sectors`, `penitent_shot`, `seam_deaths`, `iterations`, `hunger`, `warp_max` |
-| Death line generation | composed from the top 2 keys (NARR-001 §7) — "YOU HUNTED GLASS. YOU HUNTED GLASS AND DIED." |
+| Death line generation | composed from the top 2 keys (AUDIO-001 §4.10 clauses; NARR-001 §7.2 printout) — "YOU HUNTED GLASS. YOU HUNTED GLASS AND DIED." |
 | Save cadence | on Ruins entry, on Tree purchase, on iteration end. Never mid-run (no save-scumming of the entity's state) |
 
 ---
@@ -326,7 +350,7 @@ Hunger raises the entity only. It never reduces player currency (GDD P4: progres
 
 | Constant | Value | Why |
 |---|---|---|
-| Internal resolution | 640×360 (512×288 fallback) 🔒 | pixel-perfect integer scale |
+| Internal resolution | 640×360 🔒 | pixel-perfect integer scale (512×288 fallback struck 2026-11-17, TECH-001 §1.1) |
 | Frame budget (min spec) | 1.2 ms/frame for warp effects | GDD §8.7 acceptance criterion 5 |
 | Player agency loss | ≤ 1.5 s max, any warp effect | GDD §8.7 criterion 3 |
 | Input latency budget | < 3 frames at 120 Hz | GDD §4.3 |
@@ -336,7 +360,13 @@ Hunger raises the entity only. It never reduces player currency (GDD P4: progres
 | Camera follow | 0.12 s critically damped, 24 px deadzone, 1.5% aim lookahead | GDD §4.2 |
 | Zoom | 1.0 (T0) → 1.06 (T3) → breathing ±2% over 11 s (T5) | GDD §4.2 |
 | Shroud (hazard terrain) | blocks movement, 1 Ward-slice / 1 Surgelight burn to clear, HP 3 | ✱ T2+ terrain |
-| Hitbox policy | player hitbox 12 px circle (smaller than sprite); enemy hitbox = sprite alpha ∩ 1 px inset | fairness over realism |
+| Hitbox policy | player hitbox = a circle of **12 px diameter** (6 px radius; smaller than the sprite); every enemy hitbox = sprite alpha ∩ 1 px inset, **except the entity**, whose contact hitbox is §2.1's 16 px inset from the composite silhouette | fairness over realism. Diameter reading and entity exception: owner-delegated rulings R-04, R-10 (2026-11-17) |
+| On-screen Choir units | ≤ 32 ✱ | spawn budgets (§4) may never schedule past it; excess spawns queue off-screen. `ContactBudget` and pooling size from here (TECH-001 §8.2). Ruling R-14 |
+| Entity modules on screen | ≤ 20 | = the 20 segments 🔒 (GDD §8.4); one physics shape per module (TECH-001 §2.4) |
+| Geodes on screen | ≤ 24 ✱ | the solvability lint's 24-shard supply floor (§4) is met across a sector, not one screen |
+| Simultaneous hostile contacts (ContactBudget) | ≤ 24 ✱ | units able to touch or shoot the Vigil this frame; over budget, the furthest units stand down (hold position, keep chanting) — never despawn on screen |
+| Active shots, both sides | ≤ 180 ✱ | the bullet-layer ceiling TECH-001 §2.6 and §8 measure against; Run Sigils that multiply shots respect it (LOOP-001 §4.3 ceiling lint) |
+| Colliders per sector | ≤ 96 ✱ | static + kinematic + area shapes, excluding shots; TECH-001 §8.3 profiles at this ceiling |
 | Audio occlusion | chant audible through geometry ≤ 420 px | the Choir is a sound mechanic |
 
 ---

@@ -5,6 +5,6 @@
 [resource]
 script = ExtResource("1")
 ds_namespace = "ds_vigil.hull"
-source_section = "SYS-001 §1.2 Hull HP (base 1). D-08 open: A/B by editing max_hp."
+source_section = "SYS-001 §1.2 Hull HP (base 1) and Post-hit grace (0.75 s ✱, matters only at Hull HP ≥ 2). D-08 open: A/B by editing max_hp."
 max_hp = 1
-invulnerable_after_hit_s = 0.0
+invulnerable_after_hit_s = 0.75

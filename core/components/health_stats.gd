@@ -5,8 +5,8 @@ extends TunableResource
 
 ## SYS-001 §1.2 "Hull HP" for the Vigil (base 1). Must be >= 1.
 @export_range(1, 999) var max_hp: int = 1
-## Seconds of invulnerability after an accepted hit. 0 = none.
-## No SYS-001 row exists; 0 keeps one-hit behaviour honest. ✱ engineering default (TECH-001 §11).
+## Seconds of invulnerability after an accepted, non-lethal hit. 0 = none.
+## Vigil: SYS-001 §1.2 "Post-hit grace" (0.75 s ✱); it can only matter while Hull HP ≥ 2.
 @export_range(0.0, 10.0, 0.01) var invulnerable_after_hit_s: float = 0.0
 
 

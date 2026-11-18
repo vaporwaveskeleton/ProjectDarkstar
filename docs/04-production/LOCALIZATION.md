@@ -17,13 +17,14 @@
 ## 2. Keys and files
 
 * Every player-visible string is a **key** in `locale/<locale>.po`: `msgid` = key, `msgstr` = text.
-* Key format: `UPPER_SNAKE`, prefixed by surface: `GAME_`, `MENU_`, `PAUSE_`, `CONFIRM_`, `SETTINGS_`, `LANGUAGE_NAME_`, `HUD_`, `MSG_`. A new prefix must be added to `KEY_PREFIXES` in `core/i18n/tests/test_localization.gd`.
+* Key format: `UPPER_SNAKE`, prefixed by surface: `GAME_`, `MENU_`, `PAUSE_`, `CONFIRM_`, `SETTINGS_`, `LANGUAGE_NAME_`, `HUD_`, `MSG_`; narrative surfaces (NARR-001 §7–§8): `NARR_EAT_`, `NARR_SABLE_`, `NARR_ILSE_`, `NARR_WICK_`, `NARR_KEEPER_`, `NARR_CAB_`, `NARR_OFFICE_`, `NARR_LUNE_`, `NARR_REPORT_`, `CX_` (Codex, ID = the `cx_` entry id upper-cased); achievements `ACH_` + the LOOP-001 §11.9 `ach_` id. Keys enter `en.po` when the code that shows them lands (the unused-key test forbids orphans). A new prefix must be added to `KEY_PREFIXES` in `core/i18n/tests/test_localization.gd`.
 * Plurals: `msgid "KEY"` + `msgid_plural "KEY_PLURAL"` + `msgstr[n]`, with the locale's `Plural-Forms` header. Call `LocFormat.tr_count("KEY", n)`, which fills `{count}` with a locale-formatted number.
 * Placeholders use `{name}` and are replaced in code. Never concatenate translated fragments.
 * `#.` comment lines above an entry are **translator notes**: what it is, where it shows, length limits, glossary terms. Every new key gets one when the meaning is not obvious.
 * Glossary words (GDD §19: Vigil, Arc-Lance, Surgelight, Composure, Choir…) are fixed terms. Translators keep a per-locale term list; the name "DARKSTAR" is never translated.
 * Scenes: put the key in `text` and leave auto-translate on. Labels that show runtime-built text set `auto_translate_mode = Disabled` and call `tr()` / `LocFormat` themselves.
 * Language names are always shown in their own language (`LANGUAGE_NAME_EN` = "English").
+* Entity lines (big type, ART-001 §11 Litany face) must fit **560 px** wide at 1× in every locale; translators get that limit in the `#.` note. Upper-case house rule: German ß becomes `SS` in capitals (the Litany face has no capital ẞ).
 
 ## 3. Fallback and missing keys
 * Project fallback locale: `en` (`internationalization/locale/fallback`).
@@ -73,7 +74,7 @@ tools\godot\Godot_v4.7.2-stable_win64_console.exe --headless --path . -s addons/
 Extraction to a `.pot` (`localize_extract`, TECH-001 §1.4) is planned. Until then `en.po` is the template.
 
 ## 9. Fonts, audio, subtitles, input
-* Fonts: no game font is defined (Q-T02). The UI uses Godot's fallback font; glyph coverage is tested against whatever font the Theme sets.
+* Fonts: ART-001 §11 defines three bitmap faces (Ledger, Litany, Cabinet) and the CJK fallback candidates (licence not yet verified). Until they are drawn, the UI uses Godot's fallback font; glyph coverage is tested against whatever font the Theme sets.
 * Warp text effects (WARP-001) must operate on the translated string, never on the key. Pseudolocale must pass under T0–T2 warp (planned with `WarpComposer`).
 * Localized audio: entity lines are subtitled big type (GDD §10). Voice localization is not planned; subtitles cover it.
 * IME: no text entry exists (seed codes are 12-character invariant codes, not translated). If a name field is ever added, it must accept IME input.

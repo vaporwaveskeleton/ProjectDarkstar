@@ -1,0 +1,410 @@
+# DARKSTAR — Steam & Market Plan
+
+**Doc ID:** MARKET-001 · **Version:** 1.0 · **Date:** 2026-11-17 · **Owner:** producer (marketing) · **Status:** complete-draft; nothing in this doc has been executed, measured or sold
+**Upstream:** GDD-001 §1, §2, §3 (P6), §14, §15, §16; RES-001 §5 (IP guardrails); NARR-001 (lore hooks); WARP-001 §6.1 D-06 (daily mode contract) · **Downstream:** PROD-001 (beat calendar ↔ milestones), store page, trailer, press kit, community channels
+
+**Number discipline.** Game numbers are SYS-001's and are never restated here as facts about play. Every planning number in this doc (wishlists, dates, conversion rates, prices other than D-07's proposed $19.99) is a **target or assumption, marked `✱`**. No statistic about another game, company or the market is stated as fact. Comparisons are qualitative positioning only.
+
+---
+
+## 0. How to read this doc
+
+| If you are… | Read | Then |
+|---|---|---|
+| writing store copy or a trailer | §2, §4, §5 | §10 guardrails |
+| planning the demo or a festival | §6, §7 | PROD-001 §3 milestone M4 |
+| talking to creators or press | §8, §9 | §4.6 GIF list |
+| deciding price or discounts | §11 | GDD-001 D-07 |
+| reporting launch health | §13 KPIs | GDD-001 §15 |
+
+---
+
+## 1. The thesis: why this game can travel
+
+DARKSTAR's virality is not a marketing layer bolted on afterwards. It is built into five systems that already exist in the design docs, each of which produces a **shareable artefact with no context needed** (GDD-001 §3 P6).
+
+| # | Hook (the sentence a player types to a friend) | System that produces it | Artefact |
+|---|---|---|---|
+| H1 | **"I beat the arcade game and then it ate the universe."** | Act 0 floor-drop (GDD-001 §6.1 A0-3) | a 30–45 s clip; the single most important asset we own |
+| H2 | **"The boss is built from the same ore I need."** | the Waking race (GDD-001 §8.4, P1) | a 15 s GIF: Grubs carrying glass, segments clicking into place |
+| H3 | **"The game ate my HUD / my pause menu / my wraparound."** | eaten rules (WARP-001 §3.2), the HUD under warp (WARP-001 §4) | clips that look like bugs until the player realises they are not |
+| H4 | **"It remembered what I did."** | personalised death lines (SYS-001 §8 telemetry keys, AUDIO-001 §4.10) | a screenshot: one big-type line built from the player's own habits |
+| H5 | **"The arcade cabinet was a recruitment machine."** | the lore reveal (NARR-001, the Lantern Office and the Cabinet) | YouTube lore essays, wiki pages, Reddit threads |
+| H6 | **"The secret ending is in the tutorial."** | ending 5, The Pretence Kept (GDD-001 §9.3) | word of mouth; the discovery is the content |
+
+Every asset, beat and channel in this plan is chosen to feed one of H1–H6. If a proposed asset feeds none of them, it is cut.
+
+**Spoiler law for H5 and H6:** they are *earned* hooks. Our own channels may never state them: NARR-001 §10.3 puts the recruitment machine at tier **S3** and the ending-5 message at **S4**, which are banned from the store page and trailers and allowed in community spaces only spoiler-tagged and never posted first by staff. We feed H5/H6 only by making them findable in play (the Cabinet in the Ruins, `cx_ruins_02` "The Machine on the Wall", the honour-roll entry `T.L. — 0 WARD 0 SURGE`). Every channel in §4–§9 follows the NARR-001 §10.3 tier-by-channel table.
+
+**The strategic order matters.** H1 and H2 sell the game (they are visible in a capsule, a GIF and a trailer). H3 and H4 sell the *second* week (creators and players share their own moments). H5 and H6 sell the long tail (essays, wikis and "you missed this" posts keep the game in conversation after launch week). We never spoil H5 or H6 in paid or owned media; we seed curiosity and let players find them.
+
+---
+
+## 2. Positioning
+
+### 2.1 One sentence, one image
+- **Store hook (GDD-001 §14):** *"You build the bomb from the same ore the boss is being built from."*
+- **Second beat:** *"And when you fail, it eats another sky."*
+- **Positioning line (internal):** *a retro arcade shooter that turns out to be a cosmic-horror roguelike about unmaking a god.*
+- **The image:** a tiny amber lantern-ship (GASLIGHT, ART-001 §4) in a black field, a half-built bone star of 64×64 segments above it, and a thin line of pale Grubs carrying teal glass toward it. Two factions, one ore, one race, readable at thumbnail size.
+
+### 2.2 Genre shelf and the "mutation" promise
+Primary shelf: **Action Roguelike**. Secondary: **Shoot 'Em Up**, **Arcade**. The store page sells the arcade shooter first and *hints* at the mutation; it never explains it. The promise is "this game changes", stated as a mood, never as a mechanic list.
+
+### 2.3 Audience segments
+
+| Segment | What they want | What we show them | Channel |
+|---|---|---|---|
+| **A. Action-roguelike regulars** | build variety, meta-progression clarity, "one more run" | the Lantern Tree, Run Sigils, Pacts, Entropy ladder | Steam tags, roguelike creators, Next Fest |
+| **B. Arcade / shmup nostalgics** | tight controls, honest difficulty, score chasing | Act 0's cabinet, the Vigil Index, mouse-aim feel | retro channels, shmup communities, the demo |
+| **C. Horror / weird-fiction players** | dread, mystery, a world that rewards attention | the warp tiers, the Choir as a religion, the lore layer | horror creators, lore essayists, the trailer's second half |
+| **D. Clip and variety streamers** | moments that make chat react | H1, H3, H4: the floor-drop, the eaten HUD, the death lines | creator outreach, press kit, keys |
+| **E. "Games that do something to themselves" fans** | meta-fiction, fourth-wall play, secrets | the Pretence, the Cabinet, ending 5 | word of mouth only; never advertised directly |
+
+Segment E is small but it is the multiplier: they write the essays that segments A–C find a month after launch.
+
+### 2.4 Comparable titles (positioning only)
+These games are named to explain *where DARKSTAR sits*, not to predict its sales. No sales, review or revenue figures are claimed.
+
+| Title (GDD-001 §14) | What we borrow as a positioning signal | Where we differ |
+|---|---|---|
+| Hades | meta-progression that makes failure feel like progress; a hub with characters | our hub is outside a time loop that is *losing*; the world gets worse while you get stronger |
+| Enter the Gungeon | bullet-pattern roguelike runs with a readable economy | one weapon, one ore, a boss that is being *built* during the run |
+| Brotato-style roguelites | instant readability of the run economy | the economy is contested by the enemy in real time |
+| arcade homages (Ikaruga-era shmups) | arcade purity, score as identity | the arcade is a costume the game takes off |
+| reality-warp titles (GDD-001 §14) | the game mutating its own rules | our mutations are *legible tiers* with counterplay (WARP-001 §1.8), not chaos |
+| Signalis | cosmic horror through restraint, a world that rewards close reading | ours is an action game first; the horror arrives through systems, not cutscenes |
+
+Public-facing copy may say "for fans of action roguelikes and arcade shooters". It names no other game in paid ads.
+
+---
+
+## 3. Name, title treatment and metadata
+
+| Field | Value | Notes |
+|---|---|---|
+| Title | **DARKSTAR** | subtitle *The Nine Hollow Skies* reserved for the free update or a later edition (GDD-001 header) |
+| Developer / publisher | the studio name (owner to confirm) | — |
+| Release date field | "Coming soon" until the date is locked in PROD-001 M6 | never show a quarter we may miss |
+| Languages at launch | English (full); de/fr/es/pt-BR/zh-CN/ja listed only once shipped (L10N-001 §1) | listing a language we do not ship damages reviews |
+| Steam Deck | "Verified" is the target (GDD-001 §2); claim nothing until Valve's review returns | PROD-001 M3 gate |
+| Controller | full gamepad support (D-01, GDD-001 §4.3) | tag it |
+| Content descriptors | cosmic horror, mild occult themes, no gore (GDD-001 §2 ESRB T / PEGI 12 target) | rating is a target, not a certificate |
+
+---
+
+## 4. Store page specification
+
+### 4.1 Capsule art (one concept, every size)
+All capsules use the **same composition**, so the brand reads identically at every size. Pixel art is upscaled only by integer multiples, nearest-neighbour (ART-002 §7). The logo is drawn in the **Litany** face (ART-001 typography) with a one-pixel crack running through the "A" of DARK, the only place GASLIGHT amber appears in the logo.
+
+| Asset (Steam name) | Size (px) | Composition |
+|---|---|---|
+| Header capsule | 920 × 430 | Left third: the amber Vigil, lantern up, a short teal shard trail. Right two thirds: the half-built Dark Star (12 of 20 segments, Quickening twitch frame) and a procession of 5 Grubs. Logo top-left. |
+| Small capsule | 462 × 174 | Logo dominant; the Vigil's lantern is the dot of the "i"-like crack; the star's silhouette behind. Must read at 120 px wide in a list. |
+| Main capsule | 1232 × 706 | The header composition widened: the Litany Ring of Acolytes around the Sepulchre, the black punctum at frame centre, the arcade bezel visible only as a faint CRT curve at the edges (the costume hint). |
+| Vertical capsule | 748 × 896 | Vertical stack: star above, procession down the middle, the Vigil at the bottom looking up. Strong silhouette. |
+| Library capsule | 600 × 900 | Same as vertical, cleaner: no procession, just the Vigil and the star. |
+| Library hero | 3840 × 1240 | Wide black field with the cabinet bezel on the left edge **peeling** into the warped T3 palette on the right (the arcade-to-horror reveal, legible only to people who already own the game). |
+| Library logo | 1280 × 720 (transparent) | Logo alone. |
+| Page background | 1438 × 810 | Near-black VOID-0 with faint Ledger Compass grid lines; never busy. |
+
+**Capsule rule:** the Dark Star is always shown *incomplete*. The capsule art is itself the race (H2), and a finished god on the capsule would spend the Awakening reveal (WARP-001 §6.1 D-04's logic, applied to marketing).
+
+### 4.2 Short description (≤ 300 characters)
+> **Mine the bones of dead gods. Forge them into bombs. Kill the boss your enemies are building from the same glass you need — before it wakes. A razor-sharp arcade shooter that is hiding something. When you fail, it eats another sky.**
+
+(230 characters; re-count after any edit. The final sentence is the H1 hint without the spoiler.)
+
+### 4.3 Long description (draft)
+> **THE BOSS IS BEING BUILT. YOU ARE RUNNING OUT OF GLASS.**
+>
+> Every sector holds geodes of Mourning Glass — the only thing that can hurt the Dark Star. The Hollow Choir wants the same glass. Their larvae carry it, shard by shard, to an altar of fused bone where a god is being assembled one piece at a time. Every shard you take delays the god. Every shard they take delays you.
+>
+> **ONE SHIP. ONE GUN. ONE ORE. ONE RACE.**
+> - WASD to fly, mouse to aim — crisp, instant arcade control with full gamepad support.
+> - Shatter geodes with the Arc-Lance, collect the glass, forge it into Null-Iron Charges — homing bombs the Choir can intercept.
+> - Raid processions, break the Litany Ring, or hide in the dark while the Choir walks past your unlit lantern.
+> - Strike the half-built god before it wakes… or face it awake. It does not shoot. It does not need to.
+>
+> **IT REMEMBERS.**
+> Die, and the Dark Star tells you how you died — in your own habits. Come back, and it has learned.
+>
+> **A TREE THAT GROWS WHILE THE WORLD ENDS.**
+> Between runs, tend the Lantern Tree in the Ruins of the Ninth Sky — 90 upgrades that change how you play, not just how hard you hit. Choose Run Sigils, sign Pacts at the Chalk Desk, carry Relics, and climb an Entropy ladder you set yourself.
+>
+> **REALITY IS A DIFFICULTY SETTING YOU CAN SEE.**
+> As the Dark Star grows, the world starts to change. Colours split. Geometry folds. Things that should be honest stop being honest. You will know exactly how wrong things are — and you will have to decide whether to fight it or use it.
+>
+> **ACCESSIBLE BY DESIGN.**
+> Full rebinding, 200% text scaling, reduced motion, a photosensitivity mode that never hides information, subtitles and visual cues for every audio-critical sound, and Steady Ledger — an option that keeps the important things honest, always.
+>
+> *Single-player. No microtransactions. No gore. Something is wrong with the arcade machine.*
+
+Copy rules: no promise the build cannot keep (e.g. "90 upgrades" is only written once LOOP-001's node list is implemented); no mention of time loops, acts, endings, the Cabinet's origin or the floor-drop in plain words. "Something is wrong with the arcade machine" is the only H1/H5 hint.
+
+### 4.4 Tags (up to 20; first five weigh most)
+Order of the first five: **Action Roguelike · Shoot 'Em Up · Arcade · Lovecraftian · Pixel Graphics**.
+Then: Roguelite · Cosmic Horror · Twin Stick Shooter · Psychological Horror · Difficult · Replay Value · Atmospheric · Dark · Retro · Score Attack · Singleplayer · Controller · Procedural Generation · Bullet Hell · Great Soundtrack (add the last only after players apply it).
+
+Tag rules: never "Horror" alone as a lead tag (it sends the wrong audience to Act 0's arcade opening); never "Multiplayer" or "Co-op" (D-09); review the tag set after the demo using Steam's player-applied tags.
+
+### 4.5 Screenshots (6 on page, in this order)
+Every screenshot is a native 640×360 frame upscaled ×3 to 1920×1080, never a mock-up (GDD-001 §3 P6 standard: it must be a real frame).
+
+| # | Frame | What it sells | Hook |
+|---|---|---|---|
+| 1 | Seam 1, Pale Marches, T1: the Vigil firing at a geode, 5 Grubs carrying glass to a half-built Sepulchre in the same frame | the race | H2 |
+| 2 | Act 0 cabinet view: bezel, scanlines, 1UP, score, the honest HUD | the arcade promise | H1 (setup) |
+| 3 | Awakening frame: the full entity, big-type line on screen (AUDIO-001 §4.2 display rule) | the threat | H2 |
+| 4 | The Ruins with the Lantern Tree and the Chalk Desk | depth, hub, progression | segment A |
+| 5 | A T3 frame: split palette, Shroud, the Ledger Compass visibly wrong | "this game changes" | H3 (setup) |
+| 6 | A personalised death screen line ("YOU HUNTED GLASS. YOU HUNTED GLASS AND DIED.", SYS-001 §8) | it remembers | H4 |
+
+Never on the store page: any T4/T5 frame, the Unraveling, the Cabinet's message, any ending.
+
+### 4.6 The 15-second GIF list (GDD-001 §3 P6)
+Each GIF must be understood muted, with no caption, by someone who has never heard of the game. Each is cut from real capture.
+
+| GIF | 15 s content | Hook | Use |
+|---|---|---|---|
+| G1 "The Race" | Grubs ferry glass; segments click on; the player steals a shard from under the procession | H2 | store page, launch posts |
+| G2 "Over-fire" | calm fire drops 3 shards neatly; panic fire scatters them and Grubs swarm the confetti (GDD-001 §8.2) | H2 | roguelike communities |
+| G3 "Lantern down" | the player kills the light; a procession walks past the dark Vigil; the player steals the shard | H2, segment C | horror communities |
+| G4 "Interception" | a Charge homes in, an Acolyte steps into its path, the glass chime (GDD-001 §8.3) | H2 | press |
+| G5 "It wakes" | silence, then the big-type line (AUDIO-001 §4.2) | H1 setup | social teaser |
+| G6 "The HUD lied" | the Ledger Compass shows the entity left; the entity arrives from the right (a tell visible on re-watch, WARP-001 §4.2 L1–L3) | H3 | post-launch only |
+| G7 "Wrap eaten" | the player crosses a torus edge and the way back is gone (H2 rule, WARP-001 §3.2) | H3 | post-launch only |
+
+G6 and G7 are held back until launch week; they are second-week fuel.
+
+### 4.7 Trailer (announcement cut, 1:30 ✱)
+
+| Time | Picture | Sound | Intent |
+|---|---|---|---|
+| 0:00–0:03 | Black. A CRT powers on. "INSERT CREDIT" blinks in the Cabinet face | a coin drop | the costume |
+| 0:03–0:18 | Act 0 gameplay at T0: crisp flight, mining, score chimes, 1UP | bright chiptune | segment B: "this is a great arcade shooter" |
+| 0:18–0:28 | Grubs carrying glass; segments clicking on; the race explained with no text | chiptune with a choir pad creeping in | H2 |
+| 0:28–0:34 | The player kills a complete entity. Score: big number. Credits roll. "THANK YOU FOR PLAYING" | victory jingle | false ending |
+| 0:34–0:37 | Credits stop. Hold on black | **1.2 s of total silence** (GDD-001 §12) | the floor drops |
+| 0:37–0:40 | Big-type: **"THAT WAS A PRETENCE."** | a single low tone | H1 |
+| 0:40–1:05 | Rapid cuts across T1→T3: palette splits, Shroud, the Litany Ring, the Ruins, the Lantern Tree, a Pact signed in chalk, the Ledger Compass going wrong | the chiptune decomposing into liturgy (AUDIO-001 §2) | "this game changes"; depth |
+| 1:05–1:15 | The Awakening, the entity's first line, a chase in the dark with the lantern down | the chant, then silence, then the line | the threat |
+| 1:15–1:22 | Hook card: *"You build the bomb from the same ore the boss is being built from."* | heartbeat-tempo pulse | the sentence |
+| 1:22–1:30 | Logo (Litany face). "Wishlist on Steam." The amber lantern gutters once | the chant's ninth syllable, missing (AUDIO-001 §5.1) | brand |
+
+**Spoiler budget for the trailer:** we show that the arcade game becomes something else (H1). We do not show the time loop, the hub's purpose, any rule being eaten, the Cabinet's origin or any ending. A viewer should finish with exactly one question: *"what happens after the pretence?"*
+
+A **launch trailer** (0:60 ✱) re-cuts the same arc with the Vigil Index, a personalised death line and one G6-style lie, and adds review quotes if any exist. The **gameplay trailer** for festivals is 2:00 ✱ of uncut Seam play with a single on-screen caption.
+
+---
+
+## 5. Messaging matrix
+
+| Audience | Lead with | Never say |
+|---|---|---|
+| everyone | "the boss is built from the same ore you need" | the 1983 game's trademark, "clone", "remake" (RES-001 §5) |
+| roguelike players | the tree, Sigils, Pacts, Entropy, seeded runs | "punishing", "permadeath" (progress is guaranteed, GDD-001 P4) |
+| arcade players | instant control, honest Act 0, score | "procedural levels" as the headline |
+| horror players | "the world starts to change", "it remembers" | jump scares, gore (we have neither) |
+| accessibility readers | Steady Ledger, photosensitivity parity, 200 % text | "the warp can be turned off" (it cannot; presentation can be made safe, information is never removed) |
+
+---
+
+## 6. Demo strategy
+
+**What the demo is:** Act 0 complete (A0-1, A0-2, A0-3), then **one** Act 1 run of 5 Seams in two biomes with the Ruins open but the Lantern Tree capped at its first tier, the slice content of GDD-001 §17. The demo **ends on the floor-drop's echo**: after the Act 1 run, the Ruins' sky darkens one step and the demo end card appears over the darkening, not over a menu.
+
+| Decision | Ruling | Why |
+|---|---|---|
+| Does the demo include the floor-drop? | **Yes.** | H1 is the best advertising asset we will ever own; creators need it to make the "wait, WHAT" video in the demo window |
+| Does the demo show the Ruins? | **Yes, briefly, capped** | segment A must see the meta layer to wishlist |
+| Does progress carry over? | **Yes**: demo saves migrate into the full game (TECH-001 §7.3 migration path) | removes the "I'll wait" objection; rewards early adopters |
+| Ending 5 trigger in the demo? | **Live but unannounced.** The Cabinet's message is in the demo | the secret spreading during Next Fest is free reach (H6); the message ends with a line that only makes sense after the full game |
+| Demo length target | 45–70 min ✱ | long enough for one full creator episode |
+| Demo end card | "THE NEXT SKY IS DARK. Wishlist DARKSTAR." + the Vigil Index of the session | the call to action carries the player's own number |
+
+---
+
+## 7. Steam Next Fest plan
+
+| Phase | Action |
+|---|---|
+| T−8 weeks ✱ | demo feature-complete; creator keys list built (§8.3); press kit live |
+| T−6 weeks | demo private beta with 50–100 ✱ players from the Discord; fix the top five friction points; measure GDD-001 §15 "time to first understanding of the boss race" |
+| T−4 weeks | demo goes public **before** the festival (so it has player reviews and tags when the festival traffic arrives) |
+| T−2 weeks | creator embargo-free demo access; send G1–G5 GIFs and the announcement trailer |
+| Festival week | the gameplay trailer on the store page; two developer livestreams: a straight Act 0 run, and a "cursed seed" run with chat-picked Pacts ✱; daily Discord cursed-seed challenge |
+| Festival week, day 4 | first "Vigil Index of the week" post: top community scores, with the personalised death lines that ended their runs (H4) |
+| T+1 week | publish a "what we changed from your feedback" devlog |
+
+The edition (February, June or October) is chosen in PROD-001 so that the demo ships at milestone M4 quality; check the Steamworks festival calendar for exact dates before committing.
+
+---
+
+## 8. Content-creator strategy
+
+### 8.1 Design features that exist *for* creators (already in the design)
+| Feature | Source | Why creators use it |
+|---|---|---|
+| **Cursed seeds**: 12-character shareable run codes | GDD-001 §6.3, TECH-001 §4.9 | "beat my seed" challenges; chat-picked seeds; fair races between creators |
+| **Vigil Index** | GDD-001 §9.4, AUDIO-001 §4.12 | a number to beat, spoken back by the entity |
+| **Personalised death lines** | SYS-001 §8, AUDIO-001 §4.10 | screenshot and thumbnail bait: one big-type sentence about *you* |
+| **Eaten rules and HUD lies** | WARP-001 §3, §4 | genuine on-stream surprise; chat argues about whether it is a bug |
+| **Entropy ladder** | GDD-001 §7.4 | a visible flex number for runs and thumbnails |
+| **The secret ending in the tutorial** | GDD-001 §9.3 #5 | the "you missed this" video every lore channel wants to make first |
+| **Steady Ledger** | WARP-001 §4.4 | accessibility-minded creators can play the whole game honestly |
+
+### 8.2 Streamer mode (requested feature → PROD-001 backlog)
+A settings toggle that: hides the player's OS username if any personalised line would use it (none do today; future-proofing), mutes licensed-risk audio (none planned; all audio is original), shows the current **seed code** in a corner so viewers can replay it, and shows the **Vigil Index** on the pause screen. Requested from TECH-001 / UI-001 owners; not built.
+
+### 8.3 Outreach tiers
+| Tier | Who | What they get | When |
+|---|---|---|---|
+| 1 | 20–40 ✱ mid-size roguelike, shmup and horror creators whose audiences match segments A–D | demo early access, a personal note, the GIF pack, a cursed seed made for them | T−2 weeks before Next Fest; full-game keys T−2 weeks before launch |
+| 2 | 100–200 ✱ smaller creators and curators | demo + press kit, full-game keys on request via a key-distribution service | festival week; launch week |
+| 3 | lore and essay channels (segment E) | full-game keys **after** launch, with a one-line nudge: "play the tutorial twice" | launch week +1 |
+
+We never script creators, never require positive coverage, and never pay for reviews. Sponsored placements, if any, are disclosed and budgeted in PROD-001.
+
+---
+
+## 9. Community plan
+
+| Channel | Purpose | Cadence |
+|---|---|---|
+| Steam store + announcements | the canonical news feed | every milestone, every patch |
+| Discord | cursed-seed sharing (`#cursed-seeds`), Vigil Index board, bug reports, playtest sign-ups | always on; weekly seed challenge from demo launch |
+| Devlog (Steam + one social platform) | how a system works, one GIF each: "how the Choir builds a god", "why the HUD lies", "a palette with 32 colours" | every 2 weeks ✱ from announcement |
+| Social (short video) | G1–G5, then player clips (with permission) | 2–3 posts / week ✱ in campaign windows |
+| Wiki | community-owned; we seed it with a page on controls and the glossary (GDD-001 §19) and nothing about secrets | at launch |
+
+**Spoiler etiquette (published in Discord rules):** `#spoilers-ruins`, `#spoilers-endings` channels; the Cabinet's message is never posted by staff; staff posts follow NARR-001 §10.3 tiers. **One seeded rumour** about ending 5, ≈60 days after launch ✱ (NARR-001 §14 Q-09): a staff-adjacent account asks, in character and without answering, why the honour roll has an entry nobody made. Never repeated, never confirmed.
+
+**The weekly cursed seed** (from the demo onward): staff publish one seed code every Monday with a one-line, in-world description in Sable Vane's contract-speak, signed "— S.V." (NARR-001 §7.5; Sable's gender is never stated, NARR-001 §14 Q-07) ("This one is owed."). Top Vigil Index wins a name in the next devlog. The free update turns this into the in-game **daily Hollow Vigil** (§12).
+
+---
+
+## 10. IP, trademark and honesty guardrails
+
+1. The 1983 game's trademark never appears in the title, store page, tags, keywords, ads, trailer, press kit headline or any metadata (RES-001 §5). Press-kit FAQ may say "inspired by the classic arcade boss you have to build" (RES-001 §5's approved wording).
+2. No asset, sound or code from any other game, ever (RES-001 §5).
+3. Comparisons to other games are positioning only, never "X meets Y" claims in paid ads that use their marks or imagery.
+4. Never claim Steam Deck Verified, a rating, an award, a language or a feature before it exists.
+5. Screenshots and GIFs are real frames from a build (GDD-001 §3 P6).
+6. The game has no microtransactions and no monetised progression (GDD-001 §2); say so plainly.
+
+---
+
+## 11. Pricing and discounts
+
+| Item | Plan | Status |
+|---|---|---|
+| Base price | **$19.99 USD** | GDD-001 D-07 **Proposed** — owner sign-off is a business decision; this doc recommends it |
+| Regional pricing | Steam's recommended regional price matrix as the baseline, reviewed by the owner per region | ✱ |
+| Launch discount | 10 % ✱ for the launch week | small enough not to anchor the price low; signals "launch" to followers |
+| First seasonal sale | no deeper than 20 % ✱ in the first 3 months | protects launch buyers |
+| Free update | "The Ninth Sky" (§12) is free to every owner | retention, not monetisation |
+| DLC | none announced (GDD-001 §14); a soundtrack release is the only paid add-on considered ✱ | — |
+
+---
+
+## 12. The free update: "The Ninth Sky"
+
+Per owner ruling R-16 (canon brief), the **daily "Hollow Vigil" challenge ships in the first free update, not at 1.0**. The seed contract that makes it possible ships at 1.0 (SYS-001 §10 "Warp state seed contract"; WARP-001 §6.1 D-06), so the update is a content drop, not an engine change.
+
+| Contents (target) | Hook |
+|---|---|
+| **Daily Hollow Vigil**: one seed per day, fixed world tier and Hunger preset, no H14 (WARP-001 §6.1 D-06), one attempt counts, global and friends leaderboard on Vigil Index | the habit loop; H4 death lines become daily screenshots |
+| Weekly cursed seed promoted in-game from the Discord tradition | community ownership |
+| One new biome variant or Rite and a Codex page set (scope chosen in PROD-001 M8) | a reason for lapsed players to return |
+| Streamer mode (§8.2) if not shipped at 1.0 | creator retention |
+
+Target window: launch + 10–14 weeks ✱ (PROD-001 M8).
+
+---
+
+## 13. Beat calendar (aligned with PROD-001)
+
+All dates are target windows relative to 2026-11-17 ✱ and move with PROD-001's milestones. A beat only fires when its milestone's exit criteria pass.
+
+| Beat | Target window ✱ | Gate (PROD-001) | Assets |
+|---|---|---|---|
+| Studio socials + Discord open (quiet) | 2027-01 | M1 | 3 devlog GIFs from the feel prototype |
+| **Store page live + announcement trailer** | 2027-05 | M2 (vertical slice) | §4 store page, announcement trailer, G1–G4 |
+| Devlog cadence begins (every 2 weeks) | 2027-05 onward | — | one GIF each |
+| Private demo beta | 2027-08 | M4 entry | Discord sign-ups |
+| **Public demo** | 2027-09 | M4 | demo build, gameplay trailer |
+| **Steam Next Fest** (October edition ✱) | 2027-10 | M4 | §7 |
+| Release date announced | 2027-12 | M6 entry | date trailer re-cut |
+| Creator full-game keys | launch − 2 weeks | M7 | §8.3 |
+| **1.0 launch** | 2028-02 ✱ | M7 | launch trailer, G6–G7 held until launch week |
+| "The Ninth Sky" free update | 2028-05 ✱ | M8 | daily Hollow Vigil |
+
+### 13.1 Wishlist funnel targets (all `✱`, planning only)
+| Checkpoint | Target wishlists ✱ | Primary source |
+|---|---|---|
+| end of announcement month | 3,000 | trailer, devlogs |
+| before Next Fest | 10,000 | devlogs, demo beta, creators |
+| end of Next Fest | 25,000 | demo, festival placement |
+| launch day | 40,000 (stretch 60,000) | release-date announcement, creators |
+
+These are goals, not forecasts. PROD-001 reviews them at each milestone; if a checkpoint misses by more than 40 % ✱, the next beat is moved rather than fired into a weak funnel.
+
+---
+
+## 14. KPIs (tied to GDD-001 §15)
+
+| KPI | Target ✱ | Source |
+|---|---|---|
+| Store page visit → wishlist | ≥ 15 % during campaign beats | Steamworks |
+| Demo players who finish A0-3 (sees the floor-drop) | ≥ 70 % (GDD-001 §15 Act 0 completion at 1.0) | in-demo telemetry (opt-in) |
+| "Hook moment" named unprompted | 8/10 interviewees (GDD-001 §15) | demo-beta interviews |
+| Demo → wishlist | ≥ 30 % of demo players | Steamworks + telemetry |
+| Median demo session | ≥ 45 min | telemetry |
+| Launch-month review score | "Very Positive" target | Steam |
+| Runs per session (Act 1+) | ≥ 3.0 (GDD-001 §15) | telemetry |
+| Creator coverage | 30+ videos from tier 1–2 in launch month | tracking sheet |
+| Clips with the floor-drop on social (organic) | tracked, no target | social listening |
+
+Telemetry is opt-in, keyed by invariant IDs (L10N-001 §4), and never shown to players raw.
+
+---
+
+## 15. Press kit (contents)
+
+- Fact sheet: title, developer, platforms (Windows/Steam at 1.0; Linux/Mac later, GDD-001 header), price (when signed off), languages, release window, single-player, no microtransactions.
+- One-paragraph and three-paragraph descriptions (from §4.2–§4.3).
+- Logo (Litany face) in light and dark; capsules (§4.1).
+- 12 screenshots: the 6 store shots plus 6 more from Acts 0–2 only.
+- G1–G5 GIFs, the announcement trailer, the gameplay trailer.
+- Developer bio and contact; key-request form.
+- **Spoiler note for press:** "Please don't reveal what happens at the end of Act 0 in headlines or thumbnails." It will leak anyway; asking politely protects the first wave.
+- FAQ: "Is it a horror game?" ("It's an arcade roguelike that gets stranger the longer you play.") "Is it hard?" ("Act 0 is an honest arcade game; after that, progress is guaranteed and difficulty is a ladder you choose.")
+
+---
+
+## 16. Risks
+
+| ID | Risk | Mitigation |
+|---|---|---|
+| MK-01 | The floor-drop is spoiled by the trailer and loses its punch | the trailer shows *that* it happens, never *what* comes after; demo players get the full experience |
+| MK-02 | Horror tags bring players who bounce off Act 0's arcade opening | lead tags are arcade/roguelike; horror is a secondary tag (§4.4) |
+| MK-03 | Comparisons to the 1983 game invite IP trouble | §10 guardrails; original names, art, audio; no trademark in metadata (RES-001 §5) |
+| MK-04 | Clips of eaten rules read as bugs and hurt reviews | every eat has a tell and a Codex entry (WARP-001 §4.2, LOOP-001 §7.6); devlog "the game will lie to you, and it will always show you how" before launch |
+| MK-05 | Wishlists under target at Next Fest | move launch rather than fire into a weak funnel (§13.1); second festival appearance is not available to the same demo, so the first must be ready (PROD-001 M4 gate) |
+| MK-06 | Steam Deck verification fails at launch | do not claim it; fix in a patch (PROD-001 M3/M7) |
+| MK-07 | The time loop (Hourglass Clock) reads as a hard timer that punishes exploration | the store page never frames it as a timer; the demo ends before a sky closes; GDD-001 §20 Q1 is closed by WARP-001 §6.1 D-01 and must be explained diegetically in the first Ruins scene |
+| MK-08 | Lore secret (H5/H6) never surfaces without help | tier-3 creator nudge (§8.3); one Codex page at Iteration 2 that points at the Cabinet without explaining it (NARR-001 owns the text) |
+| MK-09 | Localization listed before it ships | §3: list languages only when shipped |
+
+---
+
+## 17. Open questions
+
+| # | Question | Recommendation |
+|---|---|---|
+| MQ-01 | Studio name and publisher (self-publish vs partner) | self-publish unless a partner adds festival/creator reach the owner cannot reach alone |
+| MQ-02 | Final price (D-07) | sign off $19.99 at M6 with the content count verified |
+| MQ-03 | Which Next Fest edition | October 2027 ✱ if M4 passes by 2027-09; otherwise the next edition, never a weak demo |
+| MQ-04 | Soundtrack as paid add-on | decide at M6 with the composer's contract terms |

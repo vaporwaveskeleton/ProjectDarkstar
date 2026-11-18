@@ -1,8 +1,8 @@
 {
   "name": "DARKSTAR_palette_v1",
   "doc": "docs/02-art/ART_BIBLE.md section 4. Source of truth for all generated art. 32 colours, 5 ramps of 6 + 2 specials. Lint: max 10 colours per sprite; GASLIGHT never on Choir/entity; CHOIR never on player.",
-  "version": "1.1",
-  "date": "2026-11-14",
+  "version": "1.2",
+  "date": "2026-11-17",
   "size": 64,
   "ramps": {
     "VOID":   ["#0A0A12", "#131428", "#1D2040", "#2A3057", "#3C4574", "#56608F"],
@@ -57,17 +57,18 @@
     "entity":     [0,1,2,3,4,5,6,30,18,19,20,21,22,23,31],
     "shard":      [0,18,19,20,21,22,23,10,24,25,26,27,28],
     "fx":         [0,1,6,7,8,9,10,11,19,20,21,22,23,24,25,26,27,28,29,30,31],
-    "ui":         [0,1,2,8,9,10,11,26,27,31],
+    "ui":         [0, 1, 2, 3, 6, 7, 8, 9, 10, 11, 21, 22, 26, 27, 28, 31],
     "compass":    [0,1,3,9,10,11,16,21,27,31],
     "hub":        [0,1,2,3,4,5,6,7,8,9,10,18,19,20,21,24,25,26,27,30],
     "matron":     [0,1,4,6,7,8,9,10,12,13,14,15,16,17,19],
     "listener":   [0,1,2,3,6,7,8,9,12,13,14],
     "deacon":     [0,1,2,12,13,14,15,16,17,8,9,31],
-    "herald":     [0,1,4,6,7,8,9,10,12,13,14,15,16,17,24,25,26,27,31]
+    "herald":     [0,1,4,6,7,8,9,10,12,13,14,15,16,17,31]
   },
   "lock_history": [
     { "version": "1.0", "date": "2026-11-12", "change": "Initial kit locks authored by hand, before any kit had been generated end to end." },
-    { "version": "1.1", "date": "2026-11-14", "change": "Widened vigil (VOID-4 rim, BONE-5 specular), grub (VOID-4 rim, BONE-5 eye specular), geode (VOID-4 cool rim on bone, the section 4 role line for VOID-4), shard (GAS-0/1/4: burnt brass cage and hot wick of a Null-Iron Charge, which is player tech), acolyte (BONE-5 veil highlight, GAS-3 sanctioned counterfeit halo), deceiver (BONE-5, GAS-0..3 sanctioned stolen lamp). Resolved against the first end-to-end run of all 8 authored kits: every widening traces to art that already obeyed the palette's documented role, not to a new colour being introduced." }
+    { "version": "1.1", "date": "2026-11-14", "change": "Widened vigil (VOID-4 rim, BONE-5 specular), grub (VOID-4 rim, BONE-5 eye specular), geode (VOID-4 cool rim on bone, the section 4 role line for VOID-4), shard (GAS-0/1/4: burnt brass cage and hot wick of a Null-Iron Charge, which is player tech), acolyte (BONE-5 veil highlight, GAS-3 sanctioned counterfeit halo), deceiver (BONE-5, GAS-0..3 sanctioned stolen lamp). Resolved against the first end-to-end run of all 8 authored kits: every widening traces to art that already obeyed the palette's documented role, not to a new colour being introduced." },
+    {"version": "1.2", "date": "2026-11-17", "change": "ui pool widened to the UI state palette of ART-001 §12 (VOID-3, BONE-0, BONE-1, PHOS-3, PHOS-4, GAS-4); herald pool loses GAS-0..3 (Heralds are Choir elites: palette law 1, no salvaged-lantern exception). Owner-delegated ruling R-06/R-09."}
   ],
   "faction_exceptions": {
     "rule": "Palette law 1 (ART_BIBLE section 4): GASLIGHT 24-29 never on a Choir or entity part. Exception granted to exactly three parts, all of them stolen or counterfeit light, and documented here so the lint enforces a rule instead of special-casing a name. ASSEMBLED_* composite previews inherit the exception from the part they blit.",

@@ -1,6 +1,7 @@
 # DARKSTAR — Modular Sprite System Specification (64×64 base module)
 
-**Doc ID:** ART-002 · **Version:** 1.0 · **Date:** 2026-11-12 · **Owner:** Art + Tech Art
+**Doc ID:** ART-002 · **Version:** 1.1 · **Date:** 2026-11-17 · **Owner:** Art + Tech Art · **Status:** complete-draft
+Rev 1.1 (2026-11-17): §7 import paths corrected to the repo-root project (ruling R-08) and the manifest import rule added (R-19); §8 aligned with the palette file of record (kit locks are colour *pools*; the salvaged-lantern exceptions); §9–§10 corrected to what is actually on disk.
 **Source of truth for:** module grid, part kits, sockets, naming, atlases, animation tags, runtime mutation, Godot import settings.
 **Related:** `ART_BIBLE.md` (look), `ASSET_PIPELINE.md` (how files are produced), `assets/sprites/SPRITE_MANIFEST.csv` (what exists).
 
@@ -42,18 +43,17 @@ Reference/mood files use `ref_` and live only in `assets/reference/`.
 
 ```
 assets/
-  palettes/darkstar_palette.json          # the 32-colour source of truth (+ .gpl copy)
+  palettes/darkstar_palette.json          # the 32-colour source of truth (an Aseprite .gpl copy is planned, not on disk)
   sprites/
-    source/     # per-kit working PNGs (one file per part, one file per kit sheet)
+    source/     # hand-authored working files (.aseprite / PNG overlays); empty today
     generated/  # output of the pipeline (do not hand-edit; regenerate instead)
       <kit>/    # one folder per kit
-    atlas/      # packed atlases consumed by the engine (1024x1024, 8 px gutter)
-    SPRITE_MANIFEST.csv   # every asset: id, kit, part, w, h, frames, palette, status, path
-  reference/    # mood studies (no shipped content)
+    atlas/      # packed atlases consumed by the engine (1024x1024, 8 px gutter); planned, empty today
+    SPRITE_MANIFEST.csv   # every asset: id, kit, part, w, h, frames, colours, palette_lock, path, status, note (ASSET-003 §3)
+  reference/    # mood studies (no shipped content; git-ignored)
 tools/pixel-art/
-  palette/      # palette json used by the generator
-  src/          # the generator (core library + one script per kit)
-  out/          # scratch output (git-ignored)
+  src/          # the generator: ds_pixcore.ps1, ds_pixextras.ps1, kits/kit_*.ps1 (reads assets/palettes/ directly)
+  out/          # scratch copy of every generated PNG (git-ignored; see ASSET-003)
   run_all.ps1   # regenerates everything + contact sheets + manifest
 ```
 
@@ -135,39 +135,42 @@ Loop rule: first and last frame must differ by ≤ 1 px of movement (no pops); c
 ## 7. Atlas, import and engine settings
 - Atlas size **1024×1024**, 8 px gutter, tight-packed per kit; atlas manifest `assets/sprites/atlas/<kit>_atlas.png` + `.json`.
 - Godot: `rendering/textures/canvas_textures/default_texture_filter = Nearest`; per-sprite `texture_filter = Inherit`; **no compression** on pixel atlases (`compress/mode = Lossless` at import, disable mipmaps, disable HDR); `fix_alpha_border = true` on all atlases (prevents 1 px bleeding on outline sprites).
-- Import preset file: `godot/DarkStar/.import` conventions documented in `TECH_ARCHITECTURE.md` §10.
+- Project root = **repo root** (`project.godot` sits beside `assets/`), so every path in this spec is also its `res://` path (`assets/sprites/...` = `res://assets/sprites/...`). There is no `godot/DarkStar/` folder. Import presets and per-file import conventions are owned by `TECH_ARCHITECTURE.md` (TECH-001) §10 (ruling R-08).
+- `assets/sprites/SPRITE_MANIFEST.csv` is data for tools and the planned `ManifestImporter` (TECH-001 §6.3). Its `.import` must use importer **`keep`**: Godot would otherwise treat any `.csv` as a translation table and emit `*.translation` files (ruling R-19, ASSET-003 §4).
 - Scaled display: internal 640×360 → integer scale to the window (2×, 3×). Never non-integer scale in the shipped default; the option exists behind an accessibility toggle with a warning.
 
 ## 8. Colour and palette locking per kit
-Each kit has an allowed palette subset (enforced by the generator and by a lint script):
+Each kit has an allowed palette subset. **The file of record is `assets/palettes/darkstar_palette.json` → `kit_locks`**, enforced by the generator's lint (ASSET-003 §5). A kit lock is the *pool* a kit may draw from. It can hold more than 10 colours; **each individual sprite still uses ≤ 10** (ART-001 §4 law 6). The table below is the intent of each pool. Where it and the JSON disagree, the JSON wins and this table is the bug.
 
-| Kit | Allowed ramps (max 10 colours) |
+GASLIGHT on Choir kits is allowed only on the three named salvaged-lantern parts in `faction_exceptions` (ART-001 §4, ruling R-06), never as a kit-wide permission, and GAS-5 never.
+
+| Kit | Intent of the pool (each sprite ≤ 10 colours) |
 |---|---|
 | `vigil` | GASLIGHT (4) + BONE (3) + VOID-0 outline |
 | `grub` | CHOIR (3) + BONE (3) + VOID-0/1 outline |
-| `acolyte` | CHOIR (4) + BONE (4) + VOID-0 |
+| `acolyte` | CHOIR (4) + BONE (4) + VOID-0; GAS-3 **only** on `ds_acolyte_haloBroken` (salvaged lantern ring) |
 | `deacon` | CHOIR (3) + BONE (2) + VOID-2 + SIGNAL (1 tell only) |
-| `deceiver` | CHOIR (3) + BONE (3) + VOID-0 + GAS-1 **only as a stolen lantern prop** (explicit exception, documented) |
-| `penitent` | BONE (4, alpha-stepped) + VOID-3 + GAS-4 (halo) |
+| `deceiver` | CHOIR (3) + BONE (3) + VOID-0; GAS-0..GAS-3 **only** on `ds_deceiver_offeringLamp` (salvaged lantern) |
+| `penitent` | BONE (4, alpha-stepped) + VOID-3; GAS-4 **only** on `ds_penitent_ringBroken` (the cracked ring) |
 | `matron` | CHOIR (4) + BONE (4) + PHOS-1 (rose window) |
 | `listener` | BONE (3) + CHOIR (2) + VOID (2) |
-| `herald` | as `acolyte`/`vigil` with hue-shifted variant map |
+| `herald` | as `acolyte`/`vigil` with hue-shifted variant map. **Ruled (palette v1.2, 2026-11-17):** Heralds mirror the Vigil's *silhouette*, not its colour (hue-shifted CHOIR); GAS-0..3 left the herald pool |
 | `geode` | BONE (4) + VOID (2) + PHOSPHOR (3) + PHOS-5 core |
 | `sepulchre` | BONE (3) + VOID (3) + PHOS-3 (Quickening only) |
 | `entity` | VOID (5) + NULL + PHOSPHOR (4) + BONE-0 (rim only) + SIGNAL via `hit` palette-swap |
 | `shard` | PHOSPHOR (4) + BONE-4 |
 | `fx` | per-effect palette, ≤ 6 colours, must ship a greyscale-readable version |
-| `ui` | BONE (3) + VOID (2) + GASLIGHT (2) + SIGNAL (tell) |
+| `ui` | BONE (3) + VOID (2) + GASLIGHT (2) + SIGNAL (HUD danger tells only, never menus). **Needs widening for ART-001 §12** (VOID-3, BONE-0, BONE-1, GAS-4, PHOS-3, PHOS-4): requested for palette v1.2, see ASSET-003 §8 |
 | `hub` | VOID (4) + BONE (4) + GASLIGHT (2) + PHOS-1 |
 
 ## 9. Deliverables per kit (definition of done)
 1. Kit folder in `assets/sprites/generated/<kit>/` with every part + assembled preview PNG.
-2. Kit descriptor JSON in `assets/sprites/source/kits/<kit>.json`.
-3. Packed atlas + JSON in `assets/sprites/atlas/`.
+2. Kit descriptor JSON in `assets/sprites/source/kits/<kit>.json` (**planned** — today a kit is described by its build function in `tools/pixel-art/src/kits/`, ASSET-003 §2).
+3. Packed atlas + JSON in `assets/sprites/atlas/` (**planned** — no packer exists yet; the folder is empty, ASSET-003 §6).
 4. Contact sheet in `docs/02-art/screens/kit_<kit>.png`.
 5. Manifest rows in `assets/sprites/SPRITE_MANIFEST.csv` (one per part, one per unit assembled).
 6. At least one in-game placement wired in the prototype, and one in-game screenshot.
 7. Kit passes the greyscale-50% silhouette test (sibling-distinguishable within 2 frames).
 
 ## 10. What exists today (v0.1 pipeline pass)
-Generated by `tools/pixel-art/run_all.ps1` (see `ASSET_PIPELINE.md`): `vigil`, `grub`, `acolyte`, `deceiver`, `penitent`, `geode`, `sepulchre`, `shard`, `entity` (20 segments), `fx`, `ui`, `compass`. Still to author (priority order): `matron`, `listener`, `deacon`, `herald`, `hub` tile set, `titleLogo` + font sheet polish, mutation parts. **Status is tracked per-row in the manifest, not in prose.**
+Generated by `tools/pixel-art/run_all.ps1` (see `ASSET_PIPELINE.md`), verified against the manifest on 2026-11-17: **8 kits, 83 manifest rows** — `vigil` (17), `geode` (13), `sepulchre` (14), `shard` (14), `acolyte` (10), `grub` (7), `deceiver` (4), `penitent` (4). The driver also lists `entity`, `fx`, `ui`, `compass`, `hub`, `matron`, `listener`, `deacon`, but **no build functions exist for them yet**, and the driver skips them silently (ASSET-003 §9). An earlier revision of this section listed `entity`, `fx`, `ui` and `compass` as generated; that was wrong. Still to author (priority order): `entity` (20 segments), `ui` (incl. the three ART-001 §11 font sheets and the §12 UI kit), `fx`, `compass`, `matron`, `listener`, `deacon`, `herald`, `hub` tile set, `titleLogo`, mutation parts. **Status is tracked per-row in the manifest, not in prose.**

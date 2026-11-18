@@ -1,6 +1,6 @@
 # DARKSTAR — UI Architecture (menus, overlays, buttons)
 
-**Doc ID:** UI-001 · **Version:** 1.0 · **Date:** 2026-11-17 · **Owner:** production
+**Doc ID:** UI-001 · **Version:** 1.1 · **Date:** 2026-11-17 · **Owner:** production
 **Upstream:** GDD §10 (menus, accessibility), ART-001 §4 (palette) and §7 (UI art), WARP-001 §4 (HUD lie law, Steady Ledger), AUDIO-001 §6.2 (I06–I08 UI cues), SYS-001 §9 (safe area at 200 % text)
 **Not here:** HUD lie content (WARP-001 §4), diegetic HUD implementation (TECH-001 §5, `DiegeticHud` row), localization (L10N-001)
 
@@ -18,6 +18,8 @@
 | Death / cause-of-death screen | GDD §6.3, §8.9; AUDIO-001 §4.10 | planned |
 | Ruins hub, Lantern Tree, Chalk Desk, Codex, run summary | GDD §6.4, LOOP-001 §3, §7 | planned |
 | Endings / credits | GDD §9.3 | planned |
+| Act 0 high-score screen ("honour roll"): three-letter initials entry after any Act 0 clear, Cabinet face (ART-001 §11); from Hard Unmaking 3 the table also lists `T.L. — 0 WARD 0 SURGE` | NARR-001 §14 Q-03, LOOP-001 §11.6 | planned |
+| Streamer mode (settings toggle): SeedCode shown on the HUD and the pause screen, Vigil Index on pause, no OS user name anywhere | MARKET-001 §8.2 | planned |
 | Save failure / recovery notice | brief | text keys exist (`MSG_SAVE_*`); no toast widget yet |
 | Shop, equipment, skills, classic inventory, quest log | brief | **N/A** — no such systems in the GDD |
 
@@ -71,14 +73,14 @@ Route scene (e.g. AttractMode : Screen)        one per SceneRouter route
 |---|---|---|
 | idle | VOID-1 fill, 1 px BONE-1 keyline, BONE-5 text ("chalk on slate", ART-001 §7) | built |
 | hover | VOID-2 fill, BONE-3 keyline | built |
-| focus | 2 px GAS-3 outline (✱, see §9) | built |
-| pressed / selected | VOID-3 fill, BONE-5 keyline | built |
+| focus | 2 px GAS-3 outline — the cursor is the player's lamp (ruling R-09, ART-001 §12) | built |
+| pressed / selected | VOID-3 fill, 2 px GAS-2 bottom keyline (R-09) | built |
 | disabled | VOID-0 fill, BONE-0 keyline, BONE-1 text | built |
 | busy / loading | disabled look while routing; the curtain covers the change | built |
-| error | `ErrorLabel` variation, SIGNAL text (✱, see §9) | theme only |
-| cooldown | planned with Surgelight (radial fill over the button/HUD glyph) | planned |
+| error | `ErrorLabel` BONE-5 text + chalk-strike icon (shape-coded, never SIGNAL); reassurance line in `TruthLabel` PHOS-4 (R-09) | theme built; icon planned |
+| cooldown | GAS-2 sweep over VOID-2 on the button or HUD glyph (R-09) | planned with Surgelight |
 
-Theme variations: `HeaderLabel`, `HintLabel`, `ErrorLabel`, `DimPanel`. Every colour is a palette entry (tested by `core/ui/tests/test_theme_palette.gd`). Not yet done: the ±1 px chalk wobble (ART-001 §7), the Act 0 cabinet-bezel costume layer, and the bitmap font (ART-001 has no font section; TECH-001 §11 Q-T02).
+Theme variations: `HeaderLabel`, `HintLabel`, `ErrorLabel`, `TruthLabel`, `DimPanel`. Every colour is a palette entry (tested by `core/ui/tests/test_theme_palette.gd`). Not yet done: the ±1 px chalk wobble (ART-001 §7), the Act 0 cabinet-bezel costume layer, and the bitmap font (ART-001 has no font section; TECH-001 §11 Q-T02).
 
 ## 6. Player-readable output
 Everything on screen comes from a `tr()` key in `locale/en.po` (L10N-001). Failure codes go through `PlayerMessages`, which maps them to a sentence saying what happened, whether progress is safe, and what to do next. Raw codes, paths, enum names and exceptions go to `push_warning`/`push_error` only. Authored HUD lies (WARP-001 §4.2) are content, not bugs. A raw key, debug value or error string on screen is a bug.
@@ -95,6 +97,4 @@ Everything on screen comes from a `tr()` key in `locale/en.po` (L10N-001). Failu
 6. Add a test: focus on open, `ui_cancel`, safe area at 200 % text.
 
 ## 9. Open questions
-* Focus colour: ART-001 reserves GASLIGHT for the player; the UI focus outline uses GAS-3 (TECH-001 §11 Q-T09).
-* Error colour: SIGNAL is "danger tell only" in ART-001 §4; `ErrorLabel` uses it pending an art ruling.
-* Font: none specified (Q-T02). Font sizes 14/28 are ✱.
+* None open. Focus, error and font questions were ruled 2026-11-17 (TECH-001 §11.1a R-02, R-09); the full spec is ART-001 §11 (typography) and §12 (UI states). Until the bitmap faces are drawn, the code uses Godot's fallback font at ✱ 14/28 px; when Ledger lands, `UiTheme.BASE_FONT_SIZE` becomes the Ledger cell height and text scale stays an exact ×2.

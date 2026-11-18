@@ -1,8 +1,10 @@
 # DARKSTAR — Roguelike Loop, Run Sigils, Pacts, Relics and the Lantern Tree
 
-**Doc ID:** LOOP-001 · **Version:** 1.1 · **Date:** 2026-11-17 · **Owner:** Design (systems / progression) · **Status:** §0–§7 authored · §8–§14 owed (Codex, economy flow, Iteration unlocks, endings, content cost, coverage, open questions)
+**Doc ID:** LOOP-001 · **Version:** 1.2 · **Date:** 2026-11-17 · **Owner:** Design (systems / progression) · **Status:** §0–§14 authored (complete draft, pending review). Numbers marked "requested SYS-001 row" are proposals until SYS-001 adopts them.
 
 Rev 1.1 (2026-11-17): §5 Relics, §6 run shape and the two escalators, §7 Pacts written out in full; the §4.1 Run-Sigil pick count corrected to SYS-001 §7.2's three; HULL-17's "Anchor ring" renamed to the **Anchor field** to match SYS-001 §1.1 and GDD-001 D-11. The 90 / 24 / 18 counts GDD-001 §7 promises are now all on disk. Requests **LR-01…LR-08** are open against SYS-001 and GDD-001 and are listed in §5.5, §6.5 and §7.5.
+
+Rev 1.2 (2026-11-17): §8 Codex, §9 economy flow, §10 Iteration unlocks, §11 endings, §12 content cost, §13 coverage and §14 open questions written. Three in-file corrections made while doing the arithmetic: **§6.5 LR-04 is reversed** — the Hourglass Clock is read per Iteration (GDD-001 §6.2 and §2), because the per-sky reading put 18 loop-hours in an Iteration and contradicted §6.5's own 3.5–6 h; §6.3's E10 gate now says "ending 2–5 seen", because ending 1 is shown at every Hard Unmaking and would have opened E10 after the first Iteration; §6.4's Hunger pacing budget is replaced by §10.3's cadence, which matches WARP-001 §3.2's act gates. The §2 Anchored row now follows ruling R-05 (accessibility settings are device-level).
 
 This is the progression contract. GDD-001 §6–§7 promises a run structure, a between-run tree, **90 nodes + 24 Pacts + 18 Relics** and "~120 Run Sigil pool entries". All of it is here, written out. Numbers do not live in this doc: every stat, cost floor, yield and multiplier is in **SYS-001** (`SYSTEMS_BIBLE_STATS.md`), and where this doc needs a number it points at a SYS-001 row instead of inventing one. If a number here and a number in SYS-001 disagree, SYS-001 wins and this doc is a bug.
 
@@ -16,6 +18,7 @@ This is the progression contract. GDD-001 §6–§7 promises a run structure, a 
 | authoring content (kits, rites) | §6.1 run anatomy, §10 iteration unlocks | ZONES-001 |
 | writing fiction or UI copy | §11 endings, §8 Codex | NARR-001 |
 | planning the build | §12 content cost, §13 coverage | PROD-001 |
+| deciding what is still open | §14 open questions, then the LR requests in §5.5, §7.5 and §9.7 | SYS-001 §10 |
 
 Cross-doc IDs used here: GDD-001, SYS-001, ZONES-001, WARP-001, NARR-001, AUDIO-001, ART-001, ART-002, ASSET-003, TECH-001, PROD-001, MARKET-001.
 
@@ -39,8 +42,9 @@ Four nested layers, from tightest to loosest. A player is always inside exactly 
 | Class | Contents | Survives death | Survives Hard Unmaking | Survives "New Iteration" from the menu | Where in TECH-001 |
 |---|---|---|---|---|---|
 | **Run state** | Seam index, seed, Run Sigils, Relics, active Pact, Charges, Composure, in-run Ember/Ink | no | no | no | run slot, written between Seams only |
-| **Iteration state** | Hourglass Clock, sky count, Hunger, sector corruption map, Hollow sector list, entity memory (telemetry counters) | yes | **consumed** by Hard Unmaking, which raises Hunger and rewrites the map | reset deliberately | iteration slot |
-| **Anchored state** | Lantern Tree purchases, banked Ember/Ink/Fragments, Codex, Ruins shape, endings seen, Vigil Index bests, accessibility settings | yes | yes | yes | profile slot |
+| **Iteration state** | Hourglass Clock, sky count, sector corruption map, Hollow sector list, entity memory (telemetry counters) | yes | **consumed** by Hard Unmaking, which raises Chronicle Hunger and rewrites the map | reset deliberately | iteration slot |
+| **Anchored state** | Lantern Tree purchases, Threads of Unraveling, banked Ember/Ink/Fragments, Codex, Ruins shape, endings seen and ending flags (§11.7), Chalk Desk ledger, Vigil Index bests, Chronicle Hunger (it carries across Iterations and only rises, §10.3) | yes | yes | yes | profile slot |
+| **Device settings** | accessibility (Steady Ledger, photosensitivity, text scale, reduced motion), language, audio and input bindings | yes | yes | yes | **device-level, not a save slot** — `user://settings.cfg`, loaded before any profile so it works from the attract screen (TECH-001 §7.3; ruling R-05, 2026-11-17). Never reset by a run, an Iteration or a new Chronicle |
 
 The diegetic reason is GDD-001 §6.2: the Lantern Tree, the Ruins and the Codex sit in a pocket the loop cannot touch. It is stated once, in the first Ruins scene, and never in a menu.
 
@@ -573,7 +577,7 @@ Entropy 0–10 is set at the Vigil Index board in the Ruins, before the run, and
 | 4–5 | Act 1 cleared once | Heralds enter the pool (SYS-001 §4, §5.2); the entity repairs while you breathe |
 | 6–7 | Act 2 cleared once | the HUD is now part of the difficulty (SYS-001 §4 at E6: one persistent lie) — the run is played against WARP-001 §4, not just against the Choir |
 | 8–9 | Act 3 cleared once | the Choir's laws bend: Grubs may attack, phantoms persist — these are **rule breaks the player opted into**, which is why they are Entropy and not Warp |
-| 10 | any ending seen | the entity opens each sector at 6 segments ✱ (SYS-001 §4); the flex tier, and the tier the four loadouts in §5.4 are stress-tested against |
+| 10 | any of endings 2–5 seen (ending 1 is shown at every Hard Unmaking and does not count; §11) | the entity opens each sector at 6 segments ✱ (SYS-001 §4); the flex tier, and the tier the four loadouts in §5.4 are stress-tested against |
 
 - **Entropy is the only difficulty the game lets the player choose**, and the only one that pays (SYS-001 §7.3 Ember ×1.15→2.30, Ink ×1.10→2.00). It never touches the player's side of the ledger in any other direction.
 - E7 and above deliberately break faction laws (Grubs attacking, SYS-001 §3; phantoms persisting, §4). We put opt-in rule breaks on the *player's* escalator and keep the entity's escalator (Hunger, §6.4) to what it would do anyway. That is the honesty line: the game never takes a rule without being asked, except by the warp, which tells you in the Codex the same run.
@@ -595,20 +599,22 @@ Hunger is entity-side, automatic, and never shown as a number (SYS-001 §2.2 �
 
 **The two-axis law.** *Warp Tier* is per-run and rises with that run's violence (WARP-001 §1). *Hunger* is iteration-long and rises with that iteration's failures. They are the same aesthetic and opposite clocks: a clean run at high Hunger still opens at T0, and a filthy run at Hunger 0 still opens at T5. Every escalation claim in every doc is a claim about one of these two axes, and the docs must say which.
 
-**Pacing budget ✱** (the loop's own arithmetic, not SYS-001's, and the first thing to move when playtest data arrives): the game expects to spend **Hunger 0 → ~8 across Acts 1–3** and the full **0 → 18** by Act 5 and into NG+. Nine eaten rules on an even-numbered ladder is a 18-level runway, and at ~2–4 rules taken per Iteration (§6.5) a 20–40 h Chronicle consumes the whole registry exactly once. If playtest says the registry spends too fast, the fix is the *cadence* in SYS-001 §2.2 — the +1-per-sector-eaten source is the one to stretch — and not a new eaten rule.
+**Pacing budget ✱** (the loop's own arithmetic, not SYS-001's, and the first thing to move when playtest data arrives): the cadence is §10.3's — roughly **+3–4 Hunger per Iteration** (the ninth-sky close is +2, GDD-001 §9.3 ending 1, plus a typical one or two Hollow sectors), which crosses H2–H8 inside Act 2 and leaves H10–H18 for Act 3, exactly the earliest-legal-act column of WARP-001 §3.2. Nine eaten rules on an even-numbered ladder is an 18-level runway; at ~1 rule per Iteration in Act 2 and ~2 in Act 3 a 20–40 h Chronicle consumes the whole registry exactly once, and Act 4 plays at a full registry. If playtest says the registry spends too fast, the fix is the *cadence* in SYS-001 §2.2 — the +1-per-sector-eaten source is the one to stretch — and not a new eaten rule.
 
 ### 6.5 The Hourglass Clock, and what spends it
 
 | Fact | Value | Consequence for the loop |
 |---|---|---|
-| Clock per **sky** | 120 loop-minutes at Entropy 0 (GDD-001 §6.2) | a sky holds **3–4 completed runs** (SYS-001 §6: 25–35 min) or **7–12 deaths** (a death spends 10–18 min, GDD-001 §6.2). The clock is per sky, not per iteration — see the ruling below |
-| Skies per Iteration | 9 🔒 | an Iteration runs **≈3.5–6 loop-hours**, so a 20–40 h Chronicle is **4–8 Iterations**, and Hard Unmaking lands 4–8 times: enough content-unlock beats to be a retention machine and few enough to stay sacred |
-| Runs per Iteration | ≈30–40 completed, more if the player dies well | matches the tree math in §3.4 (17,480 Ember / 1,350 Ink = 22–39 clean runs): **one well-played Iteration can finish the Lantern Tree**, which is what GDD-001 §6.4's escalation contract promises — the tree outgrows the loop, not the other way round |
+| Clock per **Iteration** | 120 loop-minutes at Entropy 0 🔒 (GDD-001 §6.2) | the budget for all nine skies; a sky darkens each time one ninth of it is spent (every 13⅓ loop-minutes, derived) — see the ruling below |
+| What spends it | real time in runs and in the Ruins (WARP-001 §6.1 D-01: never during pause, Codex, cinematics or attract mode); a **death** spends a lump on top (GDD-001 §6.2: 10–18 min — **requested SYS-001 §6 row ✱**: `10 + 2 × (Seam index − 1)` loop-minutes, so Seam 1 costs 10 and Seam 5 costs 18) | dying deep is expensive; dying early is a cheap lesson |
+| What buys it back | **a run won** (the Waking unmade at Seam 5) refunds time (GDD-001 §6.2 "every time you win a run you buy time") — **requested SYS-001 §6 row ✱**: +15 loop-minutes, never above the 120 ceiling | a clean run nets about 15 loop-minutes of a 30-minute run, so skill is literally more sky |
+| Runs per Iteration | **≈4–7** (GDD-001 §2), ≈2–3.5 real hours | Act-1 player, 2 wins / 3 deaths: 2 × 15 + 3 × ~29 + Ruins ≈ 130 → five runs. Expert, 6 wins / 1 death: ≈ seven runs. §9.4 builds the Chronicle on these numbers |
+| Skies per Iteration | 9 🔒 | a 20–40 h Chronicle is **4–8 Iterations** (§10), so Hard Unmaking lands 4–8 times: enough unlock beats to be a retention machine and few enough to stay sacred |
 | Reading the Codex | pauses the clock 🔒 (GDD-001 §6.2) | the Codex is free, and §8 makes sure of it: lore is never taxed |
-| A sky going dark mid-run | the run ends where it stands and **banks what it earned** | forward progress is a law (§1). The Seam in progress is lost, never more — the same ceiling SYS-001 §8 sets for a crash |
-| Hunger from skies | none directly | the star grows from the sectors it eats under that sky (SYS-001 §2.2), not from the darkening itself |
+| A sky going dark mid-run | **the run continues**: the Ledger Compass loses that sky's row, the chant drops a voice, the Ruins have changed when you return. Only the **ninth** sky ends the run, and it banks what it earned | forward progress is a law (§1). The Seam in progress is lost only at the ninth sky, never more — the same ceiling SYS-001 §8 sets for a crash |
+| Hunger from skies | none from the eight intermediate skies | the star grows from the sectors it eats (SYS-001 §2.2) and from the ninth sky's close (§10.3), not from each darkening |
 
-**Ruling (LR-04).** GDD-001 §6.2 writes "120 loop-minutes **per iteration**" in its first line and then says Hard Unmaking ends the Iteration after nine skies — which would put 13 loop-minutes on each sky, less than half a run, and make most sky-darkenings interrupt a run the player never got to finish. The loop doc reads the clock as **per sky** and asks the owner to correct the GDD's wording (GDD-001 §20 has no row for this yet). The reversal condition is stated up front: if playtest wants Iterations to be short and brutal — one night, one sky-map, one Hard Unmaking — then the per-iteration reading is the right one, and the correct fix is to cut Skies per Iteration rather than leave 13 minutes on a sky. Either way the two numbers must be written down together in SYS-001 §6 as a single row (LR-05), because the run-length target and the clock are one equation.
+**Ruling (LR-04, reversed in Rev 1.2).** Rev 1.1 read the clock as **per sky** to keep a sky from closing mid-run. Doing the arithmetic killed it: nine skies × 120 loop-minutes is an 18-hour Iteration, which contradicted this table's own "3.5–6 loop-hours", GDD-001 §2's "4–7 runs / 2–3 h" Iteration, and the 18–25 h first-true-ending target. The clock is therefore **per Iteration** (GDD-001 §6.2's first line, as written), and the mid-run problem is solved by the row above instead: an intermediate sky darkening is an in-run event, not a run end. GDD-001 §6.2's phrase "the next sky goes dark, the run ends" must be read as "the ninth sky" — requested footnote in §14 Q-01. LR-05 still stands: the Iteration budget, the death lump and the win refund belong together in SYS-001 §6 as one block, because the run-length target and the clock are one equation.
 
 ## 7. Pacts — the Chalk Desk, one per run
 
@@ -697,3 +703,447 @@ WARP-001 §3.3 permits one Pact whose restore survives death, asking only that t
 | What is granted instead | **anchored knowledge**: once a rule has been restored by any Pact, its Codex entry keeps both versions legible forever — the struck line and the restored line, with the Pact that bought it named. The rule is eaten again next run; the *fact that it can be bought back* never is. That is the same class of guarantee the Lantern Tree is, and it costs no escalation |
 | Reversal condition | if playtest shows players treating an eat as a permanent loss they cannot reason about — that is, if the Codex's two-line entry is not enough — then one Pact, PACT-01, becomes permanent for the rest of that Iteration (death does not drop it, Hard Unmaking does). That is the middle rung, and it is one flag |
 | Why this is the right shape | the loop's law is forward progress, not lost-and-found. WARP-001 §3.1's restore honesty already forbids a restored rule from carrying residue; forbidding it from carrying *permanence* is the same instinct pointed at the save file |
+
+---
+
+## 8. The Codex — knowledge as progress
+
+GDD-001 §8.9 makes reading a mechanical reward: every entry pays **Unwritten Ink once**, so a player who engages with the fiction gets power for it. This section owns the Codex's *mechanics*: what an entry is, what unlocks it, what it pays and what completing it grants. NARR-001 §8 owns every word of entry prose and marginalia; AUDIO-001 E08 owns the stamp cue.
+
+### 8.1 Rules that never move 🔒
+
+| Rule | Statement | Source |
+|---|---|---|
+| Reading pauses the Hourglass Clock | always, in every Act, at every Warp Tier, in a daily | GDD-001 §6.2; WARP-001 §6.1 D-01 |
+| One payout per entry, ever | an entry pays Ink the first time it is *stamped* (unlocked and opened once). Re-reading pays nothing; marginalia pay nothing | GDD-001 §8.9 |
+| Payout value | the SYS-001 §7.2 `Codex firsts` row (20 Ink each), × the run's Entropy Ink multiplier (SYS-001 §7.3) when stamped from inside a run's summary | SYS-001 §7.2, §7.3 |
+| Knowledge is anchored | Codex entries survive death, Hard Unmaking and New Iteration (§2) | GDD-001 §6.2 |
+| The Codex never lies | no warp effect may falsify, strike or hide an entry. The Codex is where the warp is *explained after the fact* (WARP-001 §4.2 L8); a struck rule is struck in ink by the Codex, not by the warp | WARP-001 §4.7 |
+| Lore is never taxed | nothing in the game costs Ink to read, and no Pact, Relic or eat removes an entry | §6.5 |
+
+### 8.2 Entry classes
+
+Entry IDs are invariant (`cx_<class>_<slug>`), live in data, and are what saves and telemetry store (TECH-001 §7; L10N-001 §4). Counts are the 1.0 plan; §12 costs them.
+
+| Class | Prefix | What it records | Unlocked by | Entries | Ink payouts |
+|---|---|---|---|---:|---:|
+| Bestiary | `cx_choir_` | the eight Choir units, the six named Heralds, the five Rite bosses, and the entity (one entry whose seven phase lines fill in as you witness each phase, SYS-001 §2) | **first kill** of the variant (GDD-001 §7.1); a Herald or Rite entry on first defeat; the entity entry on first Awakening seen | 20 | 20 |
+| The making | `cx_glass_` | Mourning Glass, Null-Iron, the Ninth Light, the Lantern Office's tools — the material history of the failed star | first time you touch the thing in play (first shard banked, first Charge lost to interception, first Sepulchre deposit broken…) and Ruins discoveries | 12 | 12 |
+| Rules | `cx_rule_` | one entry per WARP-001 §3.2 eaten rule (H2…H18), in the **two-line struck/restored format** of §7.6 | the **struck line** writes the moment the eat lands; the **restored line** writes the first time any Pact restores it | 9 | 17 (H14 has no restored line, by ruling) |
+| Relics | `cx_relic_` | each Relic, with every run you carried it in | first time a Relic is *held* (taken from its 1-of-2) | 18 | 18 |
+| Run Sigils | `cx_sigil_` | six family pages (LANTERN, HULL, ORDNANCE, WARD, MADNESS, SEAM); each Sigil you ever held adds one line to its page | page opens on the family's first Sigil held; completes when all 20 of the family have been held across the Chronicle | 6 | 12 (open + complete) |
+| Places | `cx_place_` | the six biomes, the nine skies (each written when it goes dark for the first time), and the three Act 0 cabinet stages | first sector entered of the biome; first darkening of each sky; Act 0 stage clears | 18 | 18 |
+| The Ruins | `cx_ruins_` | letters and notes from the Ruins cast (NARR-001 §5): Sable Vane ×4, Ilse Marrow ×4, Brother Wick ×4, the Cabinet ×3, plus the Chalk Desk ledger (one page; a line per Pact you have ever signed) | §10.4 Hard Unmaking beats and cast conditions | 16 | 16 |
+| Chronicle | `cx_chron_` | what really happened (NARR-001 §10), one page per Hard Unmaking (up to eight), one per ending seen (five), and one per Entropy tier first cleared (E1–E10, SYS-001 §7.3's "exclusive Codex entry per E-tier") | Hard Unmakings, endings, Entropy clears | 23 | 23 |
+| Your Vigil | `cx_vigil_` | your own Chronicle: every death line the entity spoke to you (SYS-001 §8 composition), Vigil Index bests, the Sigils H14 took | generated from play | open-ended | **0** — a record you write by dying is never farmable |
+| **Total** | | | | **122 + your Vigil** | **136 × 20 = 2,720 Ink lifetime** |
+
+### 8.3 The struck/restored rule entry (the format §7.6 promised)
+
+Every `cx_rule_` entry is two lines and a footer. Shape only; NARR-001 §8 writes the words.
+
+| Part | Written when | Looks like |
+|---|---|---|
+| Line 1 — the trusted rule | at the eat | the rule as the player knew it, **struck through in chalk** |
+| Line 2 — what replaced it | at the eat | the eaten version in plain words, the Hunger level and the Seam it happened in |
+| Footer — the restore | first restore by any Pact | the restored rule rewritten under the strike, with the Pact named ("bought back by PACT-01, *Open Door, Open Hand*, Iteration 4") |
+| H14 footer | every time H14 fires | the struck Sigil's own name and what it had done that run; no restore footer ever exists (WARP-001 §3.4; §7.4) |
+
+The strike stays visible forever, even when restored. That is the anchored knowledge §7.6 grants in place of mechanical permanence: you cannot keep the rule, but you can never lose the fact that it could be bought back.
+
+### 8.4 Marginalia — the Archivist's hand
+
+From **Iteration 2** (after the first Hard Unmaking), Ilse Marrow annotates entries you have already stamped. Marginalia are the Codex's second voice and its quiet retention engine: old entries change, so players reopen them.
+
+| Rule | Value |
+|---|---|
+| When a note appears | when an entry's subject recurs in a new context: a unit seen at a higher Warp Tier, a rule eaten a second Chronicle-time, a biome entered under a different sky, a cast letter answered by a later one |
+| Budget | ≤ 1 note per entry per Iteration ✱; ≤ 3 notes per entry total ✱ (NARR-001 §8 owns the text) |
+| Pays | nothing. Marginalia are knowledge, not currency |
+| Signals | the entry's spine in the Codex index gets a chalk tick; no pop-up, no badge count (P5: no menu bloat) |
+| Ending 5 | the **Archivist** variant (§11.6) rewrites the marginalia of every `cx_choir_` entry as Ilse's corrected record. The original notes stay readable underneath — the Codex never deletes |
+
+### 8.5 Completion milestones
+
+Completion counts the 122 Ink-paying entries (not `cx_vigil_`). Every grant is **information or presence, never a stat** — the game's power curve is avoidance and information (GDD-001 §8.1, D-08), and the Codex is the most honest place to pay it.
+
+| Milestone | Grants | Visible as |
+|---|---|---|
+| 25 % | **The Archive opens** in the Ruins: Ilse's desk, Codex search, and cross-links between entries | a new lit room in the Ruins |
+| All of `cx_choir_` | **Annotated Choir** ⚙: every Choir unit's attack tell gains a 1 px chalk tick on its wind-up frame (a legibility aid, toggleable, honoured by Steady Ledger) | the Acolyte's censer shows a tick the frame before it fires |
+| 50 % | the Codex index gains the **Chronicle timeline**: every Hard Unmaking, ending and Hunger level you have lived, on one page | a long chalk line in the Archive |
+| 75 % | the Lantern Tree **flowers**: cosmetic glass blossoms on every owned node (existing node art, palette-shifted) | the hub is brighter than it has ever been |
+| 100 % | Ilse Marrow's own entry (`cx_ruins_ilse_last`), and the achievement **The Record Is Complete** (§11.9) | the Archive's lamp goes out — she is finished |
+
+### 8.6 The Codex on screen (mechanics only)
+
+- Opened with Tab / Right-click-hold in the Ruins (GDD-001 §4.1) and from the pause screen inside a run. In a run it shows only entries already stamped; new stamps queue for the run summary so a fight is never interrupted by a page.
+- The **run summary** is where new entries are stamped: up to five per summary ✱, the rest wait in the Archive tray. The stamp is the moment Ink pays (AUDIO-001 E08's chalk-on-slate sound), which makes the summary screen a reward beat instead of a stats wall.
+- Unread stamped entries carry a chalk tick on their spine. There is no "unread" counter on the HUD.
+
+---
+
+## 9. Economy flow
+
+Four currencies, four jobs, no exchange rate between them except the one overflow valve in §9.6. SYS-001 §7 owns every value; this section owns the *flow* and checks it against the tree totals in §3.3.
+
+### 9.1 The four currencies
+
+| Currency | Job | Sources (SYS-001) | Sinks | Persists |
+|---|---|---|---|---|
+| **Ember** | power | score → `floor(score / 200)` + milestones (§7.1); Seam clears 40 each; elites and Heralds 60–200 per run (§7.2); REL-18; Tithe (SIG-W-08) | Lantern Tree Ember nodes (17,480 total, §3.3); in-run Sigil rerolls 40/90/160/240 (§4.1); REL-17 latches | death, Hard Unmaking |
+| **Unwritten Ink** | rules | Codex stamps (§8, 2,720 lifetime); Shrine purge 15, first per biome per Iteration (SYS-001 §6); a few Sigils (SIG-S-04, SIG-S-08, SIG-S-18, SIG-W-20) | Ink nodes (1,350 total, §3.3); respec at 10 % of banked Ink (GDD-001 §7.3; §3.5 here); SIG-S-14 *Ink Eater* | death, Hard Unmaking |
+| **Fragments of Unraveling** | the ending | high-tier Wakings, high-tier Rites, Heralds, Hard Unmakings, endings — **all requested SYS-001 rows, §9.4** | the five **Threads of Unraveling** (§9.4) | everything, even the loop (GDD-001 §7.1) |
+| **Mourning Glass / Charges** | the run | mining (SYS-001 §1.4) | Charges, interception, Grub theft | never |
+
+Two laws: **no currency buys power inside a run** except the one-line Ember reroll (GDD-001 §3 anti-pillar; §6.1), and **nothing the warp, Hunger or a Pact does ever reduces a banked currency** (SYS-001 §7.4; §7.1 "never in Ember or Ink").
+
+### 9.2 Per-run flow (SYS-001 §7.2, T1, E0)
+
+| Outcome | Ember banked | Ink banked | Fragments |
+|---|---|---|---|
+| Won run (the Waking unmade) | 450–800 (SYS-001 §7.2 run total) | 40–100 early in the Chronicle, falling as the Codex fills (stamps are finite, §8.2) | per §9.4, only at Warp T ≥ 3 |
+| Death run | what the run earned so far — **modelled ✱ at about half a won run** (score and Seam clears stop accruing; this is a model assumption, not a game number) | the stamps it earned (unchanged by death) | none from the Waking |
+| Reroll spend | −40 to −530 per run if all four rerolls are used | — | — |
+
+### 9.3 Ink is finite on purpose
+
+Ink's largest source is the Codex, and the Codex has 136 payouts. Lifetime Ink is therefore **bounded**: ≈2,720 from stamps plus ≤ 15 per biome per Iteration from Shrine purges (≈ 6 × 7 × 15 ≈ 630 over a long Chronicle) plus small Sigil trickles. Against the 1,350 the tree needs, the margin is respec and *Ink Eater*. Ink cannot inflate, because nothing generates it without new knowledge — the economy literally runs out of lore before it runs out of sinks, and that is the shape GDD-001 §7.2 wants: **MADNESS, the Ink branch, is gated by having read the game**.
+
+### 9.4 Fragments of Unraveling and the Threads
+
+GDD-001 §7.1 gives Fragments two sources ("entity kills at high Warp Tier, iteration completions") and one sink (the five Threads). SYS-001 has no rows yet; these are **requested SYS-001 rows, all ✱**, tuned so the fifth Thread lands in Iteration 6–8 (the brief's Act 4 window) for a median player:
+
+| Source | Fragments ✱ | Cap |
+|---|---:|---|
+| Waking unmade at Warp T ≥ 3 | 1 | once per run |
+| … and at Warp T ≥ 4 | +1 (2 total) | once per run |
+| Rite boss cleared at Warp T ≥ 4 | 1 | once per run |
+| Named Herald, first defeat of each per Iteration | 1 | 6 per Iteration |
+| Hard Unmaking (the ninth sky closes) | 3 for Hard Unmakings 1–4; **6 from the fifth on** (the catch-up) | per Iteration |
+| An ending 2–5 seen for the first time | 2 | 4 lifetime |
+
+| Thread | Cost ✱ | Also requires | Earliest |
+|---|---:|---|---|
+| I | 4 | 1 Hard Unmaking witnessed | Iteration 2 |
+| II | 6 | 2 Hard Unmakings | Iteration 3 |
+| III | 8 | 3 Hard Unmakings | Iteration 4 |
+| IV | 10 | 4 Hard Unmakings | Iteration 5 |
+| V | 12 | 5 Hard Unmakings | Iteration 6 |
+| **Total** | **40** | | **Act 4 opens when Thread V is bought** |
+
+The Hard-Unmaking requirement is the important half. It makes the true ending a *story* gate, not a grind gate: an expert cannot farm their way to Act 4 inside one Iteration, and the Hard Unmaking payout (doubling from the fifth) guarantees that a struggling player still reaches Thread V by Iteration 7–8 (§9.5 sensitivity) — the clock that beats you is also the clock that carries you to the ending. Threads are bought at the Lantern Tree's root, where the Observatory's lens-housing broke (NARR-001 §5) — the tree is growing the rope you will use.
+
+### 9.5 Worked example — a median first Chronicle
+
+Model assumptions ✱ (the model's, not SYS-001's): a won run banks 625 Ember (mid of SYS-001 §7.2), a death run 310; Ink per run falls from 70 to 30 as stamps run out; Entropy chosen rises one step behind its unlock (§6.3), so the Ember multiplier is SYS-001 §7.3's row for the median E; runs per Iteration and the win/death mix follow §6.5; Hunger per §10.3.
+
+| Iter | Act | Runs (won / died) | E (×Ember) | Ember this Iter | Ember Σ | Tree (Ember spent) | Ink Σ | Fragments Σ | Hunger at close | What the player is feeling |
+|---:|---|---|---|---:|---:|---|---:|---:|---:|---|
+| 1 | 1 | 5 (2/3) | 0–1 (×1.00) | 2,180 | 2,180 | T1 nodes across 3 branches | 380 | 3 | 3–4 | *the loop is real, and it is kind* |
+| 2 | 2 | 6 (3/3) | 2 (×1.15) | 3,225 | 5,405 | first T3 nodes; first named node | 785 | 7 → Thread I (4) | 6–8 | *the game is changing under me* |
+| 3 | 2 | 6 (4/2) | 3 (×1.15) | 3,590 | 8,995 | two branches at T4 | 1,130 | 13 → Thread II (Σ 10) | 9–12 | *I can lean into the warp* |
+| 4 | 2 | 6 (4/2) | 4 (×1.35) | 4,210 | 13,205 | first capstones | 1,445 | 22 → Thread III (Σ 18) | 12–16 | *the Choir is people* |
+| 5 | 3 | 7 (5/2) | 5 (×1.35) | 5,055 | 18,260 | **tree complete** (17,480) | 1,690 | 38 → Thread IV (Σ 28) | 15–20 | *I am the only thing that gets stronger* |
+| 6 | 3→4 | 7 (5/2) | 6 (×1.60) | 5,990 | overflow (§9.6) | — | 1,900 | 52 → **Thread V** (Σ 40) | 18–24 | *it is eating the rules now — and I can unmake it* |
+| 7 | 4 | Act 4 run(s) | 6–7 | — | — | — | — | — | — | *the last clean sky* |
+
+Real time: Act 0 ≈ 0.5 h, Iterations 1–6 ≈ 2–3.5 h each, Act 4 2–4 h → **≈ 15–25 h to the true ending**, overlapping GDD-001 §2's 18–25 h (the low end is an expert's). The tree completes at the start of Act 3, which is exactly GDD-001 §9.1's "Tier 4–5 + MADNESS" for Act 3, and MADNESS's Ink nodes complete during Iteration 4–5, so *Unravel Focus* (MADNESS-17) arrives with Act 3 as §3.6 intends.
+
+Sensitivity: an expert (6–7 wins per Iteration, E +2) completes the tree in Iteration 4 and is held at Act 4 by the Hard-Unmaking requirement of Thread V, not by Fragments — the story gate is the one doing the work. A struggling player (1–2 wins per Iteration, E0) completes the tree around Iteration 7–8 and still reaches Thread V by Iteration 7–8 (≈5 Fragments per Iteration from one T ≥ 3 win and the Hard Unmaking, 8 once the payout doubles: Σ 3, 8, 13, 18, 26, 34, 42); Act 4 arrives with a thinner tree, which is what Entropy 0 and the Coma mercy (GDD-001 §8.9) exist to cover.
+
+### 9.6 Inflation and dead-currency checks
+
+| Currency | Risk | Check | Valve |
+|---|---|---|---|
+| Ember | **dead after the tree completes** (Iteration 4–6) — a currency with nothing to buy breaks the "number goes up" reward at the run summary | §9.5: median saturation in Iteration 5 | **Overflow valve — requested SYS-001 §7 row ✱:** once every Ember node is owned, banked Ember converts at **20 Ember → 1 Ink** at each run's end. Ink keeps respec affordable and feeds SIG-S-14; Ember never becomes a number that only grows |
+| Ink | inflation late in the Chronicle | bounded by Codex size (§9.3); the late-game surplus is ≈1,500–2,000 | respec (one per Iteration, free after Hard Unmaking, §3.5) and *Ink Eater*. A surplus late is the intended feeling: "I have read everything; I can rebuild at will" |
+| Fragments | dead after Thread V | by design: Fragments exist to buy the ending | after Thread V, Fragments become the Vigil Index's **Unravel** column (a visible tally the entity comments on, AUDIO-001 §4.12). No new sink is added; adding one would invent a sixth Thread |
+| Glass / Charges | none | run-only | — |
+| Entropy multipliers | late-game acceleration of the above | only after the tree is complete in practice (E ≥ 6 arrives in Iteration 5+) | the valve absorbs it |
+
+### 9.7 Requests opened by §8–§11
+
+| ID | To | Request |
+|---|---|---|
+| **LR-09** | SYS-001 §6 | one Hourglass block: Iteration budget 120 🔒; death lump `10 + 2 × (Seam − 1)` ✱; run-won refund +15 ✱ with the 120 ceiling (closes LR-05) |
+| **LR-10** | SYS-001 §7 (new rows) | the Fragments of Unraveling source table and the Thread cost/requirement table of §9.4, all ✱ |
+| **LR-11** | SYS-001 §7 | the Ember overflow valve, 20 : 1 into Ink, active only when every Ember node is owned ✱ |
+| **LR-12** | SYS-001 §2.2 | write the ninth-sky close as **one** row: "+2 total (Hard Unmaking +1 🔒, Iteration lost +1)", matching GDD-001 §9.3 ending 1, so the two existing rows cannot be read as +3 |
+| **LR-13** | SYS-001 §7.2 | state that `Codex firsts` is the per-stamp value and that marginalia and `cx_vigil_` pay 0 |
+
+---
+
+## 10. Iteration unlocks — what each Hard Unmaking adds
+
+The loop's retention machine is the **Hard Unmaking**: the ninth sky closes, the run banks, and the world comes back *different*. Every Hard Unmaking must be a beat a player remembers and a reason to start the next Iteration immediately. Nothing below is announced by UI (GDD-001 §1 design rule); each change is discovered in the Ruins or in the next sector.
+
+### 10.1 Iterations and Acts
+
+| Act | Iterations | Warp ceiling (WARP-001 §1.3) | Biomes in rotation (ZONES-001 §2.2) | Entropy available (§6.3) | Eats legal (WARP-001 §3.2 earliest act) |
+|---|---|---|---|---|---|
+| 0 — Last Normal Day | prologue, no Iteration | T0 | Act 0 stages (not kits) | — | none |
+| 1 — First Loops | 1 | T1 | Pale Marches, Ossuary Belt | 0–1, then 2–3 after the first Rite | none (Hunger accrues, nothing is taken yet) |
+| 2 — The Nine Skies | 2–4 | T2–T3 | + The Litany (2), + Green Rot and the Drowned Observatory (3), + The Black (4) | 4–5 from Iteration 2 (Act 1 cleared) | H2, H4, H8 |
+| 3 — Revelations | 5–7 (until Thread V) | T3–T4 | all six | 6–7 from Iteration 5 (Act 2 cleared) | + H6, H10, H12, H14, H16, H18 |
+| 4 — Unraveling | opens when Thread V is bought (Iteration 6–8) | T5 | the entity's memory (Act 4 arena) | 8–9 once Act 3 is cleared; 10 after any ending 2–5 | full registry |
+
+The Act is a Chronicle fact, not an Iteration count: a player in Iteration 9 without Thread V is still in Act 3, and the Iteration beats of §10.4 keep arriving. Act 3 is the only Act that can last more than three Iterations, and it is the one that is supposed to feel endless until you find the way out.
+
+### 10.2 Biome rotation
+
+Rotation follows ZONES-001 §2.2's "Iterations it appears in" column exactly; LOOP owns only the *arrival*. A biome's first sector is always Seam 1 or 2 of the first run after it unlocks ✱, so the new sky is met while the run is still forgiving, and its `cx_place_` entry stamps on that run's summary.
+
+### 10.3 Hunger cadence
+
+Hunger is Chronicle-long, entity-side and never shown as a number (§6.4; SYS-001 §2.2). Per Iteration it gains **+2 when the ninth sky closes** (GDD-001 §9.3 ending 1; LR-12) and **+1 per sector eaten** (a lost Waking or ten Shrines, SYS-001 §6). A median player loses one or two sectors per Iteration, so:
+
+| End of Iteration | Hunger (median) | Eats that have happened | Next eat waits for |
+|---:|---:|---|---|
+| 1 | 3–4 | none (Act 1 eats nothing) | Act 2 |
+| 2 | 6–8 | H2, then H4 | H8 at Hunger 8 |
+| 3 | 9–12 | + H8 | Act 3 (H6, H10 are eligible but act-gated) |
+| 4 | 12–16 | — | Act 3 |
+| 5 | 15–20 | + H6, H10 | cadence (one eat per Seam, WARP-001 §3.1) |
+| 6 | 18–24 | + H12, H14 | |
+| 7 | 21–28 | + H16, H18 — registry complete | Act 4 plays at a full registry |
+
+Act 2 takes about one rule per Iteration, Act 3 about two. Eats that are eligible by Hunger but blocked by their earliest act **queue**; when Act 3 opens, the queue fires at the normal one-eat-per-Seam cadence, never as a burst.
+
+### 10.4 The Hard Unmaking beats
+
+Each Hard Unmaking plays ending 1, *Nine Hollow Skies* (§11.2), re-keyed to that Iteration, and then returns the player to a Ruins that has changed. GDD-001 §6.4 promises the hub's shape escalates ("ruins become a cathedral becomes a lattice becomes an unlit room"); the eight beats below are that promise, with one unlock, one cast moment and one Chronicle page each. NARR-001 §5 and §10 own the scene and page text.
+
+| # | Beat | The Ruins become | Cast moment | Unlocks | Chronicle page |
+|---:|---|---|---|---|---|
+| 1 | **The First Dark** | the east wall is gone; through it, the Ninth Sky's scar — the reason the Ruins survive | **Brother Wick** is sitting under the Lantern Tree. He walked out of a Litany Ring; he will not say why yet | The Litany; Entropy 4–5; Ilse's marginalia begin; Thread I purchasable | `cx_chron_hu_01` — the night the Office lit the Ninth Light |
+| 2 | **The Bell With No Clapper** | a nave: the rubble has stood itself up into a cathedral nobody built | Wick names the missing ninth syllable. **Sable Vane's sleeve** is seen at the Chalk Desk for the first time | Green Rot, the Drowned Observatory; Thread II; ending 2's option at the Lantern Tree (§11.3) | `cx_chron_hu_02` — the Lampkeepers' conscription |
+| 3 | **The Ledger Opens** | the cathedral's floor is a map of the system with three skies inked out | the **Cabinet** on the wall changes its attract text for the first time: it shows *your* Vigil Index under a stranger's initials (§11.6) | The Black; Thread III | `cx_chron_hu_03` — the cabinet halls |
+| 4 | **The Cathedral Learns Your Name** | the nave's windows show your past deaths as stained glass (from `cx_vigil_`) | Ilse speaks aloud for the first time instead of in the margins | **Act 3**; the entity patrols the macro map (GDD-001 §9.1); Entropy 6–7; Thread IV | `cx_chron_hu_04` — who chose the failure (the Choir's guilty list is wrong) |
+| 5 | **Lattice** | the walls are gone; the Ruins hang in a lattice of chalk lines over the dark | Sable Vane offers the **Pact of Ascension** for the first time, if you have ever been Hollowed (§11.4) | **Thread V**; **the Ninth Gate** appears at the Tree's root and opens when Thread V is bought; ending 3's path | `cx_chron_hu_05` — Theodora Lune's resignation letter (redacted) |
+| 6 | **The Unlit Room** | one room, one lamp: yours. Everything else is the Archive and the Tree | Wick asks you to put the lamp out (ending 2, if not taken) — or thanks you for not doing it | nothing new to buy: the Ruins are now only what Act 4 needs. If the Gate is still shut, the doubled Hard Unmaking payout (§9.4, from the fifth) is already carrying you there | `cx_chron_hu_06` — the star did not go out; it did not finish |
+| 7 | **The Choir Sings Your Name** | the unlit room fills with the chant, from inside the walls | the Penitent drifts through the Ruins — the first time anything from the skies has entered the anchored pocket | nothing new: Act 4 should already be open; if not, the doubled Hard Unmaking payout (§9.4) is carrying you there | `cx_chron_hu_07` — what the Penitents are (NARR-001 §2) |
+| 8 | **The Ninth Sky Remembers** | every earlier shape of the Ruins, cycling once per visit | all cast together for one scene | the last Chronicle page | `cx_chron_hu_08` — the chronicle's last line before the ending |
+| 9+ | **re-keyed** | the Ruins hold the shape of the Iteration you are in | one rotating cast line | nothing new; ending 1 re-keys to the sky that closed last | none (8 pages total) |
+
+The design guarantee: the first six Hard Unmakings each unlock something *playable* (biome, Act, Thread, ending path) and something *readable* (a cast moment and a page). A player can predict that a Hard Unmaking brings change; they can never predict which change.
+
+---
+
+## 11. Endings
+
+GDD-001 §9.3 promises five endings, all reachable in one Chronicle. Triggers below are canonical (the canon brief of 2026-11-17); NARR-001 §9 owns each ending's fiction, AUDIO-001 its sound, and this section owns the state machines, the flags and how a player finds each one.
+
+### 11.1 Overview
+
+| # | Ending | Trigger (summary) | Ends the Chronicle? | After the credits |
+|---|---|---|---|---|
+| 1 | **Nine Hollow Skies** | the ninth sky closes | no — it is the Hard Unmaking | the next Iteration begins (§10.4) |
+| 2 | **The Lantern Extinguished** | Iteration 3+, at the Lantern Tree: *Let it go out*, confirmed twice | no | next launch offers *Light it again*; the save resumes untouched |
+| 3 | **The Choir Crowned** | Act 3+: sign the Pact of Ascension, reach the Waking Hollowed, let the Sepulchre complete with the Vigil inside the Litany Ring | no | the save resumes at the Ruins in the same Iteration; the Chronicle notes a new Waking Dark was crowned |
+| 4 | **The Unraveling** (true) | all five Threads → Act 4 → three threads latched in the final encounter (SYS-001 §2 phase 6) | it ends the *story*; the save continues as *the last clean sky* (§11.5) | Entropy 8–10, all Acts replayable from the Ninth Gate |
+| 5 | **The Pretence Kept** (secret) | finish Act 0 without ever using Surgelight or Ward Pulse | no | the Archivist variant is unlocked (§8.4, §11.6) |
+
+All five are non-destructive: **no ending ever deletes, resets or locks a save.** That is what lets endings 2 and 3 be what they are: a player who chooses to stop, or to join the Choir, has not lost forty hours.
+
+### 11.2 Ending 1 — Nine Hollow Skies
+
+| State | Enters when | Does | Leaves to |
+|---|---|---|---|
+| `sky_9_closing` | the Hourglass Clock reaches zero (§6.5) | the run in progress banks (§1); the last sky's chant cuts to silence | `nine_hollow_skies` |
+| `nine_hollow_skies` | always, after closing | the ending sequence, re-keyed to this Iteration's last sky, its Hollow sectors and the entity's top-two telemetry keys (SYS-001 §8 composition; NARR-001 §7) | `hard_unmaking` |
+| `hard_unmaking` | always | Hunger +2 (§10.3), Fragments +3 (§9.4), Iteration state consumed (§2), §10.4 beat | Ruins, Iteration +1 |
+
+Skippable from its second showing; the first is unskippable once, like the first Unmaking cinematic (GDD-001 §6.1). It is the only ending the player cannot avoid and must never feel like a game-over screen: the first frame after it is always the changed Ruins.
+
+### 11.3 Ending 2 — The Lantern Extinguished
+
+| State | Enters when | Does | Leaves to |
+|---|---|---|---|
+| `offer_hidden` | default | — | `offer_visible` after Hard Unmaking 2 (Iteration 3+) |
+| `offer_visible` | at the Lantern Tree, a fourth option under *Grow / Respec / Threads*: **Let it go out** | nothing until chosen | `confirm_1` |
+| `confirm_1`, `confirm_2` | two confirmations, the second in the player's own Lampkeeper voice (NARR-001 §7), default focus on *Keep it lit* (UI-001 §3 safe default) | — | `eulogy`, or back to `offer_visible` |
+| `eulogy` | confirmed | 3 minutes, **no input required**: the observatory idles; the skies you saved and lost are named one by one; the Choir sings far away; the Cabinet plays its attract loop to an empty hall. Any input after 3 min ends it; no input ends it on its own | `credits_2` → title |
+| `relight_offer` | next launch | the title screen's primary action reads **Light it again**, which resumes the save exactly where it was | normal play |
+
+Discoverability: Brother Wick mentions it once, after an Iteration in which the player died four or more times ✱ ("Some keepers let it go out. Nobody here would blame you."). It is never on a menu before Iteration 3, and never offered in the middle of a good Iteration. This is the divisive, memorable clip GDD-001 §9.3 wants: a game that offers to let you stop, and means it.
+
+### 11.4 Ending 3 — The Choir Crowned
+
+| State | Enters when | Does | Leaves to |
+|---|---|---|---|
+| `asc_locked` | default | — | `asc_offered` when **Act 3** is open **and** the player has been Hollowed (Composure 0, SYS-001 §1.5) in at least one run |
+| `asc_offered` | the next visit to the Chalk Desk | Sable Vane writes **PACT-ASC, the Pact of Ascension** — outside the 24 (§7; the pool count is unchanged), offered only by Sable, never drawn | `asc_signed` if chosen as the run's Pact |
+| `asc_signed` | run start | grant: the Choir will not fire on you while you are Hollowed. Price: Composure cannot rise above 0 once it reaches 0, and the run's Waking cannot be unmade — Unravel hits pass through the entity | `asc_waking` if you reach Seam 5 Hollowed; `asc_void` if Composure is above 0 at Seam 5, or you land an Unravel hit |
+| `asc_waking` | Seam 5, Hollowed | the Litany Ring opens a ninth node for you — the missing syllable (NARR-001 §1.5) | `crowned` if the Sepulchre completes (20/20) with the Vigil inside the Ring; `asc_void` if you leave the Ring |
+| `crowned` | completion | the ending: you become the next Waking Dark | `credits_3` → Ruins, same Iteration |
+| `asc_void` | any break | the Pact is void like any other (§7.1), the Codex strikes it, the run continues normally | `asc_offered` next run |
+
+Discoverability: being Hollowed is common in Act 2–3, so most players see Sable's offer naturally; the Pact's printed price is honest (§7.1 "the price is printed"). The Choir mode NG+ is post-launch scope (GDD-001 §9.3); at 1.0 the ending sets `choir_crowned_seen` and nothing else.
+
+### 11.5 Ending 4 — The Unraveling (true)
+
+| State | Enters when | Does | Leaves to |
+|---|---|---|---|
+| `threads_n` (0–4) | Threads bought (§9.4) | each Thread hangs visibly from the Lantern Tree's root | `gate_open` at Thread V |
+| `gate_open` | Thread V bought | **the Ninth Gate** at the Tree's root opens; the next run is an Act 4 run (inside the entity's memory, T5, GDD-001 §9.1) | `act4_run` |
+| `act4_run` | run start | a full run at T5 with the Unmaking Rehearsal (WARP-001 §6.2) and the final encounter; pre-attached threads per WARP-001 §6.1 D-03 | `unraveled` on three threads latched (SYS-001 §2 phase 6); on death, back to `gate_open` (the Gate stays open; Act 4 runs can be retried for the rest of the Chronicle) |
+| `unraveled` | win | the credits peel the arcade shell away to reveal the last clean sky (GDD-001 §9.3) | `clean_sky` |
+| `clean_sky` | always | the save continues; the Ruins are lit; Entropy 8–10 opens; every Act is replayable from the Ninth Gate; the Hourglass Clock stops (there is nothing left to eat) and resumes only for Entropy runs ✱ | free play |
+
+Discoverability: Threads are visible on the Tree from the first Hard Unmaking, so the true ending is the one goal the player can always see. The game never says "true ending"; it shows a rope.
+
+### 11.6 Ending 5 — The Pretence Kept (secret)
+
+| State | Enters when | Does | Leaves to |
+|---|---|---|---|
+| `act0_clean` | starting Act 0 | tracked flag `act0_clean_hands = true` | `act0_dirty` the first time Surgelight or Ward Pulse is pressed in Act 0 |
+| `act0_dirty` | any use | nothing visible | — |
+| `honour_roll_entry` | any Act 0 clear (first play or a Cabinet replay) with a score on the table | the three-letter initials entry screen (UI-001 §1, Cabinet face ART-001 §11); the player's initials are stored as `honour_roll_initials` in the profile and appear in `cx_vigil_honour_roll` | back to the flow above |
+| `pretence_kept` | A0-3 cleared while `act0_clean_hands` | after the second credits roll and before "THAT WAS A PRETENCE", the **Cabinet's marquee** shows Theodora Lune's message (NARR-001 §9) | `archivist_unlocked` |
+| `archivist_unlocked` | always | Ilse Marrow completes the record: the Archivist variant of every `cx_choir_` entry (§8.4), plus `cx_chron_end_05` | normal play |
+
+Act 0 is replayable at any time from **the Cabinet in the Ruins** (*Insert credit*): the same three authored stages, with the cabinet costume, as a self-contained arcade game. A clean-hands run there counts. That replay path is the whole secret: a player who has learned that the Cabinet is playable, and that the tutorial is hiding something, is a player who tells someone.
+
+Word of mouth, by design: the game gives **exactly one** in-world hint and never a direct one. From Hard Unmaking 3, the Cabinet's high-score table lists the initials **T.L.** with the note `0 WARD 0 SURGE` beside the top score ✱. No character mentions it, no Codex entry explains it, no achievement description names the condition (§11.9 lists it as hidden). It must spread from players to players.
+
+### 11.7 Save flags (invariant IDs, profile slot)
+
+| Flag | Type | Set by |
+|---|---|---|
+| `hard_unmakings` | int | §11.2 |
+| `end_01_seen_count` | int | §11.2 |
+| `end_02_seen`, `relight_pending` | bool, bool | §11.3 (`relight_pending` clears on resume) |
+| `asc_state` | enum id: `locked`, `offered`, `seen` | §11.4 |
+| `end_03_seen` | bool | §11.4 |
+| `threads_owned` | int 0–5 | §9.4 |
+| `ninth_gate_open`, `end_04_seen`, `clean_sky` | bool | §11.5 |
+| `act0_clean_hands` | bool (Act 0 progress; reset at each Act 0 start) | §11.6 |
+| `end_05_seen`, `archivist_unlocked` | bool | §11.6 |
+| `was_hollowed_ever` | bool | SYS-001 §1.5 band 0, any run |
+
+All flags are written only at the save cadence of §2 (never mid-run, SYS-001 §8). Endings that fire mid-run (3, 4) write their flag at the run's end, which is the same boundary.
+
+### 11.8 Discoverability without a wiki
+
+| Ending | How a player finds it | Hint channel |
+|---|---|---|
+| 1 | cannot be missed | the Hourglass Clock (two redundant channels, WARP-001 §4.6) |
+| 2 | Wick's line after a hard Iteration; the option at the Tree | a character, once |
+| 3 | Sable's offer after being Hollowed in Act 3 | the Chalk Desk, with the price printed |
+| 4 | the Threads hang on the Tree from Iteration 2 | the hub itself |
+| 5 | **not findable from inside the game alone**; one cryptic high-score line | other players |
+
+### 11.9 Steam achievements (30, GDD-001 §2)
+
+IDs are invariant; display names live in `locale/` (L10N-001). "Hidden" achievements show no description until earned.
+
+| ID | Earned for | Hidden |
+|---|---|---|
+| `ach_first_vigil` | clear A0-1 | |
+| `ach_pretence` | see "THAT WAS A PRETENCE" (A0-3) | |
+| `ach_clean_hands` | ending 5 — The Pretence Kept | **yes** |
+| `ach_first_dark` | the first Hard Unmaking | |
+| `ach_four_darks` | four Hard Unmakings | |
+| `ach_extinguished` | ending 2 | yes |
+| `ach_crowned` | ending 3 | yes |
+| `ach_unraveled` | ending 4 | |
+| `ach_all_endings` | all five endings | |
+| `ach_first_capstone` | buy any tier-5 node | |
+| `ach_full_branch` | own all 18 nodes of one branch | |
+| `ach_whole_tree` | own all 90 nodes | |
+| `ach_first_thread` | buy Thread I | |
+| `ach_archive_opens` | Codex 25 % | |
+| `ach_annotated_choir` | complete `cx_choir_` | |
+| `ach_record_complete` | Codex 100 % | |
+| `ach_first_pact` | finish a run under a Pact | |
+| `ach_bought_back` | restore an eaten rule with a Pact | |
+| `ach_twelve_pacts` | finish runs under 12 different Pacts | |
+| `ach_stagger` | stagger an Awakening (3 hits in the 3 s window, GDD-001 §8.4) | |
+| `ach_thirteen_bells` | unmake a complete entity with all 13 hits from one magazine carried into Seam 5 | |
+| `ach_held_breath` | win a run without lighting the lantern after Seam 1 | |
+| `ach_rite_all` | clear all five Rite bosses | |
+| `ach_heralds_all` | defeat all six named Heralds | |
+| `ach_entropy_4` | win a run at Entropy 4 | |
+| `ach_entropy_8` | win a run at Entropy 8 | |
+| `ach_entropy_10` | win a run at Entropy 10 | |
+| `ach_unmaking_seen` | play a run at Warp T5 | |
+| `ach_grief_ledger` | finish a run in which H14 took a Sigil | yes |
+| `ach_vigil_index` | reach a Vigil Index score target ✱ (set by SYS-001 §7.1 tuning) | |
+
+Twenty-six are visible goals and four are hidden. Every ending, every Act and every system layer (tree, Codex, Pacts, Entropy, Rites, Heralds, warp) has at least one; none requires a daily, a second save or online play.
+
+---
+
+## 12. Content cost
+
+Counts are the 1.0 plan. Cost tiers: **S** = data + existing kit art/one line; **M** = new modular parts or a short authored scene; **L** = new encounter, sequence or bespoke art. Art leans on the modular kit (GDD-001 §16 R-03: the kit covers ~80 % of art).
+
+| Content | Count | Art | Audio | Code | Notes |
+|---|---:|---|---|---|---|
+| Lantern Tree nodes | 90 | S each (node icon on the shared node frame; Sigil art reused per R-03) | S (shared purchase cue; capstones get AUDIO-001 §6.7 stingers ×10) | S data; ~30 rules-bending nodes are M code | §3 |
+| Run Sigils | 120 | S (icons reuse Tree node art) | S | S data; 36 rules-bending are M | §4 |
+| Relics | 18 | M (physical objects on the ground) | S | M each (all rules-bending) | §5 |
+| Pacts | 24 + PACT-ASC | S (chalk text) | S | M (8 restore Pacts touch WARP rules) | §7, §11.4 |
+| Codex entries | 122 + marginalia | S (shared page frame; illustrations reuse sprites) | S (E08 stamp) | S data | §8; prose is NARR-001's largest single cost |
+| Hard Unmaking beats | 8 | L (Ruins hub variants ×4 shapes) | M | M | §10.4 |
+| Endings | 5 | L (4 sequences; ending 1 re-keyed) | L | M | §11 |
+| Threads + Ninth Gate | 5 + 1 | M | S | S | §9.4 |
+| Act 4 run | 1 | L | L | L | GDD-001 §9.1 |
+| Achievements | 30 | S (icons) | — | S | §11.9 |
+| Entity / cast lines this doc needs | 18 eat lines + H14 Chalk Desk line + ending lines + 8 beat scenes | — | M (VO placeholder first) | S | NARR-001 §7, AUDIO-001 |
+
+**Cut order** (continues GDD-001 §16 R-03's "Act 4 variants → 2 biomes → 6 elites"; cut from the top):
+1. Hard Unmaking beats 7–8 → collapse into the re-keyed beat (keeps 6 authored beats).
+2. Marginalia budget → 1 note per entry total.
+3. Codex completion flowering (75 %) → cut; milestones become 25 / 50 / 100.
+4. Ending 2's eulogy → 60 s instead of 3 min (the ending survives; its length is the cost).
+5. Achievement count → 24 (drop the six skill-flex ones last added).
+6. **Never cut:** ending 5 (the cheapest ending and the best word-of-mouth asset in the game), the struck/restored rule entries (they are the warp's honesty), the Thread rope on the Tree (the only always-visible goal).
+
+---
+
+## 13. Coverage — GDD-001 claims and where they live
+
+| GDD-001 claim | Lives in |
+|---|---|
+| §6.1 Act 0, three authored levels, credits, the Pretence | ZONES-001 (not kits); §11.6 (replay at the Cabinet, ending 5) |
+| §6.2 Nine Hollow Skies, Hourglass Clock 120 loop-minutes, deaths spend 10–18 min, wins buy time | §6.5 (per-Iteration ruling), §9.7 LR-09 |
+| §6.2 Hard Unmaking keeps the tree, changes the map, raises Hunger | §2, §10.3, §10.4, §11.2 |
+| §6.2 anchored pocket stated diegetically once | §2; NARR-001 §5 |
+| §6.3 run = 5 Seams, gate at Seam 3, Waking at Seam 5 | §6.1 |
+| §6.3 seeded runs, daily/weekly/cursed codes | §6.2 (daily at the first free update, ruling R-16) |
+| §6.3 1-of-3 Run Sigils, ~120 pool | §4 |
+| §6.3 diegetic cause-of-death, the entity remembers your tool | §8.2 `cx_vigil_`; SYS-001 §2.2, §8; NARR-001 §7 |
+| §6.4 Ruins, Lantern Tree, Codex, Chalk Desk one Pact per run | §3, §7, §8 |
+| §6.4 escalation contract: the hub changes shape each Iteration | §10.4 |
+| §7 90 nodes + 24 Pacts + 18 Relics | §3, §7, §5 |
+| §7.1 four currencies, sources and persistence | §9.1 |
+| §7.2 five branches, named nodes | §3.2, §3.4 |
+| §7.3 legible nodes, ~30 % rules-bending, purchase not roll, reroll, respec 10 % Ink | §3.1, §3.5, §4.1 |
+| §7.4 Entropy 0–10 unlocked by progression | §6.3, §10.1 |
+| §7.4 Hunger, one eaten rule per two levels | §6.4, §10.3; WARP-001 §3.2 |
+| §8.9 Codex reading grants Ink once | §8.1 |
+| §8.9 Coma mercy | SYS-001 §8; §9.5 sensitivity |
+| §9.1 act map and lengths | §10.1; §9.5 (17–26 h to the true ending) |
+| §9.2 five Rite bosses | SYS-001 §5.1; §8.2 `cx_choir_` |
+| §9.3 five endings, all reachable | §11 |
+| §9.3 ending 3 unlocks Choir mode (post-launch) | §11.4 (flag only at 1.0) |
+| §9.4 score → Vigil Index | SYS-001 §7.1; §9.6 Fragments tally |
+| §2 30 Steam achievements | §11.9 |
+| §2 iteration = 4–7 runs / 2–3 h; first true ending 18–25 h | §6.5, §9.5 |
+
+---
+
+## 14. Open questions (max 8, each with a recommendation)
+
+| # | Question | Recommendation |
+|---|---|---|
+| Q-01 | GDD-001 §6.2 says "the next sky goes dark, the run ends" each time the clock hits zero. §6.5 now reads it as: eight intermediate darkenings are in-run events; only the ninth ends the run. | Footnote GDD-001 §6.2 to match §6.5. Owner: GDD. |
+| Q-02 | Are the Fragment and Thread numbers in §9.4 right? They are tuned to put Thread V in Iteration 6–8 for a median player. | Adopt as ✱ rows in SYS-001 (LR-10); re-tune from the slice's telemetry on wins at T ≥ 3, the one input the model is least sure of. |
+| Q-03 | Is 20 : 1 the right Ember → Ink overflow rate? | Yes for 1.0: it turns a median Iteration-6 surplus (~6,000 Ember) into ~300 Ink, about two respecs — useful, never decisive. |
+| Q-04 | *Annotated Choir* (§8.5) is a legibility aid earned from the Codex. Is it a power gap in dailies? | Allow it: dailies already differ by tree. Telemetry check: if daily scores split by the flag, move it into Steady Ledger as a universal option. |
+| Q-05 | After ending 3, should the next Iteration change (a crowned Waking Dark in the macro map)? | Not at 1.0 (scope). Write the flag now; the post-launch Choir mode reads it. |
+| Q-06 | Ending 2 is reversible; should `ach_extinguished` still fire? | Yes. The achievement records the choice, not a loss. |
+| Q-07 | The Hunger cadence (§10.3) puts six eats into Act 3. Too dense? | Watch the slice for queue bursts; the lever is SYS-001 §2.2's per-sector source, never a new rule. |
+| Q-08 | Should an expert be able to skip the Hard-Unmaking requirement on Threads? | No. The requirement is the story gate that keeps Act 4 after the Chronicle's reveals (§9.4). Experts get Entropy instead. |

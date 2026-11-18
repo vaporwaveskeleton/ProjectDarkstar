@@ -1,7 +1,7 @@
 # DARKSTAR — Game Design Document
 
 **Working title:** DARKSTAR *(alt: DARKSTAR: The Nine Hollow Skies)*
-**Doc ID:** GDD-001 · **Version:** 0.2 · **Status:** Draft for prototype · **Last updated:** 2026-11-12
+**Doc ID:** GDD-001 · **Version:** 0.2.1 · **Status:** Draft for prototype · **Last updated:** 2026-11-17 (resolution closed to 640×360; §13 collision approach; §19 adds *sector*; §20 closed)
 **Engine:** Godot 4.7.2 (GDScript) · **Platforms:** Windows first (Steam), Linux/Mac after launch
 **Genre:** Retro-arcade shooter that mutates into a reality-warping cosmic-horror roguelike
 **Controls:** Keyboard + mouse (WASD move, mouse aim) with full gamepad parity
@@ -62,7 +62,7 @@ DARKSTAR **opens as a 1983-style arcade shooter**: black space, one ship, astero
 | Monetization | Premium, single purchase, no F2P, no monetized progression. Target $19.99 USD (see `STEAM_MARKET_PLAN.md`) |
 | Rating target | ESRB T / PEGI 12 (cosmic horror, no gore, mild occult themes) |
 | Engine / language | Godot 4.7.2 stable, GDScript, 2D renderer, custom canvas-item shaders for warp effects |
-| Resolution model | Internal 512×288 or 640×360 pixel-perfect integer scale, nearest filtering, optional CRT shader |
+| Resolution model | Internal **640×360** pixel-perfect integer scale, nearest filtering, optional CRT shader (512×288 fallback struck 2026-11-17; TECH-001 §1.1) |
 | Steam features (launch) | Steamworks: achievements (30), cloud saves, statistics, full glyph/rebind support, remote play, Deck-verified target, local co-op *not* at launch |
 | Localization (launch) | EN, then de/fr/es/pt-br/zh-cn/ja (1.0 or +1 month); CJK requires art pass on the bitmap font |
 
@@ -146,7 +146,7 @@ Three hand-built levels in a fake cabinet frame (scanlines, "INSERT CREDIT" attr
 **Purpose:** pure nostalgia bait, complete mastery of the base verbs, and then the emotional floor drops out. This is the hook that makes the Steam clip: "I beat the arcade game and then it ate the universe."
 
 ### 6.2 The Iteration (the time-loop macro layer)
-- The system has **Nine Hollow Skies**. Each sky is a *layer of reality* the Dark Star swallows. The **Hourglass Clock** (a persistent, real-time budget of **120 loop-minutes per iteration** at Entropy 0; it runs during runs and during the Ruins, but pauses while you read the Codex) is the visible countdown: when it hits zero, the next sky goes dark, the run ends, the Ruins shift, and the entity gains a permanent **Hunger** modifier.
+- The system has **Nine Hollow Skies**. Each sky is a *layer of reality* the Dark Star swallows. The **Hourglass Clock** (a persistent, real-time budget of **120 loop-minutes per iteration** at Entropy 0 — each ninth of it spent darkens one sky mid-run, and only the ninth sky ends the run, LOOP-001 §6.5; it runs during runs and during the Ruins, but pauses while you read the Codex) is the visible countdown: when it hits zero, the next sky goes dark, the run ends, the Ruins shift, and the entity gains a permanent **Hunger** modifier.
 - **Every time you "win" a run you buy time**, not permanent safety. Every time you die you *spend* time (10–18 min) — but you keep everything banked outside the loop (see §7).
 - After **nine skies**, the universe ends: **Hard Unmaking** ends the iteration. You do not lose your Lantern Tree. You lose your run, the map changes forever (new biomes/boss aspects appear that could not exist before), and the entity is one **Revelation** closer to being unravelable. *This is the design trick that makes failure forward-moving:* losing to the clock is a story beat that unlocks content.
 - The **Lantern Tree, the Ruins and your Codex are "anchored"**: they exist in a pocket that the loop cannot touch. That is the in-fiction justification for meta-progression, and it is stated diegetically in the first Ruins scene (no UI lecture).
@@ -155,7 +155,7 @@ Three hand-built levels in a fake cabinet frame (scanlines, "INSERT CREDIT" attr
 - A run = **5 Seams** (procedurally assembled zones from authored encounter kits) + a **Hollow Vigil** gate encounter (mini-boss) at Seam 3 + the **Waking of Nhael'Gharoth** end encounter at Seam 5.
 - Runs are **seeded** (daily/weekly seeds, plus "cursed seeds" shared as 12-character codes on the Steam community page).
 - Inside a run you choose **1 of 3 Run Sigils** after each Seam (the roguelike build layer: fire rate, ore magnetism, charge homing behaviour, ward radius, ghost-on-death, etc. ~120 pool entries).
-- **Death:** you respawn in the Ruins with everything banked; the "cause of death" screen is diegetic — the entity narrates what it learned from you (it *remembers your most-used tool* and deploys counters next run: see P1/§9.6).
+- **Death:** you respawn in the Ruins with everything banked; the "cause of death" screen is diegetic — the entity narrates what it learned from you (it *remembers your most-used tool* and deploys counters next run: see P1, §8.5 Herald counters and AUDIO-001 §4.11).
 
 ### 6.4 The Ruins (hub between runs) — the upgrade home
 The Ruins are the **Ruins of the Ninth Sky**, a half-eaten cathedral-observatory that exists in the scar left by the last universe. It is where the **Lantern Tree** grows, the **Codex** is read, and the **Chalk Desk** crafts one **Pact** per run.
@@ -335,7 +335,7 @@ Act 0 keeps a pure arcade score: geode 5 · Grub 150 · shard 200 · Acolyte 500
 
 ## 13. Tech (summary; see `TECH_ARCHITECTURE.md`)
 
-Godot 4.7.2, GDScript-first, data-driven (JSON/Resource definitions for all stat tables so tuning is a data edit, not code), CanvasItem shader library for warp tiers, `Node2D` + custom quadtree spatial query instead of full physics bodies for the bullet-hell layer, deterministic seeded RNG (replay + daily seeds + clip reproducibility), save-on-checkpoint in the Ruins with a versioned schema, Steamworks via GodotSteam (achievements/statistics/cloud), target 60 FPS on a 2016 laptop iGPU at T0–T2 and 60 FPS at T3–T5 on a GTX 1060.
+Godot 4.7.2, GDScript-first, data-driven (JSON/Resource definitions for all stat tables so tuning is a data edit, not code), CanvasItem shader library for warp tiers, Godot `Area2D`/`ShapeCast2D` hit detection for the bullet-hell layer first, with a custom quadtree only if TECH-001 §8 profiling shows the SYS-001 §9 active-shot ceiling missing budget (owner decision 2026-11-17), deterministic seeded RNG (replay + daily seeds + clip reproducibility), save-on-checkpoint in the Ruins with a versioned schema, Steamworks via GodotSteam (achievements/statistics/cloud), target 60 FPS on a 2016 laptop iGPU at T0–T2 and 60 FPS at T3–T5 on a GTX 1060.
 
 ## 14. Market positioning (summary; see `STEAM_MARKET_PLAN.md`)
 
@@ -394,10 +394,19 @@ Godot 4.7.2, GDScript-first, data-driven (JSON/Resource definitions for all stat
 | D-12 | Salt Glass stays as the WARD-2 Tree node and Pact placement; the *Salt Pouch* Run Sigil is cut | **Locked** (owner decision 2026-11-16) |
 
 ## 19. Glossary (canonical vocabulary — use these exact words in all docs, code and UI)
-**Vigil** (player ship) · **Lampkeeper** (pilot) · **Arc-Lance** (gun) · **Surgelight** (dash) · **Lantern state** (light toggle) · **Ward Pulse** (defense) · **Unravel Focus** (Act 4 latch) · **Mourning Glass** (ore shards) · **Null-Iron Charge** (homing bomb) · **The Dark Star / Nhael'Gharoth** (entity) · **the Hollow Choir** (enemy faction) · **Oubliette Grub / Acolyte / Deacon of Lies / Grave-Tide Deceiver / The Penitent / Choir Matron / Herald / Listener** (units) · **Sepulchre** (build altar) · **Segment** (one 64×64 boss module) · **Composure** (sanity resource) · **Warp Tier** (reality state, T0–T5) · **Shroud** (grown hazard terrain) · **Shrine / Corruption / Hollow** (faction conversion chain) · **Seam** (a run level) · **Iteration** (a full time loop) · **Hourglass Clock** (loop timer) · **Nine Hollow Skies** (the loop's nine realities) · **Unmaking / Hard Unmaking** (loop enders) · **Ruins** (hub) · **Lantern Tree** (upgrade tree) · **Ember / Unwritten Ink / Fragment of Unraveling** (currencies) · **Run Sigil** (in-run upgrade) · **Pact** (risky boon) · **Relic** (run item) · **Entropy** (difficulty ladder) · **Hunger** (entity escalation stat) · **Ledger Compass** (mini-map) · **Codex** (lore/knowledge system) · **Vigil Index** (score metric).
+**Vigil** (player ship) · **Lampkeeper** (pilot) · **Arc-Lance** (gun) · **Surgelight** (dash) · **Lantern state** (light toggle) · **Ward Pulse** (defense) · **Unravel Focus** (Act 4 latch) · **Mourning Glass** (ore shards) · **Null-Iron Charge** (homing bomb) · **The Dark Star / Nhael'Gharoth** (entity) · **the Hollow Choir** (enemy faction) · **Oubliette Grub / Acolyte / Deacon of Lies / Grave-Tide Deceiver / The Penitent / Choir Matron / Herald / Listener** (units) · **Sepulchre** (build altar) · **Segment** (one 64×64 boss module) · **Composure** (sanity resource) · **Warp Tier** (reality state, T0–T5) · **Shroud** (grown hazard terrain) · **Shrine / Corruption / Hollow** (faction conversion chain) · **Seam** (a run level) · **sector** (the playfield a Seam presents; the unit the macro map tracks — ZONES-001 §1.2) · **Iteration** (a full time loop) · **Hourglass Clock** (loop timer) · **Nine Hollow Skies** (the loop's nine realities) · **Unmaking / Hard Unmaking** (loop enders) · **Ruins** (hub) · **Lantern Tree** (upgrade tree) · **Ember / Unwritten Ink / Fragment of Unraveling** (currencies) · **Run Sigil** (in-run upgrade) · **Pact** (risky boon) · **Relic** (run item) · **Entropy** (difficulty ladder) · **Hunger** (entity escalation stat) · **Ledger Compass** (mini-map) · **Codex** (lore/knowledge system) · **Vigil Index** (score metric).
 
 ## 20. Open questions
-1. Is the Hourglass Clock a *hard* timer (some players will hate it) or does it pause during exploration? → prototype two variants; A/B test.
-2. Does Act 4 keep the same controls, or is the deliberate "controls get eaten" moment limited to one scripted sequence? (Currently: one scripted sequence, never permanent.)
-3. Daily challenge at 1.0 or first free update? → decide after demo metrics.
-4. How much of the entity is *seen* in Act 0? (Currently: never more than a silhouette; the full modular body debuts at Awakening.)
+
+All four original questions are closed (2026-11-17). Kept here so the history reads.
+
+| # | Question | Closed by | Answer |
+|---|---|---|---|
+| 1 | Is the Hourglass Clock a *hard* timer, or does it pause during exploration? | WARP-001 §6.1 D-01 | **Hard and diegetic**; runs through combat, mining, exploration and the Ruins; pauses only for the pause screen, the Codex, scripted cinematics and attract mode. The `clock_runs_during_exploration` A/B flag in SYS-001 §10 survives as a tuning experiment, not a warp permission |
+| 2 | Does Act 4 keep the same controls, or is the "controls get eaten" moment one scripted sequence? | WARP-001 §6.1 D-02 | **One scripted sequence per run, never permanent** (the Unmaking Rehearsal, WARP-001 §6.2) |
+| 3 | Daily challenge at 1.0 or first free update? | PROD-001 / MARKET-001 (owner-delegated ruling R-16) | The daily **Hollow Vigil** ships in the first free update, *The Ninth Sky*. The seed contract (SYS-001 §10, WARP-001 §6.1 D-06) ships at 1.0, so the daily is a content drop, not an engine change |
+| 4 | How much of the entity is *seen* in Act 0? | WARP-001 §6.1 D-04 | **A silhouette and nothing else**: three signature frames, never centred, never lit; the full modular body debuts at the Awakening, once |
+
+**Footnote to §3 / §7.3 (WARP-001 §9.2 C-04):** the Run Sigil choose-1-of-3 guarantee has exactly one exception, the eaten rule **H14** (WARP-001 §3.2, §6.1 D-08), which takes a single pick and is telegraphed a Seam early.
+
+New open questions go to the owning doc's open-question section, not here.

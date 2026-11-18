@@ -1,6 +1,8 @@
 # DARKSTAR — Art Bible
 
-**Doc ID:** ART-001 · **Version:** 1.0 · **Date:** 2026-11-12 · **Owner:** Art · **Companion:** `SPRITE_MODULARITY_SPEC.md` (the technical module system), `ASSET_PIPELINE.md` (how files are made)
+**Doc ID:** ART-001 · **Version:** 1.1 · **Date:** 2026-11-17 · **Owner:** Art · **Status:** complete-draft (§11 typography and §12 UI states are specified; no glyph or UI-kit art is drawn yet) · **Companion:** `SPRITE_MODULARITY_SPEC.md` (ART-002, the technical module system), `ASSET_PIPELINE.md` (ASSET-003, how files are made)
+
+Rev 1.1 (2026-11-17, owner-delegated rulings R-02, R-06, R-09): palette law 1 gains its documented exception (§4); new §11 Typography; new §12 UI states and components. Earlier sections are unchanged in substance.
 
 ---
 
@@ -108,7 +110,17 @@ Five ramps of six, plus two specials. **Value separation between ramps is intent
 3. SIGNAL is used for at most **3 simultaneous objects on screen**. If a screen needs more danger tells, they must be shape-based (cones, chevrons), not colour-based.
 4. Background never exceeds VOID-5 in luminance; nothing in the background may compete with GAS-3 and above.
 5. Warp Tiers re-tune *how* ramps are used (hue-shift, inversion, dither), but palette law 1 and 3 survive every tier — including T5.
-6. Total unique colours per sprite ≤ **10** (a 64×64 sprite using more than 10 colours reads as mud at 1×).
+6. Total unique colours per sprite ≤ **10** (a 64×64 sprite using more than 10 colours reads as mud at 1×). Exception: `*_ASSEMBLED_*` composite previews may exceed it, because they combine parts that were each linted on their own (ASSET-003 §5).
+
+**Law 1 exception — the salvaged lanterns (ruling R-06, 2026-11-17).** Exactly three Choir parts may carry GASLIGHT, and the palette file lists them by name in `faction_exceptions` (the lint enforces the list, ASSET-003 §5):
+
+| Part | GASLIGHT allowed | What it is in the fiction |
+|---|---|---|
+| `ds_deceiver_offeringLamp` | GAS-0, GAS-1, GAS-2, GAS-3 | a dead Lampkeeper's lantern carried as an offering; the Deceiver baits you with the one colour you trust |
+| `ds_acolyte_haloBroken` | GAS-3 | a lantern's brass ring hammered into a halo: a counterfeit sanctity made of salvage |
+| `ds_penitent_ringBroken` | GAS-4 | the cracked ring the Penitent still wears; the strongest visual hint that the Penitent was once one of you (NARR-001) |
+
+These are **trophies, not light sources**. No Choir or entity part may ever carry **GAS-5** (index 29, the lantern core): nothing in the Choir has ever *lit* a lantern, and the lint fails the build if one appears. Any further exception is a new ruling and a new `faction_exceptions` row, never a quiet palette edit. The other direction of law 1 has no exception: CHOIR never appears on player art.
 
 ## 5. Lighting rules
 - **One dynamic light:** the player's lantern. Radius 260 px up / 120 px down (Lantern state). Implemented as a light mask + additive bloom pass in `PHOS-4/GAS-4`, not as realistic lighting.
@@ -149,3 +161,212 @@ Painters/illustrators to study for *light and dread*, not to imitate: Caspar Dav
 6. Light-from-upper-left shading; correct light banding; no unintended dither.
 7. Entry exists in `assets/sprites/SPRITE_MANIFEST.csv` with path, size, frames, kit, palette, status.
 8. Placed in-game at least once (an unplaced sprite is not done), and visible in a screenshot in `docs/02-art/screens/`.
+
+---
+
+## 11. Typography (ruling R-02, 2026-11-17)
+
+Status: **specified, not drawn.** Until the three faces below exist as glyph sheets, the build uses Godot's fallback font at a provisional size (TECH-001 §11 Q-T02, UI-001 §9). Everything here is a drawing spec for a pixel artist.
+
+### 11.1 Laws (violations are bugs, like palette law)
+1. **Every face is drawn on the pixel grid** at 1× and shipped as a bitmap. No vector fonts, no hinting, no anti-aliasing, no synthetic bold or italic, no sub-pixel positioning. Glyph origins snap to whole pixels.
+2. **Only integer scales.** The 200 % text setting (GDD-001 §10, SYS-001 §9) draws every glyph at exactly ×2, nearest-neighbour. A 1.5× or "fit to box" scale is forbidden. Because it is an exact ×2, large text stays pixel-perfect and needs no second set of glyphs.
+3. **Three faces, three jobs, never mixed in one line.** Ledger is the voice of the instrument (UI, HUD, Codex). Litany is the voice of things larger than you (the entity, titles). Cabinet is the Act 0 costume and appears nowhere after the peel.
+4. **Text is drawn in two colours at most**: fill plus one outline or shadow colour. The fill always comes from BONE or (for the player's own readouts) GASLIGHT. SIGNAL is never a text colour (§12.1).
+5. **Every glyph reads at 1× in greyscale** on VOID-0, VOID-1 and the T3 warp palette. Proof is a test sheet (§11.9), not an opinion.
+
+### 11.2 The three faces
+
+| | **Ledger** (UI and body) | **Litany** (display and entity) | **Cabinet** (Act 0 arcade costume) |
+|---|---|---|---|
+| Character | chalk lettering on slate: upright, slightly narrow, honest | carved into stone: tall capitals with notched serifs, chiselled weight | a 1983 cabinet's character ROM: blocky, monospaced, cheerful |
+| Case | upper and lower case | **capitals only** (entity lines are ALL CAPS, AUDIO-001 §4.2) | capitals only |
+| Cell (w × h) | 8 × 12 | 14 × 20 | 6 × 8 (5 × 7 glyph + 1 px tracking column and baseline row) |
+| Cap height | 7 px | 16 px | 7 px |
+| x-height | 5 px | — | — |
+| Ascender / descender | ascenders = cap height (7); descenders 2 px | descenders none; Q's tail sits in the 2 px below the baseline | none |
+| Stroke | 1 px everywhere | 2 px verticals, 1 px horizontals (chisel contrast); serifs are 1 px notches, not slabs | 1 px |
+| Width | proportional: `i l ! .` 1–2 px, most lowercase 4–5 px, `m w M W` 7 px; **digits tabular at 5 px** so HUD counters never jitter | proportional, 8–12 px; `I` 4 px; `M W` 14 px | monospaced: every glyph exactly 5 px wide |
+| Tracking | 1 px | 2 px | 1 px (built into the cell) |
+| Word space | 3 px | 6 px | 6 px (one cell) |
+| Line height | 12 px (24 at 200 %) | 22 px (44 at 200 %) | 8 px (16 at 200 %) |
+| Sheet ids (ART-002 §2) | `ds_ui_fontLedger`, `ds_ui_fontLedgerGlitch` | `ds_ui_fontLitany`, `ds_ui_fontLitanyGlitch` | `ds_ui_fontCabinet` |
+
+**Ledger vertical layout inside its 12 px cell** (row 0 at the top): rows 0–1 hold the accents on capitals (`É Ü Ñ`); rows 2–8 hold cap height (baseline under row 8); rows 4–8 are the x-height band; rows 9–10 hold descenders and the cedilla; row 11 is the line gap. Lowercase accents (`é ü ñ`) sit in rows 2–3. This is why the cell is 12 px: Latin-1 capitals fit without clipping, and the 12 px line matches the CJK fallback (§11.6).
+
+**Cabinet** normalises the existing `FONT5x7` table in `tools/pixel-art/src/ds_pixextras.ps1`. That table is a prototype: several glyphs are 6 px wide and the space glyph contains lit pixels (ASSET-003 §9). The drawn face must be strictly 5 × 7.
+
+### 11.3 Kerning and spacing
+- Ledger: the default is 1 px tracking. A small kerning table of **at most 16 pairs** may remove 1 px, never more: `LT LV LY TA Ta Te To Ty VA Va Vo YA Ya Yo r. r,` and similar diagonal-against-open pairs. Kerning may never make two glyphs touch. Digits never kern (tabular).
+- Litany: hand-spaced as a word, not a string. Pairs with diagonals (`AV AW LT TA VA WA YA`) close by up to 2 px, and touching is still forbidden. Entity lines are short enough that each line in the shipped set gets a visual check (§11.9).
+- Cabinet: no kerning. Monospace is the costume.
+
+### 11.4 Colour roles
+
+| Use | Face | Fill | Outline / shadow | Where |
+|---|---|---|---|---|
+| Menu and panel text | Ledger | BONE-5 | none (the panel is the contrast) | UI-001 screens |
+| Secondary / hint text | Ledger | BONE-2 | none | hints, descriptions |
+| Disabled text | Ledger | BONE-1 | none | §12.2 |
+| HUD text over gameplay | Ledger | BONE-5 | 1 px VOID-0 outline, 8-neighbour | Ledger Compass labels, counters |
+| The player's own readouts (Charges count, Ember gained) | Ledger | GAS-4 | 1 px VOID-0 outline | HUD only; the player's colour |
+| "Your progress is safe" and other truth statements | Ledger | PHOS-4 | none | error and recovery screens (§12.2, palette law 2) |
+| Screen titles | Litany | BONE-4 | 1 px VOID-0 drop shadow, offset (+1, +1) | menu headers |
+| **The entity's lines** | Litany | BONE-5 | 1 px NULL outline, 8-neighbour, on a NULL band (§11.5) | AUDIO-001 §4.2 big type |
+| Act 0 score, 1UP, INSERT CREDIT | Cabinet | BONE-5; `1UP` and the player's score in GAS-4 | none (the CRT layer adds scanlines) | the cabinet costume only |
+| Codex marginalia (Ilse Marrow's hand, Iteration 2+) | Ledger | BONE-3 | none | Codex pages (NARR-001) |
+
+### 11.5 The entity's big type (built for the thumbnail)
+The entity's lines are the most screenshotted text in the game, so the layout is fixed and compositional, not decorative. It refines AUDIO-001 §4.2 (timing stays there; this is the drawing).
+
+| Rule | Value |
+|---|---|
+| Face and colour | Litany, BONE-5 fill, 1 px NULL outline |
+| Band | a full-width **NULL band** behind the line, line height + 8 px top and bottom (38 px at 1×). The band guarantees contrast against any warp palette and reads as a hole torn in the frame |
+| Position | centred horizontally; band centre at **y = 120 of 360**, the upper third, so the line never covers the Vigil (centre of view) or the HUD strips. If the Vigil is in the upper third, the band moves to y = 240 |
+| Length | 1 line preferred, 2 lines maximum, ≤ 5 words (AUDIO-001 §4) |
+| Width | maximum 560 px (40 px margins). Overflow order: break at a word; then tighten tracking 2 → 1 px; then use 2 lines. **Never scale down.** L10N-001 translator notes carry this limit |
+| Thumbnail test | the line must be readable when the frame is shrunk to 160 × 90 (a 25 % store or social thumbnail). At 1× a 16 px cap becomes 4 px, which is the floor; at 200 % text it is comfortable |
+| Never | animated letters, per-letter colour, SIGNAL, gradients, glow. The horror is the hard cut and the silence before it (GDD-001 §12) |
+
+### 11.6 Coverage and the CJK plan
+
+| Face | Required coverage |
+|---|---|
+| Ledger | printable ASCII (95); the Latin-1 Supplement letters and marks (`À–ÿ`, `¡ ¿ « » ·`); Latin Extended-A as needed for de/fr/es/pt-BR (`Œ œ Ÿ`); typographic `‘ ’ “ ” – — …`; arrows `← → ↑ ↓`; `× •`. This covers GDD-001 §2's Latin launch locales |
+| Litany | `A–Z 0–9 . , ! ? ' – …` and every capital in the Ledger Latin set (`À É Ü Ñ Ç Œ` …). German `ß` in capitals is written `SS` (house rule, recorded in L10N-001) |
+| Cabinet | `A–Z 0–9 - . : ! / ' % ©` plus the Latin-1 capitals, because the attract text is translated too |
+
+**CJK (zh-CN, ja).** Hand-drawing thousands of CJK glyphs is out of scope. The plan is a **12 × 12 open-licence pixel CJK face** as the fallback for all three roles:
+- Ledger role: the face at 1× (its 12 px line matches Ledger's).
+- Litany role: the same face at ×2 (24 px) with the Litany colour treatment (BONE-5, NULL outline, NULL band). Integer scale, so §11.1 law 2 holds.
+- Cabinet role: the face at 1× inside the costume.
+
+Candidates: **Ark Pixel Font** and **Fusion Pixel Font**, 12 px editions. **Licence not yet verified**: confirm the licence and Simplified Chinese and Japanese coverage before adoption, and record the result in ASSET-003. The Latin glyphs inside a CJK font are never used; Latin always comes from our faces. CJK locales do not build until this face is adopted and passes §11.9 (GDD-001 §2).
+
+### 11.7 How the warp corrupts text
+WARP-001 owns *when* text lies (§4.2 "Glyph" deviation class and tell family; §4.4 Steady Ledger disables glyph corruption). This section owns *how it is drawn*:
+1. Corruption always operates on the **translated, laid-out string**, glyph by glyph, never on the translation key, and never by re-ordering letters.
+2. A corrupted glyph is replaced by a glyph from that face's **glitch set** (`*Glitch` sheets): 12 drawn variants per face (mirrored, rotated 90°, half-erased, chalk-smeared, ink-blotted, doubled stroke). **It is never replaced by another real letter.** That prevents accidental words, including offensive ones, in any language, and keeps the value readable. That is the Glyph-class promise.
+3. CJK glyphs are corrupted by an overlay (smear or strike from the glitch set) drawn over the real glyph, never by substitution.
+4. Corruption never changes a glyph's advance width, so lines do not reflow and anchors do not move (SYS-001 §9: warp may hide an element, never displace one).
+5. Photosensitivity mode: corruption is static. A glyph may be wrong, but it never flickers.
+
+### 11.8 Delivery format
+Each face ships as a PNG glyph sheet on a fixed grid (one cell per glyph, `VOID-0`-free, transparent background, the fill colour only; colour roles are applied in-engine) plus a character map. TECH-001 owns the in-engine font resource (BMFont `.fnt` or Godot `FontFile`). ASSET-003 §6 owns the export step. The sheets live under kit `ui`: `assets/sprites/generated/ui/` once generated, or `assets/sprites/source/ui/` if hand-drawn in Aseprite.
+
+### 11.9 Typography QA (a face is done when)
+1. Every required glyph exists on the grid and matches §11.2's metrics.
+2. The **test sheet** renders: the pangram set for every Latin launch locale; every entity line from AUDIO-001 §4 in Litany; every `en.po` string in Ledger; and the glitch set. It renders on VOID-0, VOID-1, the T3 palette and in 50 % greyscale, at 1× and 2×.
+3. No two glyphs touch at default tracking, including kerned pairs.
+4. Tabular digits verified: a counter ticking 0–9999 never shifts its neighbours.
+5. The thumbnail test of §11.5 passes for the longest shipped entity line in each locale.
+
+---
+
+## 12. UI states and components (ruling R-09, 2026-11-17)
+
+Status: **specified; partly implemented** in `data/ui/darkstar_theme.tres` with placeholder geometry (UI-001 §5). No UI-kit art is drawn yet.
+
+### 12.1 Colour principles for UI
+- **The cursor is the lamp.** Focus and selection use GASLIGHT because the focused control is where the player's agency is. Palette law 1 ("GASLIGHT is the player's") is satisfied, not bent: the player's light is literally on the control.
+- **SIGNAL never appears in menus.** It is reserved for gameplay danger and capped at 3 objects on screen (§4 law 3). A menu error is not danger.
+- **PHOSPHOR tells the truth.** Statements of fact the player must be able to trust ("Your progress is safe", the Steady Ledger clock) use PHOS-4 (§4 law 2).
+- **Colour is never the only channel.** Every state also changes shape: an outline, an icon or an offset.
+
+### 12.2 State table (exact palette IDs)
+
+| State | Fill | Keyline | Text | Shape cue | Motion | Sound (AUDIO-001 §6.2) |
+|---|---|---|---|---|---|---|
+| **idle** | VOID-1 | 1 px BONE-1 | BONE-5 | — | chalk wobble on the keyline (§12.3) | — |
+| **hover** (mouse) | VOID-2 | 1 px BONE-3 | BONE-5 | — | none | I07 brass tick |
+| **focus** (keys or pad) | as idle or hover | as idle or hover | BONE-5 | **focus ring** (§12.4) plus a 4 × 6 GAS-4 lamp caret 3 px left of the label | the ring is steady (no wobble) | I07 |
+| **pressed** | VOID-3 | 1 px BONE-5 | BONE-5 | **GAS-2** 1 px inner underline; label offset 1 px down | 2 frames, then returns | I06 confirm (chalk tick) |
+| **selected** (toggle on, current tab, chosen card) | VOID-2 | 1 px BONE-4 | BONE-5 | chalk check mark (BONE-5, 7 × 6) plus a 2 px **GAS-3** underline | none | — |
+| **disabled** | VOID-0 | 1 px BONE-0 | BONE-1 | the label keeps its text; never hidden | none | none, and input is ignored |
+| **busy / loading** | as idle | as idle | BONE-5 | the label's trailing slot shows a 3-dot chalk ellipsis (BONE-3) | ellipsis cycles 3 frames at 3 fps; static `…` under reduced motion | none |
+| **error** | VOID-1 | **double** keyline: 1 px BONE-3, 1 px gap, 1 px BONE-3 | BONE-5 | **chalk-strike icon** (8 × 8, two crossing chalk strokes, BONE-5) before the message; the reassurance line below in **PHOS-4** | none | I06 back (chalk erase) |
+| **cooldown** | VOID-2 base | as idle | BONE-5 tabular digits (seconds left) | **GAS-2** fill sweeps bottom-to-top over the VOID-2 base as time passes; empty = ready | ready state: keyline steps to GAS-4 for 2 frames; under photosensitivity, a steady BONE-5 keyline instead | — |
+
+Rules:
+- Disabled controls are skipped by focus **unless** the reason matters to the player. Then they stay focusable and show the reason in a hint line ("Unlocks in Iteration 2"). A player must never wonder why a button does nothing.
+- Destructive actions (Abandon Run, delete a slot) use the chalk-strike icon next to their label, are never coloured red, and their confirmation defaults to the safe choice (UI-001 §3).
+- Hover and focus can coexist; focus always wins visually (the ring is drawn last).
+
+### 12.3 The chalk wobble (refines §7)
+- Applies to **panel and button keylines only**. Never to text, never to the focus ring (low-vision players track the ring), and never to HUD elements during gameplay.
+- Drawn as two alternate keyline frames (the second offsets 1 px on one or two edge segments, never the corners), swapped every 2 s. It is a frame swap, not a per-pixel jitter.
+- Reduced motion: off. Photosensitivity: off.
+
+### 12.4 Focus ring geometry
+- 2 px **GAS-3**, drawn **outside** the keyline with a 1 px gap (the ring's outer edge sits 3 px beyond the control's rect).
+- Corners notched: the corner pixel of each side is omitted, giving a chalk-drawn corner rather than a machined one.
+- Drawn on the overlay layer, so scroll containers and panels never clip it.
+- Reaching the edge of a list never hides the ring: the scroll follows focus (UI-001 `FitScrollContainer`).
+
+### 12.5 Components on the module language
+The UI uses a **4 px sub-grid** of the 64 px module (16 steps per module). Every component dimension below is a multiple of 4 and is built from 9-slice sources named per ART-002 §2.
+
+| Component | Size at 1× | Construction | Source ids |
+|---|---|---|---|
+| Button | height **24 px**; minimum width 64 px (one module); 10 px horizontal padding; label in Ledger | 9-slice from a 24 × 24 source, 4 px corners | `ds_ui_button_idle`, `_hover`, `_pressed`, `_disabled`, `_selected` |
+| Panel | content margin 8 px; title row 28 px (Litany 16 px + padding) | 9-slice 16 × 16, 4 px corners, BONE-1 keyline | `ds_ui_panel_slate` |
+| Dim overlay | full screen | VOID-0 at 85 % opacity (the only translucent fill in the UI) | engine-drawn |
+| Choice card (Run Sigil, Relic, Pact, Codex tile) | **128 × 192** (2 × 3 modules) | 64 × 64 icon slot centred in the top 80 px; title (Ledger, 1 line) at y 88; body (Ledger BONE-2, ≤ 3 lines) at y 104; cost or rarity strip, 16 px, at the bottom | `ds_ui_card_frame`, `ds_ui_card_frameRare` |
+| Progress bar | 6 px tall, any width in multiples of 4 | BONE-1 keyline; the fill is **PHOS-3** for truth readouts (Unravel progress, segments remaining) or **GAS-3** for player resources | `ds_ui_bar_frame` |
+| Charge pips ("lantern magazine", GDD-001 §8.3) | each pip 12 × 16; 2 px gap; up to 13 | a glass lamp: brass cage (GAS-2) holding a glass body. **Full** = PHOS-3 glass + GAS-4 wick; **empty** = VOID-2 glass + unlit wick; **lost in flight** = the pip shatters (3 frames, BONE-4 flecks) | `ds_ui_pip_charge` |
+| Composure wick (GDD-001 §10) | 64 × 16 | an oil-lamp wick whose flame height is the value; never a bar | `ds_ui_wick_composure` |
+| Ledger Compass frame | 64 × 64 (one module) | brass bezel, VOID-1 face, chalk tick marks | kit `compass` |
+| Toggle (settings rows) | 24 px row; the switch is 24 × 12 | a chalk switch: left = off (BONE-1 knob), right = on (GAS-3 knob + check) | `ds_ui_toggle` |
+
+### 12.6 Icon language
+- 16 × 16 icons (8 × 8 inline variants), drawn as **1 px chalk strokes in BONE-5** on transparency. Icons are chalk, not brass.
+- Every icon is paired with a text label, except input glyphs and the Charge pip.
+- Core set (v1): confirm, back, settings, Codex (open book), Lantern Tree (sapling in a lantern), Pact (chalk hand), Relic (reliquary box), Run Sigil (wax seal), lock, chalk-strike (error), save (lamp in a box), loading (three dots), Steady Ledger (open eye over a ruled line), photosensitivity (sun with a bar), text size (`Aa`), language (speech mark). Ids: `ds_ui_icon_<name>`.
+- Input glyphs: keyboard and mouse and gamepad sets at 16 × 16, BONE-5 on VOID-2 keycaps, swapped live by `InputModeTracker` (UI-001 §4). Steam Input glyph art may replace the gamepad set where Steam provides it.
+
+### 12.7 The Act 0 cabinet costume vs the real UI
+- The costume is a **separate CanvasLayer above the real UI** (ART-001 §7): the bezel (`ds_ui_cabinetBezel`), scanlines, Cabinet-face text, 1UP and score.
+- **The real UI is complete underneath and works with the costume removed.** Nothing functional may exist only in the costume.
+- Costume palette: VOID-0 field, BONE-5 type, GAS-4 for the player's score and 1UP, PHOS-4 for "vector" outlines. No CHOIR, no SIGNAL.
+- **The peel** (A0-3, GDD-001 §6.1): the costume layer falls away in pieces along the bezel's seams, revealing the chalk UI that was always there. This is a staged reveal and one of the game's signature clips. Under reduced motion it is a 1-frame cut with the same final state.
+- `INSERT CREDIT` blinks with a 1 s period (0.5 s on, 0.5 s off). Under photosensitivity it is steady.
+
+### 12.8 Steady Ledger, visually (WARP-001 §4.4)
+- While Steady Ledger is on, a 8 × 8 **open-eye-over-a-rule** icon (BONE-3) sits at the inner corner of the HUD's top strip. The player can always see that the honest HUD is active (WARP-001 §4.7: accessibility state never lies).
+- The numeric run-clock that replaces the Hourglass vignette is Ledger tabular digits in **PHOS-4**.
+- Eaten elements leave their empty chalk frame (BONE-1 keyline, no content). The frame is never removed.
+- No glyph corruption, no migration, no mirroring (§11.7).
+
+### 12.9 Reduced motion and photosensitivity variants
+| Effect | Default | Reduced motion | Photosensitivity |
+|---|---|---|---|
+| Screen transitions | 150–300 ms fade (UI-001 §4) | instant cut | fade allowed (no flash) |
+| Chalk wobble | on | off | off |
+| Busy ellipsis | 3-frame cycle | static `…` | 3-frame cycle (not a flash) |
+| Cooldown ready flash | 2-frame GAS-4 keyline | 2-frame GAS-4 keyline | steady BONE-5 keyline |
+| `INSERT CREDIT` blink | 1 s period | steady | steady |
+| Charge pip shatter | 3 frames | 1 frame (final state) | 3 frames, no bright flash |
+| Glyph corruption | per WARP-001 | per WARP-001 | static, never flickers |
+
+Hard rule shared with GDD-001 §10: **no variant removes information.** Every replaced effect keeps its meaning through a steady visual. No UI element may flash more than 3 times in any one second in any mode.
+
+### 12.10 UI art definition of done
+1. 9-slice sources on the 4 px sub-grid, all §12.2 states drawn, every colour a palette entry from this section.
+2. Readable at 1× and 2× text, in 50 % greyscale, on VOID-0 and in a T3 palette capture.
+3. Focus ring visible on every focusable component and never clipped.
+4. Each state shows a shape cue as well as its colour change.
+5. Manifest rows exist (ASSET-003 §3) and the theme references the sheets (UI-001).
+
+## 13. Narrative art beats (requested by NARR-001, 2026-11-17)
+
+Story facts that only work if the art carries them. Each is a single frame or prop, not a new kit.
+
+| Beat | Requirement | Source |
+|---|---|---|
+| Sable's ring | Sable Vane's ring (a Lampkeeper's lantern band, R-06 salvaged-lantern family) is visible in exactly one frame of the Unmaking Rehearsal's beat 2 (WARP-001 §6.2), never framed as a reveal | NARR-001 §5, §14 Q-07 |
+| Sable's chalk in Act 4 | the Chalk Desk's chalk is drawn in the Vigil's GASLIGHT ramp (GAS-2…GAS-4, never GAS-5) from Act 4 on — the contract-writer and the Lampkeeper write in the same colour | NARR-001 §5 |
+| The maker's plate | Theodora Lune's maker's plate is visible on the Cabinet's back panel from Hard Unmaking beat 5 (Lattice); legible in the Cabinet face (§11), one line, no explanation | NARR-001 §5, §9 |
+| The honour roll | the Act 0 high-score screen uses the Cabinet face; from Hard Unmaking 3 it lists `T.L. — 0 WARD 0 SURGE` beside the top score | LOOP-001 §11.6, UI-001 §1 |
+| Sable's hand | Sable's whole hand is shown once, at Hard Unmaking beat 5 (Lattice) — still never the face | NARR-001 §5.6 |
+| Stained-glass deaths | at beat 4 (The Cathedral Learns Your Name) the Ruins' windows show the player's own recorded deaths as stained glass, built from the death telemetry (SYS-001 §8 keys), one pane per death type | NARR-001 §5.6, §14 Q-04 |

@@ -25,6 +25,7 @@ This file is loaded every turn: keep it short. Detail lives in `docs/`; cite it,
 Design docs are 15–140 KB. **Do not read them whole.** Use the `doc-scout` agent to fetch the cited section.
 When docs disagree, record it in TECH-001 §11.1 (open questions) and ask; do not silently pick one.
 Architectural decisions go in the TECH-001 §11.2 decision log (date, decision, who decided), plus the section they change.
+Owner rulings R-01…R-19 (2026-11-17) are in TECH-001 §11.1a; treat them as decided. Input actions follow GDD §4.1/§4.3 exactly (`tests/test_input_map.gd`).
 
 ## 2. Project layout
 
@@ -45,7 +46,7 @@ assets/  docs/           (docs/, tools/, research/ carry a .gdignore)
 - Composition: small components (`HealthComponent`, `HurtboxComponent`…) as child scenes. No god scripts for player, game manager or level.
 - Data in `Resource` subclasses (`.tres`), never in code constants. Tunables extend `TunableResource` with a `ds_namespace` (TECH-001 §3.4). New **scene** when it needs nodes/transform/collision/lifetime; new **Resource** when it is shared or tuned data.
 - Signals when the sender must not know the receiver; direct calls parent→child. No `get_node("../../x")`; use `@export` refs, `%UniqueName` inside a scene, groups, or a resource. Routes by id (`SceneRouter.go_to(&"sector")`), never by scene path.
-- Autoloads only for global-lifetime services. Current: `SettingsService`, `SaveService`, `SceneRouter` (TECH-001 §2.8). Adding one needs a §2.8 row first. No UI manager, game manager or event bus autoloads.
+- Autoloads only for global-lifetime services. Built: `SettingsService`, `SaveService`, `SceneRouter`; approved, not built: `RunSession`, `AudioService` (TECH-001 §2.8). Adding one needs a §2.8 row first. No UI manager, game manager or event bus autoloads.
 - UI: screens extend `Screen`, overlays go on the scene's `ScreenStack`, rows inside `FitScrollContainer`; one default focus, explicit focus neighbours, `ui_cancel` works (UI-001).
 - Saves: `SaveService.save_slot(slot, payload, reason)` with an allowed reason; never mid-run; payloads hold ids and numbers only (TECH-001 §7).
 - Warnings are errors here: give a variable an explicit type when its value comes from a `Dictionary`/`Array`/`Variant`.

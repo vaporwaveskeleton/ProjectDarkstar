@@ -5,7 +5,8 @@ extends GdUnitTestSuite
 const PO_PATH := "res://locale/en.po"
 const SCAN_ROOTS := ["res://scenes", "res://features", "res://core", "res://autoload"]
 ## Key prefixes that mark a string literal as a translation key.
-const KEY_PREFIXES := ["GAME_", "MENU_", "PAUSE_", "CONFIRM_", "SETTINGS_", "LANGUAGE_NAME_", "HUD_", "MSG_"]
+const KEY_PREFIXES := ["GAME_", "MENU_", "PAUSE_", "CONFIRM_", "SETTINGS_", "LANGUAGE_NAME_", "HUD_", "MSG_",
+	"NARR_", "CX_", "ACH_"]
 
 var _saved_locale := ""
 

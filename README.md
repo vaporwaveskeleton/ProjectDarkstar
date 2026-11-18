@@ -43,5 +43,10 @@ There is deliberately no `networking/` folder: the game is single-player (GDD D-
 | Adding a feature | [`docs/04-production/ADDING_A_FEATURE.md`](docs/04-production/ADDING_A_FEATURE.md) |
 | Every game number | [`docs/01-design/SYSTEMS_BIBLE_STATS.md`](docs/01-design/SYSTEMS_BIBLE_STATS.md) (SYS-001) |
 | What the game is | [`docs/01-design/GDD_DARKSTAR_v0.2.md`](docs/01-design/GDD_DARKSTAR_v0.2.md) |
+| Lore, cast, endings, Codex prose | [`docs/01-design/NARRATIVE_LORE_BIBLE.md`](docs/01-design/NARRATIVE_LORE_BIBLE.md) (NARR-001) |
+| Run loop, economy, unlocks, endings triggers, achievements | [`docs/01-design/ROGUELIKE_LOOP_AND_LANTERN_TREE.md`](docs/01-design/ROGUELIKE_LOOP_AND_LANTERN_TREE.md) (LOOP-001) |
+| Asset pipeline | [`docs/02-art/ASSET_PIPELINE.md`](docs/02-art/ASSET_PIPELINE.md) (ASSET-003) |
+| Milestones and schedule | [`docs/04-production/PRODUCTION_PLAN_MILESTONES.md`](docs/04-production/PRODUCTION_PLAN_MILESTONES.md) (PROD-001) |
+| Steam launch plan | [`docs/04-production/STEAM_MARKET_PLAN.md`](docs/04-production/STEAM_MARKET_PLAN.md) (MARKET-001) |
 
 The generic bootstrap brief asked for `docs/ARCHITECTURE.md`, `SCENE_TREE_RULES.md`, `RESOURCES.md`, `SAVE_SYSTEM.md` and `AI_INSTRUCTIONS.md`. Those topics are TECH-001 §2, §2.1, §3 and §7, and `CLAUDE.md`. Each has one owner (see `docs/04-production/TASK_BOOTSTRAP_ARCHITECTURE.md` §2).

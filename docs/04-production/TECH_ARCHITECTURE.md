@@ -1,6 +1,6 @@
 # DARKSTAR — Tech Architecture
 
-**Doc ID:** TECH-001 · **Version:** 1.1 · **Date:** 2026-11-17 · **Owner:** production · **Status:** complete-draft
+**Doc ID:** TECH-001 · **Version:** 1.2 · **Date:** 2026-11-17 · **Owner:** production · **Status:** complete-draft
 **Upstream:** `GDD_DARKSTAR_v0.2.md` (GDD-001), `SYSTEMS_BIBLE_STATS.md` (SYS-001), `ZONES_AND_ENCOUNTERS.md` (ZONES-001), `ART_BIBLE.md` (ART-001), `SPRITE_MODULARITY_SPEC.md` (ART-002) · **Downstream:** every code module, every `.tres`, the CI lint, the build pipeline
 **Number discipline (hard rule of this doc).** SYS-001 is the only source of numbers. A number appearing here is one of exactly two things: (a) a SYS-001 value being *cited* by section, or (b) an **engineering parameter** we invented here — budget splits, cache sizes, pool sizes, tick rates — marked `✱` and owned by production. An `✱` parameter may never compete with a SYS-001 number; where the two touch, SYS-001 wins and this doc re-cuts its split.
 
@@ -64,7 +64,7 @@ Game-world words come only from GDD §19. The following are **engineering** name
 | `SteadyLedger` | The accessibility option that forces the HUD honest | §5.3 |
 | `RunSeed`, `SeedCode`, `ReplayVerifier` | Deterministic run identity, the 12-character shareable form, and the hash-comparison test | §4.9 |
 | `SaveEnvelope` | The versioned wrapper around every persisted block | §7.1 |
-| `ContactBudget` | The runtime counter enforcing an on-screen contact ceiling — **no SYS-001 row exists yet** (§11 Q-T14) | §8.2 |
+| `ContactBudget` | The runtime counter enforcing SYS-001 §9's on-screen caps (contacts, units, shots) | §8.2 |
 | `FrameBudget` | The per-system split of the 16.7 ms frame | §8.1 |
 
 ---
@@ -154,8 +154,8 @@ Modders: we ship the `.tres` files loose in the PCK's `data/` folder so a player
 | Movement, lance, charges, Composure, Warp Tier state, Hourglass Clock, spawn budgets, Choir AI state machines, Lantern Tree, save, telemetry, HUD, menus, dialogue, Codex, sector assembly | **GDScript** | all of it is state machines over small numbers, bounded by SYS-001 §3 spawn budgets and §9 contact ceilings — not by arithmetic volume |
 | Per-pixel work (light masks, Shroud, warp distortion) | **canvas-item shaders**, GLSL-like Godot shader language | GPU-side; no GDScript pixel loops ever |
 | Composite atlas lookups, part pooling | **GDScript**, table-driven | lookups are dictionary hits, not per-pixel work |
-| Anything measured over 10,000 objects per frame | would need GDExtension/Rust or C++ | **expected never to be reached**, but the on-screen caps that would prove it (Choir units, entity modules, geodes, contacts, active shots) are **not in SYS-001 yet** — earlier figures here had no source and were removed (§11 Q-T14) |
-| A native collision or spatial-hash rewrite | refused for v1 | Godot's 2D physics is expected to be inside budget (collider count per sector ✱ unmeasured); §8.3 measures before we decide |
+| Anything measured over 10,000 objects per frame | would need GDExtension/Rust or C++ | **the ceiling is never reached**: SYS-001 §9 caps on-screen Choir units, entity modules, geodes, hostile contacts, active shots and colliders per sector (all ✱ first-pass rows added 2026-11-17, ruling R-14) |
+| A native collision or spatial-hash rewrite | refused for v1 | Godot's 2D physics is expected to be inside budget at SYS-001 §9's collider ceiling; §8.3 measures before we decide |
 | Steamworks | GDExtension (`GDSteamworks`, community build, pinned version ✱) | the one exception we accept, because it is a binding, not gameplay code |
 
 **We refuse to write native code for v1.** Not because GDScript is fast, but because nothing in this game's per-frame work is arithmetic-bound: the frame cost is draw calls, shader invocations and scene churn, and those are engine-side regardless of what language authors them. A GDScript hot spot found in §8 profiling gets a data-structure fix or a move to a shader first; a GDExtension rewrite is a documented, logged decision with a profile attached, and no such decision has been taken as of this doc. The single native component we will ship is the pinned Steamworks binding, which contains no game logic and can be stubbed out for non-Steam builds.
@@ -255,7 +255,7 @@ Source: `core/physics/physics_layers.gd` (`PhysicsLayers`) and `project.godot [l
 
 Ownership: all hit truth resolves in `_physics_process` (60 Hz, §1.2). Animation never toggles shapes directly. Expensive bodies (future Choir) disable processing when off-screen beyond the audio-occlusion radius (SYS-001 §9) — planned, to be measured in §8. Single-player only (D-09): there is no authority or rollback layer.
 
-Bullet-layer decision (TASK-BOOT Q1, owner 2026-11-17): Godot `Area2D`/`ShapeCast2D` first. GDD §13's custom quadtree is built only if §8 profiling shows the bullet layer missing budget at the SYS-001 active-shot ceiling (row owed, §11 Q-T14).
+Bullet-layer decision (TASK-BOOT Q1, owner 2026-11-17): Godot `Area2D`/`ShapeCast2D` first. GDD §13's custom quadtree is built only if §8 profiling shows the bullet layer missing budget at SYS-001 §9's active-shot ceiling.
 
 ### 2.7 Audio buses
 `data/audio/default_bus_layout.tres`: `Master` (= AUDIO-001's `BUS-MST`; Godot requires bus 0 to be the master), `BUS-MUS`, `BUS-CHO`, `BUS-ENT`, `BUS-UI`, `BUS-FLY`, `BUS-AMB`, all sending to `Master`. Ducking sidechains (AUDIO-001 §7.2) and the never-ducked rules (§7.3) are **not wired yet**. No `AudioService` autoload exists; one needs a §2.8 row first.
@@ -269,6 +269,8 @@ An autoload exists only when the service genuinely needs a global lifetime. Addi
 | `SettingsService` | `autoload/settings_service.gd` | locale, text scale and accessibility apply before the first frame and across scenes | hold game state; read saves | built |
 | `SaveService` | `autoload/save_service.gd` | slots outlive scenes; one place enforces SYS-001 §8 cadence | decide *when* to save (callers do); store display text | built |
 | `SceneRouter` | `autoload/scene_router.gd` | one top-level scene at a time; any screen may request a change | own overlays/modals or UI state | built |
+| `RunSession` | `autoload/run_session.gd` | run and Iteration state (LOOP-001 §2) outlive every sector scene across 5 Seams and must be readable by the Ruins and `SaveService`; owns the Hourglass Clock tick (§4.1) | own sector nodes; write saves itself (it hands payloads to `SaveService` at allowed reasons) | **planned** (approved 2026-11-17) |
+| `AudioService` | `autoload/audio_service.gd` | music stems, the chant and the entity voice cross scene changes; owns ducking (AUDIO-001 §7.2) | decide *when* a line plays (gameplay signals do) | **planned** (approved 2026-11-17) |
 
 Refused as autoloads: a UI manager (menus use a per-scene `ScreenStack`), a game manager (state lives in features), a networking service (D-09), a global event bus (EVT-001 §3).
 
@@ -314,20 +316,142 @@ Create a **Resource** when data is shared, tuned, or authored (stats, items, abi
 
 ---
 
-## 4. Gameplay runtime — planned
-Composure, the Warp Tier state machine, Hourglass Clock, spawn budgets, Choir AI, Lantern Tree and `RunSeed` / `SeedCode` / `ReplayVerifier` (§4.9) are not designed in this revision. Each gets a subsection here before code. Constraint already fixed: warp state is derivable from the seed alone (SYS-001 §10).
+## 4. Gameplay runtime
+
+Status for all of §4: **designed, not built** (except where a row says otherwise). This section is the contract the first gameplay features are built against.
+
+### 4.1 The tick
+The simulation is the 60 Hz physics tick (§1.2). Every gameplay state change happens in `_physics_process`; `_process` only draws. Order inside one tick is fixed by `process_physics_priority` ✱:
+
+| Priority | Stage | Owner | Reads | Writes |
+|---|---|---|---|---|
+| −20 | Clock and run timers | `RunSession` (§4.2) | wall tick | Hourglass Clock, Seam timers |
+| −10 | Intent | `VigilInput`, Choir brains | devices / AI state | intent fields only |
+| 0 | Motors | `VigilMotor`, unit motors | intent, stats | velocity, position (`move_and_slide`) |
+| 10 | Shots | `ShotSweeper` (§4.6) | shot pool | swept hits queued |
+| 20 | Hit resolution | `HitboxComponent` / `HurtboxComponent` | overlaps + queued sweeps | health, `hit_landed` |
+| 30 | Economy | `ShardField` (§4.3), Sepulchre | shard pool, deposits | shard positions, segment count |
+| 40 | Director | `SpawnDirector` (§4.5), `WakingController` (§4.8) | budgets, phase | spawns, stand-downs, phase changes |
+| 50 | Warp | `WarpComposer` (§5.1) | tier inputs (WARP-001 §1.3) | active effect set |
+| 60 | HUD model | `HudModel` (§5.2) | everything above | the honest readout |
+
+Rule: a stage may read anything earlier in the same tick and anything from the previous tick; it may not write state owned by another stage. Signals emitted inside a stage are handled by listeners in a later stage or deferred.
+
+### 4.2 Where state lives
+
+| State | Class (LOOP-001 §2) | Owner | Lifetime |
+|---|---|---|---|
+| Seam index, seed, Sigils, Relics, Pact, Charges, Composure, in-run currency | Run | `RunSession` autoload (**planned**, §2.8) holding a `RunState` resource | New Vigil → death / run clear |
+| Hourglass Clock, sky count, Hunger, corruption map, telemetry counters | Iteration | `RunSession` → `IterationState` resource | Iteration start → Hard Unmaking |
+| Lantern Tree, banked currency, Codex, endings, bests | Anchored | `SaveService` profile slot, loaded into a `ProfileState` resource at boot | forever |
+| Per-sector actors, shards, Sepulchre, warp effects | none (rebuilt from seed) | `SectorHost` children | one sector |
+
+Sector scenes never own run state; they receive a `RunState` reference in `on_route_entered(params)` and write back through its methods. That is why a crash costs at most one Seam (LOOP-001 §2).
+
+### 4.3 Shard field and the magnet loop
+Shards are the one place a naive implementation scans N×M per frame (the Vigil's magnet plus every Grub looking for glass). Design:
+
+| Piece | Design |
+|---|---|
+| Representation | pooled `Node2D` shards with **no physics body**; position, velocity and owner state in a packed struct-of-arrays inside `ShardField` (`PackedVector2Array` positions/velocities, `PackedInt32Array` flags) |
+| Spatial index | uniform grid, **64 px cells** (one module, ART-002 §1), rebuilt incrementally on move; the sector is ≤ 7 kits of 640×360 (ZONES-001 §1.1) |
+| Vigil magnet | query the cells under a circle of `SYS-001 §1.4 Shard magnet radius` (96 px → a 4×4 cell window); pull within radius; **H4** (WARP-001 §3.2) flips the sign through one data flag, no second code path |
+| Grub targeting | Grubs ask the grid for the nearest free shard in their cell window once per 6 ticks ✱, not every tick |
+| Worst case | 24 geodes × 5 shards (SYS-001 §9 cap; GDD §8.2 3–5 shards) = 120 shards ✱ |
+| Budget | ≤ 0.3 ms per tick at the worst case ✱ (§8.1); measured by `bench_shard_field` (§8.3) |
+| Render | one `MultiMeshInstance2D` for all shards (one draw call) |
+
+### 4.4 Freezing entities, never physics
+The physics server is never paused for gameplay (§1.2 `physics_ticks_frozen = never`); `get_tree().paused` is used only by the pause screen.
+
+| Freeze source | Mechanism | What keeps running |
+|---|---|---|
+| Anchor field (D-11, SYS-001 §1.1 `anchor_freeze`) | `FreezeComponent.freeze(duration, source_id)` on each unit inside the field (max units per cast from SYS-001 §1.1): disables the unit's brain and motor, zeroes velocity, mutes its chant emitter | its collision shapes (a frozen unit is an obstacle), its hurtbox (it can be killed), budget counting (SYS-001 §1.1 note) |
+| Elites / Heralds | same, at half duration (SYS-001 §1.1) | — |
+| Sepulchre, The Penitent | excluded by data flag `freezable = false` | everything |
+| Pause screen | `SceneTree.paused` | Overlays (`PROCESS_MODE_ALWAYS`) only |
+| Codex / cinematics | `RunSession.clock_paused` (Hourglass Clock stops, WARP-001 §6.1 D-01); gameplay is paused by the same tree pause | — |
+
+The freeze timer is owned by the field that cast it, so a unit leaving and re-entering a field cannot double-freeze or extend itself.
+
+### 4.5 SpawnDirector and budgets
+One `SpawnDirector` per `SectorHost`. It owns the SYS-001 §4 threat budgets and the SYS-001 §9 on-screen caps (Choir units, geodes, contacts, shots, colliders). Spawns over a cap are queued at off-screen spawn markers (ZONES-001 §1.7 `SpawnMarkerLit/Unlit`). Over the contact cap, the furthest units *stand down* (hold position, keep chanting) rather than despawning, because a vanishing enemy reads as a bug. The Coma mercy (SYS-001 §8) is a SpawnDirector rule keyed on `seam_deaths`.
+
+### 4.6 Pooling and the shot layer
+Shots, shards, sparks and chalk flecks are pooled at the SYS-001 §9 ceilings (180 shots both sides). Each shot sweeps a `ShapeCast2D`-equivalent query from its previous to its current position every tick (`PhysicsDirectSpaceState2D.cast_motion` with a pooled circle shape), so nothing tunnels (§2.6). The `ShotSweeper` batches all shots in one stage. Escalation path if it misses budget: batch fewer queries per shot type → grid broad-phase shared with §4.3 → quadtree (GDD §13 owner decision 2026-11-17) → GDExtension only with a profile and a §11 decision.
+
+### 4.7 Choir AI
+A unit is a `CompositeRig` (§2.4) + motor + `Brain` component. A `Brain` runs a small state machine whose states are `Resource`s (`state_patrol.tres`, `state_procession.tres`…), so a variant is a data edit. Unit stats and AI budgets come from SYS-001 §3; faction laws (SYS-001 §3.1: shrine ceasefire radius, Acolyte turret lag, Litany Ring) are **asserted** by tests, never left to tuning. Brains tick at 60 Hz for movement and at 10 Hz ✱ for decisions.
+
+### 4.8 WakingController
+One per sector with a Sepulchre. Owns the Waking lifecycle phases 0–6 (GDD §8.4, SYS-001 §2), the 20 segment modules and the Unravel hit count. Emits `phase_changed(phase)`, `segment_deposited(index)`, `segment_knocked_off(index)`, `entity_awakened`, `entity_unmade` (EVT-001 rows to add with the code). AUDIO-001's state lines, the HUD and the WarpComposer listen; the controller never calls them. The 1.2 s pre-Awakening silence (GDD §12) is a `phase_changed` consumer in audio, budgeted twice per run by the audio side.
+
+### 4.9 RunSeed, SeedCode and ReplayVerifier
+
+| Piece | Design |
+|---|---|
+| `RunSeed` | a 55-bit integer. Every random draw goes through a **named stream** (`map`, `kits`, `slots`, `warp`, `loot`, `ai`, `vfx`): `stream_seed = hash64(run_seed, stream_name, seam_index)`, one `RandomNumberGenerator` per stream. Adding a roll to one stream never shifts another, so content patches break fewer seeds |
+| Determinism scope | world tier, Hunger preset and the WARP-001 §3.2 registry state derive from the seed alone (SYS-001 §10 🔒). Cosmetic `vfx` draws are seeded but excluded from verification |
+| `SeedCode` | 12 characters of Crockford base32 (no I, L, O, U): 55 seed bits + 5 checksum bits = 60 bits. Displayed as `XXXX-XXXX-XXXX`. A mistyped code fails the checksum and the UI says so in plain words (L10N-001 `MSG_` key) |
+| Cursed seeds | community-shared SeedCodes (GDD §6.3). A SeedCode carries no content version; the game states which content version a seed was minted on if it differs |
+| Daily (post-1.0, ruling R-16) | `run_seed = hash64("hollow_vigil", utc_date, content_version)`; fixed world tier and Hunger preset; H14 never fires (WARP-001 §6.1 D-06) |
+| Replay log | seed + content hash + per-tick quantised input: move vector (2 × int8), aim angle (uint16 of a turn), button bitfield (uint16). ≈ 6 bytes per tick ✱ → ≈ 21 KB per minute before compression ✱ |
+| `ReplayVerifier` | re-simulates a log headless and compares a state hash (positions rounded to 1/8 px, health, segment count, clock) every 60 ticks. Used by tests and, later, to sanity-check daily scores |
+| Honest limit | Godot 2D physics is not guaranteed bit-identical across CPUs and builds. Replays are verified **same build, same platform**. Leaderboards treat verification as a cheat filter, not proof |
+
+---
 
 ## 5. UI and HUD
 
-| Part | Where | Status |
+Menus, overlays, Theme, focus and input rules: UI-001 (built: attract, settings, pause, confirm). This section owns the in-run HUD and the warp renderer. Status: **designed, not built**, except §5.3's setting and pause gate.
+
+### 5.1 WarpComposer
+One per sector. Single owner of which canvas-item shaders are active.
+
+| Piece | Design |
+|---|---|
+| Inputs | the tier computation of WARP-001 §1.3 (iteration, sector consumed, Composure, Entropy) via `RunSession` |
+| `WarpEffect` resource | `id` (W-code from WARP-001 §2), `tier`, `layer` (`world`, `units`, `hud`, `post`), `shader`, `params`, `t0_fallback` (ART-001 §7), `photosensitive_variant`, `reduced_motion_variant`, `cost_ms` (measured, §8.5), `clip_readable` (GDD §8.7 criterion 1, a review checkbox) |
+| Layers | world and unit layers use per-`CanvasItem` materials; one `BackBufferCopy` + full-screen post pass at most ✱; the HUD layer has its own material so HUD warp never touches the world |
+| Budget | sum of active `cost_ms` ≤ SYS-001 §9's 1.2 ms on min spec; over budget, the composer drops effects in WARP-001 §5.3's refusal ladder order and logs it (dev only) |
+| Novelty cap | ≤ 3 novel effects per sector (GDD §16 R-02), enforced here |
+| Determinism | effect start times come from the `warp` stream (§4.9) |
+| Accessibility | photosensitivity swaps every flicker/strobe parameter for its static variant and **never** removes information (GDD §10); reduced motion swaps motion variants; both are read from `SettingsService` live |
+
+### 5.2 DiegeticHud
+Built as **model → filter → view**, so honesty is the default path and a lie is an explicit filter:
+
+| Stage | Class | Rule |
 |---|---|---|
-| Menus, overlays, Theme, focus and input rules | UI-001 | built (attract, settings, pause, confirm) |
-| §5.1 `WarpComposer` | per-frame shader owner by Warp Tier | planned |
-| §5.2 `DiegeticHud` | in-world HUD that may lie per WARP-001 §4.2 | planned; the bootstrap HUD is one honest hull label |
-| §5.3 `SteadyLedger` | `SettingsService` key `steady_ledger`, default **on** (WARP-001 §4.4); the `pause` action always opens the real pause screen | setting + pause built; HUD pinning planned |
+| Model | `HudModel` | the truth from §4 state, every tick. No warp code may write to it |
+| Filter | `HudLiar` | applies WARP-001 §4.2 deviation classes (Lie, Smear, Glyph, Move, Absence) with exactly one tell family per lie, the per-sector lie budget by tier (T5 = 0) and the §4.2 laws L1–L8. Elements on WARP-001 §4.7's never-lie list are typed `HonestOnly`; the filter refuses them by assertion, and a lint test walks the element table |
+| View | `HudView` | 64×64-module art (GDD §10), anchored inside the 200 % safe area (SYS-001 §9) |
+
+Eaten elements (WARP-001 §4.3) are an `Absence` with the chalk frame still drawn.
+
+### 5.3 SteadyLedger
+`SettingsService` key `steady_ledger`, default **on** (WARP-001 §4.4) — **built**. With it on, `HudLiar` is bypassed for every category WARP-001 §4.4 lists; the Migrating HUD is disabled; the Hourglass vignette becomes a numeric run clock; glyph corruption is off. The **pause gate** is built: the `pause` action opens the real pause screen whenever the overlay stack is empty (`scenes/sector/sector_stub.gd`); future warp effects that eat the pause menu (W4-07) must check `steady_ledger` and stand down, enforced by a test when they are written.
+
+### 5.4 Ledger Compass redraw
+The compass draws the sector list, corruption state and up to 8 markers ✱. Static layers (sector cells, corruption bruise) redraw into a cached texture only when the macro map changes or at most 10 Hz ✱; markers are drawn per frame by one small `_draw` Control. Lies and H16 are applied in `HudModel`/`HudLiar`, never in the drawing code. Budget ≤ 0.2 ms per frame ✱ (§8.1).
+
+---
 
 ## 6. Asset consumption
-`ManifestImporter` / `AtlasTable` (§6.3) — planned. Import flags: §10.
+
+Producer side: ASSET-003. This section is what the engine does with the output.
+
+### 6.1 Inputs
+`assets/sprites/SPRITE_MANIFEST.csv` (schema: ASSET-003), PNGs under `assets/sprites/generated/<kit>/`, atlases under `assets/sprites/atlas/`, `assets/palettes/darkstar_palette.json`. The manifest CSV is imported with importer **`keep`** (ruling R-19): Godot otherwise treats any CSV as a translation table. Fixed 2026-11-17 in `SPRITE_MANIFEST.csv.import`.
+
+### 6.2 Consumer-side lints (planned as tests in `tests/assets/`)
+Naming (ART-002 §2 grammar), palette (every row's colours ⊆ its kit's `kit_locks`, ≤ 10 colours, GASLIGHT only on the three ruling R-06 parts), existence (every `generated` row has a file), size (module multiples of 64 or the row's declared w×h). A lint failure fails the test suite; it never silently substitutes art.
+
+### 6.3 ManifestImporter and AtlasTable
+`core/assets/manifest_importer.gd` (planned), run headless (`-s`) as the `manifest_import` build step (§1.4). It strips the UTF-8 BOM the generator writes, merges `assets/sprites/SPRITE_MANIFEST_HAND.csv` (hand-authored rows the generator must never overwrite, ASSET-003), and fails on a duplicate id. Atlas sidecar JSON format: ASSET-003 §6.2. It reads the manifest and atlas JSON and writes `generated/sprite_table.gd`: a `const` dictionary `id → {atlas, region, pivot, sockets, frames}` (`AtlasTable`). Runtime code addresses sprites by manifest id only. A missing id in a dev build draws a VOID-5/BONE-5 checkerboard module and logs an error; in a release build the lint above has already failed the build.
+
+### 6.4 CompositeRig consumption
+`CompositeRig` (§2.4) reads part descriptors (ART-002 §5.1) and the `AtlasTable`; runtime mutation (ART-002 §5.3, the warp's limb swaps) swaps atlas regions on existing `Sprite2D` nodes, never instantiates nodes per frame.
 
 ## 7. Save system
 
@@ -342,19 +466,58 @@ Composure, the Warp Tier state machine, Hourglass Clock, spawn budgets, Choir AI
 | `iteration` | Iteration | `ruins_entry`, `iteration_end`, `new_iteration` | interface built |
 | `run` | Run | `seam_boundary` only (never mid-run, SYS-001 §8) | interface built |
 
+Profile flags for endings, Archivist variant and achievements are LOOP-001 §11.7 (invariant IDs). `act0_clean_hands` is evaluated **per Act 0 playthrough** (a replay from the Cabinet starts a fresh evaluation) and only ever sets the profile flag true.
+
 `SaveService.save_slot(slot, payload, reason)` refuses any other reason with `save_failed(slot, &"not_allowed_now")`. Payloads hold invariant IDs and numbers only, never translated text. No gameplay writes any slot yet.
 
 ### 7.3 Storage, recovery, migration
 `FileSaveBackend` writes `user://saves/<slot>.json` via `.tmp` then rename, keeping the previous file as `.bak`. A corrupt or tampered main copy loads from `.bak` (`recovered = true`). A newer schema is refused and never overwritten. Migration: bump `SCHEMA_VERSION`, add one step in `SaveEnvelope.migrate`, never edit a shipped step. `MemorySaveBackend` is for tests. Steam Cloud is a future backend; not built.
 
-Device settings live in `user://settings.cfg` (`SettingsService`), not in a save slot — see §11 Q-T05.
+Device settings live in `user://settings.cfg` (`SettingsService`), not in a save slot (ruling R-05, §11.1a).
+
+**Demo → full game (MARKET-001 §6, PROD-001 M4):** the demo build writes the same slots with the same `SaveEnvelope` schema and an extra payload field `content_scope = "demo"`. The full game reads demo saves through the normal migration path, clears `content_scope`, and keeps every anchored unlock earned in the demo. A demo build refuses a save whose `content_scope` is absent (a full-game save) instead of overwriting it, and says so in plain words. Both builds use the same Steam app data folder only if the demo is a Steam playable-demo branch of the same app (TECH-001 §1.4); otherwise the full game offers a one-time import from the demo folder.
 
 Player-facing failure text: `PlayerMessages.save_message(reason)` → `MSG_SAVE_*` keys. Codes and paths never reach the screen; details go to `push_warning` only.
 
 Troubleshooting: delete `%APPDATA%\Godot\app_userdata\DARKSTAR\saves\` to reset; a `.bak` next to a slot is the previous good copy.
 
 ## 8. Budgets
-§8.1 `FrameBudget`, §8.2 `ContactBudget`, §8.3 measurement method — **nothing measured yet.** No profile has been taken; this revision makes no performance claim.
+
+**Nothing in this section has been measured.** Every number below is a target ✱ or a SYS-001 citation. Measurements go in §8.5 with a date, build and machine, or they do not exist.
+
+### 8.1 FrameBudget
+Target from GDD §15: median frame ≤ 8 ms at T2 and ≤ 14 ms at T5 on minimum spec (GDD §13: a 2016-class laptop iGPU for T0–T2; a GTX 1060-class GPU for T3–T5). The 8 ms T2 split ✱:
+
+| Subsystem | Budget (ms) | Source |
+|---|---|---|
+| Gameplay GDScript (motors, director, Waking, economy) | 2.0 | ✱ |
+| Choir AI decisions | 0.8 | ✱ (§4.7, 10 Hz decisions) |
+| Shot sweeps + hit resolution | 0.8 | ✱ (§4.6, at SYS-001 §9's 180 shots) |
+| Shard field (§4.3) | 0.3 | ✱ |
+| Warp effects | 1.2 | **SYS-001 §9** 🔒 |
+| Other rendering (sprites, MultiMesh, particles) | 1.9 | ✱ |
+| HUD + Ledger Compass (§5.2, §5.4) | 0.5 | ✱ |
+| Slack | 0.5 | ✱ |
+| **Total** | **8.0** | GDD §15 |
+
+At T5 the 14 ms allowance is spent on warp and post passes; gameplay lines keep their T2 budgets.
+
+### 8.2 ContactBudget
+The runtime counter for SYS-001 §9's caps (on-screen Choir units, entity modules, geodes, simultaneous hostile contacts, active shots, colliders per sector). Owned by `SpawnDirector` (§4.5). Over-cap behaviour: queue off-screen (spawns), stand down (contacts), refuse the Sigil shot multiplier past the shot cap (LOOP-001 §4.3 ceiling lint). Each cap gets a test that drives a bench scene to the cap and asserts the behaviour.
+
+### 8.3 Measurement method
+- Custom monitors: `Performance.add_custom_monitor("darkstar/<subsystem>_ms", …)` around each §8.1 row, visible in the editor debugger and dumped headless.
+- Bench scenes: `tests/perf/bench_<subsystem>.tscn` drive each subsystem to its SYS-001 §9 cap for 60 s with a fixed seed and write p50/p95/p99 frame and subsystem times to `reports/perf/<date>_<build>.json`.
+- Machines: a named minimum-spec machine per GDD §13 tier and a Steam Deck (GDD R-06, PROD-001 M3 gate). Results are only quoted with the machine named.
+- A regression > 10 % ✱ on any p95 subsystem time against the last recorded run fails the perf job (CI, PROD-001).
+
+### 8.4 GDScript hot spots and the escalation ladder
+The two designed hot spots are the shard field (§4.3) and the Ledger Compass (§5.4); the third candidate is the shot layer (§4.6). The ladder for any miss, in order: fix the data structure (grids, packed arrays) → reduce frequency (decision ticks, cached layers) → batch rendering (MultiMesh) → move per-pixel work to a shader → GDExtension, only with a profile attached and a §11.2 decision.
+
+### 8.5 Measurement log
+| Date | Build | Machine | Bench | Result |
+|---|---|---|---|---|
+| — | — | — | — | no measurement has been taken yet |
 
 ## 9. Automated tests
 
@@ -380,33 +543,46 @@ The smoke run prints `BOOT_SMOKE: reached route 'sector'` and exits 0. GdUnit wr
 | `scenes/tests/test_attract_mode.gd` | default focus, focus loop/wrap, settings modal + ui_cancel + focus restore, root ui_cancel no-op, repeated input, 200 % text safe area (menu + settings), RTL layout, pseudoloc fit, no raw keys |
 | `scenes/tests/test_sector_and_pause.gd` | spawn at anchor, HUD text, pause action, ui_cancel/pause resume, confirm defaults to the safe choice, abandon routes + unpauses, three-deep modal unwind |
 | `tests/test_boot_flow.gd` | route table loads, unknown route fails safely, input-mode switching, accessibility defaults |
+| `tests/test_input_map.gd` | every GDD §4.1 key/mouse binding and GDD §4.3 pad binding (ruling R-12); no two gameplay actions share a key |
 
-Result on 2026-11-17: 72 test cases, 0 failures, 0 errors; boot smoke exit 0 with no `ERROR`/`WARNING` lines.
+Result on 2026-11-17 (after the rulings pass): 77 test cases, 0 failures, 0 errors; boot smoke exit 0 with no `ERROR`/`WARNING` lines.
 
 Not covered (honest list): window sizes other than the 640×360 logical viewport, real integer scaling at 1080p/1440p, gamepad glyphs (none exist), shaders, audio, Steam, per-locale screenshots (no second locale exists), performance. Slopes, stairs, doors and moving platforms are N/A (§2.6).
 
 ## 10. Import conventions
-Per ART-002 §7: canvas default filter Nearest (set in `project.godot`); pixel atlases import with `compress/mode = Lossless`, mipmaps off, `fix_alpha_border = true`. ART-002 §7 mentions a `godot/DarkStar/` path; the project root is the repo root (TASK-BOOT Q4), so that path is obsolete — §11 Q-T08. No import preset file is committed yet. `docs/`, `tools/`, `research/` and `Claude outputs/` carry `.gdignore`.
+Per ART-002 §7: canvas default filter Nearest (set in `project.godot`); pixel atlases import with `compress/mode = Lossless`, mipmaps off, `fix_alpha_border = true`. Every `.csv` under `assets/` imports as `keep` (ruling R-19), never as a translation; PNG import flags per ASSET-003. ART-002 §7 mentions a `godot/DarkStar/` path; the project root is the repo root (TASK-BOOT Q4), so that path is obsolete — §11 Q-T08. No import preset file is committed yet. `docs/`, `tools/`, `research/` and `Claude outputs/` carry `.gdignore`.
 
 ## 11. Open questions and decision log
 
 ### 11.1 Open questions
-| # | Question | Found in | Proposed |
+
+None open in this doc as of 2026-11-17. New conflicts go here as `Q-T15` onward.
+
+### 11.1a Resolved questions (owner-delegated rulings, 2026-11-17)
+
+The owner delegated every open ruling to the 2026-11-17 authoring pass. Each ruling is reversible by the owner; reversing one means editing the cited rows, not this table alone.
+
+| # | Question | Ruling | Applied in |
 |---|---|---|---|
-| Q-T01 | GDD §2 and SYS-001 §9 still list 512×288 as a fallback; §1.1 closes it | GDD §2, SYS-001 §9 | owner strikes the fallback |
-| Q-T02 | ART-001 §9 is cited for the bitmap/CJK font by GDD §2, TECH-001 §1.4 and TASK-BOOT, but ART-001 §9 is "Reference library" — no font spec exists | ART-001 | art owner writes the font section; until then the UI uses Godot's fallback font at ✱ 14 px |
-| Q-T03 | SYS-001 defines no `ds_` keys; the §3.4 keys were coined here | SYS-001 §10 | add a key column to SYS-001 tables |
-| Q-T04 | "player hitbox 12 px circle" — diameter or radius? Code reads **diameter** (radius 6) | SYS-001 §9 | design confirms |
-| Q-T05 | Accessibility settings: LOOP-001 §2 says profile slot; WARP-001 §4.4 says "save-scoped"; code stores them device-level in `settings.cfg` | LOOP-001 §2, WARP-001 §4.4 | owner picks one; mirror into profile if needed |
-| Q-T06 | ART-001 §4 law 1 (no GASLIGHT on Choir/entity) vs `darkstar_palette.json` v1.1 `faction_exceptions` (three parts) | ART-001, palette JSON | art owner updates ART-001 |
-| Q-T07 | CLAUDE.md cited ZONES-001 §1.6 for anchors; the anchor tree is §1.7 | CLAUDE.md | fixed in CLAUDE.md 2026-11-17 |
-| Q-T08 | ART-002 §7 refers to `godot/DarkStar/.import`; the project root is the repo root | ART-002 §7 | art owner updates |
-| Q-T09 | ART-001 has no focus/hover/disabled/error colours; the UI uses a GAS-3 focus outline (GASLIGHT = "player only") and SIGNAL for error text (SIGNAL = "danger tell only") | ART-001 §4, §7 | art owner rules; see UI-001 §9 |
-| Q-T10 | SYS-001 §2.1 entity contact hitbox "16 px inset" vs §9 "enemy hitbox = alpha ∩ 1 px inset" | SYS-001 | design clarifies (entity vs other enemies) |
-| Q-T11 | No invulnerability-after-hit value exists; `invulnerable_after_hit_s = 0` ✱ | SYS-001 §1.2 | design adds a row if D-08 lands on > 1 HP |
-| Q-T12 | Gamepad bindings for Surgelight (RB), brake (LB), pause (Start) and fire (RT) are ✱; the GDD gives keyboard/mouse only | GDD §4.1, D-01 | design confirms |
-| Q-T13 | GDD §19 says "Seam (a run level)"; this doc and the code use "sector" for the playfield (`SectorHost`, `sector_stub`) | GDD §19, TECH-001 §0.3 | owner confirms both words, or rename |
-| Q-T14 | TECH-001 §1.5 and §0.3 quoted on-screen caps (Choir units, entity modules, geodes, contacts, active shots) as SYS-001 §3.1/§9 rows; SYS-001 has none of them, and SYS-001 §1.1 refers to a "§9 contact budget" that does not exist | SYS-001 §1.1, §3.1, §9 | design adds the cap rows to SYS-001 §9; TECH-001 §8.2 then cites them |
+| Q-T01 | 512×288 fallback still listed | **R-01:** 640×360 only | GDD §2, SYS-001 §9 |
+| Q-T02 | No font spec; ART-001 §9 mis-cited | **R-02:** three bitmap faces (Ledger, Litany, Cabinet), 200 % = exact ×2, CJK fallback candidates pending licence check | ART-001 §11 |
+| Q-T03 | SYS-001 has no `ds_` keys | **R-03:** §3.4 here is the key registry; SYS tables gain a `ds_` column as each is next touched | §3.4 |
+| Q-T04 | 12 px hitbox: diameter or radius | **R-04:** diameter (6 px radius) — matches the code | SYS-001 §9 |
+| Q-T05 | Where accessibility settings persist | **R-05:** device-level `settings.cfg`, loaded before any profile; "save-scoped" = never reset by a run or Iteration | LOOP-001 §2, §7.3 here |
+| Q-T06 | GASLIGHT on three Choir parts | **R-06:** canon — salvaged Lampkeeper lanterns; GAS-5 never on Choir/entity | ART-001 §4, NARR-001 |
+| Q-T07 | anchors cited as ZONES §1.6 | fixed: §1.7 | CLAUDE.md, §0.1 |
+| Q-T08 | ART-002 §7 `godot/DarkStar/` path | **R-08:** repo root; presets here §10 | ART-002 §7 |
+| Q-T09 | UI-state colours | **R-09:** focus GAS-3 (the cursor is the player's lamp), pressed GAS-2 keyline, errors BONE-5 + chalk-strike icon (never SIGNAL), reassurance PHOS-4 | ART-001 §12, `data/ui/darkstar_theme.tres`, UI-001 §5 |
+| Q-T10 | entity 16 px inset vs §9 1 px inset | **R-10:** the entity is the one exception | SYS-001 §9 |
+| Q-T11 | no post-hit invulnerability value | **R-11:** 0.75 s ✱, only matters at Hull HP ≥ 2 | SYS-001 §1.2, `data/vigil/vigil_hull.tres` |
+| Q-T12 | ✱ gamepad bindings | **R-12:** GDD §4.3 exactly (A Surgelight, LSB brake, X lantern, B ward, Y unravel, LT charge, RT lance); full GDD §4.1 action set added | `project.godot`, `tests/test_input_map.gd` |
+| Q-T13 | Seam vs sector | **R-13:** both canon (ZONES-001 §1.1–§1.2); GDD §19 adds *sector* | GDD §19 |
+| Q-T14 | on-screen caps had no SYS-001 source | **R-14:** six ✱ cap rows added to SYS-001 §9 | SYS-001 §9, §1.5, §8.2 here |
+| — | GDD §9.6 and WARP "GDD-001 §1.9" citations | **R-15:** → GDD §8.5 + AUDIO-001 §4.11; → GDD §10 | GDD §6.3, WARP-001 §5 |
+| — | GDD §20 open questions | **R-16:** closed by WARP-001 §6.1; daily Hollow Vigil ships in the first free update, seed contract at 1.0 | GDD §20, §4.9 here |
+| — | GDD §13 quadtree | **R-17:** Area2D/ShapeCast first | GDD §13, §4.6 here |
+| — | Price and hull A/B | **R-18:** D-07 stays Proposed ($19.99), D-08 stays Open | GDD §18 |
+| — | Manifest CSV imported as a translation | **R-19:** import as `keep` | §6.1, ASSET-003 |
 
 ### 11.2 Decision log
 | Date | Decision | By |
@@ -417,3 +593,4 @@ Per ART-002 §7: canvas default filter Nearest (set in `project.godot`); pixel a
 | 2026-11-17 | Route scenes mount under Boot's `RouteHost` (not `change_scene_to_*`) so the curtain persists and UI tests can use a fake host | production |
 | 2026-11-17 | §1.1 multiplayer citation corrected from D-11 to D-09 | production |
 | 2026-11-17 | Doc review: fixed 13 mechanical citation/status errors across TECH-001, SYS-001, LOOP-001, ZONES-001, WARP-001, AUDIO-001, NARR-001, UI-001, EVT-001, TASK-BOOT; removed unsourced on-screen cap numbers from §0.3/§1.5/§2.6 (Q-T14). WARP-001 §6.1 decision IDs kept (its §9.2 freezes the `WARP-001 §6.1 D-nn` citation form); ambiguous bare uses now say §6.1 | production |
+| 2026-11-17 | Owner-delegated authoring pass: rulings R-01…R-19 (§11.1a); §4–§6 and §8 designed; `RunSession` and `AudioService` autoloads approved as planned; full GDD §4.1/§4.3 input map | owner (delegated) |

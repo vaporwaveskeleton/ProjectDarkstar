@@ -26,6 +26,7 @@ addons/gdUnit4/GdUnitRunner.cfg
 /tools/pixel-art/backup_*/
 /tools/pixel-art/_verify_backup/
 /tools/pixel-art/_hash_before.txt
+/tools/pixel-art/out/
 *.exe
 *.dll
 *.pdb
