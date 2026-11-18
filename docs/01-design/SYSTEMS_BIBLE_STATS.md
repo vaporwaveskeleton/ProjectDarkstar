@@ -75,6 +75,9 @@ Conventions used everywhere:
 | Shards per geode (calm kill) | 3 🔒 range 3–5 | — | `+1` if the face was mined, not detonated |
 | Shards per geode (detonated) | 4–6 ✱ | — | scatter radius 140 px — Grubs win that race |
 | Recoil / pushback | none | — | intentional: mining precision |
+| Damage per lance hit | 1 ✱ | — | derived: 0.9 s to shatter a small geode face = 5 hits at 6 /s. **Approved by owner (2026-11-18)** |
+| Projectile lifetime | 0.9 s ✱ | — | **Approved by owner (2026-11-18)** |
+| Projectile range | 306 px ✱ | — | = 0.9 s × 340 px/s. **Approved by owner (2026-11-18)** |
 
 ### 1.4 Mourning Glass and Null-Iron Charges
 

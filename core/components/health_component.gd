@@ -35,6 +35,16 @@ func reset() -> void:
 	_seen_windows.clear()
 
 
+## D-08 switch: set max HP at runtime (clamped >= 1) and restore to full.
+func set_max_hp(value: int) -> void:
+	if stats == null:
+		stats = HealthStats.new()
+	else:
+		stats = stats.duplicate() as HealthStats   # never mutate the shared .tres
+	stats.max_hp = maxi(1, value)
+	reset()
+
+
 func _physics_process(delta: float) -> void:
 	advance(delta)
 
@@ -72,7 +82,7 @@ func apply_hit(hit: HitInfo) -> bool:
 	if current_hp == 0:
 		is_depleted = true
 		health_depleted.emit()
-	elif stats and stats.invulnerable_after_hit_s > 0.0:
+	elif stats and max_hp >= 2 and stats.invulnerable_after_hit_s > 0.0:   # grace only with plating (R-11)
 		_invulnerable_left = stats.invulnerable_after_hit_s
 	return true
 

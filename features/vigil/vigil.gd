@@ -10,6 +10,7 @@ signal hull_breached
 @onready var input: VigilInput = %VigilInput
 @onready var health: HealthComponent = %HealthComponent
 @onready var hurtbox: HurtboxComponent = %Hurtbox
+@onready var emitter: ArcLanceEmitter = %ArcLanceEmitter
 
 
 func _ready() -> void:
@@ -22,6 +23,17 @@ func _ready() -> void:
 	(%BodyShape.shape as CircleShape2D).radius = radius
 	(%HurtShape.shape as CircleShape2D).radius = radius
 	health.health_depleted.connect(_on_health_depleted)
+
+
+## D-08 hull A/B switch (SYS-001 §1.2): 1 = one-hit hull, 2 = plated. Takes effect at once and
+## restores the hull to full. Post-hit grace only applies at max HP >= 2 (HealthComponent).
+## Pass the `ds_vigil.hull.max_hp` value (e.g. from a TunableRegistry lookup).
+func set_hull_max_hp(max_hp: int) -> void:
+	health.set_max_hp(max_hp)
+
+
+func get_hull_max_hp() -> int:
+	return health.max_hp
 
 
 func _on_health_depleted() -> void:

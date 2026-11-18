@@ -6,6 +6,7 @@ const REQUIRED_KEYS := [
 	"ds_vigil.move.max_speed", "ds_vigil.move.accel", "ds_vigil.move.drag", "ds_vigil.move.brake",
 	"ds_vigil.move.snap_turn", "ds_vigil.move.hitbox_circle_px",
 	"ds_vigil.hull.max_hp", "ds_vigil.hull.invulnerable_after_hit_s",
+	"ds_arc_lance.fire_rate_per_s", "ds_arc_lance.projectile_speed", "ds_arc_lance.visual_length_px",
 ]
 
 

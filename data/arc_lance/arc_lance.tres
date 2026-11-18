@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ArcLanceStats" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://features/arc_lance/arc_lance_stats.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+ds_namespace = "ds_arc_lance"
+source_section = "SYS-001 §1.3 (Arc-Lance); damage and range are derived (✱); lifetime is the Q-T17 Cabinet value"
+fire_rate_per_s = 6.0
+projectile_speed = 340.0
+visual_length_px = 14.0
+hits_per_projectile = 1
+damage = 1
+lifetime_s = 0.9
+muzzle_offset_px = 10.0

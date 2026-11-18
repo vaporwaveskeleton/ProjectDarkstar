@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://features/vigil/vigil.gd" id="1"]
 [ext_resource type="Script" path="res://features/vigil/vigil_input.gd" id="2"]
@@ -7,6 +7,9 @@
 [ext_resource type="PackedScene" path="res://core/components/health_component.tscn" id="5"]
 [ext_resource type="Resource" path="res://data/vigil/vigil_hull.tres" id="6"]
 [ext_resource type="Script" path="res://core/components/hurtbox_component.gd" id="7"]
+
+[ext_resource type="Script" path="res://features/arc_lance/arc_lance_emitter.gd" id="8"]
+[ext_resource type="Resource" path="res://data/arc_lance/arc_lance.tres" id="9"]
 
 [sub_resource type="CircleShape2D" id="body_shape"]
 resource_local_to_scene = true
@@ -45,6 +48,13 @@ unique_name_in_owner = true
 script = ExtResource("3")
 body = NodePath("..")
 stats = ExtResource("4")
+input = NodePath("../VigilInput")
+facing_node = NodePath("../Facing")
+
+[node name="ArcLanceEmitter" type="Node" parent="." node_paths=PackedStringArray("input", "facing_node")]
+unique_name_in_owner = true
+script = ExtResource("8")
+stats = ExtResource("9")
 input = NodePath("../VigilInput")
 facing_node = NodePath("../Facing")
 

@@ -7,6 +7,7 @@ const AIM_STICK_DEADZONE := 0.3   ## ✱
 
 var move_dir: Vector2 = Vector2.ZERO
 var braking: bool = false
+var firing: bool = false
 var stick_aim: Vector2 = Vector2.ZERO
 var read_devices: bool = true
 
@@ -16,6 +17,7 @@ func _physics_process(_delta: float) -> void:
 		return
 	move_dir = Input.get_vector(&"move_left", &"move_right", &"move_up", &"move_down")
 	braking = Input.is_action_pressed(&"brake")
+	firing = Input.is_action_pressed(&"fire_lance")
 	stick_aim = Input.get_vector(&"aim_left", &"aim_right", &"aim_up", &"aim_down")
 
 

@@ -284,7 +284,7 @@ Refused as autoloads: a UI manager (menus use a per-scene `ScreenStack`), a game
 |---|---|---|
 | characters | `features/vigil`, `features/choir`, `features/sepulchre` | vigil built (move + aim + hull) |
 | Act 0 arcade (the Cabinet) | `features/cabinet` | **built** — §2.10 |
-| combat | `features/arc_lance`, `features/charges` | empty |
+| combat | `features/arc_lance`, `features/charges` | arc_lance built (M1 slice 1: `ArcLanceStats`, `LanceProjectile`, `ArcLanceEmitter`; hits by `Area2D` overlap, not ShapeCast); charges empty |
 | inventory | `features/run` (Run Sigils, Relics, Pacts) — no classic inventory/equipment | empty |
 | dialogue | `features/entity_voice` (big-type lines; no branching dialogue) | empty |
 | quests | **N/A**; nearest: `features/lantern_tree`, `features/codex` | empty |
@@ -378,6 +378,11 @@ Create a **Resource** when data is shared, tuned, or authored (stats, items, abi
 | `ds_vigil.move.hitbox_circle_px` | SYS-001 §9 hitbox policy | 🔒 (reading open, §11 Q-T04) |
 | `ds_vigil.hull.max_hp` | SYS-001 §1.2 Hull HP | 🔒 base 1; D-08 A/B by data edit |
 | `ds_vigil.hull.invulnerable_after_hit_s` | no SYS-001 row; 0 | ✱ |
+| `ds_arc_lance.{fire_rate_per_s, projectile_speed, visual_length_px, hits_per_projectile}` (`ArcLanceStats`, `data/arc_lance/arc_lance.tres`) | SYS-001 §1.3 | 🔒 fire rate base; others ⚙ |
+| `ds_arc_lance.damage`, `.lifetime_s` | SYS-001 §1.3 (derived rows, approved by owner 2026-11-18) | ✱ |
+| `ds_arc_lance.muzzle_offset_px` (10) | engineering-only, no SYS-001 row | ✱ |
+
+**D-08 runtime API (M1 slice 1).** `Vigil.set_hull_max_hp(int)` / `get_hull_max_hp()` switch the hull at runtime; they call `HealthComponent.set_max_hp`, which duplicates the stats resource (the shared `.tres` is never mutated). Post-hit grace (R-11) applies only when `max_hp >= 2`.
 | `ds_cabinet.boot.*` (`CabinetBootTuning`, `data/cabinet/cabinet_boot_tuning.tres`): `warmup_seconds`, `noise_seconds`, `noise_scroll`, `test_line_seconds`, `test_hold_seconds`, `page_seconds`, `tape_hint_delay`, `tape_hold_seconds`, `tape_drag_px`, `tape_fall_seconds`, `coin_drop_seconds` | presentation timings, no SYS-001 row (§11.1 Q-T18) | ✱ |
 
 ---
@@ -626,6 +631,8 @@ The smoke run prints `BOOT_SMOKE: reached route 'sector'` and exits 0. GdUnit wr
 | `core/i18n/tests/test_localization.gd` | missing/unused keys, placeholders, English fallback, plurals, English number format, glyph coverage |
 | `core/ui/tests/test_theme_palette.gd` | theme and scene colours ⊆ palette, text-scale application |
 | `features/vigil/tests/test_vigil_motor.gd` | speed cap, drag, brake, 30/60/144 Hz independence, full reversal 0.28 s, turn rate, ±π wrap |
+| `features/arc_lance/tests/test_arc_lance.gd` | Arc-Lance stats, projectile, emitter (M1 slice 1) |
+| `features/vigil/tests/test_vigil_hull.gd` | D-08 runtime hull switch (`set_hull_max_hp`), grace only at max_hp >= 2 |
 | `features/vigil/tests/test_vigil_collision.gd` | data-driven radius, wall stop, no tunnelling at 6000 px/s, overlap recovery, live hitbox one hit per window → breach → HUD |
 | `scenes/tests/test_attract_mode.gd` | default focus, focus loop/wrap, settings modal + ui_cancel + focus restore, root ui_cancel no-op, repeated input, 200 % text safe area (menu + settings), no raw keys |
 | `scenes/tests/test_attract_coin_slot.gd` | 16 tests: tape prompt delay, peel by hold / drag / pad A, press off the tape ignored, tape flag saved, coin → credit → New Vigil spends once, no New Vigil without a credit, tape stays off, no demo while credited, power-on start / skip / self-finish, route without `power_on`, page cycle, binding labels |
@@ -649,7 +656,7 @@ Not covered (honest list): native-resolution rendering after Act 0 (decided, not
 |---|---|---|---|
 | Q-T15 | SYS-001 §1.4 `hits_needed = 13 - 3 + ceil(segments/7)` gives 10 at 0 segments, but its own note says "3 at 0 segments". The cabinet sidesteps it (the entity is only hittable once complete, 13 hits) | SYS-001 §1.4 | design rewrites the formula or its note |
 | Q-T16 | SYS-001 §2 phase 3 says "Compass starts lying" at Quickening; WARP-001 W0-02 says the Act 0 HUD is always honest (T0 lie budget 0). The cabinet keeps the compass honest (WARP-001 owns HUD lies) | SYS-001 §2, WARP-001 §2.1 | SYS-001 scopes the lie to T ≥ 3 |
-| Q-T17 | Cabinet ✱ values with no SYS-001 row: lives at start (3), respawn delay and shield (2 s each), lance range (0.9 s life), Grub seek speed (160 px/s) and flee radius (110 px), Acolyte engagement range (300 px) and shot life (2.2 s), Charge life (6 s), entity costume radius/contact inset/turn rate | `data/cabinet/cabinet_tuning.tres`, `sepulchre_ritual.gd` | add an Act 0 table to SYS-001 |
+| Q-T17 | Cabinet ✱ values with no SYS-001 row: lives at start (3), respawn delay and shield (2 s each), lance range (0.9 s life; lance lifetime now also lives in `data/arc_lance/arc_lance.tres`, SYS-001 §1.3 row awaiting approval), Grub seek speed (160 px/s) and flee radius (110 px), Acolyte engagement range (300 px) and shot life (2.2 s), Charge life (6 s), entity costume radius/contact inset/turn rate | `data/cabinet/cabinet_tuning.tres`, `sepulchre_ritual.gd` | add an Act 0 table to SYS-001 |
 | Q-T18 | `CabinetBootTuning` ✱ values (`ds_cabinet.boot.*`: warm-up, noise, scroll speed, self-test line/hold, card time, tape hint delay, tape hold, tape drag distance, tape fall, coin drop) have no SYS-001 rows (2026-11-18) | `data/cabinet/cabinet_boot_tuning.tres` | add presentation-timing rows to SYS-001 or keep as ✱ |
 | Q-T19 | Godot's built-in `ui_accept` has **no gamepad binding** here (`InputMap.action_get_events(&"ui_accept")` lists only Enter, Kp Enter, Space). `CoinSlot` accepts `JOY_BUTTON_A` explicitly via `InputLabels.is_accept()`, but ordinary menu Buttons may not respond to pad A: D-01 gamepad parity gap. Not fixed (2026-11-18) | `tests/test_input_map.gd` owns the input map | owner decides whether to add a pad event to `ui_accept` |
 | Q-T20 | The Act 0 bezel side panels and coin door are a placeholder mockup (owner: "a quick mockup is fine", 2026-11-18); detailed bezel design is still to be written | `features/cabinet/cabinet_bezel.gd` | ART-001 gets a bezel design section |
@@ -695,6 +702,7 @@ The owner delegated every open ruling to the 2026-11-17 authoring pass. Each rul
 | 2026-11-17 | §1.1 multiplayer citation corrected from D-11 to D-09 | production |
 | 2026-11-17 | Doc review: fixed 13 mechanical citation/status errors across TECH-001, SYS-001, LOOP-001, ZONES-001, WARP-001, AUDIO-001, NARR-001, UI-001, EVT-001, TASK-BOOT; removed unsourced on-screen cap numbers from §0.3/§1.5/§2.6 (Q-T14). WARP-001 §6.1 decision IDs kept (its §9.2 freezes the `WARP-001 §6.1 D-nn` citation form); ambiguous bare uses now say §6.1 | production |
 | 2026-11-17 | Owner-delegated authoring pass: rulings R-01…R-19 (§11.1a); §4–§6 and §8 designed; `RunSession` and `AudioService` autoloads approved as planned; full GDD §4.1/§4.3 input map | owner (delegated) |
+| 2026-11-18 | M1 slice 1: `features/arc_lance` built with `Area2D` overlap hits (no ShapeCast); runtime D-08 hull switch `Vigil.set_hull_max_hp` / `HealthComponent.set_max_hp` (§3.4); SYS-001 §1.3 gets damage 1, lifetime 0.9 s, range 306 px as ✱ rows, approved by owner 2026-11-18 | owner (via session) |
 | 2026-11-17 | **English only.** All non-English plans removed: per-locale number tables, the language setting and picker, pseudo-translation and right-to-left tests, the CJK font plan, translator workflow and vendor milestones. `tr()` keys and `en.po` stay so player text remains testable and a language can be added later (L10N-001 §7) | owner |
 | 2026-11-18 | Act 0 built as the Cabinet feature (§2.10): own torus simulation without Godot physics bodies; vector costume art from `Pal`; 5×7 Cabinet face via `PixelText`; `AudioService` built with synthesised placeholder cues; profile save reason `cabinet_score`; `--no-save` switch; New Vigil now routes to `cabinet` | production |
 | 2026-11-18 | Arcade boot-up and attract (§2.10): a first-attract-of-launch power-on self-test (`PowerOnTest`), four instruction cards (`AttractPages`), and a hazard-taped coin slot (`CoinSlot`) on the Act 0 bezel; New Vigil is greyed and out of the focus loop until one credit is in (one credit max, New Vigil spends it). Tape removal is saved forever (`cabinet_tape_peeled`, save reason `cabinet_tape`, `profile` slot). Bezel and coin-door art is a placeholder mockup. **GDD §10 "3 clicks max" still holds:** first launch = drag tape + click slot + New Vigil (3 actions); later launches = slot + New Vigil (2). The power-on test is skippable by any key/click and is not an action | owner (request in session) |
