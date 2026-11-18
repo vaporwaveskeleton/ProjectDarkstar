@@ -23,6 +23,14 @@ func _ready() -> void:
 	(%BodyShape.shape as CircleShape2D).radius = radius
 	(%HurtShape.shape as CircleShape2D).radius = radius
 	health.health_depleted.connect(_on_health_depleted)
+	apply_hull_override(HullMode.parse_args(OS.get_cmdline_user_args()))
+
+
+## Applies a tester override (`--hull=1|2`); invalid values keep the data value (D-08).
+func apply_hull_override(override: int) -> void:
+	var resolved := HullMode.resolve(override, health.max_hp)
+	if resolved != health.max_hp:
+		set_hull_max_hp(resolved)
 
 
 ## D-08 hull A/B switch (SYS-001 §1.2): 1 = one-hit hull, 2 = plated. Takes effect at once and
