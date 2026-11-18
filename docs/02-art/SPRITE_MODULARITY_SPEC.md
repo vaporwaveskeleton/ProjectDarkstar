@@ -9,6 +9,7 @@ Rev 1.1 (2026-11-17): §7 import paths corrected to the repo-root project (rulin
 > | §1 module grid, §4 kits, §5 assembly and sockets, §8 palette pools | **normative**: generators use the same grid, kit ids, sockets and colour pools |
 > | §2 naming grammar | **normative for part ids**: `ds_<kit>_<part>…` names a generator, not a file |
 > | §6 animation rules | **normative as parameter tracks**: frame counts become `phase` curves; tags become named parameter sets |
+> | pxl renders (D-13 amendment, ART-001 §14.8) | **allowed**: `art/src/*.px.js` → `assets/art/generated/`, base colours from the palette includes, effects per ART-001 §15, ids per §2. They swap between tiers rather than morph |
 > | §3 folder layout, §7 atlas and import settings, §9 PNG deliverables, §10 file inventory | **retired** for the game; the v0.1 raster pass is local-only reference: kept on disk, **not in git** (`.gitignore`) and **ignored by Godot** (`assets/sprites/.gdignore`), so they are never imported, exported or pushed. Only `SPRITE_MANIFEST.csv` is tracked, as the inventory of parts to build |
 
 **Source of truth for:** module grid, part kits, sockets, part-id naming, animation parameter tracks, runtime mutation. (Atlases and import settings: retired by D-13.)

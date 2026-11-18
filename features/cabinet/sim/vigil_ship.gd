@@ -98,9 +98,9 @@ func kill() -> void:
 		return
 	alive = false
 	world.sfx(&"vigil_die")
-	world.fx.burst(pos, Pal.GAS_4, 40, 160.0)
-	world.fx.burst(pos, Pal.GAS_2, 20, 90.0)
-	world.fx.ring(pos, Pal.GAS_3, 60.0)
+	world.fx.burst(pos, Look.c(Pal.GAS_4), 40, 160.0)
+	world.fx.burst(pos, Look.c(Pal.GAS_2), 20, 90.0)
+	world.fx.ring(pos, Look.c(Pal.GAS_3), 60.0)
 	world.shake(4.0, 0.25)
 	world.vigil_destroyed.emit()
 
@@ -114,8 +114,8 @@ func _draw() -> void:
 	var f := Vector2.from_angle(facing)
 	var r := f.orthogonal()
 	var hull := PackedVector2Array([c + f * 9.0, c - f * 6.0 + r * 6.0, c - f * 3.0, c - f * 6.0 - r * 6.0])
-	Pal.glow_polyline(self, hull, Pal.GAS_4, Pal.GAS_1)
-	draw_rect(Rect2((c + f * 1.0).round() - Vector2(1, 1), Vector2(3, 3)), Pal.GAS_5)   # the lamp
+	Pal.glow_polyline(self, hull, Look.c(Pal.GAS_4), Look.c(Pal.GAS_1))
+	draw_rect(Rect2((c + f * 1.0).round() - Vector2(1, 1), Vector2(3, 3)), Look.c(Pal.GAS_5))   # the lamp
 	if _thrusting and int(world.time * 30.0) % 2 == 0:
 		var tail := c - f * (8.0 + (3.0 if _surge > 0.0 else 0.0))
-		draw_line((c - f * 4.0).round(), tail.round(), Pal.GAS_3 if _surge <= 0.0 else Pal.GAS_5, 2.0)
+		draw_line((c - f * 4.0).round(), tail.round(), Look.c(Pal.GAS_3) if _surge <= 0.0 else Look.c(Pal.GAS_5), 2.0)

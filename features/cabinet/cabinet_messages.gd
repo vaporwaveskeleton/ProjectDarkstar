@@ -79,22 +79,22 @@ func _centered(y: float, s: String, scale: int, col: Color) -> void:
 
 func _draw() -> void:
 	if _ready_t > 0.0:
-		_centered(132, _ready_title, 3, Pal.BONE_5)
-		_centered(162, _ready_sub, 1, Pal.BONE_2)
+		_centered(132, _ready_title, 3, Look.c(Pal.BONE_5))
+		_centered(162, _ready_sub, 1, Look.c(Pal.BONE_2))
 		if int(_t * 3.0) % 2 == 0:
-			_centered(196, tr("CAB_READY"), 2, Pal.GAS_4)
+			_centered(196, tr("CAB_READY"), 2, Look.c(Pal.GAS_4))
 	if _banner_t > 0.0:
-		_centered(172, _banner, 2, Pal.BONE_5)
+		_centered(172, _banner, 2, Look.c(Pal.BONE_5))
 	if credits_t >= 0.0:
 		_draw_credits()
 	if _caption_t > 0.0:
-		_centered(334, _caption, 1, Pal.BONE_3)
+		_centered(334, _caption, 1, Look.c(Pal.BONE_3))
 	if demo and int(_t * 1.6) % 2 == 0:
-		_centered(300, tr("CAB_CREDIT"), 2, Pal.BONE_5)
+		_centered(300, tr("CAB_CREDIT"), 2, Look.c(Pal.BONE_5))
 	if _line_t > 0.0:
 		# the entity's big type: a hole torn in the frame (ART-001 §11.5)
-		draw_rect(Rect2(0, 120 - 19, 640, 38), Pal.NULL)
-		_centered(120 - 10, _line, 3, Pal.BONE_5)
+		draw_rect(Rect2(0, 120 - 19, 640, 38), Look.c(Pal.NULL))
+		_centered(120 - 10, _line, 3, Look.c(Pal.BONE_5))
 
 
 func _draw_credits() -> void:
@@ -107,4 +107,4 @@ func _draw_credits() -> void:
 		var x_shift := 0.0
 		if glitch > 0.0 and (i * 7 + int(_t * 8.0)) % 3 == 0:
 			x_shift = (sin(_t * 40.0 + i) * 24.0) * glitch
-		PixelText.draw_centered(self, 320.0 + x_shift, y, s, Pal.BONE_4 if glitch < 0.5 or i % 2 == 0 else Pal.PHOS_4, 2)
+		PixelText.draw_centered(self, 320.0 + x_shift, y, s, Look.c(Pal.BONE_4) if glitch < 0.5 or i % 2 == 0 else Look.c(Pal.PHOS_4), 2)

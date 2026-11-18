@@ -1,6 +1,8 @@
 class_name PretenceReveal
 extends Node
 ## THE PRETENCE (GDD §6.1 A0-3, WARP-001 W0-07 "Pretence Tear" and W0-08 "Costume Removal").
+## The arcade showed a black vacuum; that was the lie. When the costume falls the Aether rises — space as
+## it really is, full of coloured fog and drifting life (ART-001 §16) — and then the entity drinks it.
 ## The cabinet's credits stutter, the sound dies, "THAT WAS A PRETENCE." The bezels crack and
 ## fall away and the field opens to its true width; the scanlines and curvature drain off; a hole
 ## opens where a star should be and drinks the sky, the readouts and the light — and inside it,
@@ -10,11 +12,13 @@ extends Node
 signal finished
 
 @export var maw: MawView
+@export var aether: ColorRect
 
 var _game: Node
 var _skippable := false
 var _running := false
 var _tweens: Array[Tween] = []
+var _aether_time := 0.0
 
 
 func play(game: Node, skippable: bool) -> void:
@@ -54,8 +58,10 @@ func play(game: Node, skippable: bool) -> void:
 	_tween().tween_property(hud, "peel", 1.0, 1.4).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	_tween().tween_method(func(v: float) -> void: crt.set_shader_parameter(&"costume", v), 1.0, 0.0, 2.2)
 	_tween().tween_method(func(v: float) -> void: crt.set_shader_parameter(&"tear", v), 0.7, 0.0, 1.6)
-	_tween().tween_method(func(v: float) -> void: crt.set_shader_parameter(&"desaturate", v), 0.0, 0.35, 3.0)
-	_tween().tween_property(world.stars, "desaturate", 1.0, 3.0)
+	# the neon gives way, entry by entry, to the base palette, and the AETHER rises into the vacuum (ART-001 §15–§16)
+	var fog := aether.material as ShaderMaterial
+	_tween().tween_method(func(v: float) -> void: Look.t = v, 0.0, 1.0, 2.6).set_trans(Tween.TRANS_SINE)
+	_tween().tween_method(func(v: float) -> void: fog.set_shader_parameter(&"amount", v), 0.0, 1.0, 3.2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	world.stars.show_seams = false
 	await _wait(2.2)
 	if not _running:
@@ -66,6 +72,8 @@ func play(game: Node, skippable: bool) -> void:
 	_tween().tween_property(maw, "radius", 96.0, 6.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	_tween().tween_property(world.stars, "pull", 1.0, 8.0).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	_tween().tween_property(hud, "eaten", 1.0, 6.0)
+	# the only true black is the entity: it drinks the aether's colour and fog (ART-001 §16.1)
+	_tween().tween_method(func(v: float) -> void: fog.set_shader_parameter(&"drain", v), 0.0, 1.0, 9.0).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	await _wait(2.5)
 	if not _running:
 		return
@@ -89,6 +97,8 @@ func _process(_delta: float) -> void:
 		return
 	var world: ArcadeWorld = _game.world
 	world.stars.queue_redraw()
+	_aether_time += _delta
+	(aether.material as ShaderMaterial).set_shader_parameter(&"time_s", _aether_time)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -103,6 +113,7 @@ func _finish() -> void:
 	if not _running:
 		return
 	_running = false
+	Look.t = 1.0
 	for t in _tweens:
 		if t.is_valid():
 			t.kill()

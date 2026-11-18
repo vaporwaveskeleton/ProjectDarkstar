@@ -90,7 +90,7 @@ func _draw() -> void:
 	for s in sparks:
 		if not visible_at(s.pos, 4.0):
 			continue
-		var c := s.color if s.life > s.max_life * 0.35 else Pal.BONE_1
+		var c := s.color if s.life > s.max_life * 0.35 else Look.c(Pal.BONE_1)
 		draw_rect(Rect2(world.to_screen(s.pos).round(), Vector2.ONE), c)
 	for r in rings:
 		if not visible_at(r.pos, r.radius):
@@ -101,4 +101,4 @@ func _draw() -> void:
 		if not visible_at(t.pos, 20.0):
 			continue
 		var p := world.to_screen(t.pos).round() + Vector2(-PixelText.width(t.text) * 0.5, -12)
-		PixelText.draw(self, p, t.text, Pal.BONE_4 if t.life > 0.3 else Pal.BONE_1)
+		PixelText.draw(self, p, t.text, Look.c(Pal.BONE_4) if t.life > 0.3 else Look.c(Pal.BONE_1))

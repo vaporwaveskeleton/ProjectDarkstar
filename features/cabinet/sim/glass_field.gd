@@ -84,7 +84,7 @@ func _collect(s: Shard) -> void:
 	set_charges(charges + 1)
 	world.award(world.tuning.score_shard, s.pos)
 	world.sfx(&"shard_chime", -3.0 + charges)
-	world.fx.ring(s.pos, Pal.PHOS_4, 14.0)
+	world.fx.ring(s.pos, Look.c(Pal.PHOS_4), 14.0)
 
 
 ## Fire one Charge from the Vigil toward `dir`. Returns false with an empty magazine.
@@ -133,9 +133,9 @@ func _tick_charges(delta: float) -> void:
 func _lose(c: Charge, intercepted: bool) -> void:
 	c.alive = false
 	world.sfx(&"charge_lost", 0.0)
-	world.fx.burst(c.pos, Pal.PHOS_5, 10, 50.0)
+	world.fx.burst(c.pos, Look.c(Pal.PHOS_5), 10, 50.0)
 	if intercepted:
-		world.fx.ring(c.pos, Pal.BONE_5, 18.0)
+		world.fx.ring(c.pos, Look.c(Pal.BONE_5), 18.0)
 
 
 func _draw() -> void:
@@ -147,15 +147,15 @@ func _draw() -> void:
 		var p := world.to_screen(s.pos).round()
 		var k := 3.0 + sin(s.spin) * 1.0
 		var pts := PackedVector2Array([p + Vector2(0, -k - 1), p + Vector2(k * 0.6, 0), p + Vector2(0, k + 1), p + Vector2(-k * 0.6, 0)])
-		draw_colored_polygon(pts, Pal.PHOS_3)
-		draw_rect(Rect2(p, Vector2.ONE), Pal.PHOS_5)
+		draw_colored_polygon(pts, Look.c(Pal.PHOS_3))
+		draw_rect(Rect2(p, Vector2.ONE), Look.c(Pal.PHOS_5))
 	for c in charges_flying:
 		var prev := Vector2.INF
 		for i in c.trail.size():
 			var q := world.to_screen(c.trail[i])
 			if prev != Vector2.INF and prev.distance_to(q) < 40.0:
-				draw_line(prev, q, Pal.PHOS_2 if i < c.trail.size() - 4 else Pal.PHOS_4, 1.0)
+				draw_line(prev, q, Look.c(Pal.PHOS_2) if i < c.trail.size() - 4 else Look.c(Pal.PHOS_4), 1.0)
 			prev = q
 		var p := world.to_screen(c.pos).round()
-		draw_rect(Rect2(p - Vector2(2, 2), Vector2(5, 5)), Pal.PHOS_1)
-		draw_rect(Rect2(p - Vector2(1, 1), Vector2(3, 3)), Pal.BONE_5)
+		draw_rect(Rect2(p - Vector2(2, 2), Vector2(5, 5)), Look.c(Pal.PHOS_1))
+		draw_rect(Rect2(p - Vector2(1, 1), Vector2(3, 3)), Look.c(Pal.BONE_5))

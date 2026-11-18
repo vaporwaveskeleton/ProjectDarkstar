@@ -212,14 +212,14 @@ These bind every row in §2 and §3. The warp lint (§7.3) fails the build on an
 | W0-05 | standing | Cold Sepulchre Read | Act 0 A0-1 | The Sepulchre is visible and unlit; the race is legible before it is dangerous (SYS-001 §2 phase 0). | none required | ART-002 Sepulchre kit, cold variant; no chant stem | AC1 |
 | W0-06 | transient | First Crack | A0-2, scripted, once | One chant line under the music. No visual or mechanical change. | none required; a visual chant indicator must exist for it (GDD-001 §10) | AUDIO-001 first chant line; UI caption line | AC1 |
 | W0-07 | transient | Pretence Tear | A0-3, scripted, once | The cabinet frame tears and the score strip stops parsing for the 90 s cinematic (GDD-001 §6.1). Agency window 0 s: input is not required and none is lost. | skippable after the first watch (GDD-001 §6.1, §10 no-QTE skip) | ART-001 frame-tear shader; AUDIO-001 first Unmaking sting (inside the silence budget) | AC3 |
-| W0-08 | transient | Costume Removal | The T0→T1 rise | The CRT curvature drops and desaturation begins. The player never sees a menu explaining it (GDD-001 §3 design rule). | none required | ART-001 tier ramp 0→1; AUDIO-001 stem crossfade | AC1 |
+| W0-08 | transient | Costume Removal | The T0→T1 rise | The CRT curvature drops and the black vacuum gives way to the aether: colour, fog and drifting life rise into the field (ART-001 §16, amended 2026-11-18; replaces "desaturation begins"). The player never sees a menu explaining it (GDD-001 §3 design rule). | none required | ART-001 tier ramp 0→1; AUDIO-001 stem crossfade | AC1 |
 | W0-09 | standing | Honest Seam | Act 0 torus wrap (GDD-001 §4.2) | The field wraps at the edges and every open seam is drawn in chalk `✱`, so the later one-way rule (H2) is felt as a theft rather than a new mechanic. | none required | ART-002 chalk seam decal; AUDIO-001 seam chime | AC4 |
 
 ### 2.2 T1 — Frayed (10 effects)
 
 | ID | Class | Effect | Trigger | What changes in play | Counterplay | Art / audio hand-off | Primary AC |
 |---|---|---|---|---|---|---|---|
-| W1-01 | standing | Wrong Three | T1 sector start | Palette desaturates and three hues arrive that do not belong to any ramp the player has learned (GDD-001 §8.7, §11 ramp rule). Value contrast is preserved so colourblind play is unaffected (ART-001 §4). | none required; colourblind-safe variants ship in the same ramp (GDD-001 §10) | ART-001 tier 1 palette table | AC5 |
+| W1-01 | standing | Wrong Three | T1 sector start | The aether's colour fields settle (ART-001 §16) and three hues arrive that do not belong to any ramp the player has learned (GDD-001 §8.7, §11 ramp rule). Value contrast is preserved so colourblind play is unaffected (ART-001 §4). | none required; colourblind-safe variants ship in the same ramp (GDD-001 §10) | ART-001 tier 1 palette table | AC5 |
 | W1-02 | standing | Breathing | T1 sector start | Idle sprites scale by ±1 px on a slow cycle `✱`. Purely visual: hitboxes never move (SYS-001 §9 `Hitbox policy`). | none required | ART-002 idle rig; no audio | AC5 |
 | W1-03 | standing | Parallax Arrives | T1 sector start | Parallax layers appear behind the field. Camera rules are untouched: player-centred, no drift at T1 (SYS-001 §9 `Camera follow`). | none required | ART-001 parallax plates | AC5 |
 | W1-04 | transient | Phantom Grub | A Deacon of Lies casts one (SYS-001 §3) | A harmless false Grub appears and drains its band's Composure on first sight. It is a hazard and it is counterplay at once. | LOOP-001 MADNESS-6, WARD-7, SIG-M-03; SYS-001 §3 Phantom dispel rules | ART-002 Grub silhouette with a deliberate wrong-count limb; AUDIO-001 keening detune | AC1 |
@@ -579,7 +579,7 @@ Two promises in one section. The look promise: a warp effect is recognisable in 
 | Rule | Statement | Enforced by |
 |---|---|---|
 | One visual language | Everything the warp does is drawn in the same materials the game is already made of: chalk, brass, glass, oil light, chitin. No new material arrives at any tier | ART-001, review |
-| The palette is locked | The warp never adds a colour outside the 32-entry palette (ART-001, ART-002). T1's three wrong hues and T2's split registers are chosen *from* the palette's own ramps | `palette_lint` (TECH-001 §1.4) |
+| The palette roles are locked | **Amended 2026-11-18 (ART-001 §15):** authored base colours come from the palette (neon at T0, the base palette inside the Aether from T1), and T1's three wrong hues and T2's split registers are chosen *from* its ramps. Lighting, fog, bloom and particles may derive colours beyond it from T1, and their richness is part of the escalation. The role laws (faction hues, phosphor = truth, SIGNAL budget) never bend | review; faction-lock test |
 | Faction law holds at every tier | Choir never wears the player's amber/brass, and no tier effect puts a player register on a Choir silhouette (W2-01, W4-02). This is the single most-checked visual rule in the game | ART-002 kit locks |
 | Value before hue | Every warp effect must read in greyscale. A tell, a hazard and a unit must all be separable by luminance alone, which is what makes colourblind play real rather than nominal (GDD-001 §10, ART-001 §4) | §7.4 `TEST-ACC-03` |
 | Nothing moves a hitbox | The warp re-skins, re-keys and re-draws. It never changes a hitbox, a radius or a speed (SYS-001 §9 `Hitbox policy`, §1.9) | §7.3 L-04 |
@@ -645,7 +645,7 @@ The refusals are absolute and belong to this doc. The *cut decision* — what do
 | No full-field luminance step, ever, in any tier | §1.4's entry rule and GDD-001 §10's anti-jumpscare rule. An effect whose punch comes from a flash was never a warp effect |
 | No flicker above 3 cycles per second | §4.5, and it keeps the tier readable on a handheld |
 | No colour-only information, at any tier | §5.1 value-before-hue. A tell that needs hue to read is a tell that fails half the audience |
-| No new palette entries | ART-001's locked palette; the warp is a re-reading of the existing colours, not a bigger box of crayons |
+| No new palette roles | ART-001's 32 roles; the warp re-reads them and lights them, it does not invent new ones (amended 2026-11-18: derived colours from lighting and effects are allowed from T1, ART-001 §15) |
 | No shader that obscures the field for more than 12 % of pixels with noise `✱` | Readability, and the AC5 measurement gets worse the more of the screen is noise |
 | No effect that dims the lamp below its SYS-001 §1.2 radius | The light pool is the game's core verb. W2-07 boils its rim; nothing shrinks it |
 | No gore, no corpse language, no timed inputs | GDD-001 §11, §10 |
@@ -823,7 +823,7 @@ A build gate. If any rule below fails, the build fails — this is how a documen
 | **L-09** | The SYS-001 §4 `Solvability lint` passes **in the eaten state**, and after every kit re-key at the sector's world tier. A re-key that breaks solvability fails the tier, not the kit | §1.9 `No soft-lock`, §3.1 `Solvability` |
 | **L-10** | No effect or eat names a §1.9 never-eaten item, and no effect targets Steady Ledger, photosensitivity, text scale or Esc-always-pauses | §1.9, GDD-001 §10 |
 | **L-11** | No flash, flicker above 3 cycles/s `✱`, gore flag, jumpscare flag or timed-input requirement anywhere in warp content | §1.9, §5.3, GDD-001 §11 |
-| **L-12** | No new palette entry, and no colour outside an ART-002 kit lock on a faction-restricted unit | §5.1, ART-001, ART-002 |
+| **L-12** | No base colour outside an ART-002 kit lock on a faction-restricted unit (derived lighting colours are exempt from T1, ART-001 §15) | §5.1, ART-001, ART-002 |
 | **L-13** | Per sector: ≤3 novel transients, ≤2 simultaneous, ≤1 eat, and within the §4.2 deviation cap for that tier | §1.8, §4.2 |
 | **L-14** | Registry rules are referenced as `RULE-Hn`; SYS-001 §2.2 counter rows keep their own IDs. No citation collapses one into the other | §3.1 `Namespace`, §9.2 C-01 |
 | **L-15** | Every eat has a named restore path, and H14 is the only permitted exception in the whole registry | §3.1, §3.4 |

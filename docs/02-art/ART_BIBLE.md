@@ -1,6 +1,10 @@
 # DARKSTAR — Art Bible
 
-**Doc ID:** ART-001 · **Version:** 1.2 · **Date:** 2026-11-18 · **Owner:** Art · **Status:** complete-draft (§11 typography and §12 UI states are specified; no glyph or UI-kit art is drawn yet) · **Companion:** `SPRITE_MODULARITY_SPEC.md` (ART-002, the technical module system), `ASSET_PIPELINE.md` (ASSET-003, how files are made)
+**Doc ID:** ART-001 · **Version:** 1.4 · **Date:** 2026-11-18 · **Owner:** Art · **Status:** complete-draft (§11 typography and §12 UI states are specified; no glyph or UI-kit art is drawn yet) · **Companion:** `SPRITE_MODULARITY_SPEC.md` (ART-002, the technical module system), `ASSET_PIPELINE.md` (ASSET-003, how files are made)
+
+**Rev 1.4 (2026-11-18, owner direction): §16 the Aether — space is retro-future Victorian (aether, fog, life, crystal spheres, colour), not a black vacuum; the arcade's black is the Pretence and the only true black is the entity. Law 4 amended.**
+
+**Rev 1.3 (2026-11-18, owner direction): §15 the visual fidelity ladder — Act 0 is neon arcade (Neon Cabinet palette, flat); from THE PRETENCE the Aether look grows past arcade limits with real lighting, fog, bloom and complex particles. §15 governs where §4–§5 or §14 read as a cap.**
 
 **Rev 1.2 (2026-11-18, GDD-001 D-13): every image is generated in code — vector geometry or shaders. No sprite, texture or font files ship. §14 is the generation doctrine; §1–§13 still define the look.**
 
@@ -10,9 +14,11 @@ Rev 1.1 (2026-11-17, owner-delegated rulings R-02, R-06, R-09): palette law 1 ga
 
 ## 1. The look in one paragraph
 
+> **Read §16 first (2026-11-18).** The game's space is **retro-future Victorian**: an aether full of fog, colour, life and crystal spheres, not a black vacuum. Act 0's black neon arcade is the lie that space is empty; the reveal shows the aether. The paragraph below still holds for the lantern, the Choir and the entity, read inside that cosmos.
+
 DARKSTAR is 2D pixel art at internal resolution **640×360** (integer-scaled, nearest-neighbour, no anti-aliasing on art), lit by **one moving light source you control: the player's lantern**. Everything else in the frame is either bone-pale reflectance, bioluminescent phosphor, or the absence of light. The enemy faction is a religion, so its art is **liturgical**: processions, symmetrical vestments, cathedral geometry, chitin polished like church wood. The entity is not a monster — it is an **eclipse with anatomy**, built from 20 modular 64×64 segments that look like a reliquary assembled by something that has never seen a body but has read about one.
 
-Mood keywords: *gaslight, wet bone, brass, chalk, choir-black, wrong symmetry, tide, reliquary, frost on a window, something enormous that is also very close.*
+Mood keywords: *aether, crystal spheres, orrery, gaslight, brass, glass, fog, nocturne colour, wet bone, chalk, wrong symmetry, tide, reliquary, frost on a window, something enormous that is also very close — and black only where something has been eaten.*
 
 ## 2. What "Lovecraftian" means for our art (and what it does not)
 
@@ -106,13 +112,15 @@ Five ramps of six, plus two specials. **Value separation between ramps is intent
 | NULL | `#000000` | absolute hole (the entity's punctum, voided screen areas, CRT letterbox) |
 | SIGNAL | `#FF4A57` | **danger tell only**: gaze cones, incoming hit telegraphs, entity hit flash. Never a body colour, never ambient. |
 
+> **Scope (§15, 2026-11-18):** this is the **base palette**: the base colours of authored art from T1 on. Act 0 uses the **Neon Cabinet palette** (§15.2), the same 32 roles in arcade neon. From T1, lighting, fog, bloom, particles and shading may derive colours beyond these 32; laws 1–4 below keep their force as *role* laws at every tier.
+
 ### Palette law (violations are bugs)
 1. **GASLIGHT never appears on Choir or entity art**; **CHOIR never appears on player art.** The two factions are distinguishable by hue even when warped.
 2. PHOSPHOR belongs to *truth-telling things*: ore, glass, the entity's veins, Shroud, and warp artefacts. It is the colour of reality showing through.
 3. SIGNAL is used for at most **3 simultaneous objects on screen**. If a screen needs more danger tells, they must be shape-based (cones, chevrons), not colour-based.
-4. Background never exceeds VOID-5 in luminance; nothing in the background may compete with GAS-3 and above.
+4. Nothing in the background may out-shine the player's lantern (GAS-3 and above) or out-contrast the gameplay layer. *(Amended 2026-11-18, §16.3: the background is now a coloured aether, not black, so the old "never above VOID-5" cap no longer holds; the lantern-is-brightest rule does.)*
 5. Warp Tiers re-tune *how* ramps are used (hue-shift, inversion, dither), but palette law 1 and 3 survive every tier — including T5.
-6. Total unique colours per sprite ≤ **10** (a 64×64 sprite using more than 10 colours reads as mud at 1×). Exception: `*_ASSEMBLED_*` composite previews may exceed it, because they combine parts that were each linted on their own (ASSET-003 §5).
+6. Total unique *base* colours per authored part ≤ **10** (lighting and effects may add derived colours from T1, §15) (a 64×64 sprite using more than 10 colours reads as mud at 1×). Exception: `*_ASSEMBLED_*` composite previews may exceed it, because they combine parts that were each linted on their own (ASSET-003 §5).
 
 **Law 1 exception — the salvaged lanterns (ruling R-06, 2026-11-17).** Exactly three Choir parts may carry GASLIGHT, and the palette file lists them by name in `faction_exceptions` (the lint enforces the list, ASSET-003 §5):
 
@@ -125,8 +133,11 @@ Five ramps of six, plus two specials. **Value separation between ramps is intent
 These are **trophies, not light sources**. No Choir or entity part may ever carry **GAS-5** (index 29, the lantern core): nothing in the Choir has ever *lit* a lantern, and the lint fails the build if one appears. Any further exception is a new ruling and a new `faction_exceptions` row, never a quiet palette edit. The other direction of law 1 has no exception: CHOIR never appears on player art.
 
 ## 5. Lighting rules
-- **One dynamic light:** the player's lantern. Radius 260 px up / 120 px down (Lantern state). Implemented as a light mask + additive bloom pass in `PHOS-4/GAS-4`, not as realistic lighting.
-- Light falls off in **3 discrete bands**, not a gradient (hard-edged light: 100%, 65%, 30% → maps to ramp steps). Hard bands keep the pixel-art identity and are cheap.
+
+> **§15 governs the tiers:** no lighting at all in Act 0 (the neon cabinet is flat). From T1, real 2D lighting, shadows, fog and bloom are allowed and grow with the warp. The rules below describe the Aether look once lighting exists.
+
+- **The key light:** the player's lantern. Radius 260 px up / 120 px down (Lantern state). From T1 a real 2D light (`PointLight2D`) with occluder shadows; other emitters (Shroud, glass, the entity's veins) join it from T2 (§15.1).
+- Falloff starts in **3 discrete bands** (100%, 65%, 30%) at T1 to keep the arcade memory, and softens into a continuous falloff with fog and bloom as the tiers climb (§15.1). The band count is a warp parameter, not a fixed law.
 - The entity is **unlit**: it does not receive the lantern's light. It occludes it. Where the entity overlaps light, the light *bends* (a 4 px rim of VOID-4 and NULL). This one rule does more horror work than any animation.
 - Shroud growths emit their own PHOS-1/2 rim; the Sepulchre emits nothing until Quickening (12 segments), when it gains a slow PHOS-3 breath pulse.
 
@@ -381,7 +392,7 @@ The game's signature is a continuous fall from a clean 1983 arcade into cosmic h
 | Layer | What it is | Used for | Rule |
 |---|---|---|---|
 | **Vector** | `CanvasItem` draw calls (lines, polylines, polygons, arcs) issued by a part generator every frame | the T0 costume (all of Act 0), outlines at every tier, UI, type, HUD | coordinates snapped to whole pixels; 1 px strokes (plus the 3 px dim under-stroke for the arcade glow, `Pal.glow_polyline`); colours only from `Pal` |
-| **Shader** | canvas-item shaders on a part's quad: signed-distance bodies, noise, flesh, glass, veins, eyes, Shroud growth | bodies from T1 up, the entity, Shroud, VFX fields, the maw | output is **quantised to the 32-colour palette** in the shader (nearest palette entry, optional ordered dither between two adjacent ramp steps), so palette law 1–6 holds for shader art too; sampled on the 640×360 grid, so it stays pixel art |
+| **Shader** | canvas-item shaders on a part's quad: signed-distance bodies, noise, flesh, glass, veins, eyes, Shroud growth, fog, lensing | bodies from T1 up, the entity, Shroud, VFX fields, fog, the maw | base colours come from the base palette and kit pools; lighting and effects derive freely (§15). At T0 a shader may only output Neon Cabinet entries. Sampled on the 640×360 grid |
 | **Post** | full-screen passes owned by `WarpComposer` (TECH-001 §5.1) | CRT costume, tears, desaturation, tier distortion | never adds a colour outside the palette except the CRT's scanline and vignette darkening, which are the costume |
 
 ### 14.3 What a part generator is
@@ -412,8 +423,97 @@ The PNGs under `assets/sprites/` (the v0.1 PowerShell generator pass, ASSET-003)
 
 ### 14.7 Definition of done for a generator (replaces §10 for parts)
 1. Reads in a 160 × 90 thumbnail and in 50 % greyscale at T0 (the §10 checks still apply to the output).
-2. Every colour it can output is a palette entry from its kit's pool (ART-002 §8); shader parts quantise to the palette.
+2. Its **base** colours come from its kit's pool (ART-002 §8); at T0 everything it outputs is a Neon Cabinet entry; from T1 lighting and effects may derive further colours (§15).
 3. Deterministic: the same parameters and seed give identical pixels; a test renders it twice and compares.
 4. Sweeps cleanly from T0 to T5 and through `horror` 0 → 1 with no popping, except the authored cuts.
 5. Has sockets for every limb ART-002 §4 lists for its kit, and a T0 costume form.
 6. Costs no more than its share of SYS-001 §9's frame budget at the on-screen cap (TECH-001 §8).
+
+### 14.8 pxl: build-time pixel art (D-13 amendment, 2026-11-18)
+
+[pxl](https://github.com/uilianks/pxl) (MIT) is pixel art as code: a JavaScript DSL (`.px.js`) that renders PNGs, sheets, animation strips and Godot `SpriteFrames`, with a lint for orphan pixels, jaggies and pillow shading, and a live viewer with annotate-and-send feedback. D-13 is amended to allow it: **art rendered from committed code is generated art.**
+
+| Rule | Detail |
+|---|---|
+| Sources | `art/src/*.px.js`, committed. Every source starts with `include("darkstar_palette.px.js")`, which loads the 32 palette entries as keys `0`–`v` in palette-index order (the file lists the mapping). Asset names follow ART-002 §2 (`ds_<kit>_<part>…`) |
+| Output | `assets/art/generated/` (`sprites/`, `scenes/`, `anims/`, sheets; `--godot` adds `SpriteFrames` `.tres`). Committed. Never hand-edited: change the source and rebuild |
+| Palette | base colours come from the palette includes: `darkstar_palette.px.js` (Aether, T1+) or `neon_cabinet_palette.px.js` (T0 art, flat: no lighting). From T1, pxl's `lighting()`, `glow()`, `shades()` and true-colour effects are allowed (§15); faction-role laws still hold |
+| Forbidden | `image()`: it pastes an outside PNG (a photo, a reference, a drawing) into the art |
+| Previews | `assets/art/generated/_preview/`: Godot-ignored by pxl, git-ignored here |
+| When to use pxl, when to generate at runtime | **pxl** for things that do not need to morph: set pieces, Ruins props, portraits, Codex illustrations, icons, key art, and **per-tier variants** of a part (render T0…T5 frames from one parametrised source, then swap). **Runtime** (§14.2) for anything that must transform continuously on screen: the Choir under warp, the entity, the Vigil, VFX, the HUD. One part may combine both: a pxl sprite inside a shader that warps it |
+
+Commands (from the repo root; the tool lives in `.claude/skills/pxl/`, git-ignored, installed per README):
+```
+node .claude/skills/pxl/bin/pxl.js build art/src/<file>.px.js --out assets/art/generated          # add --godot for SpriteFrames
+node .claude/skills/pxl/bin/pxl.js lint art/src/<file>.px.js                                     # the art critic: run before calling a sprite done
+node .claude/skills/pxl/bin/pxl.js serve art/src/<file>.px.js                                    # live viewer, http://127.0.0.1:4321
+```
+First asset (2026-11-18): `ds_ui_paletteSwatch` (`art/src/reference.px.js`), the 32-colour palette as a swatch card, which proves the pipeline and the palette test.
+
+## 15. The visual fidelity ladder (owner direction, 2026-11-18)
+
+**The game starts as a neon arcade machine and becomes something richer as it reveals itself.** Act 0 looks like a classic 1983 cabinet: neon colours on black, flat vector shapes, no lighting. After THE PRETENCE the Aether look takes over (§16: retro-future Victorian space), and the graphics are allowed to *transcend* arcade limits: real 2D lighting with the lantern as the key light, shadows, fog and volumetric haze, bloom, complex particle systems, normal-mapped and shader-rich bodies. Gameplay stays top-down 2D at 640×360 throughout. This section governs; where §4–§5 or §14 read as a hard cap on colours or lighting, this section wins.
+
+### 15.1 The ladder
+
+| Stage | Palette | What rendering may do | What it may not do |
+|---|---|---|---|
+| **T0 — Act 0 (the Cabinet)** | **Neon Cabinet palette** (§15.2), flat | vector lines and fills, the glow under-stroke, CRT scanlines and curvature, screen shake | lighting, fog, gradients, soft particles, bloom. Every pixel is a Neon Cabinet entry (the CRT pass aside) |
+| **THE PRETENCE (T0 → T1)** | the neon **morphs entry by entry** into the base palette (§4) | the morph, the tear, the maw | — |
+| **T1 Frayed** | base palette as **base colours** | the lantern becomes a real light (soft falloff, shadows from occluders), light fog, first soft particles (dust, chalk flecks, glass motes) | — |
+| **T2 Bleeding** | base + derived | bioluminescent emitters (Shroud, glass, veins) light the field; bloom; Shroud as an animated shader field; denser particle systems | — |
+| **T3 Unbound** | base + derived | volumetric fog and god-rays from the lantern, distortion and lensing shaders, normal-mapped shading on bodies | — |
+| **T4 Inverted** | base + derived, inverted readings | full post stack (WarpComposer), mundane-object re-skins lit like real objects | — |
+| **T5 Unmaking** | base + derived, then subtraction | everything above, being taken apart: lights going out, fog swallowing, particles running backwards | — |
+
+**What survives every rung, including neon:** the role laws. Laws 1–3 of §4 (faction hues, phosphor = truth, SIGNAL ≤ 3 objects) hold at every tier, because the Neon Cabinet palette keeps the same 32 roles. Law 4 (the background never out-shines GAS-3) and the readability rules of WARP-001 §5.1 (value before hue, nothing moves a hitbox) also hold. What changes is fidelity, never legibility.
+
+**What "base colours" means from T1:** authored art (generator parameters, pxl sources, shader albedo) picks its colours from the base palette and its kit pool (ART-002 §8). Lighting, fog, bloom, particles and shading then produce *derived* colours freely. No per-pixel quantisation is required after T0.
+
+### 15.2 The Neon Cabinet palette (T0)
+The same 32 roles as §4, re-voiced as a 1983 arcade machine. Entry *n* here morphs into entry *n* of §4 during THE PRETENCE, so the transition is continuous and every role stays itself.
+
+| Ramp | Neon (index 0 → 5) | Role kept |
+|---|---|---|
+| VOID | `#000000` `#06061E` `#0C0C3A` `#151A66` `#2633D9` `#5B6CFF` | arcade black; electric-blue stars |
+| BONE | `#2B2B4D` `#4A4A80` `#8C8CC0` `#C8C8F0` `#E8E8FF` `#FFFFFF` | white vector rock and chrome |
+| CHOIR | `#33002B` `#66004F` `#A8008A` `#F000C0` `#FF4DE1` `#FFB3F7` | hot magenta: the enemy |
+| PHOS | `#002626` `#005A5A` `#009E9E` `#00E0E0` `#33FFF2` `#B3FFFF` | neon cyan: the glass, the truth |
+| GAS | `#3A1F00` `#7A4400` `#FF8800` `#FFC400` `#FFF033` `#FFFFB3` | arcade yellow: the player |
+| NULL / SIGNAL | `#000000` / `#FF1F3D` | the hole / danger |
+
+Source of truth in code: `core/ui/look.gd` (`Look.NEON`), checked against this table and the palette file by `core/ui/tests/test_theme_palette.gd`. The cabinet draws every colour through `Look.c()`, which returns the neon entry at `Look.t = 0`, the Aether entry at `Look.t = 1`, and the blend between them during THE PRETENCE.
+
+### 15.3 Rendering toolkit from T1 (TECH-001 §5.5)
+2D lights (`PointLight2D` for the lantern, emitters on Shroud, glass and veins), `LightOccluder2D` for shadows, `CanvasModulate` for ambient darkness, normal maps on generated bodies, `GPUParticles2D` with generated textures (no image files: particle sprites come from shaders or pxl renders), fog and volumetric shaders, and the 2D HDR glow/bloom post. Every effect still obeys the readability rules in §15.1 and the frame budget (SYS-001 §9, TECH-001 §8.1). Photosensitivity and Reduced Motion variants are required for every flicker or motion effect (§12, WARP-001 §4.5).
+
+## 16. The Aether: retro-future Victorian space (owner direction, 2026-11-18)
+
+**Space in DARKSTAR is not a black vacuum.** It is space as the Victorians imagined it: a luminous **aether**, thick with fog, currents, colour and drifting life, and the skies are **crystal spheres**, nested shells of glass the cosmos turns inside. Think steampunk in space and nineteenth-century astronomy taken literally: orreries, brass and glass, gaslight, observatories, celestial charts. The game is still played top-down in 2D. This is the look the fidelity ladder (§15) climbs toward from T1.
+
+### 16.1 The inversion at the heart of the look
+Act 0 shows the modern picture: **empty black space, neon shapes, a vacuum.** That is the Pretence (GDD §6.1). When the costume tears, the player learns that space was never empty: the aether was there all along, and the black was a lie. From then on **the only true black in the cosmos is the entity**: the Unborn Dark (NARR-001 §1.1), the punctum, the maw, Hollow sectors, eaten skies. Black stops being the background and becomes the horror. Every time the entity wins, the aether is *subtracted*: colour drains, fog thins, life stops, and black spreads.
+
+### 16.2 Pillars
+
+| Pillar | What it means on screen | Where it lives |
+|---|---|---|
+| **The aether is a medium** | layered coloured fog with depth and currents; it flows around the Vigil's wake, eddies behind Choir processions, glows where glass is near. Biomes are aether *weathers* (ZONES-001 §2): the Pale Marches' pearl mist, the Litany's incense haze, the Green Rot's spore-thick aether, the Drowned Observatory's tidal currents, the Black's thinning to nothing | shader fog layers (§14.2), parallax depths |
+| **The skies are crystal spheres** | each of the Nine Hollow Skies is a vast glass shell: its curve, seams and refractions are visible at the edge of the field and in the far parallax. A sky going dark is a sphere clouding over; Hard Unmaking is a sphere **shattering** | far parallax layer, a refraction shader; NARR-001 cosmology |
+| **Space is alive** | luminous aether-life drifts through every sector: glass motes, drifting jelly-like lanterns, slow migratory shapes far off. Ambient, never hostile, never a hitbox. It flees the entity, and its absence is a tell | particles and runtime generators (§14), ambient only |
+| **Victorian technology** | brass, glass, gaslight and chalk: the Vigil is a lantern skiff, the Ruins a cathedral-observatory with an orrery, the HUD a brass-and-chalk instrument panel. Machinery looks made by hand, riveted and engraved | generators, pxl set pieces (§14.8) |
+| **Colour is the truth** | rich, nocturne-painting colour: aether violets, sea-glass teals, tarnished golds, rose fogs, gaslight amber. Phosphor still marks truth and glass (palette law 2); the player's gaslight is still the warmest light in the frame | base palette §4 + derived colours from lighting and fog (§15) |
+| **The horror is subtraction** | the entity is black and absence: it drinks fog, colour, light and life. Its wake is a clear, dead channel through the aether | the maw, Hollow sectors, WARP-001 tiers |
+
+### 16.3 Readability in a full sky
+A rich background must never cost legibility (GDD P5, WARP-001 §5.1 "value before hue"):
+- **Depth separates play from aether.** The gameplay layer (the Vigil, Choir, glass, shots, the entity) sits in front, crisp and highest in local contrast. Aether, spheres and life sit behind, softened by fog and lower in contrast.
+- **Fog density is capped where play happens.** The fog may be thick in the distance and at the edges, but never thick enough to hide a unit, a shot or a telegraph. Density is a WarpComposer parameter with a ceiling.
+- **Nothing in the background out-shines the lantern.** (Law 4, §4, amended.)
+- **Every effect reads in greyscale** (§10, WARP-001 §5.1).
+
+### 16.4 Mood references (mood, never copy; §9)
+Nineteenth-century astronomical illustration and engraving (lunar and nebular plates, celestial atlases), orreries and armillary spheres, Victorian scientific instruments, aether theory diagrams, gaslit cathedrals and observatories, deep-sea plates of luminous life. Only public-domain sources go in `assets/reference/`, and nothing is traced (RES-001 §5).
+
+### 16.5 Consequences for the palette
+The 32-entry palette (§4) remains the **base** set for authored art and keeps its roles. The aether's colour fields, fog and lighting derive their colours from it under the fidelity ladder (§15). An art pass may propose an **AETHER** ramp (violet, rose, sea-glass) as a palette v2 change through ASSET-003 §8 versioning. Until then, aether colour is built from VOID, PHOS, CHOIR-free BONE and GAS mixes under lighting.

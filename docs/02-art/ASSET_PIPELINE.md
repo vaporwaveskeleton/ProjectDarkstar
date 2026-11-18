@@ -285,7 +285,8 @@ Current: **v1.2 (2026-11-17)** — applied by the main session under owner-deleg
 | Palette | `core/ui/pal.gd` (`Pal`), checked against `assets/palettes/darkstar_palette.json` by a test | the 32 colours as constants; the JSON stays the file of record | built |
 | Vector parts (Act 0 costume) | `features/cabinet/sim/*.gd` (each layer's `_draw`), `features/cabinet/maw_view.gd` | the Vigil, geodes, glass, Grubs, Acolytes, the Sepulchre, the Dark Star, VFX, the maw and the true body inside it | built |
 | Vector parts (Act 1+) | `core/gfx/parts/<kit>_<part>.gd` | parametric parts per ART-002 kit, with sockets and the ART-001 §14.4 tier ladder | planned |
-| Shader parts | `shaders/parts/*.gdshader` | SDF bodies, flesh, veins, glass, Shroud; output quantised to the palette | planned |
+| Pixel art (build time) | **pxl**: `art/src/*.px.js` (+ `darkstar_palette.px.js` for T1+ (Aether) art or `neon_cabinet_palette.px.js` for T0 art) → `assets/art/generated/` (built: `ds_ui_paletteSwatch`; ART-001 §14.8) | set pieces, props, portraits, icons, per-tier variants | built (pipeline) |
+| Shader parts | `shaders/parts/*.gdshader` | SDF bodies, flesh, veins, glass, Shroud, fog; base colours from the palette, effects per the fidelity ladder (ART-001 §15) | planned |
 | Post | `shaders/crt.gdshader` (built); WarpComposer passes (TECH-001 §5.1) | costume, tear, desaturation, tier distortion | partly built |
 | Type | `core/ui/pixel_text.gd` (Cabinet face, built); Ledger and Litany glyph data (planned) | all game text | partly built |
 | Sound (build time) | **chirp**: `audio/src/*.cx.js` → `assets/audio/generated/` (built: 20 cabinet cues + chant bed; AUDIO-001 §11.7) | authored cues, music, ambience | built for Act 0 |
@@ -300,4 +301,4 @@ Current: **v1.2 (2026-11-17)** — applied by the main session under owner-deleg
 
 The raster PNG with the same id, if one exists, is the visual target.
 
-**What must never happen:** a `Texture2D`, image or font file, an audio file outside `assets/audio/generated/`, or a recording in a chirp source, referenced from `features/`, `scenes/`, `core/`, `autoload/` or `data/`. The test above fails the build if it does. `assets/sprites/` carries a `.gdignore`, so Godot never imports or exports it; `assets/reference/` is not in git (TECH-001 §10).
+**What must never happen:** a font file, an image outside `assets/art/generated/`, an audio file outside `assets/audio/generated/`, a pxl source without a project palette include, an `image()` in a pxl source, or a recording in a chirp source, referenced from `features/`, `scenes/`, `core/`, `autoload/` or `data/`. The test above fails the build if it does. `assets/sprites/` carries a `.gdignore`, so Godot never imports or exports it; `assets/reference/` is not in git (TECH-001 §10).

@@ -108,7 +108,7 @@ func detonate(g: Geode) -> void:
 ## The entity eats a geode (SYS-001 §2.1). No shards: it takes the glass for itself.
 func devour(g: Geode) -> void:
 	g.alive = false
-	world.fx.burst(g.pos, Pal.BONE_2, 14, 60.0)
+	world.fx.burst(g.pos, Look.c(Pal.BONE_2), 14, 60.0)
 
 
 func _free_shards(g: Geode, n: int, dist: float, speed: float) -> void:
@@ -122,8 +122,8 @@ func _free_shards(g: Geode, n: int, dist: float, speed: float) -> void:
 func _break(g: Geode, violent: bool) -> void:
 	g.alive = false
 	world.sfx(&"geode_break", 0.0 if violent else -4.0)
-	world.fx.burst(g.pos, Pal.BONE_3, 26 if violent else 14, 140.0 if violent else 70.0)
-	world.fx.ring(g.pos, Pal.PHOS_4 if violent else Pal.BONE_2, g.radius * (3.0 if violent else 1.6))
+	world.fx.burst(g.pos, Look.c(Pal.BONE_3), 26 if violent else 14, 140.0 if violent else 70.0)
+	world.fx.ring(g.pos, Look.c(Pal.PHOS_4) if violent else Look.c(Pal.BONE_2), g.radius * (3.0 if violent else 1.6))
 	if violent:
 		world.shake(3.0, 0.2)
 
@@ -139,19 +139,19 @@ func _draw() -> void:
 		for v in g.shape:
 			pts.append((c + v.rotated(g.rot)).round())
 		var heat := clampf(float(g.recent.size()) / world.tuning.overfire_hits, 0.0, 1.0)
-		var bright := Pal.BONE_3
+		var bright := Look.c(Pal.BONE_3)
 		if heat > 0.6:
-			bright = Pal.PHOS_5
+			bright = Look.c(Pal.PHOS_5)
 		elif heat > 0.3:
-			bright = Pal.BONE_5
+			bright = Look.c(Pal.BONE_5)
 		if g.flash > 0.5:
-			bright = Pal.BONE_5
-		Pal.glow_polyline(self, pts, bright, Pal.BONE_0)
+			bright = Look.c(Pal.BONE_5)
+		Pal.glow_polyline(self, pts, bright, Look.c(Pal.BONE_0))
 		# cracks: one chalk line per broken face
 		for f in g.faces - g.faces_left:
 			var a := g.rot + f * 2.1
-			draw_line(c, (c + Vector2.from_angle(a) * g.radius * 0.9).round(), Pal.BONE_1)
+			draw_line(c, (c + Vector2.from_angle(a) * g.radius * 0.9).round(), Look.c(Pal.BONE_1))
 		for gl in g.glints:
 			var q := (c + gl.rotated(g.rot)).round()
-			draw_rect(Rect2(q - Vector2(1, 1), Vector2(2, 2)), Pal.PHOS_3)
-			draw_rect(Rect2(q, Vector2.ONE), Pal.PHOS_5 if heat > 0.0 else Pal.PHOS_4)
+			draw_rect(Rect2(q - Vector2(1, 1), Vector2(2, 2)), Look.c(Pal.PHOS_3))
+			draw_rect(Rect2(q, Vector2.ONE), Look.c(Pal.PHOS_5) if heat > 0.0 else Look.c(Pal.PHOS_4))

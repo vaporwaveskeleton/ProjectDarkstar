@@ -95,9 +95,9 @@ func _draw() -> void:
 			continue
 		var p := world.to_screen(s.pos)
 		if s.hostile:
-			draw_circle(p.round(), 3.0, Pal.CHOIR_2)
-			draw_circle(p.round(), 1.5, Pal.CHOIR_5)
+			draw_circle(p.round(), 3.0, Look.c(Pal.CHOIR_2))
+			draw_circle(p.round(), 1.5, Look.c(Pal.CHOIR_5))
 		else:
 			var tail := p - s.vel.normalized() * world.tuning.lance_length
-			draw_line(tail.round(), p.round(), Pal.GAS_2, 3.0)
-			draw_line(tail.round(), p.round(), Pal.GAS_5, 1.0)
+			draw_line(tail.round(), p.round(), Look.c(Pal.GAS_2), 3.0)
+			draw_line(tail.round(), p.round(), Look.c(Pal.GAS_5), 1.0)

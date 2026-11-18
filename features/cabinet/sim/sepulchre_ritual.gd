@@ -87,7 +87,7 @@ func accepts_deposits() -> bool:
 func deposit() -> void:
 	var t := world.tuning
 	shard_points += 1
-	world.fx.ring(pos, Pal.CHOIR_4, 16.0)
+	world.fx.ring(pos, Look.c(Pal.CHOIR_4), 16.0)
 	if shard_points < t.shards_per_segment or segments >= t.segments_total:
 		return
 	shard_points = 0
@@ -130,7 +130,7 @@ func charge_contact(p: Vector2, r: float) -> bool:
 	elif segments > 0:
 		_knock_modules(p)
 	else:
-		world.fx.burst(p, Pal.BONE_2, 6, 40.0)
+		world.fx.burst(p, Look.c(Pal.BONE_2), 6, 40.0)
 	return true
 
 
@@ -143,8 +143,8 @@ func _knock_modules(at: Vector2) -> void:
 		world.award(t.score_module, world.torus.wrap(pos + Vector2.from_angle(world.rng.randf() * TAU) * 20.0))
 	world.sfx(&"segment_knocked")
 	world.sfx(&"charge_hit", -4.0)
-	world.fx.burst(pos, Pal.BONE_4, 10 * n, 120.0)
-	world.fx.ring(at, Pal.PHOS_4, 40.0)
+	world.fx.burst(pos, Look.c(Pal.BONE_4), 10 * n, 120.0)
+	world.fx.ring(at, Look.c(Pal.PHOS_4), 40.0)
 	world.shake(3.0, 0.2)
 	_set_phase(_phase_for(segments))
 	if segments <= 0 and world.stage.goal == CabinetStage.Goal.CLEAR_SEPULCHRE:
@@ -156,8 +156,8 @@ func _hit_entity(at: Vector2) -> void:
 	hits_left -= 1
 	world.award(t.score_module, entity_pos)              # a piece of the entity (SYS-001 §7.1)
 	world.sfx(&"charge_hit")
-	world.fx.burst(at, Pal.BONE_4, 16, 140.0)
-	world.fx.ring(at, Pal.PHOS_5, 50.0)
+	world.fx.burst(at, Look.c(Pal.BONE_4), 16, 140.0)
+	world.fx.ring(at, Look.c(Pal.PHOS_5), 50.0)
 	world.shake(4.0, 0.25)
 	_twitch = 0.5
 	if phase == Phase.AWAKENING and _awaken_t <= t.awakening_silence + t.stagger_window:
@@ -173,9 +173,9 @@ func _unmake() -> void:
 	awake = false
 	world.award(world.tuning.score_entity, entity_pos)
 	world.sfx(&"entity_unmade")
-	world.fx.burst(entity_pos, Pal.BONE_4, 80, 220.0)
-	world.fx.burst(entity_pos, Pal.PHOS_5, 40, 160.0)
-	world.fx.ring(entity_pos, Pal.BONE_5, 160.0)
+	world.fx.burst(entity_pos, Look.c(Pal.BONE_4), 80, 220.0)
+	world.fx.burst(entity_pos, Look.c(Pal.PHOS_5), 40, 160.0)
+	world.fx.ring(entity_pos, Look.c(Pal.BONE_5), 160.0)
 	world.shake(4.0, 0.25)
 	AudioService.set_chant(0.0)
 	world.entity_unmade.emit()
@@ -188,7 +188,7 @@ func lance_test(p: Vector2) -> bool:
 	var r := BODY_RADIUS if awake or phase == Phase.AWAKENING else SEPULCHRE_RADIUS * 0.7
 	if world.torus.distance(p, centre) > r:
 		return false
-	world.fx.burst(p, Pal.BONE_3, 3, 30.0)          # the lance does not bite (AUDIO-001 A03)
+	world.fx.burst(p, Look.c(Pal.BONE_3), 3, 30.0)          # the lance does not bite (AUDIO-001 A03)
 	return true
 
 
@@ -208,7 +208,7 @@ func tick(delta: float) -> void:
 				world.entity_line.emit("ENTITY_IT_WAKES")
 				world.sfx(&"wake_hit")
 				world.shake(4.0, 0.25)
-				world.fx.ring(pos, Pal.NULL, 200.0)
+				world.fx.ring(pos, Look.c(Pal.NULL), 200.0)
 				AudioService.set_chant(0.0)
 			if _awaken_t >= t.awakening_silence + t.stagger_window:
 				awake = true
@@ -251,7 +251,7 @@ func _rampage(delta: float) -> void:
 
 func _heal() -> void:
 	hits_left = mini(world.tuning.unravel_hits, hits_left + 1)
-	world.fx.ring(entity_pos, Pal.CHOIR_4, 44.0)
+	world.fx.ring(entity_pos, Look.c(Pal.CHOIR_4), 44.0)
 
 
 func _update_chant() -> void:
@@ -280,24 +280,24 @@ func _draw_sepulchre() -> void:
 	var cold := not wakes
 	# the altar: a slab of fused vertebrae
 	var slab := PackedVector2Array([c + Vector2(-24, 18), c + Vector2(24, 18), c + Vector2(18, 26), c + Vector2(-18, 26)])
-	Pal.glow_polyline(self, slab, Pal.BONE_1 if cold else Pal.BONE_2, Pal.BONE_0)
+	Pal.glow_polyline(self, slab, Look.c(Pal.BONE_1) if cold else Look.c(Pal.BONE_2), Look.c(Pal.BONE_0))
 	# the punctum: the will of the thing, a hole where a star should be
-	draw_circle(c, 9.0, Pal.NULL)
-	draw_arc(c, 9.0, 0.0, TAU, 24, Pal.VOID_3 if cold else Pal.VOID_5, 1.0)
+	draw_circle(c, 9.0, Look.c(Pal.NULL))
+	draw_arc(c, 9.0, 0.0, TAU, 24, Look.c(Pal.VOID_3) if cold else Look.c(Pal.VOID_5), 1.0)
 	if phase >= Phase.QUICKENING and not cold:
 		for k in 4:
 			var a := _rot * 2.0 + k * TAU / 4.0
-			draw_line(c + Vector2.from_angle(a) * 9.0, c + Vector2.from_angle(a + 0.3) * 20.0, Pal.PHOS_2)
+			draw_line(c + Vector2.from_angle(a) * 9.0, c + Vector2.from_angle(a + 0.3) * 20.0, Look.c(Pal.PHOS_2))
 	# the 20 module slots
 	var total := world.tuning.segments_total
 	for i in total:
 		var a := _rot + TAU * i / total
 		var q := (c + Vector2.from_angle(a) * 20.0).round()
 		if i < segments:
-			var col := Pal.BONE_2 if cold else (Pal.BONE_5 if phase >= Phase.QUICKENING else Pal.BONE_4)
+			var col := Look.c(Pal.BONE_2) if cold else (Look.c(Pal.BONE_5) if phase >= Phase.QUICKENING else Look.c(Pal.BONE_4))
 			draw_rect(Rect2(q - Vector2(1, 1), Vector2(3, 3)), col)
 		else:
-			draw_rect(Rect2(q, Vector2.ONE), Pal.BONE_0)
+			draw_rect(Rect2(q, Vector2.ONE), Look.c(Pal.BONE_0))
 
 
 func _draw_entity() -> void:
@@ -310,7 +310,7 @@ func _draw_entity() -> void:
 	var k := clampf(_awaken_t / maxf(0.01, world.tuning.awakening_silence), 0.0, 1.0) if forming else 1.0
 	var r := lerpf(20.0, BODY_RADIUS, k)
 	# body: the void it is made of
-	draw_circle(c, r - 6.0, Pal.NULL)
+	draw_circle(c, r - 6.0, Look.c(Pal.NULL))
 	# 20 vertebrae, minus the pieces the Charges took
 	var total := world.tuning.segments_total
 	var present := total if forming else int(ceil(float(total) * hits_left / world.tuning.unravel_hits))
@@ -320,14 +320,14 @@ func _draw_entity() -> void:
 		if i < present:
 			var plate := PackedVector2Array([q + Vector2.from_angle(a) * 4.0, q + Vector2.from_angle(a + 1.6) * 3.0,
 				q - Vector2.from_angle(a) * 3.0, q + Vector2.from_angle(a - 1.6) * 3.0])
-			draw_colored_polygon(plate, Pal.BONE_3)
-			draw_polyline(plate + PackedVector2Array([plate[0]]), Pal.BONE_5)
+			draw_colored_polygon(plate, Look.c(Pal.BONE_3))
+			draw_polyline(plate + PackedVector2Array([plate[0]]), Look.c(Pal.BONE_5))
 		else:
-			draw_rect(Rect2(q.round(), Vector2.ONE), Pal.PHOS_3)
+			draw_rect(Rect2(q.round(), Vector2.ONE), Look.c(Pal.PHOS_3))
 	# the eye: always on you
 	var look := world.torus.delta(entity_pos, world.vigil.pos).normalized() if world.vigil.alive else entity_dir
 	var eye := (c + look * (r * 0.35)).round()
-	draw_circle(eye, 4.0, Pal.PHOS_1)
-	draw_circle(eye, 2.0, Pal.PHOS_5)
+	draw_circle(eye, 4.0, Look.c(Pal.PHOS_1))
+	draw_circle(eye, 2.0, Look.c(Pal.PHOS_5))
 	if _staggered > 0.0 and int(world.time * 10.0) % 2 == 0:
-		draw_arc(c, r + 6.0, 0.0, TAU, 32, Pal.BONE_5, 1.0)
+		draw_arc(c, r + 6.0, 0.0, TAU, 32, Look.c(Pal.BONE_5), 1.0)

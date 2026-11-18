@@ -63,3 +63,44 @@ func test_code_palette_constants_match_the_palette_file() -> void:
 		elif not (Pal.ALL[name] as Color).is_equal_approx(Color.html(str(entry["hex"]))):
 			bad.append("wrong " + name)
 	assert_array(bad).is_empty()
+
+
+func after_test() -> void:
+	Look.t = 0.0
+
+
+func test_neon_cabinet_palette_covers_every_role_and_matches_art_001() -> void:
+	var art := FileAccess.get_file_as_string("res://docs/02-art/ART_BIBLE.md")
+	var missing: Array[String] = []
+	for name: String in Pal.ALL:
+		if not Look.NEON.has(name):
+			missing.append("no neon entry for " + name)
+			continue
+		var hex := "#" + (Look.NEON[name] as Color).to_html(false).to_upper()
+		if not (hex in art):
+			missing.append("%s %s not in ART-001 §15.2" % [name, hex])
+	assert_array(missing).is_empty()
+
+
+func test_look_dial_morphs_neon_into_the_base_palette() -> void:
+	Look.t = 0.0
+	assert_bool(Look.c(Pal.CHOIR_3).is_equal_approx(Look.NEON["CHOIR-3"])).is_true()
+	Look.t = 1.0
+	assert_bool(Look.c(Pal.CHOIR_3).is_equal_approx(Pal.CHOIR_3)).is_true()
+	Look.t = 0.5
+	var mid := Look.c(Pal.GAS_4)
+	var neon: Color = Look.NEON["GAS-4"]
+	assert_float(mid.r).is_between(minf(neon.r, Pal.GAS_4.r), maxf(neon.r, Pal.GAS_4.r))
+	# non-palette colours pass through untouched, alpha is kept
+	assert_bool(Look.c(Color(0.123, 0.456, 0.789, 0.5)).is_equal_approx(Color(0.123, 0.456, 0.789, 0.5))).is_true()
+	assert_float(Look.c(Color(Pal.BONE_5, 0.25)).a).is_equal_approx(0.25, 0.001)
+
+
+func test_role_law_holds_in_neon_player_and_choir_hues_stay_apart() -> void:
+	# ART-001 §4 law 1 at T0: the player's ramp (yellow) and the Choir's (magenta) never share a hue.
+	for i in 6:
+		var gas: Color = Look.NEON["GAS-%d" % i]
+		for j in 6:
+			var choir: Color = Look.NEON["CHOIR-%d" % j]
+			var dh := absf(gas.h - choir.h)
+			assert_float(minf(dh, 1.0 - dh)).override_failure_message("GAS-%d vs CHOIR-%d too close in hue" % [i, j]).is_greater(0.15)

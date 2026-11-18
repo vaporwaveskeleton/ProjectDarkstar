@@ -69,3 +69,7 @@ desktop.ini
 # The tool is a third-party Node project installed per machine (README); its renders are committed.
 /.claude/skills/chirp-game-audio/
 /assets/audio/generated/_preview/
+# pxl (pixel art as code): third-party Node tool, installed per machine (README)
+/.claude/skills/pxl/
+/assets/art/generated/_preview/
+/art/src/out/

@@ -1,5 +1,5 @@
 extends Control
-## The Ruins of the Ninth Sky, first arrival (GDD §6.4) — a stub: the hub exists outside the loop,
+## The Ruins of the Ninth Sky, first arrival (GDD §6.4), adrift in a dimmed aether (ART-001 §16) — a stub: the hub exists outside the loop,
 ## so this is where the player lands after THE PRETENCE. It saves the anchored profile at the
 ## allowed `ruins_entry` reason (SYS-001 §8) and returns to the cabinet's title.
 
@@ -9,6 +9,8 @@ var _ready_for_input := false
 
 
 func _ready() -> void:
+	Look.t = 1.0                       # past the Pretence: the Aether (ART-001 §16)
+	RenderingServer.set_default_clear_color(Pal.VOID_0)
 	_font = ThemeDB.fallback_font
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	var loaded := SaveService.load_slot(&"profile")
@@ -26,6 +28,8 @@ func _exit_tree() -> void:
 
 func _process(delta: float) -> void:
 	_t += delta
+	# the aether, dimmed: the first sky has gone dark (ART-001 §16)
+	((%Aether as ColorRect).material as ShaderMaterial).set_shader_parameter(&"time_s", _t)
 	queue_redraw()
 
 
@@ -43,7 +47,6 @@ func _centered(y: float, s: String, size: int, col: Color) -> void:
 
 
 func _draw() -> void:
-	draw_rect(Rect2(0, 0, 640, 360), Pal.NULL)
 	var k := clampf(_t / 4.0, 0.0, 1.0)
 	# the Lantern Tree as a sapling: one brass stem, one lamp, in the only light there is
 	var base := Vector2(320, 250)

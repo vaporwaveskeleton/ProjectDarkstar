@@ -153,7 +153,7 @@ func kill(g: Grub, by_player: bool) -> void:
 	if by_player:
 		world.award(world.tuning.score_grub, g.pos)
 		world.sfx(&"grub_die", -4.0)
-		world.fx.burst(g.pos, Pal.CHOIR_4, 12, 70.0)
+		world.fx.burst(g.pos, Look.c(Pal.CHOIR_4), 12, 70.0)
 	_respawn_timers.append(world.tuning.grub_respawn)
 
 
@@ -166,11 +166,11 @@ func _draw() -> void:
 		var c := world.to_screen(g.pos)
 		var heading := g.vel.normalized() if g.vel.length() > 1.0 else Vector2.RIGHT
 		var side := heading.orthogonal()
-		var body := Pal.CHOIR_5 if g.flash > 0.4 else Pal.CHOIR_3
+		var body := Look.c(Pal.CHOIR_5) if g.flash > 0.4 else Look.c(Pal.CHOIR_3)
 		for k in 3:
 			var q := c - heading * (k * 4.0) + side * sin(g.wiggle - k * 1.1) * 1.5
 			draw_arc(q.round(), 3.0 - k * 0.6, 0.0, TAU, 8, body, 1.0)
-		draw_rect(Rect2((c + heading * 2.0).round(), Vector2.ONE), Pal.CHOIR_5)
+		draw_rect(Rect2((c + heading * 2.0).round(), Vector2.ONE), Look.c(Pal.CHOIR_5))
 		if g.carrying:
 			var s := (c - side * 6.0).round()
-			draw_colored_polygon(PackedVector2Array([s + Vector2(0, -3), s + Vector2(2, 0), s + Vector2(0, 3), s + Vector2(-2, 0)]), Pal.PHOS_4)
+			draw_colored_polygon(PackedVector2Array([s + Vector2(0, -3), s + Vector2(2, 0), s + Vector2(0, 3), s + Vector2(-2, 0)]), Look.c(Pal.PHOS_4))

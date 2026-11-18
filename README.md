@@ -22,6 +22,15 @@ Controls: **WASD** move · **mouse** aim · **left click** Arc-Lance (mine and s
 
 Tips: fire in calm bursts — over-firing a geode (9 hits in 1.2 s) shatters it and scatters the glass where the Grubs can steal it. Shoot Grubs that are carrying glass. Acolytes' censers lag a quarter-second behind you: keep moving.
 
+## Art tool (pxl)
+
+Build-time pixel art is code too (GDD D-13). Sources live in `art/src/*.px.js` (each starts with `include("darkstar_palette.px.js")`) and are rendered by [pxl](https://github.com/uilianks/pxl) into `assets/art/generated/` (committed). To edit art, install pxl once per machine (Node ≥ 22.18, no dependencies):
+
+```
+git clone https://github.com/uilianks/pxl .claude/skills/pxl
+```
+Then `node .claude/skills/pxl/bin/pxl.js serve art/src/reference.px.js` for the live viewer (http://127.0.0.1:4321), `... lint art/src/<file>.px.js` before calling art done, and `... build art/src/<file>.px.js --out assets/art/generated` to re-render. Only palette colours; never `image()`. Details: ART-001 §14.8.
+
 ## Sound tools (chirp)
 
 Every sound is code (GDD D-14). Authored sounds live in `audio/src/*.cx.js` and are rendered by [chirp](https://github.com/uilianks/chirp) into `assets/audio/generated/` (committed, so playing the game needs nothing extra). To edit sounds you need Node ≥ 22.18 and chirp, installed once per machine as a project Claude Code skill:

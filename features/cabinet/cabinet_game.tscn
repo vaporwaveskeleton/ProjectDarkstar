@@ -22,6 +22,7 @@
 [ext_resource type="Script" path="res://features/cabinet/pretence_reveal.gd" id="21"]
 [ext_resource type="Script" path="res://core/ui/screen_stack.gd" id="22"]
 [ext_resource type="Script" path="res://features/cabinet/sim/autopilot.gd" id="23"]
+[ext_resource type="Shader" path="res://shaders/aether_fog.gdshader" id="24"]
 
 [sub_resource type="ShaderMaterial" id="crt_mat"]
 shader = ExtResource("19")
@@ -31,6 +32,12 @@ shader_parameter/curvature = 0.06
 shader_parameter/vignette = 0.35
 shader_parameter/desaturate = 0.0
 shader_parameter/tear = 0.0
+shader_parameter/time_s = 0.0
+
+[sub_resource type="ShaderMaterial" id="aether_mat"]
+shader = ExtResource("24")
+shader_parameter/amount = 0.0
+shader_parameter/drain = 0.0
 shader_parameter/time_s = 0.0
 
 [node name="CabinetGame" type="Node"]
@@ -89,6 +96,16 @@ world = NodePath("../World")
 [node name="MawLayer" type="CanvasLayer" parent="."]
 layer = 1
 
+[node name="Aether" type="ColorRect" parent="MawLayer"]
+unique_name_in_owner = true
+material = SubResource("aether_mat")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
 [node name="Maw" type="Node2D" parent="MawLayer"]
 unique_name_in_owner = true
 visible = false
@@ -136,10 +153,11 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("20")
 
-[node name="Reveal" type="Node" parent="." node_paths=PackedStringArray("maw")]
+[node name="Reveal" type="Node" parent="." node_paths=PackedStringArray("maw", "aether")]
 unique_name_in_owner = true
 script = ExtResource("21")
 maw = NodePath("../MawLayer/Maw")
+aether = NodePath("../MawLayer/Aether")
 
 [node name="Overlays" type="CanvasLayer" parent="."]
 unique_name_in_owner = true

@@ -48,7 +48,7 @@ func on_guard_phase() -> void:
 	_guard_spawned = true
 	for i in world.stage.guard_acolytes:
 		var a := spawn(world.torus.wrap(world.ritual.pos + Vector2.from_angle(TAU * i / maxi(1, world.stage.guard_acolytes)) * GUARD_ORBIT))
-		world.fx.ring(a.pos, Pal.CHOIR_4, 24.0)
+		world.fx.ring(a.pos, Look.c(Pal.CHOIR_4), 24.0)
 
 
 func tick(delta: float) -> void:
@@ -128,8 +128,8 @@ func kill(a: Acolyte) -> void:
 	a.alive = false
 	world.award(world.tuning.score_acolyte, a.pos)
 	world.sfx(&"acolyte_die", -2.0)
-	world.fx.burst(a.pos, Pal.CHOIR_4, 22, 110.0)
-	world.fx.ring(a.pos, Pal.CHOIR_3, 30.0)
+	world.fx.burst(a.pos, Look.c(Pal.CHOIR_4), 22, 110.0)
+	world.fx.ring(a.pos, Look.c(Pal.CHOIR_3), 30.0)
 	world.shake(2.0, 0.15)
 
 
@@ -140,11 +140,11 @@ func _draw() -> void:
 		if not visible_at(a.pos, 20.0):
 			continue
 		var c := world.to_screen(a.pos).round()
-		var body := Pal.CHOIR_5 if a.flash > 0.4 else Pal.CHOIR_3
+		var body := Look.c(Pal.CHOIR_5) if a.flash > 0.4 else Look.c(Pal.CHOIR_3)
 		var spike := PackedVector2Array([c + Vector2(0, -11), c + Vector2(5, 7), c + Vector2(-5, 7)])
-		Pal.glow_polyline(self, spike, body, Pal.CHOIR_1)
-		draw_rect(Rect2(c + Vector2(-1, -5), Vector2(2, 2)), Pal.BONE_4)              # the pale face
+		Pal.glow_polyline(self, spike, body, Look.c(Pal.CHOIR_1))
+		draw_rect(Rect2(c + Vector2(-1, -5), Vector2(2, 2)), Look.c(Pal.BONE_4))              # the pale face
 		var arm := (c + Vector2.from_angle(a.turret) * 9.0).round()
-		draw_line(c, arm, Pal.CHOIR_2)
+		draw_line(c, arm, Look.c(Pal.CHOIR_2))
 		var tell := telling(a) and world.vigil.alive and world.torus.distance(a.pos, world.vigil.pos) < world.tuning.acolyte_range
-		draw_circle(arm, 2.5, Pal.SIGNAL if tell else Pal.CHOIR_4)
+		draw_circle(arm, 2.5, Look.c(Pal.SIGNAL) if tell else Look.c(Pal.CHOIR_4))

@@ -36,6 +36,7 @@ var _demo_t := 0.0
 
 
 func _ready() -> void:
+	Look.t = 0.0                       # Act 0 is the neon cabinet (ART-001 §15)
 	score = ScoreKeeper.new(tuning)
 	score.score_changed.connect(func(s: int) -> void: hud.score = s)
 	score.lives_changed.connect(func(l: int) -> void: hud.lives = l)
@@ -117,6 +118,7 @@ func _enter(s: int, seconds: float = 0.0) -> void:
 
 
 func _process(delta: float) -> void:
+	RenderingServer.set_default_clear_color(Look.c(Pal.VOID_0))   # arcade black at T0 (the vacuum is the lie, ART-001 §16)
 	var mat := crt.material as ShaderMaterial
 	if mat:
 		mat.set_shader_parameter(&"time_s", world.time)

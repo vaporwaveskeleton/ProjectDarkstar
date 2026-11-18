@@ -18,6 +18,7 @@ var demo_enabled := true         ## tests turn this off
 
 
 func _ready() -> void:
+	Look.t = 0.0                       # the title is part of the neon cabinet (ART-001 §15)
 	cancel_closes = false
 	_new_vigil.pressed.connect(_on_new_vigil)
 	_settings.pressed.connect(open_settings)

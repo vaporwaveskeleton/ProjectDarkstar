@@ -476,6 +476,19 @@ Eaten elements (WARP-001 §4.3) are an `Absence` with the chalk frame still draw
 ### 5.4 Ledger Compass redraw
 The compass draws the sector list, corruption state and up to 8 markers ✱. Static layers (sector cells, corruption bruise) redraw into a cached texture only when the macro map changes or at most 10 Hz ✱; markers are drawn per frame by one small `_draw` Control. Lies and H16 are applied in `HudModel`/`HudLiar`, never in the drawing code. Budget ≤ 0.2 ms per frame ✱ (§8.1).
 
+### 5.5 Rendering ladder (ART-001 §15)
+Fidelity grows with the warp; the WarpComposer owns the switches.
+
+| Stage | Enabled | Owner |
+|---|---|---|
+| T0 / Act 0 | flat colour through `Look.c()` (Neon Cabinet palette), CRT post | `features/cabinet` (built) |
+| THE PRETENCE | `Look.t` 0 → 1: every cabinet colour morphs neon → Aether | `PretenceReveal` (built) |
+| T1+ | **the Aether** (ART-001 §16): layered aether-fog shader fields with colour and currents, the crystal-sphere parallax, ambient aether-life particles; `PointLight2D` lantern (key light) + `LightOccluder2D` shadows; soft particles (`GPUParticles2D`, generated textures) | WarpComposer (planned); the reveal's first aether fog is built (`shaders/aether_fog.gdshader`) |
+| T2+ | emitter lights (Shroud, glass, veins), 2D HDR glow/bloom, dense particle systems, Shroud field shader | WarpComposer (planned) |
+| T3+ | volumetric fog and god-rays, distortion/lensing, normal-mapped generated bodies | WarpComposer (planned) |
+
+Forward+ (§1.1) supports 2D lights, shadows and HDR 2D. Every rung has a cost line in §8.1; on min spec the composer drops the costliest rung first, never a readability rule (ART-001 §15.1).
+
 ---
 
 ## 6. Asset consumption
@@ -494,9 +507,10 @@ Naming (ART-002 §2 grammar), palette (every row's colours ⊆ its kit's `kit_lo
 `core/assets/manifest_importer.gd` (planned), run headless (`-s`) as the `manifest_import` build step (§1.4). It strips the UTF-8 BOM the generator writes, merges `assets/sprites/SPRITE_MANIFEST_HAND.csv` (hand-authored rows the generator must never overwrite, ASSET-003), and fails on a duplicate id. Atlas sidecar JSON format: ASSET-003 §6.2. It reads the manifest and atlas JSON and writes `generated/sprite_table.gd`: a `const` dictionary `id → {atlas, region, pivot, sockets, frames}` (`AtlasTable`). Runtime code addresses sprites by manifest id only. A missing id in a dev build draws a VOID-5/BONE-5 checkerboard module and logs an error; in a release build the lint above has already failed the build.
 
 ### 6.5 Generators (current)
+- **Visuals (build time):** pxl renders from `art/src/*.px.js` in `assets/art/generated/` (PNG, sheets, `SpriteFrames` `.tres`), on the palette (D-13 amended, ART-001 §14.8). They load as ordinary textures and swap between tiers.
 - **Visuals:** generator classes draw through `CanvasItem` or shaders, with colours from `Pal` (`core/ui/pal.gd`) and text from `PixelText`. A generator is deterministic from its parameters and seed; the WarpComposer (§5.1) feeds it `tier` and `horror`.
 - **Sound:** `AudioService` plays the chirp render of each cue (`res://assets/audio/generated/sfx/<id>.wav`, built from `audio/src/*.cx.js`, D-14 amended) and falls back to streams built by `SfxSynth` at load; long stems and beds render on a worker thread; reactive textures use `AudioStreamGenerator` (AUDIO-001 §11.5).
-- **Enforcement:** `tests/test_generated_assets_only.gd` fails if any scene, script or resource under `features/`, `scenes/`, `core/`, `autoload/` or `data/` references an image, font or texture file, or an audio file outside `assets/audio/generated/`; if a render has no matching `.cx.js` source; or if a source uses `sample()`.
+- **Enforcement:** `tests/test_generated_assets_only.gd` fails if any scene, script or resource under `features/`, `scenes/`, `core/`, `autoload/` or `data/` references a font, an image outside `assets/art/generated/`, or an audio file outside `assets/audio/generated/`; if any render has no matching `.px.js`/`.cx.js` source; if a pxl source does not include a project palette; or if a source uses pxl `image()` or chirp `sample()`.
 
 ### 6.4 CompositeRig consumption
 `CompositeRig` (§2.4) reads part descriptors (ART-002 §5.1) and instantiates the part generators they name (§6.5); runtime mutation (ART-002 §5.3, the warp's limb swaps) swaps atlas regions on existing `Sprite2D` nodes, never instantiates nodes per frame.
@@ -594,7 +608,7 @@ The smoke run prints `BOOT_SMOKE: reached route 'sector'` and exits 0. GdUnit wr
 | `features/cabinet/tests/test_cabinet_rules.gd` | torus maths, extra Vigils, calm mining vs over-fire, glass → Charges with overflow, Charge homing + module knock-off + interception, Grub deposits → segments, Cold Sepulchre never wakes, Awakening silence → line → rampage, contact death, lance cannot bite the entity, 13 Charges unmake for 15,000, censer lag 0.25 s, **autopilot clears A0-1 end to end** |
 | `tests/test_input_map.gd` | every GDD §4.1 key/mouse binding and GDD §4.3 pad binding (ruling R-12); no two gameplay actions share a key |
 
-Result on 2026-11-18 (chirp + D-14 amendment): 97 test cases, 0 failures, 0 errors; boot smoke (attract → cabinet) exit 0 with no `ERROR`/`WARNING` lines.
+Result on 2026-11-18 (pxl + D-13 amendment): 100 test cases, 0 failures, 0 errors; boot smoke (attract → cabinet) exit 0 with no `ERROR`/`WARNING` lines.
 
 Not covered (honest list): window sizes other than the 640×360 logical viewport, real integer scaling at 1080p/1440p, gamepad glyphs (none exist), shaders, audio, Steam, performance. Slopes, stairs, doors and moving platforms are N/A (§2.6).
 
@@ -652,3 +666,6 @@ The owner delegated every open ruling to the 2026-11-17 authoring pass. Each rul
 | 2026-11-18 | **D-13 / D-14 (user directive): all graphics generated at runtime (vector or shader), all sound generated by code.** Raster pipeline (manifest import, atlases, sprite imports) retired; PNGs under `assets/sprites/` become reference only and are excluded from export; `tests/test_generated_assets_only.gd` enforces it; the reveal's PNG replaced by a generated body; `AudioService` cues are the design, not placeholders | user |
 | 2026-11-18 | Reference sprites (`assets/sprites/`, 83 PNGs) untracked from git and Godot-ignored (`.gdignore`): kept locally as the look generators reproduce, never pushed, never imported or exported. Only `SPRITE_MANIFEST.csv` stays tracked | owner |
 | 2026-11-18 | **D-14 amended (user directive):** chirp (uilianks/chirp, MIT) installed as a project Claude Code skill in `.claude/skills/chirp-game-audio/` (git-ignored); `audio/src/*.cx.js` → `assets/audio/generated/` WAV renders, committed; `AudioService` prefers renders, falls back to `SfxSynth`; asset test rewritten for the amended rule | user |
+| 2026-11-18 | **D-13 amended (user directive):** pxl (uilianks/pxl, MIT) installed as a project Claude Code skill in `.claude/skills/pxl/` (git-ignored); `art/src/*.px.js` (with the shared palette include) → `assets/art/generated/`, committed; renders must stay on the 32-colour palette (test checks every pixel); `image()` forbidden; runtime generation stays for continuous morphs | user |
+| 2026-11-18 | **Fidelity ladder (owner direction):** Act 0 renders in the Neon Cabinet palette (flat, unlit); THE PRETENCE morphs it into the base palette (`Look.t`); from T1 lighting, fog, bloom and complex particles are allowed and grow with the tier (ART-001 §15, §5.5 here). Per-pixel palette enforcement on pxl renders removed; role laws kept | owner |
+| 2026-11-18 | **The Aether (owner direction):** space is retro-future Victorian, full of aether, fog, life, crystal spheres and colour, not a black vacuum; Act 0's black is the Pretence and the only true black is the entity (ART-001 §16). The reveal blooms into aether colour instead of desaturating; WARP-001 W0-08/W1-01 re-voiced; ART-001 law 4 amended | owner |

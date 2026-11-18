@@ -39,26 +39,26 @@ func _draw() -> void:
 	if world != null and world.torus != null and eaten < 1.0:
 		_draw_compass()
 	if peel < 1.0 and eaten < 0.9:
-		PixelText.draw_centered(self, 320.0, 351.0 + peel * 20.0, tr("CAB_MAKER"), Pal.BONE_1)
+		PixelText.draw_centered(self, 320.0, 351.0 + peel * 20.0, tr("CAB_MAKER"), Look.c(Pal.BONE_1))
 
 
 func _draw_bezel(x: float, shift: float) -> void:
 	var r := Rect2(x + shift, 0, SIDE, 360)
-	draw_rect(r, Pal.VOID_0)
+	draw_rect(r, Look.c(Pal.VOID_0))
 	var inner := r.grow(-6)
-	draw_rect(inner, Pal.VOID_1)
-	draw_rect(inner, Pal.VOID_3, false, 1.0)
+	draw_rect(inner, Look.c(Pal.VOID_1))
+	draw_rect(inner, Look.c(Pal.VOID_3), false, 1.0)
 	# cabinet trim: brass rivets down the inner edge
 	var edge := r.position.x + (SIDE - 3.0 if x < 320.0 else 2.0)
 	for y in range(12, 360, 24):
-		draw_rect(Rect2(edge, y, 1, 1), Pal.GAS_1)
+		draw_rect(Rect2(edge, y, 1, 1), Look.c(Pal.GAS_1))
 	if crack > 0.0:
 		var cx := r.position.x + SIDE * 0.5
 		var pts := PackedVector2Array()
 		for k in 9:
 			var y := 360.0 * k / 8.0
 			pts.append(Vector2(cx + sin(k * 2.3 + x) * 14.0 * crack, y))
-		draw_polyline(pts, Pal.BONE_4, 1.0)
+		draw_polyline(pts, Look.c(Pal.BONE_4), 1.0)
 
 
 ## Cabinet face (5 × 7, ART-001 §11): `p` is the baseline, as with draw_string.
@@ -69,62 +69,62 @@ func _text(p: Vector2, s: String, col: Color, _size: int = 8) -> void:
 func _draw_left_text(shift: float) -> void:
 	var x := 12.0 + shift
 	if eaten < 0.3:
-		var one_up := Pal.GAS_4 if int(_t * 2.0) % 2 == 0 else Pal.GAS_2
+		var one_up := Look.c(Pal.GAS_4) if int(_t * 2.0) % 2 == 0 else Look.c(Pal.GAS_2)
 		_text(Vector2(x, 30), tr("CAB_1UP"), one_up, 10)
-		_text(Vector2(x, 46), LocFormat.format_int(score), Pal.BONE_5, 10)
+		_text(Vector2(x, 46), LocFormat.format_int(score), Look.c(Pal.BONE_5), 10)
 	if eaten < 0.6:
-		_text(Vector2(x, 78), tr("CAB_VIGILS"), Pal.BONE_2)
+		_text(Vector2(x, 78), tr("CAB_VIGILS"), Look.c(Pal.BONE_2))
 		for i in maxi(0, lives - 1):
 			var c := Vector2(x + 6 + i * 14, 94)
 			var hull := PackedVector2Array([c + Vector2(0, -5), c + Vector2(4, 4), c + Vector2(0, 2), c + Vector2(-4, 4)])
-			Pal.glow_polyline(self, hull, Pal.GAS_4, Pal.GAS_1)
+			Pal.glow_polyline(self, hull, Look.c(Pal.GAS_4), Look.c(Pal.GAS_1))
 	if eaten < 0.9:
 		var blink := int(_t * 1.5) % 2 == 0
-		_text(Vector2(x, 330), tr("CAB_CREDIT"), Pal.BONE_1 if blink else Pal.BONE_0)
+		_text(Vector2(x, 330), tr("CAB_CREDIT"), Look.c(Pal.BONE_1) if blink else Look.c(Pal.BONE_0))
 
 
 func _draw_right_text(shift: float) -> void:
 	var x := 640.0 - SIDE + 12.0 + shift
 	if eaten < 0.3:
-		_text(Vector2(x, 30), tr("CAB_HI"), Pal.BONE_2, 10)
-		_text(Vector2(x, 46), LocFormat.format_int(maxi(hi_score, score)), Pal.BONE_4, 10)
+		_text(Vector2(x, 30), tr("CAB_HI"), Look.c(Pal.BONE_2), 10)
+		_text(Vector2(x, 46), LocFormat.format_int(maxi(hi_score, score)), Look.c(Pal.BONE_4), 10)
 	if eaten < 0.6:
-		_text(Vector2(x, 78), tr("CAB_GLASS"), Pal.BONE_2)
+		_text(Vector2(x, 78), tr("CAB_GLASS"), Look.c(Pal.BONE_2))
 		for i in magazine:
 			var c := Vector2(x + 4 + (i % 3) * 18, 92 + (i / 3) * 18)
 			var full := i < charges
 			var lamp := PackedVector2Array([c + Vector2(0, -6), c + Vector2(4, 0), c + Vector2(0, 6), c + Vector2(-4, 0)])
 			if full:
-				draw_colored_polygon(lamp, Pal.PHOS_3)
-				draw_rect(Rect2(c - Vector2(0, 1), Vector2(1, 2)), Pal.PHOS_5)
-			Pal.glow_polyline(self, lamp, Pal.PHOS_4 if full else Pal.VOID_4, Pal.VOID_2)
+				draw_colored_polygon(lamp, Look.c(Pal.PHOS_3))
+				draw_rect(Rect2(c - Vector2(0, 1), Vector2(1, 2)), Look.c(Pal.PHOS_5))
+			Pal.glow_polyline(self, lamp, Look.c(Pal.PHOS_4) if full else Look.c(Pal.VOID_4), Look.c(Pal.VOID_2))
 
 
 ## The Ledger Compass: the whole torus at a glance (the Sinistar scanner homage). Honest at T0.
 func _draw_compass() -> void:
 	var r := COMPASS
 	var size := world.torus.size
-	draw_rect(r, Pal.VOID_0)
-	draw_rect(r, Pal.BONE_1 if eaten <= 0.0 else Pal.BONE_0, false, 1.0)
+	draw_rect(r, Look.c(Pal.VOID_0))
+	draw_rect(r, Look.c(Pal.BONE_1) if eaten <= 0.0 else Look.c(Pal.BONE_0), false, 1.0)
 	var scale := Vector2((r.size.x - 4.0) / size.x, (r.size.y - 4.0) / size.y)
 	var o := r.position + Vector2(2, 2)
 	var to_c := func(p: Vector2) -> Vector2: return (o + p * scale).round()
 	# the view window
 	var view := Rect2(to_c.call(world.torus.wrap(world.view_centre - Vector2(240, 180))), Vector2(480, 360) * scale)
-	draw_rect(view, Pal.VOID_3, false, 1.0)
+	draw_rect(view, Look.c(Pal.VOID_3), false, 1.0)
 	for g in world.geodes.items:
-		draw_rect(Rect2(to_c.call(g.pos), Vector2.ONE), Pal.BONE_1)
+		draw_rect(Rect2(to_c.call(g.pos), Vector2.ONE), Look.c(Pal.BONE_1))
 	for s in world.glass.shards:
 		if s.alive:
-			draw_rect(Rect2(to_c.call(s.pos), Vector2.ONE), Pal.PHOS_3)
+			draw_rect(Rect2(to_c.call(s.pos), Vector2.ONE), Look.c(Pal.PHOS_3))
 	for gr in world.grubs.items:
-		draw_rect(Rect2(to_c.call(gr.pos), Vector2.ONE), Pal.CHOIR_4)
+		draw_rect(Rect2(to_c.call(gr.pos), Vector2.ONE), Look.c(Pal.CHOIR_4))
 	for a in world.acolytes.items:
-		draw_rect(Rect2(to_c.call(a.pos), Vector2(2, 2)), Pal.CHOIR_5)
+		draw_rect(Rect2(to_c.call(a.pos), Vector2(2, 2)), Look.c(Pal.CHOIR_5))
 	var rit := world.ritual
 	if rit.phase != SepulchreRitual.Phase.UNMADE:
 		var ep: Vector2 = to_c.call(rit.entity_pos if rit.awake else rit.pos)
-		draw_rect(Rect2(ep - Vector2(2, 2), Vector2(5, 5)), Pal.NULL)
-		draw_rect(Rect2(ep - Vector2(2, 2), Vector2(5, 5)), Pal.PHOS_4 if rit.awake else Pal.VOID_5, false, 1.0)
+		draw_rect(Rect2(ep - Vector2(2, 2), Vector2(5, 5)), Look.c(Pal.NULL))
+		draw_rect(Rect2(ep - Vector2(2, 2), Vector2(5, 5)), Look.c(Pal.PHOS_4) if rit.awake else Look.c(Pal.VOID_5), false, 1.0)
 	if world.vigil.alive:
-		draw_rect(Rect2(to_c.call(world.vigil.pos) - Vector2(1, 1), Vector2(2, 2)), Pal.GAS_5)
+		draw_rect(Rect2(to_c.call(world.vigil.pos) - Vector2(1, 1), Vector2(2, 2)), Look.c(Pal.GAS_5))
