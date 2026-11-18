@@ -106,28 +106,6 @@ size_flags_horizontal = 4
 custom_minimum_size = Vector2(128, 0)
 text = "MENU_QUIT"
 
-[node name="Frame" type="Control" parent="."]
-unique_name_in_owner = true
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-script = ExtResource("7")
-
-[node name="CoinSlot" type="Control" parent="."]
-unique_name_in_owner = true
-layout_mode = 0
-offset_left = 572.0
-offset_top = 252.0
-offset_right = 628.0
-offset_bottom = 332.0
-focus_mode = 2
-script = ExtResource("8")
-tuning = ExtResource("11")
-
 [node name="PowerOn" type="Control" parent="."]
 unique_name_in_owner = true
 visible = false
@@ -150,6 +128,28 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+
+[node name="Frame" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("7")
+
+[node name="CoinSlot" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 572.0
+offset_top = 252.0
+offset_right = 628.0
+offset_bottom = 332.0
+focus_mode = 2
+script = ExtResource("8")
+tuning = ExtResource("11")
 
 [node name="Overlays" type="CanvasLayer" parent="." node_paths=PackedStringArray("base_screen")]
 unique_name_in_owner = true

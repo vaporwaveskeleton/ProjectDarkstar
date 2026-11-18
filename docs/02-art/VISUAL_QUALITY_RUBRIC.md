@@ -335,7 +335,7 @@ Read the 6.3 as: a solid arcade screen with a readable HUD, still without its ho
 6. Bullet-pattern language for the Choir in L1: colour-split shot types and patterns as composition (Saros lesson). (cat. 5)
 
 **Needs a professional artist or specialist**
-1. **The hook** (§7.1): the native-resolution printed bezel (generated illustration, D-13) and its staged peel / crack / decay / warp during the zoom: procedural fracture, shader decay, camera choreography, audio lock. The single biggest lever on the overall score.
+1. **The hook** (§7.1): ✅ the printed bezel art is built (2026-11-18, ART-001 §12.7a, TECH-001 §2.10; at 640×360 logical size, not yet re-scored, not evaluated in motion); still open: native-resolution rendering and its staged peel / crack / decay / warp during the zoom: procedural fracture, shader decay, camera choreography, audio lock. The single biggest lever on the overall score.
 2. The L1 Aether look itself (fog layers, crystal spheres, lantern lighting at native resolution) to the Saros lighting bar.
 3. Live-motion review of Act 0 and the hook from video, with a second reviewer (§9).
 
@@ -367,5 +367,6 @@ Read the 6.3 as: a solid arcade screen with a readable HUD, still without its ho
 
 - Benchmark gameplay frames and current-game captures (§3.2).
 - Implementation guide and UI style guide updates go into ART-001 and UI-001 (no second source of truth) after the first scoring pass.
+- Re-score L0b with captures of the printed bezel (built 2026-11-18, ART-001 §12.7a); the §8.6 table still refers to the placeholder.
 - Quality presets for native resolution (fog/post render scale): TECH-001 Q-T24.
 - ✱ marks review heuristics proposed by this doc (thresholds, review weights), not game numbers; the owner may change them.

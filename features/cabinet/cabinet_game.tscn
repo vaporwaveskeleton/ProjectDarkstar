@@ -1,4 +1,4 @@
-[gd_scene load_steps=25 format=3]
+[gd_scene load_steps=26 format=3]
 
 [ext_resource type="Script" path="res://features/cabinet/cabinet_game.gd" id="1"]
 [ext_resource type="Resource" path="res://data/cabinet/stage_first_vigil.tres" id="2"]
@@ -23,6 +23,7 @@
 [ext_resource type="Script" path="res://core/ui/screen_stack.gd" id="22"]
 [ext_resource type="Script" path="res://features/cabinet/sim/autopilot.gd" id="23"]
 [ext_resource type="Shader" path="res://shaders/aether_fog.gdshader" id="24"]
+[ext_resource type="Script" path="res://features/cabinet/cabinet_screen_hud.gd" id="25"]
 
 [sub_resource type="ShaderMaterial" id="crt_mat"]
 shader = ExtResource("19")
@@ -115,7 +116,7 @@ script = ExtResource("16")
 [node name="HudLayer" type="CanvasLayer" parent="."]
 layer = 2
 
-[node name="Hud" type="Control" parent="HudLayer"]
+[node name="ScreenHud" type="Control" parent="HudLayer"]
 unique_name_in_owner = true
 layout_mode = 3
 anchors_preset = 15
@@ -124,7 +125,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-script = ExtResource("18")
+script = ExtResource("25")
 
 [node name="CrtLayer" type="CanvasLayer" parent="."]
 layer = 3
@@ -139,8 +140,23 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="MessageLayer" type="CanvasLayer" parent="."]
+[node name="BezelLayer" type="CanvasLayer" parent="."]
 layer = 4
+
+[node name="Hud" type="Control" parent="BezelLayer" node_paths=PackedStringArray("screen_hud")]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("18")
+screen_hud = NodePath("../../HudLayer/ScreenHud")
+
+[node name="MessageLayer" type="CanvasLayer" parent="."]
+layer = 5
 
 [node name="Messages" type="Control" parent="MessageLayer"]
 unique_name_in_owner = true
