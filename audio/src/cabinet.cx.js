@@ -140,3 +140,36 @@ sfx("entity_unmade", { vol: 0.85, fx: [reverb({ size: 0.95, damp: 0.3, mix: 0.4 
   tone({ wave: "sine", freq: 40, to: 20, dur: 3.0, env: [0.001, 2.0, 0.3, 1.0] }),
   noise({ color: "white", dur: 2.6, env: [0.001, 1.5, 0.2, 1.0], filter: { type: "lp", from: 5000, to: 30 }, vol: 0.5 }),
   at(0.3, tone({ wave: "fm", fm: { ratio: 2.76, index: 3, decay: 1.5 }, freq: "C6", to: "C4", slide: 2.8, dur: 2.8, env: [0.001, 2.0, 0.2, 1.0], vol: 0.35 })))
+
+// --- M1 additions (AUDIO-001 §12.7 C4; ids match §6.2) ------------------------------------------
+
+// A03 lance on Choir armour: the sound of not biting. A short, dull inharmonic tick (FM, ratio
+// 2.76, fast decay) with a muffled noise knock; nothing rings, so it cannot be mistaken for glass.
+sfx("lance_armour", { vol: 0.4, fx: [crush({ bits: 9 })] },
+  tone({ wave: "fm", fm: { ratio: 2.76, index: 2.5, decay: 0.05 }, freq: 620, to: 540, slide: 0.05, dur: 0.05, env: [0.001, 0.05, 0, 0.03] }),
+  noise({ color: "brown", dur: 0.04, env: [0.001, 0.03, 0, 0.02], filter: { type: "bp", cutoff: 900, q: 1.5 }, vol: 0.5 }))
+
+// A04 geode crack: a dry chalk line tearing, rising in texture before geode_break
+sfx("geode_crack", { vol: 0.4 },
+  noise({ color: "white", dur: 0.14, env: [0.001, 0.08, 0.2, 0.04], filter: { type: "bp", from: 2200, to: 5500, q: 1.8 }, tremolo: { rate: 70, depth: 0.85 } }),
+  noise({ color: "white", dur: 0.012, env: [0.001, 0.01, 0, 0.005], filter: { type: "hp", cutoff: 3500 }, vol: 0.7 }))
+
+// A09 dry fire: one dull chalk tick, the lowest priority cue (quiet, tiny, no pitch to follow)
+sfx("dry_fire", { vol: 0.5 },
+  noise({ color: "pink", dur: 0.02, env: [0.001, 0.015, 0, 0.01], filter: { type: "bp", cutoff: 1600, q: 1.2 } }),
+  tone({ wave: "triangle", freq: 700, to: 500, dur: 0.02, env: [0.001, 0.015, 0, 0.01], vol: 0.4 }))
+
+// C07 hull hit: a hard thump with grit and the hull ringing on it. Damage, not a sweep: short,
+// all body, no falling filter (that belongs to vigil_die, C08). Identity sits above 300 Hz.
+sfx("hull_hit", { vol: 0.4, fx: [crush({ bits: 8, rate: 16000 }), drive({ amount: 1.4 })] },
+  tone({ wave: "square", freq: 320, to: 110, slide: 0.08, dur: 0.12, duty: 0.5, env: [0.001, 0.08, 0.3, 0.06] }),
+  tone({ wave: "sine", freq: 90, to: 50, dur: 0.2, env: [0.001, 0.12, 0.2, 0.1], vol: 0.6 }),
+  noise({ color: "white", dur: 0.1, env: [0.001, 0.06, 0.1, 0.04], filter: { type: "lp", from: 5000, to: 800 }, vol: 0.6 }),
+  at(0.03, tone({ wave: "fm", fm: { ratio: 2.1, index: 3, decay: 0.2 }, freq: 440, to: 400, dur: 0.25, env: [0.002, 0.2, 0.1, 0.15], vol: 0.35 })))
+
+// C04 Surgelight: a brass fanfare cut to one bright rising note. Saw voices through a rising
+// filter (never a pure sine, so it cannot be mistaken for the B06 glass chime).
+sfx("surgelight", { vol: 0.35, fx: [crush({ bits: 10 })] },
+  tone({ wave: "saw", freq: 700, to: 1500, slide: 0.18, dur: 0.2, env: [0.04, 0.08, 0.6, 0.06], filter: { type: "lp", from: 1800, to: 5000 } }),
+  tone({ wave: "saw", freq: 703, to: 1510, slide: 0.18, dur: 0.2, env: [0.05, 0.08, 0.5, 0.06], vol: 0.6, filter: { type: "lp", from: 1800, to: 5000 } }),
+  noise({ color: "white", dur: 0.18, env: [0.08, 0.08, 0.2, 0.05], filter: { type: "hp", from: 3000, to: 6000 }, vol: 0.1 }))

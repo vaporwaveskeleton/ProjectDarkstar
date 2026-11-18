@@ -1,6 +1,6 @@
 # DARKSTAR — Tech Architecture
 
-**Doc ID:** TECH-001 · **Version:** 1.2 · **Date:** 2026-11-17 · **Owner:** production · **Status:** complete-draft
+**Doc ID:** TECH-001 · **Version:** 1.3 · **Date:** 2026-11-18 (§2.7–§2.9, §3.4, §8.1, §9, §11.2: audio change set C1–C7 built) · **Owner:** production · **Status:** complete-draft
 **Upstream:** `GDD_DARKSTAR_v0.2.md` (GDD-001), `SYSTEMS_BIBLE_STATS.md` (SYS-001), `ZONES_AND_ENCOUNTERS.md` (ZONES-001), `ART_BIBLE.md` (ART-001), `SPRITE_MODULARITY_SPEC.md` (ART-002) · **Downstream:** every code module, every `.tres`, the CI lint, the build pipeline
 **Number discipline (hard rule of this doc).** SYS-001 is the only source of numbers. A number appearing here is one of exactly two things: (a) a SYS-001 value being *cited* by section, or (b) an **engineering parameter** we invented here — budget splits, cache sizes, pool sizes, tick rates — marked `✱` and owned by production. An `✱` parameter may never compete with a SYS-001 number; where the two touch, SYS-001 wins and this doc re-cuts its split.
 
@@ -262,7 +262,13 @@ Ownership: all hit truth resolves in `_physics_process` (60 Hz, §1.2). Animatio
 Bullet-layer decision (TASK-BOOT Q1, owner 2026-11-17): Godot `Area2D`/`ShapeCast2D` first. GDD §13's custom quadtree is built only if §8 profiling shows the bullet layer missing budget at SYS-001 §9's active-shot ceiling.
 
 ### 2.7 Audio buses
-`data/audio/default_bus_layout.tres`: `Master` (= AUDIO-001's `BUS-MST`; Godot requires bus 0 to be the master), `BUS-MUS`, `BUS-CHO`, `BUS-ENT`, `BUS-UI`, `BUS-FLY`, `BUS-AMB`, all sending to `Master`. Ducking sidechains (AUDIO-001 §7.2) and the never-ducked rules (§7.3) are **not wired yet**. No `AudioService` autoload exists; one needs a §2.8 row first.
+`data/audio/default_bus_layout.tres`: `Master` (= AUDIO-001's `BUS-MST`; Godot requires bus 0 to be the master), `BUS-MUS`, `BUS-CHO`, `BUS-ENT`, `BUS-UI`, `BUS-FLY`, `BUS-AMB`, all sending to `Master`. Ducking sidechains (AUDIO-001 §7.2) and the never-ducked rules (§7.3) are **not wired yet**. `AudioService` is built (§2.8). Its 24 one-shot voices are routed per cue by the policy below (menu, H and I cues to `BUS-UI`; `wake_hit` and `entity_unmade` to `BUS-ENT`; `grub_keen` to `BUS-CHO`; the rest to `BUS-FLY`); the chant stays on `BUS-CHO`. All buses are at 0 dB today, and no code uses `BUS-AMB` or `BUS-MUS`.
+
+**Built 2026-11-18 (AUDIO-001 §12.7 C1, C2, C6; owner-approved):**
+- **Voice policy.** `core/audio/cue_policy.gd` (`CuePolicy`, a `TunableResource`, `ds_namespace` `ds_audio`, an `entries` table, no `ds_` keys yet), `core/audio/cue_policy_entry.gd`, and `data/audio/cue_policy.tres` (23 entries; every value is ✱, engineering-only). Per entry: `bus`, `priority`, `max_concurrent`, `min_retrigger_ms`, `pitch_jitter_cents`. The total stays 24 voices (AUDIO-001 §7.5).
+- **Stealing.** A finished voice first, then the lowest-priority stealable voice, then the oldest voice of the same cue. P0 and P1 voices are never stolen; a new cue never steals a more important voice; a P0 or P1 cue at its own cap is dropped. "Finished" is judged from stream length and pitch against an injectable clock (so tests need no real time). Public helpers: `active_count(id)`, `has_cue(id)`. Several picks go beyond AUDIO-001's spec (priorities and caps for `vigil_die`, `grub_keen`, `acolyte_fire`, the Charge, Sepulchre, geode, shard, coin, `extra_life` and `quota` cues); they are ✱ proposals to tune in the M1 slice, listed in AUDIO-001 §12.6.
+- **Cue ids.** `core/audio/cue_ids.gd`, `cue_id_entry.gd` and `data/audio/cue_ids.tres` (29 rows) list every built cue with its AUDIO-001 §6.2 id or an "Act 0 only" mark. `AudioService` loads the render of each listed id.
+- **Fallback.** The `SfxSynth` fallback is built only if a listed cue has no render; with all renders present no synth cue is built. Boot time was not measured (§8.1).
 
 ### 2.8 Autoload register
 
@@ -274,7 +280,7 @@ An autoload exists only when the service genuinely needs a global lifetime. Addi
 | `SaveService` | `autoload/save_service.gd` | slots outlive scenes; one place enforces SYS-001 §8 cadence | decide *when* to save (callers do); store display text | built |
 | `SceneRouter` | `autoload/scene_router.gd` | one top-level scene at a time; any screen may request a change | own overlays/modals or UI state | built |
 | `RunSession` | `autoload/run_session.gd` | run and Iteration state (LOOP-001 §2) outlive every sector scene across 5 Seams and must be readable by the Ruins and `SaveService`; owns the Hourglass Clock tick (§4.1) | own sector nodes; write saves itself (it hands payloads to `SaveService` at allowed reasons) | **planned** (approved 2026-11-17) |
-| `AudioService` | `autoload/audio_service.gd` | music stems, the chant and the entity voice cross scene changes; owns ducking (AUDIO-001 §7.2) | decide *when* a line plays (gameplay signals do) | **built** 2026-11-18: one-shot pool, chant bed, silence budget; every cue synthesised by `core/audio/sfx_synth.gd` (D-14: no recorded audio, ever) |
+| `AudioService` | `autoload/audio_service.gd` | music stems, the chant and the entity voice cross scene changes; owns ducking (AUDIO-001 §7.2) | decide *when* a line plays (gameplay signals do) | **built** 2026-11-18: one-shot pool of 24 with priority stealing and per-cue policy (§2.7), chant bed, silence budget; plays the chirp render of each id in `data/audio/cue_ids.tres` and builds an `SfxSynth` fallback (`core/audio/sfx_synth.gd`) only for a listed cue whose render is missing (§6.5, D-14 amended: no recorded audio, ever) |
 
 Refused as autoloads: a UI manager (menus use a per-scene `ScreenStack`), a game manager (state lives in features), a networking service (D-09), a global event bus (EVT-001 §3).
 
@@ -291,7 +297,7 @@ Refused as autoloads: a UI manager (menus use a per-scene `ScreenStack`), a game
 | interactions | `features/interactions` (shrines, Chalk Desk, Sepulchre deposit) | empty |
 | (game-specific) | `features/composure`, `features/warp`, `features/sector`, `features/hud` | empty |
 
-Each empty folder has a `README.md` naming its owner doc. Shared, feature-agnostic code lives in `core/` (`audio`, `components`, `data`, `i18n`, `math`, `physics`, `rng`, `routing`, `save`, `ui`). Menus and the bootstrap sector live in `scenes/`.
+Each empty folder has a `README.md` naming its owner doc. `core/audio/` holds `sfx_synth.gd` (fallback synth), `cue_policy.gd` + `cue_policy_entry.gd` (voice policy, data in `data/audio/cue_policy.tres`) and `cue_ids.gd` + `cue_id_entry.gd` (cue id table, `data/audio/cue_ids.tres`); tests in `core/audio/tests/`. Shared, feature-agnostic code lives in `core/` (`audio`, `components`, `data`, `i18n`, `math`, `physics`, `rng`, `routing`, `save`, `ui`). Menus and the bootstrap sector live in `scenes/`.
 
 ### 2.10 Act 0 — the Cabinet (`features/cabinet/`)
 
@@ -385,6 +391,7 @@ Create a **Resource** when data is shared, tuned, or authored (stats, items, abi
 **D-08 runtime API (M1 slice 1).** `Vigil.set_hull_max_hp(int)` / `get_hull_max_hp()` switch the hull at runtime; they call `HealthComponent.set_max_hp`, which duplicates the stats resource (the shared `.tres` is never mutated). Post-hit grace (R-11) applies only when `max_hp >= 2`.
 
 **D-08 launch switch (M1 slice 2, part A).** `HullMode` (`features/vigil/hull_mode.gd`) reads `--hull=1|2` from the command line; an absent or invalid value falls back to the data value `ds_vigil.hull.max_hp` (1). `Vigil._ready` applies it through `apply_hull_override`. `HullMode` has its own small `--key=` parser because `CabinetGame._arg_int` is private to the Cabinet. A persisted setting is deferred: it needs a `SettingsService` `DEFAULTS` key and a settings-screen row with `tr()` keys.
+| `ds_audio` (`CuePolicy`, `data/audio/cue_policy.tres`): namespace only; the per-cue `bus`, `priority`, `max_concurrent`, `min_retrigger_ms`, `pitch_jitter_cents` sit in an `entries` table and have **no individual `ds_` keys yet** (a key per cell is not worth it until the registry needs it) | engineering-only, no SYS-001 row (AUDIO-001 §12.6) | ✱ |
 | `ds_cabinet.boot.*` (`CabinetBootTuning`, `data/cabinet/cabinet_boot_tuning.tres`): `warmup_seconds`, `noise_seconds`, `noise_scroll`, `test_line_seconds`, `test_hold_seconds`, `page_seconds`, `tape_hint_delay`, `tape_hold_seconds`, `tape_drag_px`, `tape_fall_seconds`, `coin_drop_seconds` | presentation timings, no SYS-001 row (§11.1 Q-T18) | ✱ |
 
 ---
@@ -602,6 +609,8 @@ Target from GDD §15: median frame ≤ 8 ms at T2 and ≤ 14 ms at T5 on minimum
 
 At T5 the 14 ms allowance is spent on warp and post passes; gameplay lines keep their T2 budgets.
 
+No audio row exists above. The only audio budget is boot generation ≤ 1.5 s ✱ (AUDIO-001 §11.5). **Still owed:** a boot-time measurement of `AudioService._ready()` (the lazy fallback, AUDIO-001 §12.7 C1, removes the synth build when all renders exist, but the saving was not measured), audio CPU per frame, and loaded-cue RAM. Nothing audio-related has been measured; the method is in AUDIO-001 §12.8.
+
 ### 8.2 ContactBudget
 The runtime counter for SYS-001 §9's caps (on-screen Choir units, entity modules, geodes, simultaneous hostile contacts, active shots, colliders per sector). Owned by `SpawnDirector` (§4.5). Over-cap behaviour: queue off-screen (spawns), stand down (contacts), refuse the Sigil shot multiplier past the shot cap (LOOP-001 §4.3 ceiling lint). Each cap gets a test that drives a bench scene to the cap and asserts the behaviour.
 
@@ -650,6 +659,8 @@ The smoke run prints `BOOT_SMOKE: reached route 'sector'` and exits 0. GdUnit wr
 | `tests/test_boot_flow.gd` | route table loads, unknown route fails safely, input-mode switching, accessibility defaults |
 | `features/cabinet/tests/test_cabinet_rules.gd` | torus maths, extra Vigils, calm mining vs over-fire, glass → Charges with overflow, Charge homing + module knock-off + interception, Grub deposits → segments, Cold Sepulchre never wakes, Awakening silence → line → rampage, contact death, lance cannot bite the entity, 13 Charges unmake for 15,000, censer lag 0.25 s, **autopilot clears A0-1 end to end** |
 | `tests/test_input_map.gd` | every GDD §4.1 key/mouse binding and GDD §4.3 pad binding (ruling R-12); no two gameplay actions share a key |
+| `tests/test_generated_assets_only.gd` | D-13/D-14 (amended): no hand-made image or audio files outside the generated folders; every Cabinet cue has a render; the `SfxSynth` fallback still builds (§6.5, §11.2) |
+| `core/audio/tests/test_audio_service.gd` | 23 cases (AUDIO-001 §12.7 C5): steal order, P0/P1 protection, concurrency caps, retrigger gate, bus routing, `silence()`, chant bed, cue-id table and lazy fallback. Whole suite 174 cases, 0 failures (was 151) |
 
 Result on 2026-11-18 (attract boot / coin slot): 118 test cases, 0 failures, 0 errors; boot smoke (`-- --smoke --no-save`, attract → cabinet) exit 0 with no `ERROR`/`WARNING` lines. Not verified: real gamepad hardware, real mouse-drag feel, audio by ear.
 
@@ -676,6 +687,15 @@ Not covered (honest list): native-resolution rendering after Act 0 (decided, not
 | Q-T24 | SYS-001 §9 frame budget was never measured at native resolution; fog/post buffers likely need a fractional render scale and quality presets | SYS-001 §9 | measure at 1080p/1440p/4K before locking |
 | Q-T25 | Post-Act 0 camera scale / visible world area is a design number not yet set | D-A | design to set; no value invented |
 | Q-T29 | Detonation shard count conflict: GDD §8.2 (~line 208) says 3-5; SYS-001 §1.3 row 74 says 3-5 but row 76 says 4-6; the Cabinet code uses 4-6. Also no SYS-001 row for magnet pull speed (170 px/s) or shard drag (1.2/s), both currently ✱ in code (2026-11-18) | GDD §8.2; SYS-001 §1.3 | owner ruling on 3-5 vs 4-6; add rows or keep ✱ |
+| Q-T30 | Entity-voice processing: AUDIO-001 §4.3 and §7.5 forbid formant shift, pitch change and distortion; §11.3 specifies formant drift and sub-octave doubling at higher tiers (2026-11-18) | AUDIO-001 §4.3, §7.5, §11.3 | audio/owner |
+| Q-T31 | AUDIO-001 §7.4 allows "two baked room impulses, no runtime convolution"; §11.2 uses Godot bus effects instead of impulses (2026-11-18) | AUDIO-001 §7.4, §11.2 | audio/owner |
+| Q-T32 | AUDIO-001 §7.5 says pre-rendered stereo stems, no MIDI; §11.2 plans a runtime sequencer (2026-11-18) | AUDIO-001 §7.5, §11.2 | audio/owner |
+| Q-T33 | AUDIO-001 §4.15 rows sum to 167 but its stated total is 164 (2026-11-18) | AUDIO-001 §4.15 | audio/owner |
+| Q-T34 | PRODUCTION_PLAN §3 M4 says entity Act 0–1 lines are "recorded", against D-14 and PRODUCTION_PLAN §1 "no voice actor" (2026-11-18) | PRODUCTION_PLAN §1, §3 M4; GDD §18 D-14 | audio/owner |
+| Q-T35 | Reference-PNG folder: ASSET-003 §12 says `assets/reference/`; §10 here says `assets/sprites/` (2026-11-18) | ASSET-003 §12; §10 | owner picks one folder; the other doc follows |
+| Q-T36 | WARP-001 W2-03 cites "AUDIO-002"; every other audio cite is AUDIO-001 (2026-11-18) | WARP-001 W2-03 | audio/owner |
+| Q-T37 | AUDIO-001 Q-A11: §6.2 has no cue for the Vigil's thrust, brake or drift (2026-11-18) | AUDIO-001 §6.2, §12.4 | audio/owner |
+| Q-T38 | AUDIO-001 Q-A12: music stem format, Ogg vs imported WAV vs rendering stems at load (2026-11-18) | AUDIO-001 §12.6 | audio/owner |
 
 ### 11.1a Resolved questions
 
@@ -734,3 +754,5 @@ Rows R-01…R-19 are the owner-delegated rulings of 2026-11-17; later rows carry
 | 2026-11-18 | **The Aether (owner direction):** space is retro-future Victorian, full of aether, fog, life, crystal spheres and colour, not a black vacuum; Act 0's black is the Pretence and the only true black is the entity (ART-001 §16). The reveal blooms into aether colour instead of desaturating; WARP-001 W0-08/W1-01 re-voiced; ART-001 law 4 amended | owner |
 | 2026-11-18 | **SUPERSEDED by the next row (hash64 and checksum parts; `core/rng/` and `seam_index` stand).** Seeded RNG spec (Q-T26…Q-T28): `hash64` = first 8 bytes (LE) of SHA-256 over a tagged canonical encoding with domain `darkstar.rng.v1`; `seam_index` int (0 run-wide, 1–5 Seams); SeedCode = `(seed << 5) \| crc5`, MSB-first Crockford symbols; checksum CRC-5 poly `0x05` over the 55 seed bits; code in new `core/rng/`. Engineering-only (✱); test vectors in §4.9. Unblocks M1 slice 2 part B | owner |
 | 2026-11-18 | owner ruling: seeded RNG uses FNV-1a 64 + SplitMix64 and the XOR checksum; supersedes the PR #4 spec (SHA-256 `hash64`, CRC-5). `RunSeed`/`SeedCode` built in `core/rng/`; `ReplayVerifier` not built (needs a deterministic sim); daily-seed derivation left open until the daily is built | owner |
+| 2026-11-18 | AUDIO-001 §12 added as the audio status layer (inventory, SFX/music maps, voice policy proposal, change set C1–C8); no code or asset change made, change set awaits owner approval | audio session (delegated) |
+| 2026-11-18 | AUDIO-001 §12.7 C1–C7 implemented (uncommitted at time of writing): lazy `SfxSynth` fallback; `CuePolicy` voice policy with priority stealing and per-cue buses (`ds_audio`, all ✱); 20 dual-mono cues re-rendered mono; five new M1 cues (`lance_armour`, `geode_crack`, `dry_fire`, `hull_hit`, `surgelight`); `AudioService` tests (§9); cue id table; `tools/audio_report.js`. P5 (ducking, options) stays open | owner (approval in chat) |
