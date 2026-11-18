@@ -319,6 +319,7 @@ The UI uses a **4 px sub-grid** of the 64 px module (16 steps per module). Every
 | Component | Size at 1× | Construction | Source ids |
 |---|---|---|---|
 | Button | height **24 px**; minimum width 64 px (one module); 10 px horizontal padding; label in Ledger | 9-slice from a 24 × 24 source, 4 px corners | `ds_ui_button_idle`, `_hover`, `_pressed`, `_disabled`, `_selected` |
+| Menu hierarchy (owner D-C, 2026-11-18) | the **primary** action (e.g. New Vigil) is 160 px wide; **secondary** actions on the same menu are 128 px (two modules), with an 8 px gap after the primary. Width and position carry the hierarchy, never colour (GAS stays focus) | layout only; same button states | — |
 | Panel | content margin 8 px; title row 28 px (Litany 16 px + padding) | 9-slice 16 × 16, 4 px corners, BONE-1 keyline | `ds_ui_panel_slate` |
 | Dim overlay | full screen | VOID-0 at 85 % opacity (the only translucent fill in the UI) | engine-drawn |
 | Choice card (Run Sigil, Relic, Pact, Codex tile) | **128 × 192** (2 × 3 modules) | 64 × 64 icon slot centred in the top 80 px; title (Ledger, 1 line) at y 88; body (Ledger BONE-2, ≤ 3 lines) at y 104; cost or rarity strip, 16 px, at the bottom | `ds_ui_card_frame`, `ds_ui_card_frameRare` |

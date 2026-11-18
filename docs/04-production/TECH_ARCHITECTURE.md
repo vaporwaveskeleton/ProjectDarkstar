@@ -304,7 +304,7 @@ CabinetGame (Node, cabinet_game.gd)             stage flow only: READY → play 
 │   Stars · Geodes · Glass · Ritual · Grubs · Acolytes · Shots · Vigil · Fx   (each an ArcadeLayer)
 ├─ Autopilot (CabinetAutopilot)                 attract demo (W0-03), captures, the end-to-end test
 ├─ MawLayer/Maw (MawView)                        the hole that opens in the reveal; the generated "true body" assembles inside it
-├─ HudLayer/Hud (CabinetHud)                     bezel, 1UP/score/lives, Charge lamps, Ledger Compass
+├─ HudLayer/Hud (CabinetHud)                     bezel, 1UP/score/lives, Charge lamps, SEPULCHRE readout, Ledger Compass
 ├─ CrtLayer/Crt                                  shaders/crt.gdshader: scanlines, curvature, tear, desaturation
 ├─ MessageLayer/Messages (CabinetMessages)       READY card, banners, captions, credits, the entity's big type
 ├─ Reveal (PretenceReveal)                       the scripted W0-07/W0-08 sequence (skippable once seen)
@@ -339,7 +339,7 @@ AttractMode (scenes/attract/)                   on_route_entered(params) handles
 - New Vigil is greyed and out of the focus loop until a credit is in; one credit max; New Vigil spends it. Default focus is the CoinSlot until credited; loop = [New Vigil if credited] → Settings → Quit → CoinSlot.
 - No idle demo while a credit is waiting or a peel gesture is in progress; otherwise W0-03's 30 s idle demo is unchanged.
 - Tape removal is saved forever: profile key `cabinet_tape_peeled`, save reason `cabinet_tape` (§7.2), written in attract, never mid-run.
-- `CabinetBezel` (`cabinet_bezel.gd`) holds the static bezel draw helpers (`SIDE` = 80, `COIN_PLATE`); `CabinetHud` and `AttractFrame` share it, and the HUD draws the open, untaped coin door. Placeholder art (§11.1 Q-T20).
+- `CabinetBezel` (`cabinet_bezel.gd`) holds the static bezel draw helpers (`SIDE` = 80, `COIN_PLATE`); `CabinetHud` and `AttractFrame` share it, and the HUD draws the open, untaped coin door. Placeholder art (§11.1 Q-T20). `CabinetHud` panel text uses a 6 px margin; score, hi score and the SEPULCHRE readout (`segments/total`, or AWAKE; hidden once unmade) draw at PixelText 2× when they fit 72 px, else 1× (`score_scale`); the blinking INSERT CREDIT shows only in the attract demo (`hud.demo`) (ART-004 §8.6, 2026-11-18).
 - `InputLabels` (`core/ui/input_labels.gd`) names bindings per device from the live `InputMap`; `is_accept()` adds a pad-A fallback (§11.1 Q-T19).
 - `CabinetBootTuning` (`ds_cabinet.boot`, §3.4) holds all ✱ presentation timings.
 - Cues `power_on`, `tape_peel`, `coin`: AUDIO-001 §11.7. Glyph "·" added to `PixelText` for the canon line.

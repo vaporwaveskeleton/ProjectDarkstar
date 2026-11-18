@@ -1,6 +1,6 @@
 # DARKSTAR — Visual Quality Rubric
 
-**Doc ID:** ART-004 · **Version:** 0.1 · **Date:** 2026-11-18 · **Owner:** Art · **Status:** rubric defined; **no scores yet** (waiting for benchmark gameplay frames and current-game captures, §3)
+**Doc ID:** ART-004 · **Version:** 0.1 · **Date:** 2026-11-18 · **Owner:** Art · **Status:** rubric defined; **first provisional scoring pass done 2026-11-18** (§8: one reviewer, stills only, Act 0 + UI; L0b, L1 and the zoom unbuilt)
 
 **Companions:** ART-001 (the look and its laws: this doc *measures* against them, it never adds a second rule set), ART-002 (module grid), UI-001 (screens and control states), WARP-001 §4.5 / §5 (accessibility and effect budgets), SYS-001 §9 (feel and performance numbers), TECH-001 §8 (frame budget), §11.2 decisions D-A…D-D.
 
@@ -27,17 +27,17 @@ Decisions behind it: TECH-001 §11.2 D-A (resolution), D-B (bezel), D-C (UI), D-
 
 ## 2. Reference analysis (owner uploads, `research/reference/`, viewed 2026-11-18)
 
-Mood, never copy (ART-001 §9, RES-001 IP guardrail). Attributions of uploaded files are this doc's identification, not the files' metadata.
+Mood, never copy (ART-001 §9, RES-001 IP guardrail). Attributions of uploaded files are this doc's identification, not the files' metadata. `research/` is git-ignored (local only). Files are named `<source>_<kind>_<what-it-shows>` and sorted (2026-11-18) into `source-1983/`, `aether-style/`, `creatures/`, `cabinet-bezels/` and `benchmarks/<game>/`; the folder names below are relative to `research/reference/`.
 
 | Group | Files | Take | Leave |
 |---|---|---|---|
-| 1983 source | `Screenshots/Sinistar - Gameplay.png` | mood: score up top, radar inset, a big empty field | its face, sprites and layout (L0 is the Neon Cabinet, not a clone) |
-| Sunless Skies (style anchor for L1, **not** an AAA benchmark) | `Sunless Skies.jpg`, `Sunless-Skies-03-Clockwork.jpg`, `KQbTFxmbpbvHreEUqjNUi.jpg`, `36679.jpeg.webp` | headlight beam as key light and focal point; steam wake; layered fog; crystal debris; tiny craft vs vast forms; name labels attached to the ship they name; HUD confined to corners (brass ring, portraits) | high-key near-white sepia washes (`Clockwork`: ship ≈1 % of frame, low local contrast); large pure-black masses (only the entity is black, ART-001 §16.1) |
-| Gaslite illustration | `Gaslite.jpg` | flat layered fog bands; stepped concentric lamp halo (banded falloff); navy ↔ amber complement — the most directly *generatable* reference | — |
-| Steel Empire key art | `Steel Empire.jpg` | riveted, hand-made Victorian machine construction (Ruins, orrery, Vigil detail) | its texture density as-is at gameplay distance |
-| Creature forms | `scrive.jpg`, `Scrive_spinster.webp`, `20190205152854_1.jpg` (source unidentified) | ragged ribbons (secondary motion), too many limbs, perforation holes (rhymes with the entity's NULL holes) | their beige/brown hues: Choir stays CHOIR-hued (faction law) |
-| Returnal UI (AAA benchmark, UI) | `returnal-atropian-blade…`, `returnal-databank-ciphers…`, `Phrike_Entry.webp`, `Malformed_Archonact_29.webp` | list / preview / detail columns; tab bar with shoulder glyphs; bottom input-hint bar; scanline hologram scans (Codex); corrupted text with keywords left legible; one filled cream button as the focus point; chamfered panels | teal on everything (teal = truth here, palette law 2); raw-looking ids (`AST-AR-017`); decorative micro-text |
-| Cabinet bezels | `bezels/*` (12) | marquee; side panels with instructions; illustrated framing; on 16:9 the 4:3 screen leaves side columns for the bezel | — (bezel is outside screen palette law per D-B; must still be generated, D-13) |
+| 1983 source | `source-1983/` (1) | mood: score up top, radar inset, a big empty field | its face, sprites and layout (L0 is the Neon Cabinet, not a clone) |
+| Sunless Skies (style anchor for L1, **not** an AAA benchmark) | `aether-style/sunless-skies_*` (4) | headlight beam as key light and focal point; steam wake; layered fog; crystal debris; tiny craft vs vast forms; name labels attached to the ship they name; HUD confined to corners (brass ring, portraits) | high-key near-white sepia washes (`sunless-skies_clockwork_high-key-fog`: ship ≈1 % of frame, low local contrast); large pure-black masses (only the entity is black, ART-001 §16.1) |
+| Gaslite illustration | `aether-style/gaslite_*` | flat layered fog bands; stepped concentric lamp halo (banded falloff); navy ↔ amber complement — the most directly *generatable* reference | — |
+| Steel Empire key art | `aether-style/steel-empire_*` | riveted, hand-made Victorian machine construction (Ruins, orrery, Vigil detail) | its texture density as-is at gameplay distance |
+| Creature forms | `creatures/` (3; `unidentified_perforated-colossus` source unknown) | ragged ribbons (secondary motion), too many limbs, perforation holes (rhymes with the entity's NULL holes) | their beige/brown hues: Choir stays CHOIR-hued (faction law) |
+| Returnal UI (AAA benchmark, UI) | `benchmarks/returnal/returnal_ui_*` (4; the scan hologram's attribution to Returnal is unconfirmed) | list / preview / detail columns; tab bar with shoulder glyphs; bottom input-hint bar; scanline hologram scans (Codex); corrupted text with keywords left legible; one filled cream button as the focus point; chamfered panels | teal on everything (teal = truth here, palette law 2); raw-looking ids (`AST-AR-017`); decorative micro-text |
+| Cabinet bezels | `cabinet-bezels/` (12; one unidentified) | marquee; side panels with instructions; illustrated framing; on 16:9 the 4:3 screen leaves side columns for the bezel | — (bezel is outside screen palette law per D-B; must still be generated, D-13) |
 
 **Shared language:** one warm key light against darkness as the focal point; depth by layered fog with value rising only where it matters; extreme scale contrast; machine (riveted brass, glass) vs organic horror (ribbons, holes, limbs); teal ↔ amber as the master pair (= PHOS ↔ GAS); text corruption as story.
 
@@ -63,9 +63,9 @@ Rule: a benchmark is scored only on categories its camera and medium allow (mark
 
 | Source | Provided | Missing (blocks scoring) |
 |---|---|---|
-| Returnal | 3 UI screens (Databank) + 1 scan | gameplay frames, ideally one dense |
-| Saros | none | 3–4 gameplay frames, 1 menu/HUD |
-| Ball x Pit | none | early, dense late-game, upgrade/choice screen |
+| Returnal (`benchmarks/returnal/`) | 3 UI screens (Databank) + 1 scan; 2 gameplay frames viewed (boss fight with HUD; co-op forest with a legal-text overlay); 1 `.avif` gameplay frame **not viewed** (format unreadable here) | a dense bullet frame; the `.avif` re-saved as PNG or JPG |
+| Saros (`benchmarks/saros/`) | 5 gameplay (incl. 2 dense boss frames, 1 with HUD), 1 vista, 1 cutscene, 1 menu (Carcosan modifiers) | — |
+| Ball x Pit (`benchmarks/ball-x-pit/`) | 3 gameplay (early, mid, dense), 3 UI (fusion select, fission reward, evolution recipe) | — |
 | DARKSTAR current game | kit sheets in `docs/02-art/screens/` (8 PNG); **Act 0 captures taken 2026-11-18** (§8.3): attract, quiet play ×2, mid-density play ×2, THE PRETENCE start, the maw, the post-reveal stub ×4 — native 640×360 stills from `--write-movie` at 30 fps, `--no-save` | Awakening / rampage, hit/death, game over, stage clear, credits, pause, settings, confirm; a genuinely dense frame (Guard, Litany Ring, 32 units ✱); a display-size (1080p+) capture; live motion review |
 | DARKSTAR L1 Aether, bezel, zoom-in | **not built** | cannot be evaluated until built |
 
@@ -239,24 +239,48 @@ Annotation (when frames arrive): mark intended focal path, competing focal point
 
 ---
 
-## 8. Score sheets (to fill)
+## 8. Score sheets
 
-### 8.1 Category comparison
+### 8.1 Category comparison (first pass, 2026-11-18)
+
+One reviewer, stills only, provisional. DARKSTAR = Act 0 (L0 screen + UI) only; L0b, L1 and the zoom are unbuilt. DARKSTAR category scores are the mean of its §8.3 state scores as re-scored in §8.6; benchmark scores come from §8.2. "n/e" = not evaluated (no evidence, or the category does not apply to that benchmark's camera, §5.2). "Gap" = best applicable benchmark minus DARKSTAR.
 
 | # | Category | DARKSTAR | Returnal | Saros | Ball x Pit | Gap | Gap type | Smallest change to close | Realistic? |
 |---|---|---|---|---|---|---|---|---|---|
-| 1–11 | … | pending | pending | pending | pending | | | | |
-| 12 | Game UI | pending | partial evidence (Databank menus only): see §8.2 | pending | pending | | | | |
+| 1 | Focal read | 7.2 (6–8) | 8 | 8 | 6.7 | 0.8 | camera, consistency | give every reveal frame a focal subject; keep banners off the focal subject | yes |
+| 2 | Silhouette | 6 | n/e | n/e | 8 | 2 | asset quality | role silhouettes about 1.5× larger at 640×360, with a unique outline per Choir role | yes |
+| 3 | Value / colour / roles | 8 | 8 | 9 | 7 | 1 | — (strength) | keep; the laws work | yes |
+| 4 | Gameplay-state readability | 6.5 | 7 | 8 | 7 | 1.5 | UI | Sepulchre count done (§8.6); next: a Charge-in-flight cue | yes |
+| 5 | Action and VFX | n/e | 7 (partial) | 9 | 7 | — | — | capture a real Guard/Litany frame before judging | — |
+| 6 | Motion | n/e | n/e | n/e | n/e | — | — | live-motion review needs video | — |
+| 7 | Aether depth | n/e (L1 unbuilt) | n/e | n/e | 7 (scale only) | — | — | — | — |
+| 8 | Lighting | n/e (L1 unbuilt) | 8 | 9 | n/e | — | — | — | — |
+| 9 | Composition | 5.7 | 8 | 8 | 8 | 2.3 | UI, camera | shrink the side HUD panels or carry real information in them (Ball x Pit gutter model) | yes |
+| 10 | Cohesion / ladder | 6 | 8 | 9 | 8 | 3 | art direction | the zoom (§7.1); one type system for L0 | needs specialist for the zoom |
+| 11 | Image integrity | 5.5 | n/e (web-compressed) | n/e (web-compressed) | 8 | 2.5 | technical presentation | one type style per layer; fix the blocky fog patches | yes |
+| 12 | Game UI | 6 | 8 | 8 | 7 | 2 | UI | HUD type and primary button done (§8.6); next: one type system for L0 menus | yes |
 
-Gap type is one of: art direction, asset quality, animation, lighting, VFX, UI, camera, consistency, technical presentation.
+Unweighted means over each column's scored cells, for orientation only (different category sets, not comparable as rankings): DARKSTAR 6.4 (5.9 before the §8.6 quick wins) · Returnal 7.8 · Saros 8.5 · Ball x Pit 7.4.
 
-### 8.2 Partial benchmark notes (evidence on file)
+**Category 2, DARKSTAR (new this pass)** — facts: the Vigil is a yellow chevron; Choir units are small magenta glyphs; geodes are white polygon outlines; at 640×360 units read at roughly 8–16 px. Interpretation: roles separate by colour more than by shape; in greyscale the Acolyte and Grub glyphs are close.
 
-Returnal Databank, UI only (3 screens; no HUD, no gameplay, so no category-12 score yet). Facts: three-column list/preview/detail; tab bar with L1/R1 glyphs; bottom input-hint bar; selected item is a filled cream button, the highest-value element on screen; progress bar with numeric %; corrupted text keeps keywords in a warm accent; small all-caps ids above titles. Interpretation: hierarchy and focus at the anchor-8 level; micro-labels and ids would fail our player-readable-text rule if copied.
+### 8.2 Benchmark evidence (files in `research/reference/benchmarks/`)
+
+**Returnal** (UI ×4, gameplay ×2 viewed; 1 `.avif` unviewed; no dense bullet frame).
+- Facts: Databank has three columns (list, preview, detail), an L1/R1 tab bar, a bottom input-hint bar, and the selected item as the one cream-filled button; corrupted text keeps keywords in a warm accent; small all-caps ids sit above titles. In `returnal_gameplay_boss-fight_hud` the player wears a white outline that separates her from a busy boss frame; projectiles are white-yellow; HUD sits in the bottom corners. `returnal_gameplay_coop-forest_*`: a self-lit teal enemy and orange beams against a dark teal forest.
+- Interpretation: player-highlight outline is the key trick for focal read in clutter (cat. 1: 8). UI anchors at 8; its ids and micro-labels would fail our player-text rule if copied. Cat. 5 is partial (7) without a dense frame.
+
+**Saros** (gameplay ×5, vista, cutscene, menu).
+- Facts: bullet types are colour-split (blue orbs vs red stars in `bullet-lanes_hud`); `boss-prophet_ring-patterns` is concentric yellow rings around a central focal point, with the player as a dark silhouette in front; `boss-bastion_dense` has hundreds of blue orbs and the boss is largely hidden behind them; HUD: boss name and bar top centre, integrity arc bottom left, counters bottom right, objective top right; the world is amber with cool-blue danger. The Carcosan modifiers menu has a tab bar with shoulder glyphs, a dial gauge as the focal point, two side columns, icon grids with lock icons on locked items, a detail card, a bottom glyph bar, and is monochrome orange.
+- Interpretation: the strongest benchmark: patterns *as* composition (cat. 5: 9), warm world vs cool danger (cat. 3: 9), eclipse rim-light (cat. 8: 9). The density of `boss-bastion_dense` buries the boss (cat. 1 in that frame: 7). The menu's monochrome makes semantic colour weak; state is carried by greys and lock icons (cat. 12: 8).
+
+**Ball x Pit** (gameplay early / mid / dense, UI ×3).
+- Facts: vertical playfield centred, HUD in the side gutters (health/XP sword gauge left, level-progress column right, resources and ball inventory top left, speed buttons top right); enemies sit on block tiles in rows; large red damage numbers; danger tiles red; in `dense_ice` the player is a small dark figure low on a blue-grey floor. UI screens: four framed cards over a starfield with one action button (`Fuse!`), a reward screen with "+1 Level" labels and a "Whoa" button, a recipe screen with a framed tooltip.
+- Interpretation: the closest structural match to Act 0 (vertical field, side gutters that carry real information, cat. 9: 8). Its weakness is the player getting lost at density (cat. 1 in `dense_ice`: 6). UI is clear with one primary action per screen but small type (cat. 12: 7).
 
 ### 8.3 First evidence pass: Act 0, DARKSTAR only (2026-11-18)
 
-**Method and limits.** One reviewer (not the two §9 requires), native 640×360 stills pulled from four headless `--write-movie` runs at 30 fps (`--no-save`; stage 0 autopilot; stage 1 with `--segments=10`; stage 1 with `--segments=20 --hits=2`; attract). Stills only: **motion categories (6) and the hook's live-motion review are not evaluated.** No display-size capture, so integer-scale and blur at 1080p+ are not evaluated. Benchmarks are not scored (their gameplay frames are missing, §3.2), so there is **no gap column and no overall readiness score yet**. Scores are provisional until a second reviewer agrees. Frames live in the session scratchpad (`…/scratchpad/cap/`), not in the repo; the frame ids below are `<run>/f<frame>.png`.
+**Method and limits.** One reviewer (not the two §9 requires), native 640×360 stills pulled from four headless `--write-movie` runs at 30 fps (`--no-save`; stage 0 autopilot; stage 1 with `--segments=10`; stage 1 with `--segments=20 --hits=2`; attract). Stills only: **motion categories (6) and the hook's live-motion review are not evaluated.** No display-size capture, so integer-scale and blur at 1080p+ are not evaluated. Benchmarks are not scored (their gameplay frames are missing, §3.2), so there is **no gap column and no overall readiness score yet**. Scores are provisional until a second reviewer agrees. Frames live in the session scratchpad (`…/scratchpad/cap/`), not in the repo; the frame ids below are `<run>/f<frame>.png`. **Stale for states A, B and D:** these captures predate the merge of PR #1 (arcade power-on, attract instruction cards, the placeholder bezel mockup, TECH-001 Q-T20); re-capture before the next scoring pass.
 
 | Id | State | Frame ids | Facts (observed) | Interpretation | Scores (provisional) |
 |---|---|---|---|---|---|
@@ -272,10 +296,63 @@ Returnal Databank, UI only (3 screens; no HUD, no gameplay, so no category-12 sc
 **Smallest changes most likely to raise scores (all from the facts above):**
 1. HUD labels in B: raise to the next type size and a BONE ramp value with clear separation from the navy; move "INSERT CREDIT" off the panel. Gap type: UI.
 2. State C/B: add a segment count or phase mark to the Act 0 HUD (SYS-001 §2 phases). Gap type: UI.
-3. State E: move or shrink the banner so it never covers the maw's centre. Gap type: camera/composition.
+3. ~~State E: move or shrink the banner so it never covers the maw's centre.~~ **Withdrawn:** ART-001 §11.5 fixes the entity's NULL band at y = 120 on purpose ("a hole torn in the frame"); it covers the maw's ring, not its eye. The rule wins; state E's cat. 9 score stands as a known, accepted trade-off.
 4. State F: give the first post-reveal frame a focal subject (the lamp rod appears late; bring it in first) and replace the blocky fog patches. Gap type: technical presentation.
 5. State A: make the primary button visibly heavier than Settings and Quit, and decide whether L0 menus use pixel or smooth type. Gap type: UI / consistency.
 6. The hook: build the bezel, the zoom and its destruction stages (§7.1). Gap type: art direction and animation; needs a specialist.
+
+### 8.4 Visual-readiness score (partial, 2026-11-18)
+
+Measures presentation against the approved references only. It does not claim an AAA budget, team, content volume or scope.
+
+| Layer | Score | How |
+|---|---|---|
+| Layer | First pass | After quick wins (§8.6) | How |
+|---|---|---|---|
+| L0 Cabinet screen | 6.0 | **6.6** | weighted mean (§5.2) over the scored categories 1, 2, 3, 4, 9, 10, 11 (weights 58 of 100); cat. 5 and 6 not evaluated |
+| L0b Bezel | not evaluated | not evaluated | placeholder mockup visible in the new frames (TECH-001 Q-T20); not scored as the final bezel |
+| L1 Aether | not evaluated | not evaluated | not built |
+| UI | 5.0 | **6.0** | cat. 12 (§6), from attract + Act 0 HUD only |
+| **Overall (L0 + UI only)** | 4.0 (capped) | **6.3** | uncapped (6.6 + 6.0) / 2 = 6.3; cap = weakest critical state + 2 = 5 + 2 = 7, so no longer binding. Weakest critical scores are now 5: THE PRETENCE cohesion (§8.3 D, cat. 10) and the fog blocks (§8.3 F, cat. 11) |
+
+Read the 6.3 as: a solid arcade screen with a readable HUD, still without its hook. The §7.1 hook bar (≥ 9) remains **unmet by construction**: no bezel destruction and no zoom exist yet. The cap rule only catches single weak frames; it does not score a missing feature.
+
+### 8.5 Prioritised improvement plan
+
+**Quick wins** (hours to a day each; code-side, no new art direction) — **done 2026-11-18 except 3, see §8.6**
+1. ✅ Act 0 HUD labels: next type size up, a BONE value clearly above the navy panel; move "INSERT CREDIT" off the panel. (cat. 12, 9)
+2. ✅ Sepulchre segment count / phase mark on the Act 0 HUD. (cat. 4)
+3. ~~Banner placement over the maw~~ — withdrawn: conflicts with ART-001 §11.5 (see §8.3 item 3).
+4. ✅ First post-reveal frame: bring the lamp rod in first so the frame has a focal subject. (cat. 1, the weakest critical state)
+5. ✅ Title screen: make New Vigil visibly heavier than Settings and Quit. (cat. 12)
+
+**High-impact revisions** (days to a couple of weeks each)
+1. A player-highlight treatment for the Vigil that survives clutter (Returnal's outline lesson; Ball x Pit's failure case). (cat. 1)
+2. Choir role silhouettes that separate in greyscale, not by colour alone. (cat. 2)
+3. Side-gutter HUD that carries real, glanceable information (Ball x Pit model) instead of empty panels. (cat. 9)
+4. One type system per layer (pixel faces on the cabinet screen; chalk faces after), TECH-001 Q-T23. (cat. 11)
+5. Fog shader without blocky rectangular patches; fog/post render scale and quality presets, TECH-001 Q-T24. (cat. 11)
+6. Bullet-pattern language for the Choir in L1: colour-split shot types and patterns as composition (Saros lesson). (cat. 5)
+
+**Needs a professional artist or specialist**
+1. **The hook** (§7.1): the native-resolution printed bezel (generated illustration, D-13) and its staged peel / crack / decay / warp during the zoom: procedural fracture, shader decay, camera choreography, audio lock. The single biggest lever on the overall score.
+2. The L1 Aether look itself (fog layers, crystal spheres, lantern lighting at native resolution) to the Saros lighting bar.
+3. Live-motion review of Act 0 and the hook from video, with a second reviewer (§9).
+
+### 8.6 Re-score after the quick wins (2026-11-18)
+
+**Changes** (code): `features/cabinet/cabinet_hud.gd` (6 px panel margin; score and hi score at PixelText 2× when the string fits 72 px, else 1×; labels BONE-4 instead of BONE-2; the blinking INSERT CREDIT only in the attract demo; a SEPULCHRE readout under the Charge lamps showing `segments/total`, or AWAKE, hidden once unmade); `features/cabinet/cabinet_game.gd` (`hud.demo`); `locale/en.po` (`CAB_SEPULCHRE`, `CAB_SEP_AWAKE`); `scenes/ruins/ruins_stub.gd` (stem and lit lamp from frame 0 with a two-band GAS-1 halo; only the branches grow); `scenes/attract/attract_mode.tscn` (Settings and Quit 128 px wide, New Vigil 160 px, an 8 px gap after it); `scenes/attract/attract_logo.gd` (logo minimum height 80 → 72 so the menu stays inside the safe area at 200 % text); new test `features/cabinet/tests/test_cabinet_hud_layout.gd`.
+
+**Evidence:** new captures (same method as §8.3, taken after merging PR #1, so the placeholder bezel, coin plate and attract instruction card are in frame): `cap2/attract/f300`, `cap2/play/f600`, `cap2/reveal/f1100`.
+
+| State | Facts | Old → new |
+|---|---|---|
+| A Attract | New Vigil 160 px and disabled until a credit is in (PR #1 behaviour); Settings and Quit 128 px; attract card in a dotted yellow frame between logo and menu; "CREDIT 0" on the left panel | cat. 12: 6 → 6 (width hierarchy present, but the primary reads weakest while it is disabled) |
+| B Quiet/mid play | score "5,080" at 2× on both panels; labels brighter; "SEPULCHRE" + "2/20" at 2× under the lamps; no INSERT CREDIT during play | cat. 4: 5 → 7 · cat. 9: 5 → 6 · cat. 12: 4 → 6 |
+| C Mid-density | segment count now on the HUD | cat. 4: 4 → 6 (density still not evaluated) |
+| F First post-reveal frame | lit lamp with a stepped halo on a full-height stem, centred above the amber arc, from the first ruins frame | cat. 1: 2 → 6 |
+
+**Not verified:** the run started with `--segments=10` but the HUD read 2/20 at frame 600; module knock-off by Charges (SYS-001 §2.1) would explain it, but it was not traced. Tests: 139 run, 118 pass, 21 fail, all in `test_every_cabinet_cue_has_a_chirp_render`: this worktree's `.wav` renders are Git LFS pointer files (verified: they start with `version https://git-lfs…`, the main checkout's start with `RIFF`), so the failure is environmental. Boot smoke reached route `cabinet`, exit 0, only audio-stub ERROR lines. One reviewer, stills only.
 
 ---
 

@@ -7,6 +7,8 @@ extends Control
 
 const SIDE := CabinetBezel.SIDE       ## bezel width: 640 − 2 × 80 = 480 = a 4:3 field at 360 high
 const COMPASS := Rect2(250, 4, 140, 40)
+const MARGIN := 6.0                   ## panel text left margin
+const READOUT_W := SIDE - MARGIN - 2.0  ## widest readout: right edge ≤ panel width − 2
 
 var world: ArcadeWorld
 var score := 0
@@ -17,6 +19,7 @@ var magazine := 5
 var peel := 0.0
 var eaten := 0.0
 var crack := 0.0
+var demo := false      ## attract demo: only then does the bezel beg for a credit
 var _t := 0.0
 
 
@@ -46,34 +49,46 @@ func _draw() -> void:
 
 
 ## Cabinet face (5 × 7, ART-001 §11): `p` is the baseline, as with draw_string.
-func _text(p: Vector2, s: String, col: Color, _size: int = 8) -> void:
-	PixelText.draw(self, p - Vector2(0, PixelText.H), s, col, 1)
+func _text(p: Vector2, s: String, col: Color, scale: int = 1) -> void:
+	PixelText.draw(self, p - Vector2(0, PixelText.H * scale), s, col, scale)
+
+
+## Readout scale: 2× when `text` fits in `max_w` pixels, else 1×.
+static func score_scale(text: String, max_w: float) -> int:
+	return 2 if PixelText.width(text, 2) <= max_w else 1
+
+
+## Sepulchre readout value: the segment count, or "" once it is awake (the caller shows CAB_SEP_AWAKE).
+static func sepulchre_text(segments: int, total: int, awake: bool) -> String:
+	return "" if awake else "%d/%d" % [segments, total]
 
 
 func _draw_left_text(shift: float) -> void:
-	var x := 12.0 + shift
+	var x := MARGIN + shift
 	if eaten < 0.3:
 		var one_up := Look.c(Pal.GAS_4) if int(_t * 2.0) % 2 == 0 else Look.c(Pal.GAS_2)
-		_text(Vector2(x, 30), tr("CAB_1UP"), one_up, 10)
-		_text(Vector2(x, 46), LocFormat.format_int(score), Look.c(Pal.BONE_5), 10)
+		_text(Vector2(x, 30), tr("CAB_1UP"), one_up)
+		var sv := LocFormat.format_int(score)
+		_text(Vector2(x, 56), sv, Look.c(Pal.BONE_5), score_scale(sv, READOUT_W))
 	if eaten < 0.6:
-		_text(Vector2(x, 78), tr("CAB_VIGILS"), Look.c(Pal.BONE_2))
+		_text(Vector2(x, 80), tr("CAB_VIGILS"), Look.c(Pal.BONE_4))
 		for i in maxi(0, lives - 1):
 			var c := Vector2(x + 6 + i * 14, 94)
 			var hull := PackedVector2Array([c + Vector2(0, -5), c + Vector2(4, 4), c + Vector2(0, 2), c + Vector2(-4, 4)])
 			Pal.glow_polyline(self, hull, Look.c(Pal.GAS_4), Look.c(Pal.GAS_1))
-	if eaten < 0.9:
+	if demo and eaten < 0.9:
 		var blink := int(_t * 1.5) % 2 == 0
 		_text(Vector2(x, 330), tr("CAB_CREDIT"), Look.c(Pal.BONE_1) if blink else Look.c(Pal.BONE_0))
 
 
 func _draw_right_text(shift: float) -> void:
-	var x := 640.0 - SIDE + 12.0 + shift
+	var x := 640.0 - SIDE + MARGIN + shift
 	if eaten < 0.3:
-		_text(Vector2(x, 30), tr("CAB_HI"), Look.c(Pal.BONE_2), 10)
-		_text(Vector2(x, 46), LocFormat.format_int(maxi(hi_score, score)), Look.c(Pal.BONE_4), 10)
+		_text(Vector2(x, 30), tr("CAB_HI"), Look.c(Pal.BONE_4))
+		var hv := LocFormat.format_int(maxi(hi_score, score))
+		_text(Vector2(x, 56), hv, Look.c(Pal.BONE_4), score_scale(hv, READOUT_W))
 	if eaten < 0.6:
-		_text(Vector2(x, 78), tr("CAB_GLASS"), Look.c(Pal.BONE_2))
+		_text(Vector2(x, 80), tr("CAB_GLASS"), Look.c(Pal.BONE_4))
 		for i in magazine:
 			var c := Vector2(x + 4 + (i % 3) * 18, 92 + (i / 3) * 18)
 			var full := i < charges
@@ -82,6 +97,19 @@ func _draw_right_text(shift: float) -> void:
 				draw_colored_polygon(lamp, Look.c(Pal.PHOS_3))
 				draw_rect(Rect2(c - Vector2(0, 1), Vector2(1, 2)), Look.c(Pal.PHOS_5))
 			Pal.glow_polyline(self, lamp, Look.c(Pal.PHOS_4) if full else Look.c(Pal.VOID_4), Look.c(Pal.VOID_2))
+		_draw_sepulchre(x)
+
+
+## Sepulchre progress under the lamps: segments / total, or AWAKE once it stirs. Nothing once unmade.
+func _draw_sepulchre(x: float) -> void:
+	if world == null or world.ritual == null or world.ritual.phase == SepulchreRitual.Phase.UNMADE:
+		return
+	var rit := world.ritual
+	var val := sepulchre_text(rit.segments, world.tuning.segments_total, rit.awake)
+	if rit.awake:
+		val = tr("CAB_SEP_AWAKE")
+	_text(Vector2(x, 192), tr("CAB_SEPULCHRE"), Look.c(Pal.BONE_4))
+	_text(Vector2(x, 212), val, Look.c(Pal.BONE_5), score_scale(val, READOUT_W))
 
 
 ## The Ledger Compass: the whole torus at a glance (the Sinistar scanner homage). Honest at T0.
