@@ -152,7 +152,7 @@ func test_coin_gives_one_credit_then_new_vigil_spends_it() -> void:
 	var btn: Button = runner.find_child("NewVigil")
 	assert_bool(btn.disabled).is_false()
 	assert_object(_focus()).is_same(btn)
-	assert_int((runner.find_child("Frame") as AttractFrame).credits).is_equal(1)
+	assert_str((runner.find_child("StripHud") as CabinetScreenHud).credit_line).is_equal(tr("CAB_CREDIT_COUNT") % 1)
 	btn.pressed.emit()
 	btn.pressed.emit()
 	btn.pressed.emit()

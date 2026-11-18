@@ -28,7 +28,7 @@ func play(game: Node, skippable: bool) -> void:
 	var world: ArcadeWorld = game.world
 	var hud: CabinetHud = game.hud
 	var messages: CabinetMessages = game.messages
-	var crt := (game.crt as ColorRect).material as ShaderMaterial
+	var crt: ShaderMaterial = (game.screen as ArcadeScreen).crt_material()
 	world.paused_sim = true
 	world.vigil.input_enabled = false
 	set_process(true)

@@ -18,8 +18,7 @@ signal entity_unmade
 signal sepulchre_cleared
 signal caption(key: String)
 
-const SCREEN := Vector2(640, 360)
-
+@export var screen_spec: CabinetScreenSpec   ## the arcade grid and HUD strip (data/cabinet/cabinet_screen.tres)
 @export var tuning: CabinetTuning
 @export var move_stats: VigilMoveStats
 
@@ -27,7 +26,9 @@ var stage: CabinetStage
 var torus: Torus
 var rng := RandomNumberGenerator.new()
 var view_centre := Vector2.ZERO
-var screen_centre := SCREEN * 0.5
+var view_rect := Rect2()              ## the play view in screen (grid) coordinates: the grid below the HUD strip
+var view_size := Vector2.ZERO         ## its size: what the player sees of the field
+var screen_centre := Vector2.ZERO     ## where the Vigil is drawn: the centre of the play view
 var paused_sim := false
 var time := 0.0
 
@@ -45,6 +46,14 @@ var _shake_amp := 0.0
 @onready var fx: FxLayer = %Fx
 
 var layers: Array[ArcadeLayer] = []
+
+
+func _ready() -> void:
+	if screen_spec == null:
+		screen_spec = load("res://data/cabinet/cabinet_screen.tres") as CabinetScreenSpec
+	view_rect = screen_spec.play_rect()
+	view_size = view_rect.size
+	screen_centre = view_rect.get_center()
 
 
 func start(p_stage: CabinetStage) -> void:
@@ -83,9 +92,10 @@ func to_screen(p: Vector2) -> Vector2:
 	return torus.to_screen(p, view_centre, screen_centre + shake_offset())
 
 
+## Is `p` inside the visible play view (grown by `margin` px)? Margin 0 = what the player can see.
 func on_screen(p: Vector2, margin: float = 64.0) -> bool:
 	var s := to_screen(p)
-	return s.x > -margin and s.y > -margin and s.x < SCREEN.x + margin and s.y < SCREEN.y + margin
+	return view_rect.grow(margin).has_point(s)
 
 
 ## Screen shake, capped by SYS-001 §9 (≤ 4 px, ≤ 0.25 s). Reduced Motion turns it off.

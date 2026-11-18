@@ -78,10 +78,10 @@ Game-world words come only from GDD §19. The following are **engineering** name
 |---|---|---|
 | Engine | Godot **4.7.2 stable**, 2D renderer | GDD §2, §12; D-06 |
 | Language | **GDScript only** for gameplay | D-06 |
-| Internal resolution | **640 × 360** pixel-perfect for the **Act 0 arcade screen only**; the bezel and everything after Act 0 render at the display's native resolution (owner, 2026-11-18, D-A). **Decided, NOT YET IMPLEMENTED**: the code still uses a 640×360 viewport everywhere | SYS-001 §0; ART-001 §1; GDD §2 |
-| Filtering | nearest-neighbour, never anti-aliased, never mipmapped, on the Act 0 screen; after Act 0 the filter is per asset (open, §11.1 Q3) | ART-002 §1 |
-| Scaling | Act 0 screen: integer multiples only (`window/stretch/mode = viewport`, aspect `keep`, integer snap). After Act 0: ✱ proposed (not owner-approved) `canvas_items` stretch, pixel snapping off, switched at runtime after the Act 0 zoom-in. **Not yet implemented** | §1.3 |
-| Logical space | ✱ proposed: 640×360 stays the logical coordinate space after Act 0, so SYS-001 px and px/s keep their meaning (1 logical px = display height / 360). Post-Act 0 camera scale / visible world area is open (§11.1 Q5) | D-A |
+| Internal resolution | **Logical space 640 × 360** for the whole app (root window, `canvas_items`). The **Act 0 arcade screen** is a pixel-perfect low-res grid in its own `SubViewport` (`ArcadeScreen`), size from `CabinetScreenSpec` (`ds_cabinet.screen.grid`, ✱): **256×304 portrait, 4 bpp (the Williams video circuit with the display rotated 90°; owner 2026-11-18, replaces the 240×320 approval of the same day), built in PR B**, with a **40 px HUD strip** on top and a 256×264 play view (`CabinetScreenSpec`). **Owner video limits, layer one only (the Act 0 screen: never the bezel, never after Act 0), approved 2026-11-18, NOT built (next PR):** (1) 16 colours on screen at once, chosen from a 256-colour palette at 3 bits red, 3 bits green, 2 bits blue (RGB332); (2) the colour registers are writable by the CPU at any time, so colour cycling and fades are register writes; (3) frame time 16.64 ms, from a 14-bit video counter driven by a 1 MHz clock and reloaded with 0x3F00 the first time it overflows (16640 counts). Breaking the colour limit during THE PRETENCE reveal is in-fiction (ART-001 §15). The bezel and everything after Act 0 render at the display's native resolution (D-A, §11.2) | SYS-001 §0; ART-001 §1; GDD §2 |
+| Filtering | nearest-neighbour, never mipmapped, **inside the Act 0 screen** (`ScreenViewport` and its container); root default is Linear so the vector bezel is not nearest-upscaled; after Act 0 the filter is per asset (open, §11.1 Q3) | ART-002 §1 |
+| Scaling | Root: `canvas_items`, aspect `expand`, `fractional`, 2D snapping off. Act 0 screen: integer step only, `k = max(1, floor(min(W/640, H/360)))` display px per screen px, computed by `ScreenFit` (`core/ui/screen_fit.gd`, pure static; k, rig transform, hole rect, `bezel_rect`, window↔screen mapping), re-run on window resize. **Implemented (PR A, 2026-11-18; `bezel_rect` PR B)** | §1.3 |
+| Logical space | 640×360 stays the logical coordinate space, so SYS-001 px and px/s keep their meaning (1 logical px = display height / 360; on 16:9 one Act 0 screen px = one logical px). Post-Act 0 camera scale / visible world area is open (§11.1 Q-T25) | D-A |
 | Target frame rate | 60 FPS; 60 Hz fixed logic tick | SYS-001 §0, §9 |
 | Platform at 1.0 | **Windows + Steam** | GDD §2, §12 |
 | Platforms after 1.0 | Linux, then Mac | GDD §2 |
@@ -90,7 +90,7 @@ Game-world words come only from GDD §19. The following are **engineering** name
 | Multiplayer | none in the build; no `MultiplayerAPI`, no network scene, no `networking/` folder | D-09 (coop out of scope for 1.0), GDD R-07 |
 | Rendering method | **Forward+** (`rendering/renderer/rendering_method = forward_plus`) | owner decision 2026-11-17 (TASK-BOOT Q2); revisit only if min-spec shows T2 warp shaders over SYS-001 §9's 1.2 ms |
 
-**Amended (owner, 2026-11-18, D-A):** the 640×360 grid binds the Act 0 arcade screen only; the low-res look is a skin/pretence, not a technical limit. The cabinet bezel is native-resolution print art (D-B) and leaves the frame at the end of Act 0 by a camera zoom-in. Post-Act 0 behaviour is decided but **not yet implemented**; the settings in §1.2 describe the current code.
+**Amended (owner, 2026-11-18, D-A):** the low-res grid binds the Act 0 arcade screen only; the low-res look is a skin/pretence, not a technical limit. The cabinet bezel is native-resolution print art (D-B) and leaves the frame at the end of Act 0 by a camera zoom-in (the world spills out of the broken tube, §11.2). The stretch/snap/filter settings in §1.2 and the screen SubViewport (§2.10) are **implemented** (PR A). Phases: PR A (ScreenFit, SubViewport screen, `canvas_items`) built; PR B (256×304 grid, readouts on the screen strip, 640/360 literals removed from screen-side code; built on branch claude/act0-portrait-grid), PR C (`VectorText`, Sinistar-style native bezel, control-panel buttons) and PR D (zoom destruction) **not built**. Post-Act 0 camera/world behaviour is not built.
 
 The GDD §2 row offering "512×288 **or** 640×360" is closed here: **640×360** (for the Act 0 screen and as the logical space; see above). It is the resolution SYS-001's px values are written against and the one ART-002's module grid composes against (360 px = 5.625 modules of height; the entity composite at 512×256 therefore cannot fit the frame, which is ART-001 §2's scale-dread rule working by arithmetic rather than by staging).
 
@@ -100,12 +100,13 @@ The GDD §2 row offering "512×288 **or** 640×360" is closed here: **640×360**
 |---|---|---|
 | `display/window/size/viewport_width` | 640 | §1.1 |
 | `display/window/size/viewport_height` | 360 | §1.1 |
-| `display/window/stretch/mode` | `viewport` (current; ✱ `canvas_items` with snapping off after Act 0 is proposed, not implemented, D-A) | pixel-perfect at any window size |
-| `display/window/stretch/aspect` | `keep` | no distortion, letterboxed bars |
-| `display/window/hidpi/nearest_filtering` | on | OS scaling must not re-filter art |
-| `rendering/textures/canvas_textures/default_texture_filter` | `Nearest` | ART-002 §1 |
-| `rendering/textures/default_textures/default_texture_filter` | `Nearest` | same, for generated sub-resources |
-| physics ticks per second | 60 | SYS-001 §0 counts frames at 60 Hz |
+| `display/window/stretch/mode` | `canvas_items` | the bezel is native-res vector; only the Act 0 screen is integer-scaled (`ScreenFit`, §1.3) |
+| `display/window/stretch/aspect` | `expand` | no bars; the bezel bleeds into extra width/height |
+| `display/window/stretch/scale_mode` | `fractional` | the screen's integer step is applied by `ScreenFit`, not the engine |
+| `display/window/hidpi/nearest_filtering` | off | native-res bezel must not be nearest-upscaled by the OS |
+| `rendering/2d/snap/snap_2d_transforms_to_pixel`, `…snap_2d_vertices_to_pixel` | off (root) | on per viewport: `ScreenViewport` sets its own snap flags on |
+| `rendering/anti_aliasing/quality/msaa_2d` | 4× ✱ (root only; `ScreenViewport` has MSAA off) | `draw_polygon` has no AA; vector bezel edges need it. Cost is a §8.1 line, measured under Q-T24 |
+| `rendering/textures/canvas_textures/default_texture_filter` | `Linear` (root); `Nearest` inside the screen (`ScreenViewport` and `ArcadeScreen`) | vector bezel at native res; ART-002 §1 holds inside the screen || physics ticks per second | 60 | SYS-001 §0 counts frames at 60 Hz |
 | `physics/common/physics_ticks_frozen` | never | the game freezes *entities*, never physics (§4.4) |
 | `application/boot_methods` | none | boot is a scene, so the arcade shell is the first thing drawn |
 | max FPS | uncapped in menus, 60 in-sector | sector logic is tick-locked |
@@ -116,18 +117,22 @@ The GDD §2 row offering "512×288 **or** 640×360" is closed here: **640×360**
 
 `Physics` uses Godot's 2D default with one custom exception: geodes and the entity's segments are `StaticBody2D` with one-way `Shape2D` per module, not per composite (§2.4). This keeps a knocked-off segment's collision leaving in the same frame the module leaves the rig.
 
-### 1.3 Integer scaling, honestly
+### 1.3 Integer scaling, honestly — the Act 0 screen
 
-| Window | Scale | Result |
-|---|---|---|
-| 1280×720 | ×2 | 1280×720, no bars |
-| 1920×1080 | ×3 | 1920×1080, no bars |
-| 2560×1440 | ×4 | 2560×1440, no bars |
-| 1366×768 | ×2 | 1280×768 → 43 px side bars |
-| Steam Deck 1280×800 | ×2 | 1280×720 → 40 px vertical bars |
-| 3840×2160 | ×6 | 3840×2160 |
+The integer law now binds the **Act 0 arcade screen** only. `ScreenFit` picks `k = max(1, floor(min(W/640, H/360)))` and draws the screen grid at exactly `k` display px per texel, centred in the window. **No black bars at any aspect (owner, 2026-11-18):** `ScreenFit.bezel_rect` is the whole window in rig units (hole centred), and the bezel fills it (`BezelField` plus the columns, §2.10). Everything else is native resolution (§1.1).
 
-We refuse non-integer scaling. A fractional scale blurs a 1 px outline, and the 1 px `VOID-0` outline is the last line of legibility when the warp layers start distorting shape (ART-001 §2). The bars are drawn as part of the arcade cabinet costume in Act 0 (`ui` kit `cabinetBezel`, ART-002 §4) and as plain `VOID-0` elsewhere. A player who wants the bars gone gets a bigger integer step, not a fractional scale; the option is labelled by the multiple it produces.
+Grid **256×304** (owner, 2026-11-18; the Williams circuit rotated 90°), hole `(192,28,256,304)` in 640×360 units. Test sizes come from the Steam Hardware Survey (Oct 2026) plus the Steam Deck:
+
+| Window | k | Screen shown at | Note |
+|---|---|---|---|
+| 1366×768, 1280×800 (Steam Deck) | 2 | 512×608 | |
+| 1920×1080, 1920×1200 | 3 | 768×912 | |
+| 2560×1440, 2560×1600, 3440×1440 | 4 | 1024×1216 | ultrawide and 16:10 get more bezel, never bars |
+| 3840×2160 | 6 | 1536×1824 | |
+
+The tests (`core/ui/tests/test_screen_fit.gd`, `features/cabinet/tests/test_bezel_art.gd`) cover these eight sizes. Weak case: a window just under a multiple (for example 1600×900, k=2) shows the screen smaller against the window; the integer law wins.
+
+We refuse non-integer scaling **of the screen**. A fractional scale blurs a 1 px outline, and the 1 px `VOID-0` outline is the last line of legibility when the warp layers start distorting shape (ART-001 §2). The frame around the screen is the native-resolution bezel (ART-001 §12.7a), not bars. A player who wants a smaller or larger screen gets a different integer step, not a fractional scale; the option is labelled by the multiple it produces. The sim never sees `k`.
 
 ### 1.4 Build targets and pipeline
 
@@ -300,16 +305,22 @@ Act 0 (GDD §6.1) is the in-world arcade machine (NARR-001 §5: the Cabinet). It
 ```
 CabinetGame (Node, cabinet_game.gd)             stage flow only: READY → play → death/respawn/game over
 │                                                → stage clear → credits → THE PRETENCE → route "ruins"
-├─ World (ArcadeWorld)                          torus field, camera, shake, shared services; ticks layers in order:
-│   Stars · Geodes · Glass · Ritual · Grubs · Acolytes · Shots · Vigil · Fx   (each an ArcadeLayer)
-├─ Autopilot (CabinetAutopilot)                 attract demo (W0-03), captures, the end-to-end test
-├─ MawLayer/Maw (MawView)                        the hole that opens in the reveal; the generated "true body" assembles inside it
-├─ HudLayer/Hud (CabinetHud)                     bezel, 1UP/score/lives, Charge lamps, SEPULCHRE readout, Ledger Compass
-├─ CrtLayer/Crt                                  shaders/crt.gdshader: scanlines, curvature, tear, desaturation
-├─ MessageLayer/Messages (CabinetMessages)       READY card, banners, captions, credits, the entity's big type
-├─ Reveal (PretenceReveal)                       the scripted W0-07/W0-08 sequence (skippable once seen)
-└─ Overlays (ScreenStack)                        pause
+├─ Rig (ScreenRig, Control)                      640×360 reference units, scaled by k/s so bezel and screen share one transform (s = root canvas scale); `bezel_rect()` = the whole window in rig units; signal `refitted`; the end-of-Act 0 zoom scales it
+│  ├─ ArcadeScreen (ArcadeScreen, SubViewportContainer)   material = shaders/crt.gdshader reading TEXTURE (scanline rows uniform = grid.y; resource_local_to_scene); forwards mouse in grid coords
+│  │  └─ ScreenViewport (SubViewport)               size = `CabinetScreenSpec.grid`, own 2D snap on, Nearest, MSAA off
+│  │     ├─ World (ArcadeWorld)                     torus field, camera, shake, shared services; ticks layers in order:
+│  │     │   Stars · Geodes · Glass · Ritual · Grubs · Acolytes · Shots · Vigil · Fx   (each an ArcadeLayer)
+│  │     ├─ Autopilot (CabinetAutopilot)            attract demo (W0-03), captures, the end-to-end test
+│  │     ├─ MawLayer/Maw (MawView)                  the hole that opens in the reveal; the generated "true body" assembles inside it
+│  │     ├─ HudLayer/ScreenHud (CabinetScreenHud)   the 40 px HUD strip at the top of the grid (`CabinetScreenSpec.strip_rect()`): see "HUD strip" below
+│  │     └─ MessageLayer/Messages (CabinetMessages) READY card, banners, captions, credits, the entity's big type (CRT-shaded)
+│  │     (ArcadeScreen positions itself at the hole; World view, Stars, Maw and Messages are sized from the spec's play view, never from 640/360)
+│  └─ Hud (CabinetHud)                              the printed bezel, after the screen under Rig: Field (BezelField: navy print field + key-black tube-mask edge around the hole, out to the window edges), BezelPrint ×2 (left, right column) drawing BezelArt pieces (see below); no readout windows
+├─ Reveal (PretenceReveal)                          the scripted W0-07/W0-08 sequence (skippable once seen); tweens ArcadeScreen.material
+└─ Overlays (CanvasLayer 10, ScreenStack)           pause/settings on the root viewport, native res, over the whole cabinet
 ```
+
+`CrtLayer` and `BezelLayer` are gone: the CRT is a material on the screen's own texture, so it cannot touch the bezel and no layer ordering is needed. Rule ✱: no focusable Control inside `ScreenViewport` (each Viewport owns its focus); `ArcadeScreen` ignores forwarded input while the tree is paused. Rule ✱: no screen-side script holds a 640 or 360 literal; sizes come from `CabinetScreenSpec` (`test_screen_side_sizes.gd` greps the screen-side files for it). `HoleFit` (`features/cabinet/hole_fit.gd`) confines root-level screen content (outside the SubViewport) to the hole or the play view. `CabinetMessages` clips to the play view and wraps long lines with `PixelText.wrap`. Tests: `features/cabinet/tests/test_arcade_screen.gd`, `core/ui/tests/test_screen_fit.gd`, `features/cabinet/tests/test_screen_side_sizes.gd`, `tests/test_project_display.gd`.
 
 | Layer | Owns (rules) | Source |
 |---|---|---|
@@ -328,23 +339,30 @@ CabinetGame (Node, cabinet_game.gd)             stage flow only: READY → play 
 
 ```
 AttractMode (scenes/attract/)                   on_route_entered(params) handles power_on
-├─ Frame (AttractFrame)                         bezel side panels via CabinetBezel, 1UP, CREDIT n counter
-├─ Logo (attract_logo.gd)                       marquee; blink INSERT CREDIT → PRESS NEW VIGIL once a credit is in
-├─ Pages (AttractPages)                         4 cards under chasing marquee bulbs: PITCH (canon NARR Cabinet attract lines), HOW TO PLAY (live bindings per device), THE MISSION, SCORE TABLE (read from CabinetTuning)
-├─ CoinSlot (features/cabinet/coin_slot.gd)     focusable Control on the right bezel
-└─ PowerOn (PowerOnTest)                        CRT warm-up line, scrolling garbage-RAM noise, top-down wipe, self-test lines (RAM/ROM/LAMP/GLASS … OK, SELF TEST COMPLETE); any key/click skips; noise frozen under photosensitivity or reduced motion; scrolls, never full-field flashes
+├─ Rig (ScreenRig)                              same fit as the cabinet (hole + bezel_rect)
+│  ├─ Hole (clipped Control)                    the screen's footprint; everything below is drawn at grid scale inside it
+│  │  ├─ Backdrop                               starfield behind the menu
+│  │  ├─ StripHud                               the 40 px strip
+│  │  ├─ Play/Center/Menu                       Logo (attract_logo.gd, 4× PixelText; marquee; blink INSERT CREDIT → PRESS NEW VIGIL once a credit is in), Pages (AttractPages), Omen, NewVigil, Settings, Quit
+│  │  ├─ PowerOn (PowerOnTest)                  CRT warm-up line, scrolling garbage-RAM noise, top-down wipe, self-test lines (RAM/ROM/LAMP/GLASS … OK, SELF TEST COMPLETE); any key/click skips; noise frozen under photosensitivity or reduced motion; scrolls, never full-field flashes
+│  │  └─ Crt (attract_crt.gd)                   CRT rows and `hole_uv` (shaders/crt_attract.gdshader)
+│  ├─ Frame (AttractFrame)                      printed bezel (BezelPrint ×2) via CabinetBezel, with Field (BezelField)
+│  └─ CoinSlot (features/cabinet/coin_slot.gd)  focusable Control on the right bezel (moves with the right column); its coin prompt draws on the print, right of the door
+└─ Overlays (CanvasLayer)                       pause/settings, native res
 ```
+Pages: 4 cards under chasing marquee bulbs: PITCH (canon NARR Cabinet attract lines), HOW TO PLAY (live bindings per device), THE MISSION, SCORE TABLE (read from CabinetTuning). **Interim deviation (Q-T34):** the pages hide when `text_scale` ≥ 1.5, until the menu buttons move to the bezel (PR C, P7).
 
 - `CoinSlot` phases: TAPED → FALLING → OPEN → DROPPING → CREDITED; `spend()` returns to OPEN. Signals `tape_peeled`, `credit_inserted` (EVT-001). After `tape_hint_delay` a prompt says how to remove the tape (mouse: drag it off; pad/keys: hold accept while the coin door has focus), then how to insert a coin (click the slit / accept).
 - New Vigil is greyed and out of the focus loop until a credit is in; one credit max; New Vigil spends it. Default focus is the CoinSlot until credited; loop = [New Vigil if credited] → Settings → Quit → CoinSlot.
 - No idle demo while a credit is waiting or a peel gesture is in progress; otherwise W0-03's 30 s idle demo is unchanged.
 - Tape removal is saved forever: profile key `cabinet_tape_peeled`, save reason `cabinet_tape` (§7.2), written in attract, never mid-run.
-- `CabinetBezel` (`cabinet_bezel.gd`) holds the static bezel draw helpers (`SIDE` = 80, `COIN_PLATE`); `CabinetHud` and `AttractFrame` share it, and the HUD draws the open, untaped coin door. Placeholder art (§11.1 Q-T20). `CabinetHud` panel text uses a 6 px margin; score, hi score and the SEPULCHRE readout (`segments/total`, or AWAKE; hidden once unmade) draw at PixelText 2× when they fit 72 px, else 1× (`score_scale`); the blinking INSERT CREDIT shows only in the attract demo (`hud.demo`) (ART-004 §8.6, 2026-11-18).
+- **The printed bezel** (design: ART-001 §12.7a; decision §11.2, 2026-11-18). `CabinetBezel` (`cabinet_bezel.gd`) holds the layout constants (`SIDE`, `COIN_PLATE`, `slit()`, `coin_plate()`), shared text helpers and the chrome coin door; the old `draw_panel` and the readout windows are gone (PR B): the columns sit flush to the hole and the coin plate moves with the right column. `BezelField` (`bezel_field.gd`) paints the navy print field and the key-black tube-mask edge around the hole, out to the window edges (`ScreenFit.bezel_rect`), so field, columns and hole tile the window at every aspect. `BezelArt.build_left/build_right` (`bezel_art.gd`) return a deterministic list of `BezelPiece` (`bezel_piece.gd`: id, column, points, ink, z, pivot, kind) with hand-placed shapes and an integer-hash scatter (no RNG). One `BezelPrint` (`bezel_print.gd`) per column draws its pieces once and redraws only on a crack or ink change; the peel moves it by `position.x`. Inks are data: `BezelInks` (`bezel_inks.gd`, `ds_cabinet.bezel`, §3.4) in `data/cabinet/bezel_inks.tres`. `CabinetHud` (same public API; `MARGIN`, `READOUT_W`) draws under `Rig` after `ArcadeScreen`, and `AttractFrame` shares the bezel; the CRT is the screen's material, so it never warps the bezel (the old BezelLayer-above-CrtLayer ordering is retired, §11.2 2026-11-18). The attract scene keeps its screen-texture CRT through `shaders/crt_attract.gdshader` (shared code in `crt_common.gdshaderinc`) until PR C moves its menu to the bezel; its structure is otherwise unchanged. **Interim:** this printed bezel (navy field + columns) stays until PR C (Sinistar-style native bezel, `VectorText`, control-panel buttons; ART-001 §12.7a). Tests: `features/cabinet/tests/test_bezel_art.gd` (field, columns and hole tile the window at all 8 test sizes), `test_cabinet_hud_layout.gd`.
+- **HUD strip** (`CabinetScreenHud`, `cabinet_screen_hud.gd`, 40 px, all live readouts; the layout is code in that file, the numbers here are the owner's pick from the mock, 2026-11-18): left, 1UP, the score at 2× PixelText when it fits 80 px (else 1×), and the Vigil icons; centre, the Ledger Compass at `Rect2(88,3,80,31)`; right, HI and its value, 5 magazine lamps ending at x 248, and the SEPULCHRE value (`segments/total`, or AWAKE; hidden once unmade) right-aligned ending at x 202; a 1 px separator at y 39. The `eaten` thresholds are unchanged; `peel` no longer moves the readouts. The blinking INSERT CREDIT shows only in the attract demo (`hud.demo`) (ART-004 §8.6, 2026-11-18). Locale keys `CAB_VIGILS`, `CAB_GLASS`, `CAB_SEPULCHRE` were removed.
 - `InputLabels` (`core/ui/input_labels.gd`) names bindings per device from the live `InputMap`; `is_accept()` adds a pad-A fallback (§11.1 Q-T19).
 - `CabinetBootTuning` (`ds_cabinet.boot`, §3.4) holds all ✱ presentation timings.
 - Cues `power_on`, `tape_peel`, `coin`: AUDIO-001 §11.7. Glyph "·" added to `PixelText` for the canon line.
 
-Data: `data/cabinet/cabinet_tuning.tres` (`CabinetTuning`, `ds_cabinet.tuning.*`, every value cites SYS-001 or is ✱) and one `CabinetStage` per level (`stage_first_vigil.tres`, `stage_last_normal_day.tres`), inside SYS-001 §4's Seam 1 T0 budget.
+Data: `data/cabinet/cabinet_screen.tres` (`CabinetScreenSpec`, `ds_cabinet.screen.grid` ✱, Vector2i, 256×304; `hud_strip_height` ✱ 40; helpers `strip_rect`, `play_rect`, `play_size`, `play_centre`; §3.4); `data/cabinet/cabinet_tuning.tres` (`CabinetTuning`, `ds_cabinet.tuning.*`, every value cites SYS-001 or is ✱) and one `CabinetStage` per level (`stage_first_vigil.tres`, `stage_last_normal_day.tres`), inside SYS-001 §4's Seam 1 T0 budget.
 
 Art: everything is code-drawn from `Pal` (`core/ui/pal.gd`, checked against the palette file by a test). Text uses the **Cabinet face**, a 5 × 7 bitmap drawn by `PixelText` (`core/ui/pixel_text.gd`, ART-001 §11) at integer scales only. There are no exceptions (D-13): the reveal's "true body" inside the maw is a richer generator (`MawView`), not a sprite.
 
@@ -385,6 +403,8 @@ Create a **Resource** when data is shared, tuned, or authored (stats, items, abi
 **D-08 runtime API (M1 slice 1).** `Vigil.set_hull_max_hp(int)` / `get_hull_max_hp()` switch the hull at runtime; they call `HealthComponent.set_max_hp`, which duplicates the stats resource (the shared `.tres` is never mutated). Post-hit grace (R-11) applies only when `max_hp >= 2`.
 
 **D-08 launch switch (M1 slice 2, part A).** `HullMode` (`features/vigil/hull_mode.gd`) reads `--hull=1|2` from the command line; an absent or invalid value falls back to the data value `ds_vigil.hull.max_hp` (1). `Vigil._ready` applies it through `apply_hull_override`. `HullMode` has its own small `--key=` parser because `CabinetGame._arg_int` is private to the Cabinet. A persisted setting is deferred: it needs a `SettingsService` `DEFAULTS` key and a settings-screen row with `tr()` keys.
+| `ds_cabinet.screen.grid` (`CabinetScreenSpec`, `data/cabinet/cabinet_screen.tres`) | the Act 0 arcade screen's SubViewport size, 256×304 (PR B); engineering param, no SYS-001 row (decision §11.2, 2026-11-18) | ✱ |
+| `ds_cabinet.screen.hud_strip_height` (same resource) | rows at the top of the grid taken by the HUD strip, 40 (owner, Q-T31); the play view is the rest, 256×264 | ✱ |
 | `ds_cabinet.boot.*` (`CabinetBootTuning`, `data/cabinet/cabinet_boot_tuning.tres`): `warmup_seconds`, `noise_seconds`, `noise_scroll`, `test_line_seconds`, `test_hold_seconds`, `page_seconds`, `tape_hint_delay`, `tape_hold_seconds`, `tape_drag_px`, `tape_fall_seconds`, `coin_drop_seconds` | presentation timings, no SYS-001 row (§11.1 Q-T18) | ✱ |
 
 ---
@@ -600,6 +620,8 @@ Target from GDD §15: median frame ≤ 8 ms at T2 and ≤ 14 ms at T5 on minimum
 | Slack | 0.5 | ✱ |
 | **Total** | **8.0** | GDD §15 |
 
+Not yet lines in this table, to be added when measured (Q-T24): **MSAA 2D 4×** on the root (§1.2) and the **display-resolution CRT** pass on the Act 0 screen (it now runs at window resolution, not 640×360). Neither has been measured; fallback if over budget: MSAA 2× ✱.
+
 At T5 the 14 ms allowance is spent on warp and post passes; gameplay lines keep their T2 budgets.
 
 ### 8.2 ContactBudget
@@ -653,7 +675,7 @@ The smoke run prints `BOOT_SMOKE: reached route 'sector'` and exits 0. GdUnit wr
 
 Result on 2026-11-18 (attract boot / coin slot): 118 test cases, 0 failures, 0 errors; boot smoke (`-- --smoke --no-save`, attract → cabinet) exit 0 with no `ERROR`/`WARNING` lines. Not verified: real gamepad hardware, real mouse-drag feel, audio by ear.
 
-Not covered (honest list): native-resolution rendering after Act 0 (decided, not implemented, D-A), window sizes other than the 640×360 logical viewport, real integer scaling at 1080p/1440p, gamepad glyphs (none exist), shaders, audio, Steam, performance. Slopes, stairs, doors and moving platforms are N/A (§2.6).
+Not covered (honest list): native-resolution rendering after Act 0 (decided, not implemented, D-A), the real window at any size (the Steam-survey sizes of §1.3 are covered as pure arithmetic in `test_screen_fit` / `test_bezel_art`, not by rendering them), gamepad glyphs (none exist), shaders, audio, Steam, performance. Slopes, stairs, doors and moving platforms are N/A (§2.6).
 
 ## 10. Import conventions
 **D-13:** no raster imports feed the game. The reference PNGs under `assets/sprites/` are local-only reference: kept on disk, **not in git** (`.gitignore`) and **ignored by Godot** (`assets/sprites/.gdignore`), so they are never imported, exported or pushed. Only `SPRITE_MANIFEST.csv` is tracked, as the inventory of parts to build (owner decision 2026-11-18). Exports must still exclude `tools/**` (set in the export preset when it is created). Historical, for the reference PNGs only: per ART-002 §7, canvas default filter Nearest (set in `project.godot`); pixel atlases import with `compress/mode = Lossless`, mipmaps off, `fix_alpha_border = true`. Every `.csv` under `assets/` imports as `keep` (ruling R-19), never as a translation; PNG import flags per ASSET-003. ART-002 §7 mentions a `godot/DarkStar/` path; the project root is the repo root (TASK-BOOT Q4), so that path is obsolete — §11 Q-T08. No import preset file is committed yet. `docs/`, `tools/`, `research/` and `Claude outputs/` carry `.gdignore`.
@@ -669,12 +691,17 @@ Not covered (honest list): native-resolution rendering after Act 0 (decided, not
 | Q-T17 | Cabinet ✱ values with no SYS-001 row: lives at start (3), respawn delay and shield (2 s each), lance range (0.9 s life; lance lifetime now also lives in `data/arc_lance/arc_lance.tres`, SYS-001 §1.3 row awaiting approval), Grub seek speed (160 px/s) and flee radius (110 px), Acolyte engagement range (300 px) and shot life (2.2 s), Charge life (6 s), entity costume radius/contact inset/turn rate | `data/cabinet/cabinet_tuning.tres`, `sepulchre_ritual.gd` | add an Act 0 table to SYS-001 |
 | Q-T18 | `CabinetBootTuning` ✱ values (`ds_cabinet.boot.*`: warm-up, noise, scroll speed, self-test line/hold, card time, tape hint delay, tape hold, tape drag distance, tape fall, coin drop) have no SYS-001 rows (2026-11-18) | `data/cabinet/cabinet_boot_tuning.tres` | add presentation-timing rows to SYS-001 or keep as ✱ |
 | Q-T19 | Godot's built-in `ui_accept` has **no gamepad binding** here (`InputMap.action_get_events(&"ui_accept")` lists only Enter, Kp Enter, Space). `CoinSlot` accepts `JOY_BUTTON_A` explicitly via `InputLabels.is_accept()`, but ordinary menu Buttons may not respond to pad A: D-01 gamepad parity gap. Not fixed (2026-11-18) | `tests/test_input_map.gd` owns the input map | owner decides whether to add a pad event to `ui_accept` |
-| Q-T20 | The Act 0 bezel side panels and coin door are a placeholder mockup (owner: "a quick mockup is fine", 2026-11-18); detailed bezel design is still to be written | `features/cabinet/cabinet_bezel.gd` | ART-001 gets a bezel design section |
+| Q-T20 | ~~The Act 0 bezel side panels and coin door are a placeholder mockup~~ **Resolved 2026-11-18:** printed bezel built (§2.10) and designed in ART-001 §12.7a. Still open inside it: the peel/crack/decay zoom (not built) and native-resolution crispness (D-A) | `features/cabinet/bezel_art.gd`, `cabinet_bezel.gd` | closed |
 | Q-T21 | NARR-001's ending has the credits peel "HUD, bezel, scanlines, the Cabinet's marquee", but the bezel leaves the frame for good after the Act 0 zoom-in (D-B). GDD §9 ending 4 ("the retro arcade shell being peeled away") and the GDD §8.7 T4 row ("the arcade shell slips") lean on the same image | NARR-001 ending; GDD §9, §8.7 | bookend return to the cabinet, or rewrite the beats |
 | Q-T22 | Are pxl raster renders used after Act 0? | ART-001 §14.8 | Act 0 only; Aether art stays runtime vector/shader |
-| Q-T23 | `PixelText` scales by integers only; native resolutions are not integer multiples of 360 | ART-001 §11, R-02 | pixel faces for the cabinet; scalable rendering of the chalk faces after Act 0 |
+| Q-T23 | `PixelText` scales by integers only; native resolutions are not integer multiples of 360. Narrowed 2026-11-18: PixelText stays the face inside the Act 0 screen (integer-scaled, so its law holds); bezel text will be `VectorText` (generated stroke glyphs, PR C, not built). Post-Act 0 text engine (VectorText as a candidate) still open | ART-001 §11, R-02 | pixel faces for the cabinet; scalable rendering of the chalk faces after Act 0 |
 | Q-T24 | SYS-001 §9 frame budget was never measured at native resolution; fog/post buffers likely need a fractional render scale and quality presets | SYS-001 §9 | measure at 1080p/1440p/4K before locking |
 | Q-T25 | Post-Act 0 camera scale / visible world area is a design number not yet set | D-A | design to set; no value invented |
+| Q-T30 | Act 0 Acolyte engagement range. Today 300 px ✱ (Q-T17) against a 128 px half-width on the 256×304 screen; the owner ruled (2026-11-18, Q5) that Acolytes only fire while inside the play view, the **number** is not set | `data/cabinet/cabinet_tuning.tres`; SYS-001 §3 | owner sets the value; no value invented |
+| Q-T31 | ~~On-screen HUD strip height~~ **Resolved 2026-11-18:** 40 px (owner pick from a mock); play view 256×264; `CabinetScreenSpec.hud_strip_height` ✱ | PR B | closed |
+| Q-T34 | Interim deviation from the 200 % text-scale rule (§11.2 layout rulings): the attract instruction pages hide when `text_scale` ≥ 1.5, because they cannot reflow in the 256-wide hole. Ends when the attract menu and its pages move to the bezel control panel (PR C, P7) | `scenes/attract/attract_pages.gd`; ART-001 §12.7a | rehome the pages in P7, then remove the hide |
+| Q-T32 | Marquee strip height and logo size (slim strip across the top, large logo/emblem in the side panels). Layout, if it is a design number rather than art | ART-001 §12.7a; PR C | owner approves after a mock; else stays art-only ✱ |
+| Q-T33 | Other Act 0 values the narrower view leaves open: spawn distance/ring for Grubs, Acolytes and geodes against a 128×132 half-view of the 256×264 play view; scanner range/scale (the scanner is the main off-screen information); camera look-ahead (0 today, the Sinistar-faithful answer); detonation scatter. Torus 1920×720 ✱ is kept until playtest | `cabinet_tuning.gd`; SYS-001 §1.3, §3 | owner values after playtest of Option A (§11.2) |
 | Q-T29 | Detonation shard count conflict: GDD §8.2 (~line 208) says 3-5; SYS-001 §1.3 row 74 says 3-5 but row 76 says 4-6; the Cabinet code uses 4-6. Also no SYS-001 row for magnet pull speed (170 px/s) or shard drag (1.2/s), both currently ✱ in code (2026-11-18) | GDD §8.2; SYS-001 §1.3 | owner ruling on 3-5 vs 4-6; add rows or keep ✱ |
 
 ### 11.1a Resolved questions
@@ -721,7 +748,7 @@ Rows R-01…R-19 are the owner-delegated rulings of 2026-11-17; later rows carry
 | 2026-11-17 | **English only.** All non-English plans removed: per-locale number tables, the language setting and picker, pseudo-translation and right-to-left tests, the CJK font plan, translator workflow and vendor milestones. `tr()` keys and `en.po` stay so player text remains testable and a language can be added later (L10N-001 §7) | owner |
 | 2026-11-18 | Act 0 built as the Cabinet feature (§2.10): own torus simulation without Godot physics bodies; vector costume art from `Pal`; 5×7 Cabinet face via `PixelText`; `AudioService` built with synthesised placeholder cues; profile save reason `cabinet_score`; `--no-save` switch; New Vigil now routes to `cabinet` | production |
 | 2026-11-18 | Arcade boot-up and attract (§2.10): a first-attract-of-launch power-on self-test (`PowerOnTest`), four instruction cards (`AttractPages`), and a hazard-taped coin slot (`CoinSlot`) on the Act 0 bezel; New Vigil is greyed and out of the focus loop until one credit is in (one credit max, New Vigil spends it). Tape removal is saved forever (`cabinet_tape_peeled`, save reason `cabinet_tape`, `profile` slot). Bezel and coin-door art is a placeholder mockup. **GDD §10 "3 clicks max" still holds:** first launch = drag tape + click slot + New Vigil (3 actions); later launches = slot + New Vigil (2). The power-on test is skippable by any key/click and is not an action | owner (request in session) |
-| 2026-11-18 | **D-A (resolution):** 640×360 pixel-perfect, integer-scaled, nearest-filtered applies only to the Act 0 arcade screen; the bezel and everything after Act 0 render at native resolution. ✱ proposed, not owner-approved: keep 640×360 as the logical space, switch to `canvas_items` stretch with snapping off after the zoom-in. Decided, not implemented; open items Q-T23..Q-T25 | owner |
+| 2026-11-18 | **D-A (resolution):** a pixel-perfect, integer-scaled, nearest-filtered low-res grid applies only to the Act 0 arcade screen; the bezel and everything after Act 0 render at native resolution. **Amended 2026-11-18:** 640×360 is the logical space for the whole app (owner-approved, no longer ✱ proposed); root is `canvas_items`/`expand`/`fractional`, snapping off, from the start, not "after the zoom-in"; the Act 0 screen grid goes **portrait 240×320** (see the 2026-11-18 portrait row). Built in PR A (§1.2, §2.10); open items Q-T23..Q-T25 | owner |
 | 2026-11-18 | **D-B (bezel):** the cabinet bezel is a real-world object at native resolution, full-colour printed cabinet art, not bound by the Neon Cabinet palette or screen role laws; generated in code (D-13); instruction text via `tr()`. At the end of Act 0 the camera zooms in to the screen and the bezel leaves the frame permanently (replaces the ART-001 §12.7 seam peel; reduced motion = 1-frame cut). Open: Q-T21 | owner |
 | 2026-11-18 | **D-C (UI after Act 0):** modern game-UI structure and UX (hierarchy, primary/secondary actions, focus, input glyphs, Returnal-style list/preview/detail) with chalk-and-brass as the skin; ART-001 §12 stays valid as the skin | owner |
 | 2026-11-18 | **D-B amended (the zoom):** the zoom-in carries the destruction: as the camera pushes in, the bezel peels, cracks, decays and warps out of frame. It is the game's main hook and must be a show-stopper; highest presentation bar (ART-001 §12.7, ART-004 §7.1). Decided, not implemented | owner |
@@ -735,3 +762,12 @@ Rows R-01…R-19 are the owner-delegated rulings of 2026-11-17; later rows carry
 | 2026-11-18 | **SUPERSEDED by the next row (hash64 and checksum parts; `core/rng/` and `seam_index` stand).** Seeded RNG spec (Q-T26…Q-T28): `hash64` = first 8 bytes (LE) of SHA-256 over a tagged canonical encoding with domain `darkstar.rng.v1`; `seam_index` int (0 run-wide, 1–5 Seams); SeedCode = `(seed << 5) \| crc5`, MSB-first Crockford symbols; checksum CRC-5 poly `0x05` over the 55 seed bits; code in new `core/rng/`. Engineering-only (✱); test vectors in §4.9. Unblocks M1 slice 2 part B | owner |
 | 2026-11-18 | owner ruling: seeded RNG uses FNV-1a 64 + SplitMix64 and the XOR checksum; supersedes the PR #4 spec (SHA-256 `hash64`, CRC-5). `RunSeed`/`SeedCode` built in `core/rng/`; `ReplayVerifier` not built (needs a deterministic sim); daily-seed derivation left open until the daily is built | owner |
 | 2026-11-18 | owner ruling: SeedCode checksum is CRC-5 (replaces the XOR-of-groups checksum; hash64 FNV-1a 64 + SplitMix64 stands) | owner |
+| 2026-11-18 | Act 0 bezel is printed art drawn above the CRT pass on its own `BezelLayer` (4; `MessageLayer` 5); readouts live in its smoked-glass windows; the Ledger Compass stays under the CRT in `ScreenHud`; inks are data (`bezel_inks.tres`). Closes Q-T20. **Amended 2026-11-18: the BezelLayer-above-CRT workaround is retired.** The CRT is now the `ArcadeScreen` material reading the screen texture (PR A), so it cannot touch the bezel; `CrtLayer`/`BezelLayer` removed, `Messages` now sit inside the screen (CRT-shaded). The printed bezel itself stays as the interim design until PR C | owner approved the brief; built by Claude |
+| 2026-11-18 | Bezel art is a `BezelPiece` list (id, ink, z, pivot) built deterministically by `BezelArt`, drawn by `BezelPrint`: the seam for the zoom destruction (peel about the pivot, seeded crack graph, shader decay). Not built yet | owner approved the brief; built by Claude |
+| 2026-11-18 | **Portrait Act 0 screen + native vector bezel (owner direction, architect proposal approved with its recommended defaults).** Direction: (1) the first (arcade) layer takes a ratio similar to Sinistar's; (2) bezel art must not be pixel graphics, sharp at any resolution. Decisions: Act 0 screen grid **240×320 portrait (≈3:4)** (**amended later the same day to 256×304, see the rows below**); integer step `k = floor(min(W/640, H/360))`, screen never larger than its hole; 640×360 stays the logical space (`canvas_items`); CRT is the screen's material; end-of-Act 0 zoom ends with the world spilling out of the broken tube (links Q-T21, Q-T25); keep the 1920×720 torus ✱ until playtest. Phases: PR A (ScreenFit, SubViewport screen, `canvas_items`, CRT as material) **built**; PR B (256×304 grid after the amendment, readouts on screen, 640/360 literals removed), PR C (`VectorText`, Sinistar-style bezel, control-panel buttons), PR D (zoom destruction) **not built**. Open numbers: Q-T30..Q-T33 | owner |
+| 2026-11-18 | **Act 0 gameplay under the narrower view: Option A.** Sim untouched, 1:1 world px, the 340 px/s 🔒 (SYS-001) and other feel numbers bind in Act 0 too, Vigil centred as in Sinistar; accept the narrower view (128 px centre-to-edge on the 256 grid; was 120 on the superseded 240), revisit after playtest. Acolytes do not fire from off-screen (range value open, Q-T30). Rejected: Act 0 feel overrides, a world zoom below 1 (12 px hitbox would halve, 1 px outlines collapse, ART-001 §2) | owner |
+| 2026-11-18 | **Act 0 layout rulings:** slim marquee strip plus the logo in the side panels; on-screen HUD as its own strip (height after a mock, Q-T31); all live readouts move onto the screen, the bezel carries printed art and the coin door only; attract menu buttons (NEW VIGIL / SETTINGS / QUIT) become bezel control-panel buttons in one focus domain with `CoinSlot`; pause/settings overlays cover the whole cabinet at native res (root `Overlays`); text scale 200 % applies to arcade pages and messages (reflow at the screen width), HUD numerals fixed | owner |
+| 2026-11-18 | **Vector bezel text and AA:** bezel text is `VectorText`, a code-generated stroke-glyph table (`core/ui/vector_text/`, built by a generator script); a generator-built glyph table counts as generated in code (D-13), same status as `BezelArt` polygons. `PixelText` stays inside the Act 0 screen. MSAA 2D 4× ✱ on the root for vector edges, measured under Q-T24 (fallback 2×). Not built (PR C) | owner |
+| 2026-11-18 | **Act 0 grid 256×304 (replaces the 240×320 approval above).** The screen matches the Williams video circuit with the display rotated 90°: 256 wide × 304 tall, 4 bpp. The HUD strip is 40 px (Q-T31 resolved, owner pick from a mock); play view 256×264. **No black bars at any aspect:** the bezel fills the whole window (`ScreenFit.bezel_rect`) and the screen sits centred, integer-scaled. Test sizes from the Steam Hardware Survey (Oct 2026): 1920×1080, 2560×1440, 2560×1600, 3840×2160, 3440×1440, 1920×1200, 1366×768, plus Steam Deck 1280×800. Acolytes only fire while inside the play view (Q5; value still Q-T30). Built in PR B | owner |
+| 2026-11-18 | **Act 0 video limits (layer one only; never the bezel, never after Act 0). Approved, NOT built (next PR).** 16 colours on screen at once from a 256-colour RGB332 palette (3 bits red, 3 green, 2 blue); colour registers writable by the CPU at any time, so colour cycling and fades are register writes; frame time 16.64 ms from a 14-bit video counter on a 1 MHz clock reloaded with 0x3F00 on its first overflow (16640 counts). The register bank and the quantize pass come in the next PR. Breaking the limit during THE PRETENCE reveal is in-fiction (ART-001 §15) | owner |
+| 2026-11-18 | **PR B layout.** Readout windows leave the bezel (columns sit flush to the hole; the coin plate moves with the right column); `BezelField` paints the navy print field and key-black tube-mask edge out to the window edges; `HoleFit` confines root-level screen content to the hole or play view; attract sits under a `ScreenRig` (§2.10) | built by Claude, following the owner rulings above |

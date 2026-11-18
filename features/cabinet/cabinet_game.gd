@@ -21,7 +21,7 @@ const CREDIT_KEYS := ["CAB_CREDITS_1", "CAB_CREDITS_2", "CAB_CREDITS_3", "CAB_CR
 @onready var world: ArcadeWorld = %World
 @onready var hud: CabinetHud = %Hud
 @onready var messages: CabinetMessages = %Messages
-@onready var crt: ColorRect = %Crt
+@onready var screen: ArcadeScreen = %ArcadeScreen
 @onready var reveal: PretenceReveal = %Reveal
 @onready var overlays: ScreenStack = %Overlays
 @onready var autopilot: CabinetAutopilot = %Autopilot
@@ -68,7 +68,6 @@ func on_route_entered(params: Dictionary) -> void:
 		_demo_t = DEMO_SECONDS
 		autopilot.enabled = true
 		messages.demo = true
-		hud.demo = true
 
 
 func _exit_tree() -> void:
@@ -120,7 +119,7 @@ func _enter(s: int, seconds: float = 0.0) -> void:
 
 func _process(delta: float) -> void:
 	RenderingServer.set_default_clear_color(Look.c(Pal.VOID_0))   # arcade black at T0 (the vacuum is the lie, ART-001 §16)
-	var mat := crt.material as ShaderMaterial
+	var mat := screen.crt_material()
 	if mat:
 		mat.set_shader_parameter(&"time_s", world.time)
 	if demo:

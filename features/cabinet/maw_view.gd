@@ -7,7 +7,8 @@ extends Node2D
 ## Fully generated (GDD-001 D-13, ART-001 §14): no image is loaded. Entity palette only —
 ## VOID, BONE, PHOS, NULL; never GASLIGHT (palette law 1).
 
-const CENTRE := Vector2(320, 180)
+@export var spec: CabinetScreenSpec
+var centre := Vector2.ZERO          ## the centre of the play view (from the screen spec)
 const SEGMENTS := 20                 ## the entity's 20 modules (SYS-001 §2.1)
 const RING := 74.0                   ## ✱ vertebra ring radius in the reveal
 const TEETH := 14                    ## ✱ inner ring
@@ -23,6 +24,11 @@ var reveal := 0.0:
 var _t := 0.0
 
 
+func _ready() -> void:
+	var s := spec if spec != null else (load("res://data/cabinet/cabinet_screen.tres") as CabinetScreenSpec)
+	centre = s.play_centre()
+
+
 func _process(delta: float) -> void:
 	_t += delta
 	if visible:
@@ -32,14 +38,14 @@ func _process(delta: float) -> void:
 func _draw() -> void:
 	if radius <= 0.0:
 		return
-	draw_circle(CENTRE, radius, Pal.NULL)
+	draw_circle(centre, radius, Pal.NULL)
 	# veins of phosphor reaching out of the hole: the truth-telling colour (palette law 2)
 	for k in 9:
 		var a := TAU * k / 9.0 + _t * 0.05
-		var p0 := CENTRE + Vector2.from_angle(a) * radius
-		var p1 := CENTRE + Vector2.from_angle(a + 0.12) * (radius + 10.0 + 6.0 * sin(_t * 2.0 + k))
+		var p0 := centre + Vector2.from_angle(a) * radius
+		var p1 := centre + Vector2.from_angle(a + 0.12) * (radius + 10.0 + 6.0 * sin(_t * 2.0 + k))
 		draw_line(p0.round(), p1.round(), Pal.PHOS_2, 1.0)
-	draw_arc(CENTRE, radius, 0.0, TAU, 64, Pal.VOID_5, 1.0)
+	draw_arc(centre, radius, 0.0, TAU, 64, Pal.VOID_5, 1.0)
 	if reveal > 0.0 and radius > 40.0:
 		_draw_true_body(clampf(reveal, 0.0, 1.0))
 
@@ -55,14 +61,14 @@ func _draw_true_body(k: float) -> void:
 		var pts := PackedVector2Array()
 		for s in 6:
 			var r := lerpf(26.0, RING * breathe, s / 5.0)
-			pts.append((CENTRE + Vector2.from_angle(a + wob * s) * r).round())
+			pts.append((centre + Vector2.from_angle(a + wob * s) * r).round())
 		draw_polyline(pts, Pal.PHOS_1 if i % 2 == 0 else Pal.PHOS_2, 1.0)
 	# the teeth: a ring of bone pointing inward
 	for i in TEETH:
 		var a := -spin * 1.5 + TAU * i / TEETH
-		var base_l := CENTRE + Vector2.from_angle(a - 0.12) * 44.0 * breathe
-		var base_r := CENTRE + Vector2.from_angle(a + 0.12) * 44.0 * breathe
-		var tip := CENTRE + Vector2.from_angle(a) * (31.0 + 2.0 * sin(_t * 3.0 + i))
+		var base_l := centre + Vector2.from_angle(a - 0.12) * 44.0 * breathe
+		var base_r := centre + Vector2.from_angle(a + 0.12) * 44.0 * breathe
+		var tip := centre + Vector2.from_angle(a) * (31.0 + 2.0 * sin(_t * 3.0 + i))
 		var tooth := PackedVector2Array([base_l.round(), tip.round(), base_r.round()])
 		draw_colored_polygon(tooth, Pal.BONE_2)
 		draw_line(base_l.round(), tip.round(), Pal.BONE_4)
@@ -71,11 +77,11 @@ func _draw_true_body(k: float) -> void:
 	for i in shown:
 		var a := spin + TAU * i / SEGMENTS
 		var r := RING * breathe + sin(_t * 1.7 + i * 0.9) * 2.0
-		_draw_vertebra(CENTRE + Vector2.from_angle(a) * r, a, i)
+		_draw_vertebra(centre + Vector2.from_angle(a) * r, a, i)
 	# the core and the eye
-	draw_circle(CENTRE, 26.0, Pal.NULL)
+	draw_circle(centre, 26.0, Pal.NULL)
 	var look := Vector2.from_angle(_t * 0.7) * 6.0 + Vector2(sin(_t * 2.3), cos(_t * 1.9)) * 2.0
-	var eye := (CENTRE + look).round()
+	var eye := (centre + look).round()
 	draw_circle(eye, 9.0, Pal.PHOS_1)
 	draw_circle(eye, 6.0, Pal.PHOS_3)
 	draw_circle(eye, 3.0, Pal.PHOS_5)

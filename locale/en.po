@@ -101,18 +101,6 @@ msgstr "1UP"
 msgid "CAB_HI"
 msgstr "HI"
 
-#. Label over the remaining-ships icons.
-msgid "CAB_VIGILS"
-msgstr "VIGILS"
-
-#. Label over the Charge pips (Mourning Glass in the magazine).
-msgid "CAB_GLASS"
-msgstr "GLASS"
-
-#. Label over the Sepulchre segment count on the bezel (Act 0 costume).
-msgid "CAB_SEPULCHRE"
-msgstr "SEPULCHRE"
-
 #. Shown in place of the segment count once the Sepulchre is awake.
 msgid "CAB_SEP_AWAKE"
 msgstr "AWAKE"
@@ -380,3 +368,23 @@ msgstr "RT"
 #. Marquee blink once a credit is in (replaces INSERT CREDIT). Names the menu button.
 msgid "CAB_PRESS_NEW_VIGIL"
 msgstr "PRESS NEW VIGIL"
+
+#. Printed on the bezel: the how-to-play card (the Pretence's 1983 marketing art). Each line must fit 72 px at 1x (12 characters).
+msgid "CAB_HOWTO_TITLE"
+msgstr "HOW TO PLAY"
+
+msgid "CAB_HOWTO_1"
+msgstr "MINE GLASS"
+
+msgid "CAB_HOWTO_2"
+msgstr "ARM CHARGES"
+
+msgid "CAB_HOWTO_3"
+msgstr "UNMAKE THE"
+
+msgid "CAB_HOWTO_4"
+msgstr "SEPULCHRE"
+
+#. Printed on the bezel's starburst sticker.
+msgid "CAB_BEZEL_SLOGAN"
+msgstr "NEW!"
