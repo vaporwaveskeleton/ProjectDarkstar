@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=14 format=3]
 
 [ext_resource type="Script" path="res://scenes/attract/attract_mode.gd" id="1"]
 [ext_resource type="Script" path="res://core/ui/screen_stack.gd" id="2"]
@@ -6,6 +6,12 @@
 [ext_resource type="Script" path="res://scenes/attract/attract_backdrop.gd" id="4"]
 [ext_resource type="Script" path="res://scenes/attract/attract_logo.gd" id="5"]
 [ext_resource type="Shader" path="res://shaders/crt.gdshader" id="6"]
+[ext_resource type="Script" path="res://scenes/attract/attract_frame.gd" id="7"]
+[ext_resource type="Script" path="res://features/cabinet/coin_slot.gd" id="8"]
+[ext_resource type="Script" path="res://scenes/attract/attract_pages.gd" id="9"]
+[ext_resource type="Script" path="res://scenes/attract/power_on_test.gd" id="10"]
+[ext_resource type="Resource" path="res://data/cabinet/cabinet_boot_tuning.tres" id="11"]
+[ext_resource type="Resource" path="res://data/cabinet/cabinet_tuning.tres" id="12"]
 
 [sub_resource type="ShaderMaterial" id="crt_mat"]
 shader = ExtResource("6")
@@ -25,7 +31,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1")
-default_focus = NodePath("Center/Menu/NewVigil")
+default_focus = NodePath("CoinSlot")
 cancel_closes = false
 
 [node name="Backdrop" type="Control" parent="."]
@@ -45,16 +51,26 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 
 [node name="Menu" type="VBoxContainer" parent="Center"]
 layout_mode = 2
 custom_minimum_size = Vector2(160, 0)
+mouse_filter = 2
 
 [node name="Logo" type="Control" parent="Center/Menu"]
 unique_name_in_owner = true
 layout_mode = 2
 mouse_filter = 2
 script = ExtResource("5")
+
+[node name="Pages" type="Control" parent="Center/Menu"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+script = ExtResource("9")
+tuning = ExtResource("11")
+scores = ExtResource("12")
 
 [node name="Omen" type="Label" parent="Center/Menu"]
 unique_name_in_owner = true
@@ -67,29 +83,58 @@ horizontal_alignment = 1
 [node name="NewVigil" type="Button" parent="Center/Menu"]
 unique_name_in_owner = true
 layout_mode = 2
-focus_neighbor_top = NodePath("../Quit")
-focus_neighbor_bottom = NodePath("../Settings")
-focus_previous = NodePath("../Quit")
-focus_next = NodePath("../Settings")
+size_flags_horizontal = 4
+custom_minimum_size = Vector2(160, 0)
 text = "MENU_NEW_VIGIL"
 
 [node name="Settings" type="Button" parent="Center/Menu"]
 unique_name_in_owner = true
 layout_mode = 2
-focus_neighbor_top = NodePath("../NewVigil")
-focus_neighbor_bottom = NodePath("../Quit")
-focus_previous = NodePath("../NewVigil")
-focus_next = NodePath("../Quit")
+size_flags_horizontal = 4
+custom_minimum_size = Vector2(160, 0)
 text = "MENU_SETTINGS"
 
 [node name="Quit" type="Button" parent="Center/Menu"]
 unique_name_in_owner = true
 layout_mode = 2
-focus_neighbor_top = NodePath("../Settings")
-focus_neighbor_bottom = NodePath("../NewVigil")
-focus_previous = NodePath("../Settings")
-focus_next = NodePath("../NewVigil")
+size_flags_horizontal = 4
+custom_minimum_size = Vector2(160, 0)
 text = "MENU_QUIT"
+
+[node name="Frame" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("7")
+
+[node name="CoinSlot" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 572.0
+offset_top = 252.0
+offset_right = 628.0
+offset_bottom = 332.0
+focus_mode = 2
+script = ExtResource("8")
+tuning = ExtResource("11")
+
+[node name="PowerOn" type="Control" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("10")
+tuning = ExtResource("11")
 
 [node name="Crt" type="ColorRect" parent="."]
 material = SubResource("crt_mat")
@@ -108,4 +153,5 @@ script = ExtResource("2")
 base_screen = NodePath("..")
 
 [node name="InputModeTracker" type="Node" parent="."]
+unique_name_in_owner = true
 script = ExtResource("3")

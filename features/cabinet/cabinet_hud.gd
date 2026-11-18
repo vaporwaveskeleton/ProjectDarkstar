@@ -5,7 +5,7 @@ extends Control
 ## top of the field. Everything here is honest at T0. `peel` 0 → 1 tears the costume away
 ## (W0-07/W0-08); `eaten` 0 → 1 lets the Unmaking swallow the readouts.
 
-const SIDE := 80.0                    ## bezel width: 640 − 2 × 80 = 480 = a 4:3 field at 360 high
+const SIDE := CabinetBezel.SIDE       ## bezel width: 640 − 2 × 80 = 480 = a 4:3 field at 360 high
 const COMPASS := Rect2(250, 4, 140, 40)
 
 var world: ArcadeWorld
@@ -32,33 +32,17 @@ func _process(delta: float) -> void:
 
 func _draw() -> void:
 	if peel < 1.0:
-		_draw_bezel(0.0, -peel * (SIDE + 20.0))
-		_draw_bezel(640.0 - SIDE, peel * (SIDE + 20.0))
+		CabinetBezel.draw_panel(self, 0.0, -peel * (SIDE + 20.0), crack)
+		CabinetBezel.draw_panel(self, 640.0 - SIDE, peel * (SIDE + 20.0), crack)
+		var plate := CabinetBezel.COIN_PLATE
+		plate.position.x += peel * (SIDE + 20.0)
+		CabinetBezel.draw_coin_plate(self, plate, 0.0, tr("CAB_COIN_PRICE"))
 		_draw_left_text(-peel * (SIDE + 20.0))
 		_draw_right_text(peel * (SIDE + 20.0))
 	if world != null and world.torus != null and eaten < 1.0:
 		_draw_compass()
 	if peel < 1.0 and eaten < 0.9:
 		PixelText.draw_centered(self, 320.0, 351.0 + peel * 20.0, tr("CAB_MAKER"), Look.c(Pal.BONE_1))
-
-
-func _draw_bezel(x: float, shift: float) -> void:
-	var r := Rect2(x + shift, 0, SIDE, 360)
-	draw_rect(r, Look.c(Pal.VOID_0))
-	var inner := r.grow(-6)
-	draw_rect(inner, Look.c(Pal.VOID_1))
-	draw_rect(inner, Look.c(Pal.VOID_3), false, 1.0)
-	# cabinet trim: brass rivets down the inner edge
-	var edge := r.position.x + (SIDE - 3.0 if x < 320.0 else 2.0)
-	for y in range(12, 360, 24):
-		draw_rect(Rect2(edge, y, 1, 1), Look.c(Pal.GAS_1))
-	if crack > 0.0:
-		var cx := r.position.x + SIDE * 0.5
-		var pts := PackedVector2Array()
-		for k in 9:
-			var y := 360.0 * k / 8.0
-			pts.append(Vector2(cx + sin(k * 2.3 + x) * 14.0 * crack, y))
-		draw_polyline(pts, Look.c(Pal.BONE_4), 1.0)
 
 
 ## Cabinet face (5 × 7, ART-001 §11): `p` is the baseline, as with draw_string.

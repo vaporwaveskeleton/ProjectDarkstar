@@ -107,6 +107,11 @@ static func build_cabinet_set() -> Dictionary:
 			tone(Wave.TRIANGLE, 1046.0, 261.0, 3.0, 0.25, 0.3)]),
 		&"menu_move": tone(Wave.SQUARE, 880.0, 880.0, 0.03, 0.12),
 		&"menu_accept": tone(Wave.SQUARE, 660.0, 990.0, 0.08, 0.18),
+		&"power_on": mix([tone(Wave.SINE, 70.0, 45.0, 0.5, 0.6, 0.001), tone(Wave.NOISE, 600.0, 120.0, 0.6, 0.25, 0.001, 0.5, 0, 0, 31),
+			tone(Wave.SINE, 5200.0, 5200.0, 1.4, 0.03, 0.2)]),
+		&"tape_peel": tone(Wave.NOISE, 1500.0, 4200.0, 0.35, 0.35, 0.01, 0.5, 0, 0, 37),
+		&"coin": mix([tone(Wave.TRIANGLE, 2637.0, 2637.0, 0.12, 0.3, 0.001), tone(Wave.TRIANGLE, 3136.0, 3136.0, 0.25, 0.25, 0.001),
+			tone(Wave.SQUARE, 1320.0, 1320.0, 0.3, 0.12, 0.001)]),
 	}
 
 

@@ -8,7 +8,7 @@
 
 | Screen | Required by | Status |
 |---|---|---|
-| Attract mode (title): the cabinet marquee (DARKSTAR in the Cabinet face), INSERT CREDIT, high score, drifting vector field, CRT glass; New Vigil, Settings, Quit; 30 s idle plays the autopilot demo, any input returns | GDD §10, WARP-001 W0-01/W0-03 | built — `scenes/attract/` |
+| Attract mode (title): the cabinet marquee (DARKSTAR in the Cabinet face), INSERT CREDIT (PRESS NEW VIGIL once credited), high score, drifting vector field, CRT glass; first attract of a launch opens with the power-on self-test (any input skips); four instruction cards cycle (pitch, how to play, mission, score table); a hazard-taped coin door on the right bezel (peel the tape, insert a coin); New Vigil is greyed and outside the focus loop until a credit is in, then spends it; Settings, Quit; 30 s idle (not while a credit waits or a peel is in progress) plays the autopilot demo, any input returns | GDD §10, WARP-001 W0-01/W0-03 | built — `scenes/attract/` |
 | Settings: large text, reduced motion, photosensitivity, Steady Ledger (no language setting: English only, L10N-001 §1) | GDD §10, WARP-001 §4.4 | built (subset) — `scenes/settings/` |
 | Pause: Resume, Settings, Abandon Run | GDD §4.1, WARP-001 §4.4 W4-07 | built — `scenes/sector/pause_screen.tscn` |
 | Confirmation (two-choice, safe default) | brief | built — `scenes/common/confirm_screen.tscn` |
@@ -54,7 +54,7 @@ Route scene (e.g. AttractMode : Screen)        one per SceneRouter route
 
 | Rule | How it is met |
 |---|---|
-| One clear primary action | `default_focus`; attract → New Vigil |
+| One clear primary action | `default_focus`; attract → the coin door until a credit is in, then New Vigil |
 | Explicit focus neighbours, no dead ends | every button sets `focus_neighbor_top/bottom` (wrapping); tested |
 | Reliable `ui_cancel` | `Screen._unhandled_input`; root screens ignore it; tested |
 | Repeated input | busy state: New Vigil disables the menu; `SceneRouter.go_to` ignores calls while busy; Confirm disables itself on press |
@@ -88,7 +88,7 @@ Theme variations: `HeaderLabel`, `HintLabel`, `ErrorLabel`, `TruthLabel`, `DimPa
 Everything on screen comes from a `tr()` key in `locale/en.po` (L10N-001). Failure codes go through `PlayerMessages`, which maps them to a sentence saying what happened, whether progress is safe, and what to do next. Raw codes, paths, enum names and exceptions go to `push_warning`/`push_error` only. Authored HUD lies (WARP-001 §4.2) are content, not bugs. A raw key, debug value or error string on screen is a bug.
 
 ## 7. Tests
-`scenes/tests/test_attract_mode.gd` and `scenes/tests/test_sector_and_pause.gd` cover focus on open, focus loops, modal stacking up to three deep, focus restoration, `ui_cancel` and the `pause` action, repeated input, safe area at 200 % text, and no raw keys on screen. `tests/test_boot_flow.gd` covers input-mode switching. Window-size variation is **not** automated yet.
+`scenes/tests/test_attract_mode.gd`, `scenes/tests/test_attract_coin_slot.gd` (tape peel by hold/drag/pad A, coin → credit → New Vigil, power-on skip, page cycle, binding labels) and `scenes/tests/test_sector_and_pause.gd` cover focus on open, focus loops, modal stacking up to three deep, focus restoration, `ui_cancel` and the `pause` action, repeated input, safe area at 200 % text, and no raw keys on screen. `tests/test_boot_flow.gd` covers input-mode switching. Window-size variation is **not** automated yet.
 
 ## 8. Adding a screen
 1. Create `scenes/<area>/<name>_screen.tscn` with a `Control` root using a script that `extends Screen`. Wrap the rows in `FitScrollContainer`.

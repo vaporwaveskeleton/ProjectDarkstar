@@ -1061,7 +1061,7 @@ The score's job is to **decompose**: the arcade chiptune rots into the Choir's l
 
 | Engine | Technique | Used for | Status |
 |---|---|---|---|
-| **chirp** (build time) | a synth DSL (`.cx.js`) rendered to WAV: tones, FM, filtered noise, envelopes, arps, vibrato, tracker patterns, built-in drums, reverb/delay/crush/drive/chorus/limiter; seamless loops with WAV loop points | authored cues, music stems, ambience beds and per-tier variants — see §11.7 | **built**: all 20 cabinet cues and the chant bed (`audio/src/cabinet.cx.js`) |
+| **chirp** (build time) | a synth DSL (`.cx.js`) rendered to WAV: tones, FM, filtered noise, envelopes, arps, vibrato, tracker patterns, built-in drums, reverb/delay/crush/drive/chorus/limiter; seamless loops with WAV loop points | authored cues, music stems, ambience beds and per-tier variants — see §11.7 | **built**: all 23 cabinet cues (incl. `power_on`, `tape_peel`, `coin`, 2026-11-18) and the chant bed (`audio/src/cabinet.cx.js`) |
 | `SfxSynth.tone` | oscillators (square with duty, saw, triangle, sine), sample-and-hold noise, pitch sweeps, vibrato, AD envelope | every T0 arcade cue (A, B, I families), shots, pickups, explosions | **built** |
 | `SfxSynth.mix` | sample summing with clipping | chords, layered hits, the glass chime | **built** |
 | Chant bed | held minor chord of detuned saw/triangle/sine voices, looped | the Choir's presence (§5), positional level from `AudioService.set_chant` | **built** (first version) |
@@ -1101,6 +1101,7 @@ The litany (§5.1) is nine vowel targets. Each unit class gets a register and a 
 | Output | `assets/audio/generated/sfx/<id>.wav` and `music/<id>.wav`: 16-bit 44.1 kHz; loops carry a WAV `smpl` loop that Godot imports as looping. Committed (Git LFS, per `.gitattributes`), so the game builds without Node. Never hand-edited: change the source and rebuild |
 | Forbidden | `sample()` and sample-based `inst()` (they play recordings). A test fails the build if a source uses them |
 | Previews | `assets/audio/generated/_preview/*.png` (waveform + spectrogram): Godot-ignored by chirp, git-ignored here, read during authoring only |
+| Attract cues (2026-11-18) | `power_on` (CRT warm-up and RAM-noise power-on), `tape_peel` (hazard tape coming off the coin door), `coin` (coin drop, one credit); each also has a runtime `SfxSynth` version |
 | Runtime fallback | `AudioService` plays the chirp render of a cue when it exists, else the `SfxSynth` version |
 | What stays runtime | anything that must morph continuously with Warp Tier or Composure (§11.1): drones, the chant's rot, the voice's degradation. chirp renders tier variants; the runtime layer sweeps between them |
 

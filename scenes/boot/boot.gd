@@ -19,7 +19,8 @@ func _ready() -> void:
 	_curtain.color.a = 1.0
 	SceneRouter.register_host(self)
 	SceneRouter.route_changed.connect(_on_route_changed)
-	SceneRouter.go_to(SceneRouter.table.initial_route)
+	# The first route of a launch is the Cabinet switching on (attract plays its power-on test).
+	SceneRouter.go_to(SceneRouter.table.initial_route, {"power_on": not _smoke})
 
 
 func _exit_tree() -> void:

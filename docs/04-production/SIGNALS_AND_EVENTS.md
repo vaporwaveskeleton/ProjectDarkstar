@@ -45,6 +45,9 @@ Rules: signal names are past tense (`hull_breached`, `save_failed`), payloads ar
 | `ArcadeWorld` | `entity_unmade`, `sepulchre_cleared` | — | `CabinetGame` (stage flow) | built |
 | `ScoreKeeper` | `score_changed`, `lives_changed`, `extra_life_awarded` | `int` / `int` / — | `CabinetGame` → HUD | built |
 | `PretenceReveal` | `finished` | — | `CabinetGame` (save flags, route to the Ruins) | built |
+| `CoinSlot` | `tape_peeled` | — | `AttractMode` (saves `cabinet_tape_peeled`, reason `cabinet_tape`) | built |
+| `CoinSlot` | `credit_inserted` | — | `AttractMode` (enables New Vigil, marquee text, CREDIT counter) | built |
+| `PowerOnTest` | `finished` | — | `AttractMode` (reveals the attract screen) | built |
 
 Add a row before you add a signal. Remove the row when you remove the signal.
 
