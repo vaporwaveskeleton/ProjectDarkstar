@@ -10,7 +10,7 @@ This file is loaded every turn: keep it short. Detail lives in `docs/`; cite it,
 | Any number (speeds, HP, budgets, timings) | `docs/01-design/SYSTEMS_BIBLE_STATS.md` (SYS-001) | Never invent a game number. Missing → stop and ask. Engineering-only params get `✱` and go in TECH-001 |
 | Scene tree, node ownership, data layout, `ds_` keys, save layout, shaders, budgets, tests | `docs/04-production/TECH_ARCHITECTURE.md` (TECH-001) | The architecture doc. Update it; do not create a competing `ARCHITECTURE.md` |
 | Names of things (code, UI, files) | GDD §19 glossary | Use glossary words exactly: Vigil, Arc-Lance, Surgelight, Composure, Choir… |
-| Locked decisions | GDD §18 (D-01…D-12) | Code may assert, never vary. D-08 (one-hit hull) is **open**: keep it data-switchable |
+| Locked decisions | GDD §18 (D-01…D-14) | Code may assert, never vary. D-08 (one-hit hull) is **open**: keep it data-switchable |
 | Warp tiers, HUD lie law, Steady Ledger | `docs/01-design/REALITY_WARP_ESCALATION.md` (WARP-001) §4 | |
 | Run structure, saves classes, Lantern Tree | `docs/01-design/ROGUELIKE_LOOP_AND_LANTERN_TREE.md` (LOOP-001) §2–3 | |
 | Kits, anchors, seam assembly | `docs/01-design/ZONES_AND_ENCOUNTERS.md` (ZONES-001) §1.7 (kit tree + anchor names), §4 | |
@@ -50,6 +50,7 @@ assets/  docs/           (docs/, tools/, research/ carry a .gdignore)
 - UI: screens extend `Screen`, overlays go on the scene's `ScreenStack`, rows inside `FitScrollContainer`; one default focus, explicit focus neighbours, `ui_cancel` works (UI-001).
 - Saves: `SaveService.save_slot(slot, payload, reason)` with an allowed reason; never mid-run; payloads hold ids and numbers only (TECH-001 §7).
 - Warnings are errors here: give a variable an explicit type when its value comes from a `Dictionary`/`Array`/`Variant`.
+- **Generated assets only (D-13, D-14):** never add or reference image, texture, font or audio files in game code, scenes or data. Visuals = vector draw calls or shaders with `Pal` colours (ART-001 §14); text = `PixelText`; sound = `SfxSynth`/`AudioService` synthesis (AUDIO-001 §11). PNGs under `assets/sprites/` are reference only. `tests/test_generated_assets_only.gd` enforces this.
 - Gameplay collision is separate from sprites and animation; animation fires events, it never owns hit truth.
 - Every player-visible string goes through `tr()` with a stable key. No raw errors, IDs, enum names or paths on screen. (Diegetic HUD "lies" are authored content per WARP-001 §4.2, not debug output; Steady Ledger must always be honest.)
 

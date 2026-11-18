@@ -1,8 +1,17 @@
 # DARKSTAR — Modular Sprite System Specification (64×64 base module)
 
-**Doc ID:** ART-002 · **Version:** 1.1 · **Date:** 2026-11-17 · **Owner:** Art + Tech Art · **Status:** complete-draft
+**Doc ID:** ART-002 · **Version:** 1.2 · **Date:** 2026-11-18 · **Owner:** Art + Tech Art · **Status:** complete-draft
 Rev 1.1 (2026-11-17): §7 import paths corrected to the repo-root project (ruling R-08) and the manifest import rule added (R-19); §8 aligned with the palette file of record (kit locks are colour *pools*; the salvaged-lantern exceptions); §9–§10 corrected to what is actually on disk.
-**Source of truth for:** module grid, part kits, sockets, naming, atlases, animation tags, runtime mutation, Godot import settings.
+> **Rev 1.2 (2026-11-18, GDD-001 D-13): parts are generators, not PNGs.** Every module is a code-generated part (vector geometry or a shader) drawn on the same 64×64 grid. ART-001 §14 is the generation doctrine. What still binds, and what is retired:
+>
+> | Section | Status under D-13 |
+> |---|---|
+> | §1 module grid, §4 kits, §5 assembly and sockets, §8 palette pools | **normative**: generators use the same grid, kit ids, sockets and colour pools |
+> | §2 naming grammar | **normative for part ids**: `ds_<kit>_<part>…` names a generator, not a file |
+> | §6 animation rules | **normative as parameter tracks**: frame counts become `phase` curves; tags become named parameter sets |
+> | §3 folder layout, §7 atlas and import settings, §9 PNG deliverables, §10 file inventory | **retired** for the game; kept as the record of the v0.1 raster pass (reference only, never loaded) |
+
+**Source of truth for:** module grid, part kits, sockets, part-id naming, animation parameter tracks, runtime mutation. (Atlases and import settings: retired by D-13.)
 **Related:** `ART_BIBLE.md` (look), `ASSET_PIPELINE.md` (how files are produced), `assets/sprites/SPRITE_MANIFEST.csv` (what exists).
 
 ---
@@ -136,7 +145,7 @@ Loop rule: first and last frame must differ by ≤ 1 px of movement (no pops); c
 - Atlas size **1024×1024**, 8 px gutter, tight-packed per kit; atlas manifest `assets/sprites/atlas/<kit>_atlas.png` + `.json`.
 - Godot: `rendering/textures/canvas_textures/default_texture_filter = Nearest`; per-sprite `texture_filter = Inherit`; **no compression** on pixel atlases (`compress/mode = Lossless` at import, disable mipmaps, disable HDR); `fix_alpha_border = true` on all atlases (prevents 1 px bleeding on outline sprites).
 - Project root = **repo root** (`project.godot` sits beside `assets/`), so every path in this spec is also its `res://` path (`assets/sprites/...` = `res://assets/sprites/...`). There is no `godot/DarkStar/` folder. Import presets and per-file import conventions are owned by `TECH_ARCHITECTURE.md` (TECH-001) §10 (ruling R-08).
-- `assets/sprites/SPRITE_MANIFEST.csv` is data for tools and the planned `ManifestImporter` (TECH-001 §6.3). Its `.import` must use importer **`keep`**: Godot would otherwise treat any `.csv` as a translation table and emit `*.translation` files (ruling R-19, ASSET-003 §4).
+- `assets/sprites/SPRITE_MANIFEST.csv` is a reference inventory of parts to build as generators (D-13; the `ManifestImporter` is retired, TECH-001 §6.3). Its `.import` must use importer **`keep`**: Godot would otherwise treat any `.csv` as a translation table and emit `*.translation` files (ruling R-19, ASSET-003 §4).
 - Scaled display: internal 640×360 → integer scale to the window (2×, 3×). Never non-integer scale in the shipped default; the option exists behind an accessibility toggle with a warning.
 
 ## 8. Colour and palette locking per kit

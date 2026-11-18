@@ -1,7 +1,8 @@
 class_name SfxSynth
 extends RefCounted
-## Builds short arcade sound effects as AudioStreamWAV in code, so the Cabinet has a voice before
-## any recorded audio exists (AUDIO-001 cues are the targets; these are placeholders by design).
+## Builds the game's sounds as AudioStreamWAV in code — DARKSTAR ships no recorded audio
+## (GDD-001 D-14, AUDIO-001 §11). These are the T0 arcade voices; the horror tiers sweep the same
+## parameters (detune, formants, noise, bit depth) rather than swapping samples.
 ## Deterministic: the same recipe always produces the same samples.
 
 const RATE := 22050

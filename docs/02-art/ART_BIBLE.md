@@ -1,6 +1,8 @@
 # DARKSTAR — Art Bible
 
-**Doc ID:** ART-001 · **Version:** 1.1 · **Date:** 2026-11-17 · **Owner:** Art · **Status:** complete-draft (§11 typography and §12 UI states are specified; no glyph or UI-kit art is drawn yet) · **Companion:** `SPRITE_MODULARITY_SPEC.md` (ART-002, the technical module system), `ASSET_PIPELINE.md` (ASSET-003, how files are made)
+**Doc ID:** ART-001 · **Version:** 1.2 · **Date:** 2026-11-18 · **Owner:** Art · **Status:** complete-draft (§11 typography and §12 UI states are specified; no glyph or UI-kit art is drawn yet) · **Companion:** `SPRITE_MODULARITY_SPEC.md` (ART-002, the technical module system), `ASSET_PIPELINE.md` (ASSET-003, how files are made)
+
+**Rev 1.2 (2026-11-18, GDD-001 D-13): every image is generated in code — vector geometry or shaders. No sprite, texture or font files ship. §14 is the generation doctrine; §1–§13 still define the look.**
 
 Rev 1.1 (2026-11-17, owner-delegated rulings R-02, R-06, R-09): palette law 1 gains its documented exception (§4); new §11 Typography; new §12 UI states and components. Earlier sections are unchanged in substance.
 
@@ -153,6 +155,8 @@ Painters/illustrators to study for *light and dread*, not to imitate: Caspar Dav
 **Never traced, never re-sampled, never "inspired by" into a derivative asset. All DARKSTAR art is original and generated in-project.**
 
 ## 10. Definition of done for a sprite (art QA checklist)
+
+> D-13: every "sprite" is now a generator output. These checks apply to what the generator draws; §14.7 adds the generator-specific ones.
 1. Correct kit, correct module size (64×64 unless the spec's composite rules allow otherwise), transparent background, no stray pixels.
 2. ≤ 10 colours, palette-law compliant, correct outline.
 3. Silhouette readable at 50% greyscale, distinguishable from every sibling in its kit within 2 frames.
@@ -166,7 +170,7 @@ Painters/illustrators to study for *light and dread*, not to imitate: Caspar Dav
 
 ## 11. Typography (ruling R-02, 2026-11-17)
 
-Status: **specified, not drawn.** Until the three faces below exist as glyph sheets, the build uses Godot's fallback font at a provisional size (TECH-001 §11 Q-T02, UI-001 §9). Everything here is a drawing spec for a pixel artist.
+Status: **Cabinet face built in code** (`core/ui/pixel_text.gd`, 2026-11-18); **Ledger and Litany specified, not coded.** Until they exist as glyph data, the build uses Godot's fallback font at a provisional size (TECH-001 §11 Q-T02, UI-001 §9). Everything here is the glyph spec the glyph data must match.
 
 ### 11.1 Laws (violations are bugs, like palette law)
 1. **Every face is drawn on the pixel grid** at 1× and shipped as a bitmap. No vector fonts, no hinting, no anti-aliasing, no synthetic bold or italic, no sub-pixel positioning. Glyph origins snap to whole pixels.
@@ -190,7 +194,7 @@ Status: **specified, not drawn.** Until the three faces below exist as glyph she
 | Tracking | 1 px | 2 px | 1 px (built into the cell) |
 | Word space | 3 px | 6 px | 6 px (one cell) |
 | Line height | 12 px (24 at 200 %) | 22 px (44 at 200 %) | 8 px (16 at 200 %) |
-| Sheet ids (ART-002 §2) | `ds_ui_fontLedger`, `ds_ui_fontLedgerGlitch` | `ds_ui_fontLitany`, `ds_ui_fontLitanyGlitch` | `ds_ui_fontCabinet` |
+| Glyph-set ids (ART-002 §2) | `ds_ui_fontLedger`, `ds_ui_fontLedgerGlitch` | `ds_ui_fontLitany`, `ds_ui_fontLitanyGlitch` | `ds_ui_fontCabinet` |
 
 **Ledger vertical layout inside its 12 px cell** (row 0 at the top): rows 0–1 are reserved headroom (above-cap marks, should a language with accents ever be added — L10N-001 §7); rows 2–8 hold cap height (baseline under row 8); rows 4–8 are the x-height band; rows 9–10 hold descenders; row 11 is the line gap. The 12 px cell keeps that headroom so a future extension never changes line height.
 
@@ -247,7 +251,7 @@ WARP-001 owns *when* text lies (§4.2 "Glyph" deviation class and tell family; �
 4. Photosensitivity mode: corruption is static. A glyph may be wrong, but it never flickers.
 
 ### 11.8 Delivery format
-Each face ships as a PNG glyph sheet on a fixed grid (one cell per glyph, `VOID-0`-free, transparent background, the fill colour only; colour roles are applied in-engine) plus a character map. TECH-001 owns the in-engine font resource (BMFont `.fnt` or Godot `FontFile`). ASSET-003 §6 owns the export step. The sheets live under kit `ui`: `assets/sprites/generated/ui/` once generated, or `assets/sprites/source/ui/` if hand-drawn in Aseprite.
+Each face ships as **glyph data in code** (D-13, §14.5): one bitmap grid per glyph, plus a character map, drawn rect by rect at integer scale like `core/ui/pixel_text.gd` (the Cabinet face, built). Colour roles are applied at draw time. No PNG glyph sheets and no font files. The glitch set (§11.7) is glyph data too.
 
 ### 11.9 Typography QA (a face is done when)
 1. Every required glyph exists on the grid and matches §11.2's metrics.
@@ -364,3 +368,52 @@ Story facts that only work if the art carries them. Each is a single frame or pr
 | The honour roll | the Act 0 high-score screen uses the Cabinet face; from Hard Unmaking 3 it lists `T.L. — 0 WARD 0 SURGE` beside the top score | LOOP-001 §11.6, UI-001 §1 |
 | Sable's hand | Sable's whole hand is shown once, at Hard Unmaking beat 5 (Lattice) — still never the face | NARR-001 §5.6 |
 | Stained-glass deaths | at beat 4 (The Cathedral Learns Your Name) the Ruins' windows show the player's own recorded deaths as stained glass, built from the death telemetry (SYS-001 §8 keys), one pane per death type | NARR-001 §5.6, §14 Q-04 |
+
+## 14. Generated art doctrine (D-13, 2026-11-18)
+
+**Every image in DARKSTAR is generated at runtime by code: vector geometry or shaders.** That covers the Vigil, every Choir unit, the entity, geodes, shards, terrain, VFX, the HUD, the UI and type. No sprite, texture, tile or image file ships (GDD-001 D-13). Sections 1–13 still define the *look*: palette, silhouettes, lighting, line, UI and type. This section defines how code produces that look, and why it is better for this game.
+
+### 14.1 Why generated
+The game's signature is a continuous fall from a clean 1983 arcade into cosmic horror (GDD-001 §1, §8.7). With baked sprites, every Warp Tier is an asset swap: a cut. With generators, every body is a function of parameters, so the fall is a **sweep**. The same Grub can be drawn with three chalk circles at T0, breathe at T1, grow a fourth limb at T2, and become a lamp with a face at T4. One generator per part, every tier, every frame in between.
+
+### 14.2 The three layers
+
+| Layer | What it is | Used for | Rule |
+|---|---|---|---|
+| **Vector** | `CanvasItem` draw calls (lines, polylines, polygons, arcs) issued by a part generator every frame | the T0 costume (all of Act 0), outlines at every tier, UI, type, HUD | coordinates snapped to whole pixels; 1 px strokes (plus the 3 px dim under-stroke for the arcade glow, `Pal.glow_polyline`); colours only from `Pal` |
+| **Shader** | canvas-item shaders on a part's quad: signed-distance bodies, noise, flesh, glass, veins, eyes, Shroud growth | bodies from T1 up, the entity, Shroud, VFX fields, the maw | output is **quantised to the 32-colour palette** in the shader (nearest palette entry, optional ordered dither between two adjacent ramp steps), so palette law 1–6 holds for shader art too; sampled on the 640×360 grid, so it stays pixel art |
+| **Post** | full-screen passes owned by `WarpComposer` (TECH-001 §5.1) | CRT costume, tears, desaturation, tier distortion | never adds a colour outside the palette except the CRT's scanline and vignette darkening, which are the costume |
+
+### 14.3 What a part generator is
+A part is a small GDScript class (`core/gfx/parts/` from Act 1; Act 0 parts live inline in `features/cabinet/sim/`). It exposes:
+- **identity:** a part id that follows ART-002 §2's grammar (`ds_grub_core`, `ds_acolyte_censer`), so naming, sockets and kit palette locks carry over unchanged;
+- **parameters:** `seed`, `tier` (0–5, fractional allowed), `horror` (0–1, the WarpComposer's continuous dial), `damage`, `facing`, `phase` (animation time), plus part-specific ones (limb count, eye count, glow);
+- **sockets:** named attach points in the part's 64×64 local space (ART-002 §5), so `CompositeRig` assembles bodies exactly as before;
+- **draw:** `draw(canvas, transform, params)` for vector parts, or a shader plus uniforms for shader parts. It is deterministic from its parameters and `seed`: the same inputs always give the same pixels (replays, tests).
+
+### 14.4 The tier ladder (what the parameters do)
+
+| Tier | Vector layer | Shader layer | Example: an Acolyte |
+|---|---|---|---|
+| **T0 Pretence** | the whole costume: 1983 outlines, glow under-stroke, ≤ 3 colours per unit | none (CRT post only) | a magenta spike, a pale face pixel, a censer on a stick |
+| **T1 Frayed** | lines breathe (± 1 px, slow); one "wrong" hue may enter a ramp | first fills fade in under the outline at low `horror` | the spike gains a cloth fill that sways |
+| **T2 Bleeding** | outlines start to fork; extra limbs are new sockets filled | SDF bodies with phosphor veins; Shroud grows as a shader field | a second censer arm; the veil drips |
+| **T3 Unbound** | geometry distorts (vertex warp in the generator) | geometry mutation shaders, gravity lensing | the body bends as if seen through water |
+| **T4 Inverted** | silhouettes re-skin as mundane objects (a lamp, a window, a face), generated from the same sockets | the inside-out palette | a standing lamp whose shade is a censer |
+| **T5 Unmaking** | outlines unravel into loose chalk strokes | ribs, iris, chunked reality | only the lines of its liturgy remain |
+
+The `horror` dial interpolates *within* a tier, so no change between tiers is ever a hard cut unless the design wants one (WARP-001's tells and the Pretence Tear are authored cuts).
+
+### 14.5 Type
+Type is generated too. The Cabinet face exists as glyph data drawn rect by rect (`core/ui/pixel_text.gd`). The Ledger and Litany faces (§11) follow the same pattern: glyph grids as data in code, drawn at integer scale. No font files are loaded, except Godot's built-in fallback font in the real UI until Ledger is coded.
+
+### 14.6 The raster art on disk
+The PNGs under `assets/sprites/` (the v0.1 PowerShell generator pass, ASSET-003) are **reference only**. They are the target look the generators reproduce, and they are never loaded by the game. A test (`tests/test_generated_assets_only.gd`) fails the build if any scene, script or resource references an image or audio file. `assets/reference/` mood boards stay out of git (§9).
+
+### 14.7 Definition of done for a generator (replaces §10 for parts)
+1. Reads in a 160 × 90 thumbnail and in 50 % greyscale at T0 (the §10 checks still apply to the output).
+2. Every colour it can output is a palette entry from its kit's pool (ART-002 §8); shader parts quantise to the palette.
+3. Deterministic: the same parameters and seed give identical pixels; a test renders it twice and compares.
+4. Sweeps cleanly from T0 to T5 and through `horror` 0 → 1 with no popping, except the authored cuts.
+5. Has sockets for every limb ART-002 §4 lists for its kit, and a T0 costume form.
+6. Costs no more than its share of SYS-001 §9's frame budget at the on-screen cap (TECH-001 §8).

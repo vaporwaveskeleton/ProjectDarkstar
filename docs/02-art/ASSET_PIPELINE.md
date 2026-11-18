@@ -1,7 +1,9 @@
-# DARKSTAR — Asset Pipeline & Manifest
+# DARKSTAR — Asset Pipeline (Generators)
 
-**Doc ID:** ASSET-003 · **Version:** 1.0 · **Date:** 2026-11-17 · **Owner:** Art (tech art) · **Status:** complete-draft. It describes the pipeline as it exists on disk on 2026-11-17, plus the producer-side contract for the parts that are planned.
+**Doc ID:** ASSET-003 · **Version:** 2.0 · **Date:** 2026-11-18 · **Owner:** Art (tech art) · **Status:** complete-draft. It describes the pipeline as it exists on disk on 2026-11-17, plus the producer-side contract for the parts that are planned.
 **Upstream:** ART-001 (`ART_BIBLE.md`: look, palette law, typography, UI states), ART-002 (`SPRITE_MODULARITY_SPEC.md`: module grid, naming, sockets, atlas geometry) · **Downstream:** TECH-001 §6 (manifest consumption, `ManifestImporter`, `AtlasTable`), TECH-001 §10 (import presets)
+> **Rev 2.0 (2026-11-18, GDD-001 D-13 and D-14): the game ships no image or audio files.** Every visual is generated at runtime (vector or shader, ART-001 §14) and every sound is synthesised in code (AUDIO-001 §11). **§12 below is the current pipeline.** §1–§11 describe the retired raster pass (PowerShell generator → PNG → manifest → atlas → import). They are kept because the PNGs are the *reference look* the generators reproduce, and the manifest is still a useful inventory of parts to build. Nothing in §1–§11 feeds the game any more; `tests/test_generated_assets_only.gd` enforces that.
+
 **Boundary.** This doc owns *how art files are produced, named, linted, versioned and handed over*. TECH-001 §6 owns *what the engine does with them*. If this doc and TECH-001 disagree on a producer-side detail, this doc wins; on a consumption detail, TECH-001 wins (TECH-001 §0.1).
 
 ---
@@ -275,3 +277,26 @@ Current: **v1.2 (2026-11-17)** — applied by the main session under owner-deleg
 | A-08 | main session | **done 2026-11-17**: `SPRITE_MANIFEST.csv.import` set to `keep`; stray `.translation` files deleted (ruling R-19) |
 | A-09 | owner (delegated) | **done 2026-11-17**: palette JSON v1.2 — `ui` pool widened; `herald` loses GAS-0..3 (Heralds are Choir elites, law 1) |
 | A-10 | engineering | build `palette_lint` (TECH-001 §1.4) over the manifest with the §5.1 rules and a failing exit code |
+
+## 12. The current pipeline: generators (D-13, D-14)
+
+| Kind | Where | What it produces | Status |
+|---|---|---|---|
+| Palette | `core/ui/pal.gd` (`Pal`), checked against `assets/palettes/darkstar_palette.json` by a test | the 32 colours as constants; the JSON stays the file of record | built |
+| Vector parts (Act 0 costume) | `features/cabinet/sim/*.gd` (each layer's `_draw`), `features/cabinet/maw_view.gd` | the Vigil, geodes, glass, Grubs, Acolytes, the Sepulchre, the Dark Star, VFX, the maw and the true body inside it | built |
+| Vector parts (Act 1+) | `core/gfx/parts/<kit>_<part>.gd` | parametric parts per ART-002 kit, with sockets and the ART-001 §14.4 tier ladder | planned |
+| Shader parts | `shaders/parts/*.gdshader` | SDF bodies, flesh, veins, glass, Shroud; output quantised to the palette | planned |
+| Post | `shaders/crt.gdshader` (built); WarpComposer passes (TECH-001 §5.1) | costume, tear, desaturation, tier distortion | partly built |
+| Type | `core/ui/pixel_text.gd` (Cabinet face, built); Ledger and Litany glyph data (planned) | all game text | partly built |
+| Sound | `core/audio/sfx_synth.gd` + `autoload/audio_service.gd` (built: arcade cues, chant bed); music sequencer, voice and soundscape synthesis (planned, AUDIO-001 §11) | every sound | partly built |
+
+**Adding a part:**
+1. Write the generator class with ART-002's id and sockets.
+2. Take colours only from its kit pool in `Pal`.
+3. Make it deterministic from `seed`.
+4. Give it a T0 costume form and a tier sweep (ART-001 §14.4).
+5. Add a render test (ART-001 §14.7).
+
+The raster PNG with the same id, if one exists, is the visual target.
+
+**What must never happen:** a `Texture2D`, image, font or audio file referenced from `features/`, `scenes/`, `core/`, `autoload/` or `data/`. The test above fails the build if it does. Exports exclude `assets/sprites/**` and `assets/reference/**` (TECH-001 §10).

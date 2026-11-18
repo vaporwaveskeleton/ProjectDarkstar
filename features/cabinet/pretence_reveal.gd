@@ -4,7 +4,7 @@ extends Node
 ## The cabinet's credits stutter, the sound dies, "THAT WAS A PRETENCE." The bezels crack and
 ## fall away and the field opens to its true width; the scanlines and curvature drain off; a hole
 ## opens where a star should be and drinks the sky, the readouts and the light — and inside it,
-## for the first time, the thing is drawn as it really is (the 64×64-module art, ART-002).
+## for the first time, the thing is drawn as it really is: the same generated body, horror dial up (ART-001 §14).
 ## Input is never required (agency window 0 s). Skippable once seen (GDD §10).
 
 signal finished

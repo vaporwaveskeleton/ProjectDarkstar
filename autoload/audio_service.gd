@@ -1,7 +1,7 @@
 extends Node
 ## AudioService (autoload) — why global: sound must survive scene changes and one owner must
 ## enforce the silence budget and the chant bed (AUDIO-001 §1.4, §5, §7). TECH-001 §2.8.
-## Until recorded audio exists the cues are synthesised by SfxSynth (placeholders by design).
+## Every sound is synthesised in code (GDD-001 D-14, AUDIO-001 §11): SfxSynth builds the cues at load.
 ## Gameplay never decides mixing: it asks for a cue, the chant level, or a silence.
 
 const VOICES := 24                     ## ✱ one-shot voice pool

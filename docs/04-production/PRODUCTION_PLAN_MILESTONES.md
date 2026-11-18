@@ -24,8 +24,8 @@
 | Role | Allocation ✱ | Notes |
 |---|---|---|
 | Lead (design, code, production) | 1.0 FTE | the owner; AI-assisted per CLAUDE.md §5 delegation |
-| Pixel artist (contract) | 0.5 FTE from M1, 1.0 FTE M3–M6 | modular kit pipeline (ART-002, ASSET-003) makes one artist viable |
-| Composer / sound designer (contract) | 0.3 FTE from M2, 0.6 FTE M4–M6 | AUDIO-001 §9.2 sizes a single composer's alpha scope |
+| Technical artist / shader programmer | 0.5 FTE from M1, 1.0 FTE M3–M6 | D-13: every visual is a generator (ART-001 §14); one person who can draw *and* code part generators and shaders replaces the pixel-art contract |
+| Sound programmer / synth designer | 0.3 FTE from M2, 0.6 FTE M4–M6 | D-14: every sound is synthesised (AUDIO-001 §11); no recording sessions, no voice actor |
 | Writer (contract or lead) | 0.2 FTE M2–M6 | NARR-001 §7–§8 text volume: eat lines, death grammar, Codex |
 | Community / creator manager | 0.3 FTE from M4 (store page live) | MARKET-001 §8–§9 |
 | QA / playtest coordination | Discord volunteers + 2 paid test rounds ✱ (M2, M5) | GDD-001 §15 interview metrics need structured sessions |
@@ -68,7 +68,7 @@ If the team is smaller than this table, §7's cut order fires earlier; dates nev
 | Exit criteria | (1) 0 input-latency complaints in mouse aim from 5 ✱ testers (GDD-001 §17 criterion 3); (2) a tester describes the race unprompted within 90 s (GDD-001 §15 prototype target); (3) all SYS-001 §1.1–§1.4 rows implemented as `ds_` tunables and covered by tests; (4) the D-08 hull A/B switch is playable both ways |
 | Code | Arc-Lance + over-fire; Mourning Glass + magnet; Null-Iron Charges with interception; Grub procession + Sepulchre deposits (phases 0–1); Ledger Compass stub; seeded RNG skeleton (TECH-001 §4.9); camera follow/shake (SYS-001 §9) |
 | Art | Vigil kit, Grub kit, geode kit, Sepulchre seed parts (ART-002 §4) at slice quality for PM kits only |
-| Audio | placeholder lance/mining/chime; the glass chime (AUDIO-001 §6.4) final, because it carries the race |
+| Audio | synthesised lance/mining/chime (AUDIO-001 §11); the glass chime (AUDIO-001 §6.4) final, because it carries the race |
 | Narrative | none required |
 | Docs | TECH-001 §4.3 (shard magnet), §4.9 (seed); SYS-001 rows for anything new |
 | Risks | the race is invisible at 640×360 → fix with art/audio, not with UI text (GDD-001 P5) |
@@ -80,7 +80,7 @@ If the team is smaller than this table, §7's cut order fires earlier; dates nev
 | Exit criteria | GDD-001 §17 criteria 1–6, all measured: (1) 10/10 testers understand "the boss is being built from the same ore I need" unprompted; (2) median tester dies ≥ 2 times to the Awakening and retries immediately; (3) 0 input-latency complaints in mouse aim; (4) the twist is named unprompted by 6/10; (5) 60 FPS at internal 640×360 on minimum spec with T2 shaders; (6) a 15-second clip gets a "what is this?" from 5/10 non-players |
 | Code | full Waking lifecycle at T1–T2; Acolytes + Litany Ring; Deceiver; Matron gate; Ruins hub with a 30-node Tree stub; 12 Run Sigils; 6 warp effects; WarpComposer T0–T2 (TECH-001 §5.1); Steady Ledger HUD pinning (TECH-001 §5.3); save cadence wired to `SaveService` (TECH-001 §7.2); warp lint as a CI step or the WARP-001 §6.1 D-11 manual checklist |
 | Art | PM and OB kits used by the slice (§5), Acolyte, Deceiver, Matron, Ruins hub first pass, Act 0 cabinet costume layer (ART-001 §7), Ledger/Litany/Cabinet bitmap faces (ART-001 typography) |
-| Audio | Act 0 chiptune; T1 bed + Choir chant stems for one biome; entity voice placeholder VO; the 1.2 s Awakening silence (GDD-001 §12) |
+| Audio | Act 0 chiptune; T1 bed + Choir chant stems for one biome; entity voice from the formant synthesiser (AUDIO-001 §11.3); the 1.2 s Awakening silence (GDD-001 §12) |
 | Narrative | Act 0 text; the first Ruins scene (states the anchor diegetically, GDD-001 §6.2); slice Codex entries (`cx_choir_`, `cx_glass_`); the H2/H4/H14 eat lines (WARP-001 §6.1 D-10 tranche; NARR-001 §7) |
 | Docs | TECH-001 §5.1–§5.4, §8.1–§8.2; UI-001 HUD section |
 | Marketing | store page assets (MARKET-001 §4), announcement trailer (MARKET-001 §4.7) cut from slice capture |
@@ -92,7 +92,7 @@ If the team is smaller than this table, §7's cut order fires earlier; dates nev
 | Goal | prove the warp and the bullet layer fit budget on minimum spec and Steam Deck before content multiplies (GDD-001 R-06) |
 | Exit criteria | (1) GDD-001 §15 median frame time ≤ 8 ms at T2 on minimum spec; (2) T3 warp shaders inside SYS-001 §9's 1.2 ms warp budget; (3) the slice runs at 60 FPS on Steam Deck at the ×2 / 40 px bars case (TECH-001 §1.3); (4) TECH-001 §8 FrameBudget table filled with **measured** numbers; (5) decision recorded on the bullet layer: Area2D/ShapeCast kept, or quadtree started (TECH-001 §2.6, ruling R-17) |
 | Code | profiling harness; ContactBudget enforcement (SYS-001 §9 caps, ruling R-14); shader tier variants; Deck input glyphs |
-| Art / audio | atlas packing per ASSET-003; audio voice budget check (AUDIO-001 §7.5) |
+| Art / audio | generator render tests and frame cost at the on-screen caps (ART-001 §14.7); audio voice budget and boot-time generation check (AUDIO-001 §7.5, §11.5) |
 | Docs | TECH-001 §8.1–§8.4 with measurements; ASSET-003 import presets verified |
 | Risks | the warp misses budget → WARP-001 §5.3 refusal ladder, never a silent quality drop |
 
@@ -156,7 +156,7 @@ If the team is smaller than this table, §7's cut order fires earlier; dates nev
 | 12 Run Sigils | GDD-001 §17 | M2 |
 | 6 warp effects | GDD-001 §17; WARP-001 §2 | M2 |
 | Eat tranche H2, H4, H14 with PACT-01/PACT-04 | WARP-001 §6.1 D-10 | M2 |
-| Entity voice (placeholder VO) | GDD-001 §17 | M2 |
+| Entity voice (formant synthesiser, AUDIO-001 §11.3) | GDD-001 §17 | M2 |
 | 60 s polished | GDD-001 §17 | M2 |
 
 ---

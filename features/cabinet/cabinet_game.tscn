@@ -16,7 +16,6 @@
 [ext_resource type="Script" path="res://features/cabinet/sim/vigil_ship.gd" id="14"]
 [ext_resource type="Script" path="res://features/cabinet/sim/fx_layer.gd" id="15"]
 [ext_resource type="Script" path="res://features/cabinet/maw_view.gd" id="16"]
-[ext_resource type="Texture2D" path="res://assets/sprites/generated/sepulchre/ds_sepulchre_ASSEMBLED_awake.png" id="17"]
 [ext_resource type="Script" path="res://features/cabinet/cabinet_hud.gd" id="18"]
 [ext_resource type="Shader" path="res://shaders/crt.gdshader" id="19"]
 [ext_resource type="Script" path="res://features/cabinet/cabinet_messages.gd" id="20"]
@@ -95,7 +94,6 @@ unique_name_in_owner = true
 visible = false
 texture_filter = 1
 script = ExtResource("16")
-body_texture = ExtResource("17")
 
 [node name="HudLayer" type="CanvasLayer" parent="."]
 layer = 2

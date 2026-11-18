@@ -57,8 +57,8 @@ Game-world words come only from GDD §19. The following are **engineering** name
 | `CompositeRig` | The runtime node graph that assembles one unit or the entity from 64×64 modules | §2.4 |
 | `TunableRegistry` | The single load-time table that resolves every `ds_` key to a value plus its class and SYS-001 row | §3.2 |
 | `ds_` key | The dotted, namespaced addressable name of one tunable (§3.4) | §3 |
-| `ManifestImporter` | Build-time step that turns `SPRITE_MANIFEST.csv` into a generated GDScript table | §6.3 |
-| `AtlasTable` | The generated lookup from part id to atlas region | §6.3 |
+| `ManifestImporter` | **Retired (D-13).** Was: the build step turning `SPRITE_MANIFEST.csv` into a GDScript table | §6.3 |
+| `AtlasTable` | **Retired (D-13).** Was: the lookup from part id to atlas region | §6.3 |
 | `WarpComposer` | The per-frame owner of which canvas-item shaders are active at the current Warp Tier | §5.1 |
 | `DiegeticHud` | The HUD layer built from in-world objects so it can lie, be eaten, and be drawn by the same code as honest data | §5.2 |
 | `SteadyLedger` | The accessibility option that forces the HUD honest | §5.3 |
@@ -139,9 +139,9 @@ We refuse non-integer scaling. A fractional scale blurs a 1 px outline, and the 
 | Build step | Runs | Output |
 |---|---|---|
 | `import` | every checkout, first run | Godot `.import` cache; regenerated, never committed |
-| `manifest_import` | pre-build, CI and local | `generated/sprite_table.gd` from `SPRITE_MANIFEST.csv` (§6.3) |
+| `manifest_import` | **retired** (D-13) | no raster sprites are consumed; the manifest is a reference inventory only (ASSET-003) |
 | `data_lint` | pre-build, CI | every SYS-001 §10 row ↔ exactly one `ds_` key; class check (§3.3) |
-| `palette_lint` | pre-build, consumer-side only | every manifest row's used colours ⊆ its kit's `palette_lock`; ≤ 10 colours (ART-002 §1) |
+| `palette_lint` | test suite | `Pal` = the palette file (built); generator render tests check kit colour pools (ART-001 §14.7, planned) |
 | `localize_extract` | deferred | English only (L10N-001 §1); `locale/en.po` is edited directly |
 | `export_presets` | release | `Windows Desktop` preset, PCK packed, no encryption at 1.0 |
 
@@ -196,7 +196,7 @@ Picks Encounter Kits and stitches them into a Seam per ZONES-001 §4. Runs insid
 Anchor names and contracts are ZONES-001 **§1.7** (the kit scene tree: `GravityAnchor`, `HeraldAnchor`, `RiteGateAnchor`, `PenitentAnchor`, `UiEatAnchor`, `SpawnMarkerLit/Unlit`, `LitanyRingNodes`, `EscapeVector`, `WrapEdge`). A kit contains markers only, never unit instances (ZONES-001 §1.7). Code finds anchors by group named after the anchor type, never by path. Not built.
 
 ### 2.4 CompositeRig — planned
-Assembles a unit from 64×64 modules (ART-002 §5). One `StaticBody2D`/`Area2D` shape per module (§1.2), so a knocked-off segment loses collision on the same frame. Not built.
+Assembles a unit from 64×64 **generated** parts (ART-002 §5, ART-001 §14.3: vector or shader generators with sockets, D-13). One `StaticBody2D`/`Area2D` shape per module (§1.2), so a knocked-off segment loses collision on the same frame. Not built.
 
 ### 2.5 Movement and animation — responsibility split (audit)
 
@@ -270,7 +270,7 @@ An autoload exists only when the service genuinely needs a global lifetime. Addi
 | `SaveService` | `autoload/save_service.gd` | slots outlive scenes; one place enforces SYS-001 §8 cadence | decide *when* to save (callers do); store display text | built |
 | `SceneRouter` | `autoload/scene_router.gd` | one top-level scene at a time; any screen may request a change | own overlays/modals or UI state | built |
 | `RunSession` | `autoload/run_session.gd` | run and Iteration state (LOOP-001 §2) outlive every sector scene across 5 Seams and must be readable by the Ruins and `SaveService`; owns the Hourglass Clock tick (§4.1) | own sector nodes; write saves itself (it hands payloads to `SaveService` at allowed reasons) | **planned** (approved 2026-11-17) |
-| `AudioService` | `autoload/audio_service.gd` | music stems, the chant and the entity voice cross scene changes; owns ducking (AUDIO-001 §7.2) | decide *when* a line plays (gameplay signals do) | **built** 2026-11-18: one-shot pool, chant bed, silence budget; cues synthesised by `core/audio/sfx_synth.gd` as placeholders until recorded audio exists |
+| `AudioService` | `autoload/audio_service.gd` | music stems, the chant and the entity voice cross scene changes; owns ducking (AUDIO-001 §7.2) | decide *when* a line plays (gameplay signals do) | **built** 2026-11-18: one-shot pool, chant bed, silence budget; every cue synthesised by `core/audio/sfx_synth.gd` (D-14: no recorded audio, ever) |
 
 Refused as autoloads: a UI manager (menus use a per-scene `ScreenStack`), a game manager (state lives in features), a networking service (D-09), a global event bus (EVT-001 §3).
 
@@ -291,7 +291,7 @@ Each empty folder has a `README.md` naming its owner doc. Shared, feature-agnost
 
 ### 2.10 Act 0 — the Cabinet (`features/cabinet/`)
 
-Act 0 (GDD §6.1) is the in-world arcade machine (NARR-001 §5: the Cabinet). It is built as its own feature because ART-001 §7 makes it a **separate, peelable costume layer**: 1983-style vector art on a 4:3 bezel (WARP-001 W0-01), not the 64×64-module art of Act 1+. Status: **built** (stages A0-1 and A0-3; A0-2's beats are folded into A0-3).
+Act 0 (GDD §6.1) is the in-world arcade machine (NARR-001 §5: the Cabinet). It is built as its own feature because ART-001 §7 makes it a **separate, peelable costume layer**: 1983-style vector art on a 4:3 bezel (WARP-001 W0-01), not the shader-rich generated parts of Act 1+ (ART-001 §14). Status: **built** (stages A0-1 and A0-3; A0-2's beats are folded into A0-3).
 
 ```
 CabinetGame (Node, cabinet_game.gd)             stage flow only: READY → play → death/respawn/game over
@@ -299,7 +299,7 @@ CabinetGame (Node, cabinet_game.gd)             stage flow only: READY → play 
 ├─ World (ArcadeWorld)                          torus field, camera, shake, shared services; ticks layers in order:
 │   Stars · Geodes · Glass · Ritual · Grubs · Acolytes · Shots · Vigil · Fx   (each an ArcadeLayer)
 ├─ Autopilot (CabinetAutopilot)                 attract demo (W0-03), captures, the end-to-end test
-├─ MawLayer/Maw (MawView)                        the hole that opens in the reveal; shows the real pixel art
+├─ MawLayer/Maw (MawView)                        the hole that opens in the reveal; the generated "true body" assembles inside it
 ├─ HudLayer/Hud (CabinetHud)                     bezel, 1UP/score/lives, Charge lamps, Ledger Compass
 ├─ CrtLayer/Crt                                  shaders/crt.gdshader: scanlines, curvature, tear, desaturation
 ├─ MessageLayer/Messages (CabinetMessages)       READY card, banners, captions, credits, the entity's big type
@@ -322,7 +322,7 @@ CabinetGame (Node, cabinet_game.gd)             stage flow only: READY → play 
 
 Data: `data/cabinet/cabinet_tuning.tres` (`CabinetTuning`, `ds_cabinet.tuning.*`, every value cites SYS-001 or is ✱) and one `CabinetStage` per level (`stage_first_vigil.tres`, `stage_last_normal_day.tres`), inside SYS-001 §4's Seam 1 T0 budget.
 
-Art: everything is code-drawn from `Pal` (`core/ui/pal.gd`, checked against the palette file by a test). Text uses the **Cabinet face**, a 5 × 7 bitmap drawn by `PixelText` (`core/ui/pixel_text.gd`, ART-001 §11) at integer scales only. The one exception is the reveal, which draws `ds_sepulchre_ASSEMBLED_awake.png` at ×2: the first time the real art appears.
+Art: everything is code-drawn from `Pal` (`core/ui/pal.gd`, checked against the palette file by a test). Text uses the **Cabinet face**, a 5 × 7 bitmap drawn by `PixelText` (`core/ui/pixel_text.gd`, ART-001 §11) at integer scales only. There are no exceptions (D-13): the reveal's "true body" inside the maw is a richer generator (`MawView`), not a sprite.
 
 Capture and test switches (after `--`): `--autopilot`, `--stage=N`, `--segments=N`, `--hits=N`, `--smoke-frames=N`, `--no-save` (SaveService keeps slots in memory). Example, film the reveal:
 ```
@@ -480,6 +480,8 @@ The compass draws the sector list, corruption state and up to 8 markers ✱. Sta
 
 ## 6. Asset consumption
 
+> **D-13 / D-14 (2026-11-18): the game loads no image or audio files.** Every visual comes from a generator (ART-001 §14) and every sound from synthesis (AUDIO-001 §11). §6.1–§6.4 below describe the retired raster pipeline and remain only as reference. The current rule is §6.5.
+
 Producer side: ASSET-003. This section is what the engine does with the output.
 
 ### 6.1 Inputs
@@ -488,11 +490,16 @@ Producer side: ASSET-003. This section is what the engine does with the output.
 ### 6.2 Consumer-side lints (planned as tests in `tests/assets/`)
 Naming (ART-002 §2 grammar), palette (every row's colours ⊆ its kit's `kit_locks`, ≤ 10 colours, GASLIGHT only on the three ruling R-06 parts), existence (every `generated` row has a file), size (module multiples of 64 or the row's declared w×h). A lint failure fails the test suite; it never silently substitutes art.
 
-### 6.3 ManifestImporter and AtlasTable
+### 6.3 ManifestImporter and AtlasTable (retired, D-13)
 `core/assets/manifest_importer.gd` (planned), run headless (`-s`) as the `manifest_import` build step (§1.4). It strips the UTF-8 BOM the generator writes, merges `assets/sprites/SPRITE_MANIFEST_HAND.csv` (hand-authored rows the generator must never overwrite, ASSET-003), and fails on a duplicate id. Atlas sidecar JSON format: ASSET-003 §6.2. It reads the manifest and atlas JSON and writes `generated/sprite_table.gd`: a `const` dictionary `id → {atlas, region, pivot, sockets, frames}` (`AtlasTable`). Runtime code addresses sprites by manifest id only. A missing id in a dev build draws a VOID-5/BONE-5 checkerboard module and logs an error; in a release build the lint above has already failed the build.
 
+### 6.5 Generators (current)
+- **Visuals:** generator classes draw through `CanvasItem` or shaders, with colours from `Pal` (`core/ui/pal.gd`) and text from `PixelText`. A generator is deterministic from its parameters and seed; the WarpComposer (§5.1) feeds it `tier` and `horror`.
+- **Sound:** `AudioService` plays streams built by `SfxSynth` at load; long stems and beds render on a worker thread; reactive textures use `AudioStreamGenerator` (AUDIO-001 §11.5).
+- **Enforcement:** `tests/test_generated_assets_only.gd` fails if any scene, script or resource under `features/`, `scenes/`, `core/`, `autoload/` or `data/` references an image, font, texture or audio file.
+
 ### 6.4 CompositeRig consumption
-`CompositeRig` (§2.4) reads part descriptors (ART-002 §5.1) and the `AtlasTable`; runtime mutation (ART-002 §5.3, the warp's limb swaps) swaps atlas regions on existing `Sprite2D` nodes, never instantiates nodes per frame.
+`CompositeRig` (§2.4) reads part descriptors (ART-002 §5.1) and instantiates the part generators they name (§6.5); runtime mutation (ART-002 §5.3, the warp's limb swaps) swaps atlas regions on existing `Sprite2D` nodes, never instantiates nodes per frame.
 
 ## 7. Save system
 
@@ -592,7 +599,7 @@ Result on 2026-11-18 (Act 0 cabinet slice): 90 test cases, 0 failures, 0 errors;
 Not covered (honest list): window sizes other than the 640×360 logical viewport, real integer scaling at 1080p/1440p, gamepad glyphs (none exist), shaders, audio, Steam, performance. Slopes, stairs, doors and moving platforms are N/A (§2.6).
 
 ## 10. Import conventions
-Per ART-002 §7: canvas default filter Nearest (set in `project.godot`); pixel atlases import with `compress/mode = Lossless`, mipmaps off, `fix_alpha_border = true`. Every `.csv` under `assets/` imports as `keep` (ruling R-19), never as a translation; PNG import flags per ASSET-003. ART-002 §7 mentions a `godot/DarkStar/` path; the project root is the repo root (TASK-BOOT Q4), so that path is obsolete — §11 Q-T08. No import preset file is committed yet. `docs/`, `tools/`, `research/` and `Claude outputs/` carry `.gdignore`.
+**D-13:** no raster imports feed the game. The only imported images are the reference PNGs under `assets/sprites/`, and **exports must exclude `assets/sprites/**`, `assets/reference/**` and `tools/**`** (set in the export preset when it is created). Historical, for the reference PNGs only: per ART-002 §7, canvas default filter Nearest (set in `project.godot`); pixel atlases import with `compress/mode = Lossless`, mipmaps off, `fix_alpha_border = true`. Every `.csv` under `assets/` imports as `keep` (ruling R-19), never as a translation; PNG import flags per ASSET-003. ART-002 §7 mentions a `godot/DarkStar/` path; the project root is the repo root (TASK-BOOT Q4), so that path is obsolete — §11 Q-T08. No import preset file is committed yet. `docs/`, `tools/`, `research/` and `Claude outputs/` carry `.gdignore`.
 
 ## 11. Open questions and decision log
 
@@ -642,3 +649,4 @@ The owner delegated every open ruling to the 2026-11-17 authoring pass. Each rul
 | 2026-11-17 | Owner-delegated authoring pass: rulings R-01…R-19 (§11.1a); §4–§6 and §8 designed; `RunSession` and `AudioService` autoloads approved as planned; full GDD §4.1/§4.3 input map | owner (delegated) |
 | 2026-11-17 | **English only.** All non-English plans removed: per-locale number tables, the language setting and picker, pseudo-translation and right-to-left tests, the CJK font plan, translator workflow and vendor milestones. `tr()` keys and `en.po` stay so player text remains testable and a language can be added later (L10N-001 §7) | owner |
 | 2026-11-18 | Act 0 built as the Cabinet feature (§2.10): own torus simulation without Godot physics bodies; vector costume art from `Pal`; 5×7 Cabinet face via `PixelText`; `AudioService` built with synthesised placeholder cues; profile save reason `cabinet_score`; `--no-save` switch; New Vigil now routes to `cabinet` | production |
+| 2026-11-18 | **D-13 / D-14 (user directive): all graphics generated at runtime (vector or shader), all sound generated by code.** Raster pipeline (manifest import, atlases, sprite imports) retired; PNGs under `assets/sprites/` become reference only and are excluded from export; `tests/test_generated_assets_only.gd` enforces it; the reveal's PNG replaced by a generated body; `AudioService` cues are the design, not placeholders | user |
