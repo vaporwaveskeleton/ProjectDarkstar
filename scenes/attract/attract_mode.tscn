@@ -87,18 +87,23 @@ size_flags_horizontal = 4
 custom_minimum_size = Vector2(160, 0)
 text = "MENU_NEW_VIGIL"
 
+[node name="Gap" type="Control" parent="Center/Menu"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 8)
+mouse_filter = 2
+
 [node name="Settings" type="Button" parent="Center/Menu"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 4
-custom_minimum_size = Vector2(160, 0)
+custom_minimum_size = Vector2(128, 0)
 text = "MENU_SETTINGS"
 
 [node name="Quit" type="Button" parent="Center/Menu"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 4
-custom_minimum_size = Vector2(160, 0)
+custom_minimum_size = Vector2(128, 0)
 text = "MENU_QUIT"
 
 [node name="Frame" type="Control" parent="."]

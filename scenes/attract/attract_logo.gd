@@ -11,7 +11,7 @@ var _t := 0.0
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	custom_minimum_size = Vector2(PixelText.width(tr("GAME_TITLE"), SCALE) + 8, 80)
+	custom_minimum_size = Vector2(PixelText.width(tr("GAME_TITLE"), SCALE) + 8, 72)
 
 
 func _process(delta: float) -> void:

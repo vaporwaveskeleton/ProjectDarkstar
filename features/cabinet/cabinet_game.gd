@@ -68,6 +68,7 @@ func on_route_entered(params: Dictionary) -> void:
 		_demo_t = DEMO_SECONDS
 		autopilot.enabled = true
 		messages.demo = true
+		hud.demo = true
 
 
 func _exit_tree() -> void:
