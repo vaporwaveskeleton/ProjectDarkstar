@@ -84,6 +84,35 @@ func test_single_symbol_corruption_always_detected() -> void:
 				assert_int(SeedCode.decode(bad)).is_equal(SeedCode.INVALID)
 
 
+func test_crc5_pinned_vectors() -> void:
+	var vectors := {0: "0000-0000-0000", 1: "0000-0000-0015", 12345: "0000-0000-C1SK", MAX_SEED: "ZZZZ-ZZZZ-ZZZ4"}
+	for s: int in vectors:
+		var code: String = vectors[s]
+		assert_str(SeedCode.encode(s, true)).is_equal(code)
+		assert_int(SeedCode.decode(code)).is_equal(s)
+
+
+func test_adjacent_swap_of_known_vector_rejected() -> void:
+	assert_int(SeedCode.decode("0000-0000-1CSK")).is_equal(SeedCode.INVALID)
+
+
+func test_adjacent_swap_stats() -> void:
+	var total := 0
+	var rejected := 0
+	for s in _seed_samples().slice(0, 60):
+		var code := SeedCode.encode(s)
+		for pos in 11:
+			if code[pos] == code[pos + 1]:
+				continue
+			var swapped := code.substr(0, pos) + code[pos + 1] + code[pos] + code.substr(pos + 2)
+			total += 1
+			if SeedCode.decode(swapped) == SeedCode.INVALID:
+				rejected += 1
+	print("SEEDCODE_SWAP_STATS rejected=%d total=%d" % [rejected, total])
+	assert_int(total).is_greater(0)
+	assert_int(rejected).is_greater(0)
+
+
 func test_rejects_bad_length_and_symbols() -> void:
 	assert_int(SeedCode.decode("")).is_equal(SeedCode.INVALID)
 	assert_int(SeedCode.decode("00000000000")).is_equal(SeedCode.INVALID)

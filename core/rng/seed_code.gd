@@ -5,7 +5,9 @@ extends RefCounted
 ## hyphens and spaces and ignores them.
 ##
 ## Gap defaults chosen for Q-T26/Q-T27:
-##  - checksum = XOR of the eleven 5-bit groups of the 55-bit seed (detects any single-symbol error).
+##  - checksum = CRC-5 (polynomial x^5+x^2+1 = 0x05, init 0, no reflection, no final XOR) over the
+##    55 seed bits fed most-significant first. Detects every single-symbol error and, unlike a plain
+##    XOR, is order-sensitive; it does not guarantee detection of every adjacent swap.
 ##  - decode is case-insensitive, reads I/L as 1 and O as 0; U and other symbols are rejected.
 ## decode() returns INVALID (-1, never a legal seed) on any failure; callers show a tr("MSG_...") line,
 ## never a raw error.
@@ -16,10 +18,13 @@ const INVALID := -1
 
 
 static func checksum(run_seed: int) -> int:
-	var sum: int = 0
-	for i in 11:
-		sum ^= (run_seed >> (5 * i)) & 31
-	return sum
+	var crc: int = 0
+	for i in range(54, -1, -1):
+		var feedback: int = ((crc >> 4) & 1) ^ ((run_seed >> i) & 1)
+		crc = (crc << 1) & 31
+		if feedback == 1:
+			crc ^= 0x05
+	return crc
 
 
 static func encode(run_seed: int, grouped: bool = false) -> String:
