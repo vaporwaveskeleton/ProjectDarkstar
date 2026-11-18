@@ -291,7 +291,7 @@ Refused as autoloads: a UI manager (menus use a per-scene `ScreenStack`), a game
 | interactions | `features/interactions` (shrines, Chalk Desk, Sepulchre deposit) | empty |
 | (game-specific) | `features/composure`, `features/warp`, `features/sector`, `features/hud` | empty |
 
-Each empty folder has a `README.md` naming its owner doc. Shared, feature-agnostic code lives in `core/` (`components`, `data`, `save`, `routing`, `ui`, `i18n`, `physics`). Menus and the bootstrap sector live in `scenes/`.
+Each empty folder has a `README.md` naming its owner doc. Shared, feature-agnostic code lives in `core/` (`audio`, `components`, `data`, `i18n`, `math`, `physics`, `rng`, `routing`, `save`, `ui`). Menus and the bootstrap sector live in `scenes/`.
 
 ### 2.10 Act 0 — the Cabinet (`features/cabinet/`)
 
@@ -383,6 +383,8 @@ Create a **Resource** when data is shared, tuned, or authored (stats, items, abi
 | `ds_arc_lance.muzzle_offset_px` (10) | engineering-only, no SYS-001 row | ✱ |
 
 **D-08 runtime API (M1 slice 1).** `Vigil.set_hull_max_hp(int)` / `get_hull_max_hp()` switch the hull at runtime; they call `HealthComponent.set_max_hp`, which duplicates the stats resource (the shared `.tres` is never mutated). Post-hit grace (R-11) applies only when `max_hp >= 2`.
+
+**D-08 launch switch (M1 slice 2, part A).** `HullMode` (`features/vigil/hull_mode.gd`) reads `--hull=1|2` from the command line; an absent or invalid value falls back to the data value `ds_vigil.hull.max_hp` (1). `Vigil._ready` applies it through `apply_hull_override`. `HullMode` has its own small `--key=` parser because `CabinetGame._arg_int` is private to the Cabinet. A persisted setting is deferred: it needs a `SettingsService` `DEFAULTS` key and a settings-screen row with `tr()` keys.
 | `ds_cabinet.boot.*` (`CabinetBootTuning`, `data/cabinet/cabinet_boot_tuning.tres`): `warmup_seconds`, `noise_seconds`, `noise_scroll`, `test_line_seconds`, `test_hold_seconds`, `page_seconds`, `tape_hint_delay`, `tape_hold_seconds`, `tape_drag_px`, `tape_fall_seconds`, `coin_drop_seconds` | presentation timings, no SYS-001 row (§11.1 Q-T18) | ✱ |
 
 ---
@@ -462,10 +464,16 @@ One per sector with a Sepulchre. Owns the Waking lifecycle phases 0–6 (GDD §8
 | Piece | Design |
 |---|---|
 | `RunSeed` | a 55-bit integer. Every random draw goes through a **named stream** (`map`, `kits`, `slots`, `warp`, `loot`, `ai`, `vfx`): `stream_seed = hash64(run_seed, stream_name, seam_index)`, one `RandomNumberGenerator` per stream. Adding a roll to one stream never shifts another, so content patches break fewer seeds |
+| Location (Q-T28) | `core/rng/`: `Hash64` (the hash below), `RunSeed` (minting, masking, stream seeds), `SeedCode` (encode/decode, checksum). Seeds feed many features (map, warp, loot, AI, generators), so the code is feature-agnostic; `features/run` keeps `RunSession`/`RunState`. Tests in `core/rng/tests/` |
+| `hash64` (Q-T26) ✱ | `hash64(...parts) -> int`: the first 8 bytes of a **SHA-256** (Godot `HashingContext.HASH_SHA256`) read as a little-endian signed 64-bit int. The hashed bytes are a canonical encoding of the domain tag `"darkstar.rng.v1"` followed by each part in order. **int** part: byte `0x01`, then 8 bytes two's-complement little-endian. **String/StringName** part: byte `0x02`, then the UTF-8 byte length as uint32 little-endian, then the UTF-8 bytes (the domain tag is encoded as a String part). The type byte keeps `5` and `"5"` apart; the length prefix keeps `("ab","c")` and `("a","bc")` apart. SHA-256 avoids GDScript integer-overflow behaviour and is identical on every platform. Changing the encoding means bumping the domain tag (`v2`) |
+| Seeds and `seam_index` (Q-T26) ✱ | `run_seed` is always masked to 55 bits: `hash64(...) & (2^55 - 1)` when derived (the daily), or 55 random bits from `Crypto.generate_random_bytes` for a fresh run. `stream_seed = hash64(run_seed, stream_name, seam_index)` with `stream_name` a String from the list above and `seam_index` an **int**: `0` for run-wide draws (the run's map, world tier, Hunger preset, registry state), `1`–`5` for Seam 1–5 (LOOP-001 §2). The `map` stream uses `0` for the run's map and `1`–`5` for each Seam's layout. `stream_seed` is the full 64-bit result, assigned to `RandomNumberGenerator.seed` |
 | Determinism scope | world tier, Hunger preset and the WARP-001 §3.2 registry state derive from the seed alone (SYS-001 §10 🔒). Cosmetic `vfx` draws are seeded but excluded from verification |
 | `SeedCode` | 12 characters of Crockford base32 (no I, L, O, U): 55 seed bits + 5 checksum bits = 60 bits. Displayed as `XXXX-XXXX-XXXX`. A mistyped code fails the checksum and the UI says so in plain words (L10N-001 `MSG_` key) |
+| `SeedCode` layout (Q-T26) ✱ | value = `(run_seed << 5) \| crc5(run_seed)`, 60 bits, written as 12 symbols **most-significant first** (symbol 1 = bits 59–55, symbol 12 = bits 4–0, so the checksum is exactly the last symbol). Alphabet in value order: `0123456789ABCDEFGHJKMNPQRSTVWXYZ`. Decoding drops `-` and spaces, ignores case, reads `I`/`L` as `1` and `O` as `0`, and rejects `U`, any other character, or a length other than 12 |
+| Checksum (Q-T27) ✱ | **CRC-5**, polynomial x⁵+x²+1 (`0x05`), init `0`, no reflection, no final XOR, over the **55 seed bits** fed most-significant first. Measured with a Node reference (2026-11-18): every single-symbol error caught (744,000 cases over 2,000 seeds) and every adjacent-symbol swap caught (53,271 cases over 5,000 seeds) |
+| Test vectors ✱ | From the Node reference. `hash64(0, "map", 0)` = `0x85f332188ab71254` (−8794630566336589228); `hash64(0, "map", 1)` = `0x82901f696527c177`; `hash64(12345, "loot", 3)` = `0x6cf7f2d305eb1fd0` (7852011463495065552); `hash64("hollow_vigil", "2027-01-01", 1)` = `0xf0a6997056f29fa1`. SeedCodes: seed `0` → `0000-0000-0000`; `1` → `0000-0000-0015`; `12345` → `0000-0000-C1SK`; `2^55 - 1` → `ZZZZ-ZZZZ-ZZZ4`; daily `2027-01-01`, content version 1 → seed 10864756889132961 → `9MSE-1BF5-7X1P`. `core/rng/tests/` must assert these |
 | Cursed seeds | community-shared SeedCodes (GDD §6.3). A SeedCode carries no content version; the game states which content version a seed was minted on if it differs |
-| Daily (post-1.0, ruling R-16) | `run_seed = hash64("hollow_vigil", utc_date, content_version)`; fixed world tier and Hunger preset; H14 never fires (WARP-001 §6.1 D-06) |
+| Daily (post-1.0, ruling R-16) | `run_seed = hash64("hollow_vigil", utc_date, content_version) & (2^55 - 1)`, `utc_date` a String `"YYYY-MM-DD"`, `content_version` an int; fixed world tier and Hunger preset; H14 never fires (WARP-001 §6.1 D-06) |
 | Replay log | seed + content hash + per-tick quantised input: move vector (2 × int8), aim angle (uint16 of a turn), button bitfield (uint16). ≈ 6 bytes per tick ✱ → ≈ 21 KB per minute before compression ✱ |
 | `ReplayVerifier` | re-simulates a log headless and compares a state hash (positions rounded to 1/8 px, health, segment count, clock) every 60 ticks. Used by tests and, later, to sanity-check daily scores |
 | Honest limit | Godot 2D physics is not guaranteed bit-identical across CPUs and builds. Replays are verified **same build, same platform**. Leaderboards treat verification as a cheat filter, not proof |
@@ -633,6 +641,7 @@ The smoke run prints `BOOT_SMOKE: reached route 'sector'` and exits 0. GdUnit wr
 | `features/vigil/tests/test_vigil_motor.gd` | speed cap, drag, brake, 30/60/144 Hz independence, full reversal 0.28 s, turn rate, ±π wrap |
 | `features/arc_lance/tests/test_arc_lance.gd` | Arc-Lance stats, projectile, emitter (M1 slice 1) |
 | `features/vigil/tests/test_vigil_hull.gd` | D-08 runtime hull switch (`set_hull_max_hp`), grace only at max_hp >= 2 |
+| `features/vigil/tests/test_hull_mode.gd` | `HullMode` `--hull=1\|2` parsing, invalid/absent falls back to data value, `apply_hull_override` on Vigil (M1 slice 2A; passes (139 cases, 0 failures, 2026-11-18)) |
 | `features/vigil/tests/test_vigil_collision.gd` | data-driven radius, wall stop, no tunnelling at 6000 px/s, overlap recovery, live hitbox one hit per window → breach → HUD |
 | `scenes/tests/test_attract_mode.gd` | default focus, focus loop/wrap, settings modal + ui_cancel + focus restore, root ui_cancel no-op, repeated input, 200 % text safe area (menu + settings), no raw keys |
 | `scenes/tests/test_attract_coin_slot.gd` | 16 tests: tape prompt delay, peel by hold / drag / pad A, press off the tape ignored, tape flag saved, coin → credit → New Vigil spends once, no New Vigil without a credit, tape stays off, no demo while credited, power-on start / skip / self-finish, route without `power_on`, page cycle, binding labels |
@@ -665,10 +674,11 @@ Not covered (honest list): native-resolution rendering after Act 0 (decided, not
 | Q-T23 | `PixelText` scales by integers only; native resolutions are not integer multiples of 360 | ART-001 §11, R-02 | pixel faces for the cabinet; scalable rendering of the chalk faces after Act 0 |
 | Q-T24 | SYS-001 §9 frame budget was never measured at native resolution; fog/post buffers likely need a fractional render scale and quality presets | SYS-001 §9 | measure at 1080p/1440p/4K before locking |
 | Q-T25 | Post-Act 0 camera scale / visible world area is a design number not yet set | D-A | design to set; no value invented |
+| Q-T29 | Detonation shard count conflict: GDD §8.2 (~line 208) says 3-5; SYS-001 §1.3 row 74 says 3-5 but row 76 says 4-6; the Cabinet code uses 4-6. Also no SYS-001 row for magnet pull speed (170 px/s) or shard drag (1.2/s), both currently ✱ in code (2026-11-18) | GDD §8.2; SYS-001 §1.3 | owner ruling on 3-5 vs 4-6; add rows or keep ✱ |
 
-### 11.1a Resolved questions (owner-delegated rulings, 2026-11-17)
+### 11.1a Resolved questions
 
-The owner delegated every open ruling to the 2026-11-17 authoring pass. Each ruling is reversible by the owner; reversing one means editing the cited rows, not this table alone.
+Rows R-01…R-19 are the owner-delegated rulings of 2026-11-17; later rows carry their own date. The owner delegated every open ruling to the 2026-11-17 authoring pass. Each ruling is reversible by the owner; reversing one means editing the cited rows, not this table alone.
 
 | # | Question | Ruling | Applied in |
 |---|---|---|---|
@@ -691,6 +701,9 @@ The owner delegated every open ruling to the 2026-11-17 authoring pass. Each rul
 | — | GDD §13 quadtree | **R-17:** Area2D/ShapeCast first | GDD §13, §4.6 here |
 | — | Price and hull A/B | **R-18:** D-07 stays Proposed ($19.99), D-08 stays Open | GDD §18 |
 | — | Manifest CSV imported as a translation | **R-19:** import as `keep` | §6.1, ASSET-003 |
+| Q-T26 | `hash64` encoding, SeedCode byte/symbol order and `seam_index` type unspecified | SHA-256 over a tagged canonical encoding, first 8 bytes LE; SeedCode MSB-first symbols with the checksum last; `seam_index` int, 0 = run-wide, 1–5 = Seams (owner, 2026-11-18) | §4.9 |
+| Q-T27 | 5-bit SeedCode checksum unspecified | CRC-5, poly `0x05`, init 0, over the 55 seed bits MSB first (owner, 2026-11-18) | §4.9 |
+| Q-T28 | No `core/` subfolder for `RunSeed`/`SeedCode` | new `core/rng/` (owner, 2026-11-18) | §2, §4.9, CLAUDE.md §2 |
 
 ### 11.2 Decision log
 | Date | Decision | By |
@@ -703,6 +716,7 @@ The owner delegated every open ruling to the 2026-11-17 authoring pass. Each rul
 | 2026-11-17 | Doc review: fixed 13 mechanical citation/status errors across TECH-001, SYS-001, LOOP-001, ZONES-001, WARP-001, AUDIO-001, NARR-001, UI-001, EVT-001, TASK-BOOT; removed unsourced on-screen cap numbers from §0.3/§1.5/§2.6 (Q-T14). WARP-001 §6.1 decision IDs kept (its §9.2 freezes the `WARP-001 §6.1 D-nn` citation form); ambiguous bare uses now say §6.1 | production |
 | 2026-11-17 | Owner-delegated authoring pass: rulings R-01…R-19 (§11.1a); §4–§6 and §8 designed; `RunSession` and `AudioService` autoloads approved as planned; full GDD §4.1/§4.3 input map | owner (delegated) |
 | 2026-11-18 | M1 slice 1: `features/arc_lance` built with `Area2D` overlap hits (no ShapeCast); runtime D-08 hull switch `Vigil.set_hull_max_hp` / `HealthComponent.set_max_hp` (§3.4); SYS-001 §1.3 gets damage 1, lifetime 0.9 s, range 306 px as ✱ rows, approved by owner 2026-11-18 | owner (via session) |
+| 2026-11-18 | M1 slice 2 part A: D-08 hull A/B is switchable at launch with `--hull=1\|2` (`HullMode`, §3.4); invalid/absent keeps the data value. Persisted setting deferred (needs `SettingsService` key + settings row). Part B (seeded RNG) blocked on Q-T26..Q-T28; shard-count conflict logged as Q-T29 | production (via session) |
 | 2026-11-17 | **English only.** All non-English plans removed: per-locale number tables, the language setting and picker, pseudo-translation and right-to-left tests, the CJK font plan, translator workflow and vendor milestones. `tr()` keys and `en.po` stay so player text remains testable and a language can be added later (L10N-001 §7) | owner |
 | 2026-11-18 | Act 0 built as the Cabinet feature (§2.10): own torus simulation without Godot physics bodies; vector costume art from `Pal`; 5×7 Cabinet face via `PixelText`; `AudioService` built with synthesised placeholder cues; profile save reason `cabinet_score`; `--no-save` switch; New Vigil now routes to `cabinet` | production |
 | 2026-11-18 | Arcade boot-up and attract (§2.10): a first-attract-of-launch power-on self-test (`PowerOnTest`), four instruction cards (`AttractPages`), and a hazard-taped coin slot (`CoinSlot`) on the Act 0 bezel; New Vigil is greyed and out of the focus loop until one credit is in (one credit max, New Vigil spends it). Tape removal is saved forever (`cabinet_tape_peeled`, save reason `cabinet_tape`, `profile` slot). Bezel and coin-door art is a placeholder mockup. **GDD §10 "3 clicks max" still holds:** first launch = drag tape + click slot + New Vigil (3 actions); later launches = slot + New Vigil (2). The power-on test is skippable by any key/click and is not an action | owner (request in session) |
@@ -717,3 +731,4 @@ The owner delegated every open ruling to the 2026-11-17 authoring pass. Each rul
 | 2026-11-18 | **D-13 amended (user directive):** pxl (uilianks/pxl, MIT) installed as a project Claude Code skill in `.claude/skills/pxl/` (git-ignored); `art/src/*.px.js` (with the shared palette include) → `assets/art/generated/`, committed; renders must stay on the 32-colour palette (test checks every pixel); `image()` forbidden; runtime generation stays for continuous morphs | user |
 | 2026-11-18 | **Fidelity ladder (owner direction):** Act 0 renders in the Neon Cabinet palette (flat, unlit); THE PRETENCE morphs it into the base palette (`Look.t`); from T1 lighting, fog, bloom and complex particles are allowed and grow with the tier (ART-001 §15, §5.5 here). Per-pixel palette enforcement on pxl renders removed; role laws kept | owner |
 | 2026-11-18 | **The Aether (owner direction):** space is retro-future Victorian, full of aether, fog, life, crystal spheres and colour, not a black vacuum; Act 0's black is the Pretence and the only true black is the entity (ART-001 §16). The reveal blooms into aether colour instead of desaturating; WARP-001 W0-08/W1-01 re-voiced; ART-001 law 4 amended | owner |
+| 2026-11-18 | **Seeded RNG spec (Q-T26…Q-T28):** `hash64` = first 8 bytes (LE) of SHA-256 over a tagged canonical encoding with domain `darkstar.rng.v1`; `seam_index` int (0 run-wide, 1–5 Seams); SeedCode = `(seed << 5) \| crc5`, MSB-first Crockford symbols; checksum CRC-5 poly `0x05` over the 55 seed bits; code in new `core/rng/`. Engineering-only (✱); test vectors in §4.9. Unblocks M1 slice 2 part B | owner |
