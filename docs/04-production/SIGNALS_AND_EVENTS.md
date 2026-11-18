@@ -25,6 +25,8 @@ Rules: signal names are past tense (`hull_breached`, `save_failed`), payloads ar
 | `HealthComponent` | `hit_rejected` | `reason: StringName` (`depleted`, `same_window`, `invulnerable`, `no_damage`) | tests, future debug overlay | built |
 | `HurtboxComponent` | `hit_received` | `hit: HitInfo, accepted: bool` | future VFX/audio feedback | built |
 | `HitboxComponent` | `hit_landed` | `hurtbox: HurtboxComponent, accepted: bool` | future score/feedback | built |
+| `LanceProjectile` | `lance_hit` | `target: Node` | tests; future hit-spark VFX/audio | built |
+| `ArcLanceEmitter` | `lance_fired` | `direction: Vector2` | tests; future fire cue (AudioService) | built |
 | `Vigil` | `hull_breached` | — | `SectorStub` (HUD) | built |
 | `SceneRouter` | `route_changed` | `route_id: StringName` | `Boot` (smoke path) | built |
 | `SceneRouter` | `route_failed` | `route_id, reason: StringName` (`unknown_route`, `load_failed`) | future error toast via `PlayerMessages.route_message` | built |
