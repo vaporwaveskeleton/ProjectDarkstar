@@ -5,7 +5,7 @@
 [ext_resource type="Script" path="res://core/ui/input_mode_tracker.gd" id="3"]
 [ext_resource type="Script" path="res://scenes/attract/attract_backdrop.gd" id="4"]
 [ext_resource type="Script" path="res://scenes/attract/attract_logo.gd" id="5"]
-[ext_resource type="Shader" path="res://shaders/crt.gdshader" id="6"]
+[ext_resource type="Shader" path="res://shaders/crt_attract.gdshader" id="6"]
 [ext_resource type="Script" path="res://scenes/attract/attract_frame.gd" id="7"]
 [ext_resource type="Script" path="res://features/cabinet/coin_slot.gd" id="8"]
 [ext_resource type="Script" path="res://scenes/attract/attract_pages.gd" id="9"]
@@ -22,6 +22,7 @@ shader_parameter/vignette = 0.35
 shader_parameter/desaturate = 0.0
 shader_parameter/tear = 0.0
 shader_parameter/time_s = 0.0
+shader_parameter/rows = 360.0
 
 [node name="AttractMode" type="Control" node_paths=PackedStringArray("default_focus")]
 layout_mode = 3

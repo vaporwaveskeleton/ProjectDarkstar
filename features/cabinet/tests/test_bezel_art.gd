@@ -130,17 +130,17 @@ func test_new_keys_exist_in_the_source_locale() -> void:
 		assert_bool(po.contains("msgid \"%s\"" % key)).override_failure_message("%s missing from en.po" % key).is_true()
 
 
-func test_bezel_layer_is_above_the_crt() -> void:
+func test_bezel_draws_after_the_screen_and_the_crt_is_the_screens_material() -> void:
 	var state := (load(GAME_SCENE) as PackedScene).get_state()
-	var layers := {}
+	var order := {}
 	for i in state.get_node_count():
-		for j in state.get_node_property_count(i):
-			if state.get_node_property_name(i, j) == &"layer":
-				layers[String(state.get_node_name(i))] = int(state.get_node_property_value(i, j))
-	assert_bool(layers.has("BezelLayer")).is_true()
-	assert_int(layers["BezelLayer"]).is_greater(layers["CrtLayer"])
-	assert_int(layers["BezelLayer"]).is_less(layers["MessageLayer"])
-	assert_int(layers["HudLayer"]).is_less(layers["CrtLayer"])
+		order[String(state.get_node_name(i))] = i
+	assert_bool(order.has("CrtLayer")).override_failure_message("the CRT is the screen's material now").is_false()
+	assert_bool(order.has("BezelLayer")).is_false()
+	assert_int(order["Hud"]).is_greater(order["ArcadeScreen"])
+	assert_int(order["Overlays"]).is_greater(order["Hud"])
+	assert_str(str(state.get_node_path(order["Hud"]))).contains("Rig/Hud")
+	assert_str(str(state.get_node_path(order["Messages"]))).contains("Rig/ArcadeScreen/ScreenViewport/")
 
 
 func test_attract_frame_and_coin_slot_draw_after_the_crt() -> void:

@@ -1,9 +1,9 @@
 class_name CabinetScreenHud
 extends Control
 ## The part of the Act 0 costume that lives on the CRT screen (WARP-001 W0-02, GDD §10): the Ledger
-## Compass mini-map on top of the field and the cabinet maker mark. It sits on the HudLayer, under
+## Compass mini-map on top of the field and the cabinet maker mark. It sits on the HudLayer inside the arcade screen, under
 ## the CRT, so scanlines and curvature touch it; the printed bezel and the lit readouts do not (they
-## are on the BezelLayer, CabinetHud). Honest at T0. CabinetHud forwards `world`, `eaten` and `peel`.
+## are on the Rig, CabinetHud). Honest at T0. CabinetHud forwards `world`, `eaten` and `peel`.
 
 const COMPASS := Rect2(250, 4, 140, 40)
 

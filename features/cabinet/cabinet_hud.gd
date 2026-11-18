@@ -3,7 +3,7 @@ extends Control
 ## The Act 0 costume around the field (WARP-001 W0-01, W0-02, W0-04): the printed 4:3 bezel
 ## (two BezelPrint columns, drawn behind this control), the lit 1UP / score strip, Vigils, the
 ## glass-lamp Charge pips and the Sepulchre count in their windows, and the coin door. It lives on
-## the BezelLayer, above the CRT: the bezel is a real object, not a CRT image. The Ledger Compass and
+## the cabinet Rig, outside the arcade screen (so the CRT never touches it): the bezel is a real object, not a CRT image. The Ledger Compass and
 ## the maker mark are on the screen (CabinetScreenHud, forwarded `world`, `eaten`, `peel`).
 ## Everything here is honest at T0. `peel` 0 → 1 slides the costume away (W0-07/W0-08);
 ## `eaten` 0 → 1 lets the Unmaking swallow the readouts.

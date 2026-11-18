@@ -1,4 +1,4 @@
-[gd_scene load_steps=26 format=3]
+[gd_scene load_steps=29 format=3]
 
 [ext_resource type="Script" path="res://features/cabinet/cabinet_game.gd" id="1"]
 [ext_resource type="Resource" path="res://data/cabinet/stage_first_vigil.tres" id="2"]
@@ -24,8 +24,12 @@
 [ext_resource type="Script" path="res://features/cabinet/sim/autopilot.gd" id="23"]
 [ext_resource type="Shader" path="res://shaders/aether_fog.gdshader" id="24"]
 [ext_resource type="Script" path="res://features/cabinet/cabinet_screen_hud.gd" id="25"]
+[ext_resource type="Script" path="res://features/cabinet/screen_rig.gd" id="26"]
+[ext_resource type="Script" path="res://features/cabinet/arcade_screen.gd" id="27"]
+[ext_resource type="Resource" path="res://data/cabinet/cabinet_screen.tres" id="28"]
 
 [sub_resource type="ShaderMaterial" id="crt_mat"]
+resource_local_to_scene = true
 shader = ExtResource("19")
 shader_parameter/costume = 1.0
 shader_parameter/scanline_strength = 0.22
@@ -34,6 +38,7 @@ shader_parameter/vignette = 0.35
 shader_parameter/desaturate = 0.0
 shader_parameter/tear = 0.0
 shader_parameter/time_s = 0.0
+shader_parameter/rows = 360.0
 
 [sub_resource type="ShaderMaterial" id="aether_mat"]
 shader = ExtResource("24")
@@ -46,58 +51,86 @@ script = ExtResource("1")
 stages = Array[Resource]([ExtResource("2"), ExtResource("3")])
 tuning = ExtResource("4")
 
-[node name="World" type="Node2D" parent="."]
+[node name="Rig" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 0
+offset_right = 640.0
+offset_bottom = 360.0
+mouse_filter = 2
+script = ExtResource("26")
+spec = ExtResource("28")
+
+[node name="ArcadeScreen" type="SubViewportContainer" parent="Rig"]
+unique_name_in_owner = true
+material = SubResource("crt_mat")
+texture_filter = 1
+layout_mode = 0
+offset_right = 640.0
+offset_bottom = 360.0
+script = ExtResource("27")
+spec = ExtResource("28")
+
+[node name="ScreenViewport" type="SubViewport" parent="Rig/ArcadeScreen"]
+unique_name_in_owner = true
+snap_2d_transforms_to_pixel = true
+snap_2d_vertices_to_pixel = true
+canvas_item_default_texture_filter = 0
+size = Vector2i(640, 360)
+render_target_update_mode = 4
+
+[node name="World" type="Node2D" parent="Rig/ArcadeScreen/ScreenViewport"]
 unique_name_in_owner = true
 script = ExtResource("5")
 tuning = ExtResource("4")
 move_stats = ExtResource("6")
 
-[node name="Stars" type="Node2D" parent="World"]
+[node name="Stars" type="Node2D" parent="Rig/ArcadeScreen/ScreenViewport/World"]
 unique_name_in_owner = true
 script = ExtResource("7")
 
-[node name="Geodes" type="Node2D" parent="World"]
+[node name="Geodes" type="Node2D" parent="Rig/ArcadeScreen/ScreenViewport/World"]
 unique_name_in_owner = true
 script = ExtResource("8")
 
-[node name="Glass" type="Node2D" parent="World"]
+[node name="Glass" type="Node2D" parent="Rig/ArcadeScreen/ScreenViewport/World"]
 unique_name_in_owner = true
 script = ExtResource("9")
 
-[node name="Ritual" type="Node2D" parent="World"]
+[node name="Ritual" type="Node2D" parent="Rig/ArcadeScreen/ScreenViewport/World"]
 unique_name_in_owner = true
 script = ExtResource("10")
 
-[node name="Grubs" type="Node2D" parent="World"]
+[node name="Grubs" type="Node2D" parent="Rig/ArcadeScreen/ScreenViewport/World"]
 unique_name_in_owner = true
 script = ExtResource("11")
 
-[node name="Acolytes" type="Node2D" parent="World"]
+[node name="Acolytes" type="Node2D" parent="Rig/ArcadeScreen/ScreenViewport/World"]
 unique_name_in_owner = true
 script = ExtResource("12")
 
-[node name="Shots" type="Node2D" parent="World"]
+[node name="Shots" type="Node2D" parent="Rig/ArcadeScreen/ScreenViewport/World"]
 unique_name_in_owner = true
 script = ExtResource("13")
 
-[node name="Vigil" type="Node2D" parent="World"]
+[node name="Vigil" type="Node2D" parent="Rig/ArcadeScreen/ScreenViewport/World"]
 unique_name_in_owner = true
 script = ExtResource("14")
 
-[node name="Fx" type="Node2D" parent="World"]
+[node name="Fx" type="Node2D" parent="Rig/ArcadeScreen/ScreenViewport/World"]
 unique_name_in_owner = true
 script = ExtResource("15")
 
-[node name="Autopilot" type="Node" parent="." node_paths=PackedStringArray("world")]
+[node name="Autopilot" type="Node" parent="Rig/ArcadeScreen/ScreenViewport" node_paths=PackedStringArray("world")]
 unique_name_in_owner = true
 process_physics_priority = -20
 script = ExtResource("23")
 world = NodePath("../World")
 
-[node name="MawLayer" type="CanvasLayer" parent="."]
+[node name="MawLayer" type="CanvasLayer" parent="Rig/ArcadeScreen/ScreenViewport"]
 layer = 1
 
-[node name="Aether" type="ColorRect" parent="MawLayer"]
+[node name="Aether" type="ColorRect" parent="Rig/ArcadeScreen/ScreenViewport/MawLayer"]
 unique_name_in_owner = true
 material = SubResource("aether_mat")
 anchors_preset = 15
@@ -107,16 +140,16 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="Maw" type="Node2D" parent="MawLayer"]
+[node name="Maw" type="Node2D" parent="Rig/ArcadeScreen/ScreenViewport/MawLayer"]
 unique_name_in_owner = true
 visible = false
 texture_filter = 1
 script = ExtResource("16")
 
-[node name="HudLayer" type="CanvasLayer" parent="."]
+[node name="HudLayer" type="CanvasLayer" parent="Rig/ArcadeScreen/ScreenViewport"]
 layer = 2
 
-[node name="ScreenHud" type="Control" parent="HudLayer"]
+[node name="ScreenHud" type="Control" parent="Rig/ArcadeScreen/ScreenViewport/HudLayer"]
 unique_name_in_owner = true
 layout_mode = 3
 anchors_preset = 15
@@ -127,38 +160,10 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("25")
 
-[node name="CrtLayer" type="CanvasLayer" parent="."]
-layer = 3
-
-[node name="Crt" type="ColorRect" parent="CrtLayer"]
-unique_name_in_owner = true
-material = SubResource("crt_mat")
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-
-[node name="BezelLayer" type="CanvasLayer" parent="."]
-layer = 4
-
-[node name="Hud" type="Control" parent="BezelLayer" node_paths=PackedStringArray("screen_hud")]
-unique_name_in_owner = true
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-script = ExtResource("18")
-screen_hud = NodePath("../../HudLayer/ScreenHud")
-
-[node name="MessageLayer" type="CanvasLayer" parent="."]
+[node name="MessageLayer" type="CanvasLayer" parent="Rig/ArcadeScreen/ScreenViewport"]
 layer = 5
 
-[node name="Messages" type="Control" parent="MessageLayer"]
+[node name="Messages" type="Control" parent="Rig/ArcadeScreen/ScreenViewport/MessageLayer"]
 unique_name_in_owner = true
 layout_mode = 3
 anchors_preset = 15
@@ -169,11 +174,23 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("20")
 
+[node name="Hud" type="Control" parent="Rig" node_paths=PackedStringArray("screen_hud")]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("18")
+screen_hud = NodePath("../ArcadeScreen/ScreenViewport/HudLayer/ScreenHud")
+
 [node name="Reveal" type="Node" parent="." node_paths=PackedStringArray("maw", "aether")]
 unique_name_in_owner = true
 script = ExtResource("21")
-maw = NodePath("../MawLayer/Maw")
-aether = NodePath("../MawLayer/Aether")
+maw = NodePath("../Rig/ArcadeScreen/ScreenViewport/MawLayer/Maw")
+aether = NodePath("../Rig/ArcadeScreen/ScreenViewport/MawLayer/Aether")
 
 [node name="Overlays" type="CanvasLayer" parent="."]
 unique_name_in_owner = true
