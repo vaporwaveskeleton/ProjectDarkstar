@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tools/godot/Godot_v4.7.2-stable_win64_console.exe --headless --path . --quit-after 600 -- --smoke)",
+      "Bash(tools/godot/Godot_v4.7.2-stable_win64_console.exe --headless --path . -s addons/gdUnit4/bin/GdUnitCmdTool.gd -a core -a features -a scenes -a tests --ignoreHeadlessMode -c)",
+      "Bash(tools/godot/Godot_v4.7.2-stable_win64_console.exe --headless --path . --import)"
+    ]
+  }
+}

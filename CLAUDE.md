@@ -67,6 +67,7 @@ node .claude/skills/pxl/bin/pxl.js build art/src/<file>.px.js --out assets/art/g
 Expected `ERROR`/`WARNING` lines in the test log come only from negative-path tests (corrupt save, unknown route); the smoke log must have none.
 Act 0 (the Cabinet, TECH-001 §2.10) takes capture switches after `--`: `--autopilot --stage=N --segments=N --hits=N --smoke-frames=N --no-save`. Always pass `--no-save` when capturing, so the player's saves are never written.
 Prefer the `godot-ai` MCP (`test_run`, `logs_read`, `project_run`, `scene_*`) when the editor is open. Fall back to the console exe.
+In Bash, type the import, all-tests and smoke commands exactly, with the literal path `tools/godot/Godot_v4.7.2-stable_win64_console.exe` (no `$G` variable): those exact strings are allowlisted in `.claude/settings.json` and run without a prompt.
 
 ## 5. Model delegation (token budget)
 
@@ -79,6 +80,7 @@ Prefer the `godot-ai` MCP (`test_run`, `logs_read`, `project_run`, `scene_*`) wh
 | Resolve a cross-doc conflict, design a new boundary, review a TECH-001 section | `architect` | opus |
 
 The main session plans, delegates, and reviews diffs. It does not read large docs or test logs itself.
+Subagents cannot start other agents. The main session runs `doc-scout` first, passes the excerpts to `godot-builder`/`architect`, then runs `test-runner` and `doc-keeper`; the `/feature` skill holds this sequence. One task per session; `/clear` between tasks.
 
 ## 6. Definition of done (every task)
 
