@@ -1,0 +1,16 @@
+{
+  "name": "darkstar-tools",
+  "owner": {
+    "name": "DARKSTAR"
+  },
+  "metadata": {
+    "description": "Project-local Claude Code plugins for DARKSTAR."
+  },
+  "plugins": [
+    {
+      "name": "godot-lsp",
+      "source": "./godot-lsp",
+      "description": "Connects Claude Code to the Godot editor's GDScript language server (localhost:6005) for diagnostics after edits."
+    }
+  ]
+}

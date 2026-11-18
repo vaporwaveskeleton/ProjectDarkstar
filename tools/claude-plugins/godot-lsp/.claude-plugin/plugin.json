@@ -1,0 +1,20 @@
+{
+  "name": "godot-lsp",
+  "version": "1.0.0",
+  "description": "Connects Claude Code to the Godot editor's GDScript language server (localhost:6005) through a Node stdio-to-TCP bridge. Adapted from minami110/claude-godot-tools gdscript-lsp (MIT), which needs nc.",
+  "author": {
+    "name": "DARKSTAR"
+  },
+  "license": "MIT",
+  "lspServers": {
+    "gdscript": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/godot-lsp-bridge.js"],
+      "extensionToLanguage": {
+        ".gd": "gdscript"
+      },
+      "startupTimeout": 10000,
+      "maxRestarts": 3
+    }
+  }
+}
