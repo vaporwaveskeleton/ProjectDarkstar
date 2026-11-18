@@ -16,7 +16,7 @@ Rev 1.1 (2026-11-17, owner-delegated rulings R-02, R-06, R-09): palette law 1 ga
 
 > **Read §16 first (2026-11-18).** The game's space is **retro-future Victorian**: an aether full of fog, colour, life and crystal spheres, not a black vacuum. Act 0's black neon arcade is the lie that space is empty; the reveal shows the aether. The paragraph below still holds for the lantern, the Choir and the entity, read inside that cosmos.
 
-DARKSTAR is 2D pixel art at internal resolution **640×360** (integer-scaled, nearest-neighbour, no anti-aliasing on art), lit by **one moving light source you control: the player's lantern**. Everything else in the frame is either bone-pale reflectance, bioluminescent phosphor, or the absence of light. The enemy faction is a religion, so its art is **liturgical**: processions, symmetrical vestments, cathedral geometry, chitin polished like church wood. The entity is not a monster — it is an **eclipse with anatomy**, built from 20 modular 64×64 segments that look like a reliquary assembled by something that has never seen a body but has read about one.
+DARKSTAR is 2D art. The Act 0 arcade screen is pixel art at **640×360** (integer-scaled, nearest-neighbour, no anti-aliasing); the bezel and everything after Act 0 render at native resolution, with 640×360 kept as the logical space (owner, 2026-11-18; decided, not yet implemented, TECH-001 §1.1). The low-res look is a skin, not a technical limit. The game is lit by **one moving light source you control: the player's lantern**. Everything else in the frame is either bone-pale reflectance, bioluminescent phosphor, or the absence of light. The enemy faction is a religion, so its art is **liturgical**: processions, symmetrical vestments, cathedral geometry, chitin polished like church wood. The entity is not a monster — it is an **eclipse with anatomy**, built from 20 modular 64×64 segments that look like a reliquary assembled by something that has never seen a body but has read about one.
 
 Mood keywords: *aether, crystal spheres, orrery, gaslight, brass, glass, fog, nocturne colour, wet bone, chalk, wrong symmetry, tide, reliquary, frost on a window, something enormous that is also very close — and black only where something has been eaten.*
 
@@ -150,7 +150,7 @@ These are **trophies, not light sources**. No Choir or entity part may ever carr
 
 ## 7. UI and VFX art rules
 - UI is **chalk on slate**: BONE-5 text on VOID-1 panels with a 1 px BONE-1 keyline and a hand-drawn (not pixel-perfect) wobble of ±1 px every 2 s.
-- The Act 0 "arcade cabinet" costume is a *separate art layer*: 1983-style vector-ish sprites, a bezel, 1UP type, scanlines. It must be peelable — under it, the real UI already exists.
+- The Act 0 "arcade cabinet" costume is a *separate art layer*: 1983-style vector-ish sprites, 1UP type, scanlines on the screen, plus a bezel that is a real-world object (native-resolution full-colour printed art, §12.7). Under it the real UI already exists; at the end of Act 0 the camera zooms in while the bezel peels, cracks, decays and warps out of the frame — the game's main hook (§12.7; owner, 2026-11-18).
 - VFX are **physical and small**: sparks are 1 px chalk flecks, not glows; the Null-Iron Charge leaves a brass-lamp trail; entity hits throw PHOS-5 shards + NULL "holes" that close over 6 frames.
 - **Every VFX must read with the game paused at 100% and in greyscale.**
 - Reality-warp VFX rules: see `docs/01-design/REALITY_WARP_ESCALATION.md`; art-side, every warp effect must have a **T0-safe fallback asset** so accessibility modes can show a non-distorting equivalent.
@@ -337,8 +337,9 @@ The UI uses a **4 px sub-grid** of the 64 px module (16 steps per module). Every
 ### 12.7 The Act 0 cabinet costume vs the real UI
 - The costume is a **separate CanvasLayer above the real UI** (ART-001 §7): the bezel (`ds_ui_cabinetBezel`), scanlines, Cabinet-face text, 1UP and score.
 - **The real UI is complete underneath and works with the costume removed.** Nothing functional may exist only in the costume.
-- Costume palette: VOID-0 field, BONE-5 type, GAS-4 for the player's score and 1UP, PHOS-4 for "vector" outlines. No CHOIR, no SIGNAL.
-- **The peel** (A0-3, GDD-001 §6.1): the costume layer falls away in pieces along the bezel's seams, revealing the chalk UI that was always there. This is a staged reveal and one of the game's signature clips. Under reduced motion it is a 1-frame cut with the same final state.
+- Costume palette (on-screen cabinet elements only: score, 1UP, screen text, scanlines; owner, 2026-11-18): VOID-0 field, BONE-5 type, GAS-4 for the player's score and 1UP, PHOS-4 for "vector" outlines. No CHOIR, no SIGNAL.
+- **The bezel** (owner, 2026-11-18): a real-world object rendered at native resolution as full-colour printed cabinet art, like a real 1980s bezel (illustrated, saturated, with instruction panels). It is **not** bound by the Neon Cabinet palette or the screen's role laws (faction hues, SIGNAL ≤ 3 apply to the screen content). It is still generated in code (D-13); instruction text goes through `tr()`. Decided, not yet implemented.
+- **The zoom** (A0-3, GDD-001 §6.1): at the end of the arcade section the camera zooms in to the screen and the bezel leaves the frame permanently, revealing the chalk UI that was always there. **The bezel does not just slide out of frame: as the camera pushes in, it peels, cracks, decays and warps** (owner, 2026-11-18). This is **the game's main hook and must be a jaw-dropping show-stopper**: the signature clip, the trailer's centrepiece, the moment players share. It gets the highest presentation bar in the game (ART-004 §7.1). Under reduced motion it is a 1-frame cut with the same final state; under photosensitivity, no full-field luminance steps (WARP-001 §4.5).
 - `INSERT CREDIT` blinks with a 1 s period (0.5 s on, 0.5 s off). Under photosensitivity it is steady.
 
 ### 12.8 Steady Ledger, visually (WARP-001 §4.4)
@@ -452,13 +453,13 @@ First asset (2026-11-18): `ds_ui_paletteSwatch` (`art/src/reference.px.js`), the
 
 ## 15. The visual fidelity ladder (owner direction, 2026-11-18)
 
-**The game starts as a neon arcade machine and becomes something richer as it reveals itself.** Act 0 looks like a classic 1983 cabinet: neon colours on black, flat vector shapes, no lighting. After THE PRETENCE the Aether look takes over (§16: retro-future Victorian space), and the graphics are allowed to *transcend* arcade limits: real 2D lighting with the lantern as the key light, shadows, fog and volumetric haze, bloom, complex particle systems, normal-mapped and shader-rich bodies. Gameplay stays top-down 2D at 640×360 throughout. This section governs; where §4–§5 or §14 read as a hard cap on colours or lighting, this section wins.
+**The game starts as a neon arcade machine and becomes something richer as it reveals itself.** Act 0 looks like a classic 1983 cabinet: neon colours on black, flat vector shapes, no lighting. After THE PRETENCE the Aether look takes over (§16: retro-future Victorian space), and the graphics are allowed to *transcend* arcade limits: real 2D lighting with the lantern as the key light, shadows, fog and volumetric haze, bloom, complex particle systems, normal-mapped and shader-rich bodies. Gameplay stays top-down 2D throughout; 640×360 is the Act 0 screen's pixel grid and the logical space after it, which renders at native resolution (owner, 2026-11-18). This section governs; where §4–§5 or §14 read as a hard cap on colours or lighting, this section wins.
 
 ### 15.1 The ladder
 
 | Stage | Palette | What rendering may do | What it may not do |
 |---|---|---|---|
-| **T0 — Act 0 (the Cabinet)** | **Neon Cabinet palette** (§15.2), flat | vector lines and fills, the glow under-stroke, CRT scanlines and curvature, screen shake | lighting, fog, gradients, soft particles, bloom. Every pixel is a Neon Cabinet entry (the CRT pass aside) |
+| **T0 — Act 0 (the Cabinet)** | **Neon Cabinet palette** (§15.2), flat | vector lines and fills, the glow under-stroke, CRT scanlines and curvature, screen shake | lighting, fog, gradients, soft particles, bloom. Every pixel of the **screen** is a Neon Cabinet entry (the CRT pass aside). The screen is low-res (640×360); the bezel is native-res full-colour print art outside this palette (§12.7) |
 | **THE PRETENCE (T0 → T1)** | the neon **morphs entry by entry** into the base palette (§4) | the morph, the tear, the maw | — |
 | **T1 Frayed** | base palette as **base colours** | the lantern becomes a real light (soft falloff, shadows from occluders), light fog, first soft particles (dust, chalk flecks, glass motes) | — |
 | **T2 Bleeding** | base + derived | bioluminescent emitters (Shroud, glass, veins) light the field; bloom; Shroud as an animated shader field; denser particle systems | — |

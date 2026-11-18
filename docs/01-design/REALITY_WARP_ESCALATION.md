@@ -205,7 +205,7 @@ These bind every row in §2 and §3. The warp lint (§7.3) fails the build on an
 
 | ID | Class | Effect | Trigger | What changes in play | Counterplay | Art / audio hand-off | Primary AC |
 |---|---|---|---|---|---|---|---|
-| W0-01 | standing | Cabinet Frame | Act 0 always | Bezel, scanlines and a 4:3 costume crop the field. No gameplay change; the crop must never hide a Choir unit or an exit vector. `✱` | none required — no hazard (AC4 satisfied trivially) | ART-001 bezel and scanline kit; AUDIO-001 chiptune stem, arcade chime set | AC1 |
+| W0-01 | standing | Cabinet Frame | Act 0 always | Bezel, scanlines and a 4:3 costume crop the field: the crop is the cabinet screen inside a native-resolution printed bezel (owner, 2026-11-18; the bezel leaves at the Act 0 zoom-in). No gameplay change; the crop must never hide a Choir unit or an exit vector. `✱` | none required — no hazard (AC4 satisfied trivially) | ART-001 bezel and scanline kit; AUDIO-001 chiptune stem, arcade chime set | AC1 |
 | W0-02 | standing | Honest Ledger | Act 0 always | Every HUD element sits at its home anchor and tells the truth (§4.1). Sets the baseline the later tiers betray. | none required | UI: chalk-and-brass strip, 64×64 modules (GDD-001 §10) | AC1 |
 | W0-03 | standing | Attract Mode | 30 s idle on the title screen | A demo loop runs; any input ends it and starts the Vigil (GDD-001 §10 three-clicks-max). | any key or button | ART-001 attract frames; AUDIO-001 attract loop | AC5 |
 | W0-04 | standing | 1UP and score strip | Act 0 scoring (SYS-001 §7.1) | Extra-life feedback exists and reads as arcade furniture; from Act 1 on the strip becomes the Vigil Index. | none required | UI type set; AUDIO-001 score chimes | AC1 |

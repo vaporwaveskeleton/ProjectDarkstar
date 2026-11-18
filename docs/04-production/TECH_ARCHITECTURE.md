@@ -19,6 +19,7 @@
 | Roguelike loop & Lantern Tree | `docs/01-design/ROGUELIKE_LOOP_AND_LANTERN_TREE.md` | Iterations, Run Sigils, Pacts, Relics, the ~90 Lantern Tree nodes, the five endings | Save schema, unlock persistence mechanics |
 | Reality-warp escalation | `docs/01-design/REALITY_WARP_ESCALATION.md` | Warp Tiers T0–T5 as authored content; eaten-rule list; the UI-eating and Compass-lying content | The shader that implements a tier, the tier state machine |
 | Art bible | `docs/02-art/ART_BIBLE.md` | Palette roles, silhouette grammar, lighting law | File formats, atlas packing, import flags |
+| Visual quality rubric | `docs/02-art/VISUAL_QUALITY_RUBRIC.md` (ART-004) | How presentation is scored against the approved benchmarks (D-D); the movement inventory; the visual-state matrix and score sheets | Any art rule (ART-001) or number (SYS-001) |
 | Sprite modularity spec | `docs/02-art/SPRITE_MODULARITY_SPEC.md` | Module grid, kit ids, part ids, sockets, naming grammar, atlas geometry, Godot import settings | How a composite is instantiated, pooled or mutated in a scene |
 | Asset pipeline & manifest | `docs/02-art/ASSET_PIPELINE.md` (**ASSET-003 — pending, not on disk**), `assets/sprites/SPRITE_MANIFEST.csv` | How art is produced; the generator and its scripts; per-row asset status | Anything the engine does with the output — that is §6 here |
 | Production plan | `docs/04-production/PRODUCTION_PLAN_MILESTONES.md` (**pending**) | Milestones, vertical-slice definition, kit build order, schedule risk | What is technically possible, or what a milestone costs in frames |
@@ -77,9 +78,10 @@ Game-world words come only from GDD §19. The following are **engineering** name
 |---|---|---|
 | Engine | Godot **4.7.2 stable**, 2D renderer | GDD §2, §12; D-06 |
 | Language | **GDScript only** for gameplay | D-06 |
-| Internal resolution | **640 × 360** pixel-perfect | SYS-001 §0; ART-001 §1; GDD §2 |
-| Filtering | nearest-neighbour, never anti-aliased, never mipmapped | ART-002 §1 |
-| Scaling | integer multiples only (`window/stretch/mode = viewport`, aspect `keep`, integer snap) | §1.3 |
+| Internal resolution | **640 × 360** pixel-perfect for the **Act 0 arcade screen only**; the bezel and everything after Act 0 render at the display's native resolution (owner, 2026-11-18, D-A). **Decided, NOT YET IMPLEMENTED**: the code still uses a 640×360 viewport everywhere | SYS-001 §0; ART-001 §1; GDD §2 |
+| Filtering | nearest-neighbour, never anti-aliased, never mipmapped, on the Act 0 screen; after Act 0 the filter is per asset (open, §11.1 Q3) | ART-002 §1 |
+| Scaling | Act 0 screen: integer multiples only (`window/stretch/mode = viewport`, aspect `keep`, integer snap). After Act 0: ✱ proposed (not owner-approved) `canvas_items` stretch, pixel snapping off, switched at runtime after the Act 0 zoom-in. **Not yet implemented** | §1.3 |
+| Logical space | ✱ proposed: 640×360 stays the logical coordinate space after Act 0, so SYS-001 px and px/s keep their meaning (1 logical px = display height / 360). Post-Act 0 camera scale / visible world area is open (§11.1 Q5) | D-A |
 | Target frame rate | 60 FPS; 60 Hz fixed logic tick | SYS-001 §0, §9 |
 | Platform at 1.0 | **Windows + Steam** | GDD §2, §12 |
 | Platforms after 1.0 | Linux, then Mac | GDD §2 |
@@ -88,7 +90,9 @@ Game-world words come only from GDD §19. The following are **engineering** name
 | Multiplayer | none in the build; no `MultiplayerAPI`, no network scene, no `networking/` folder | D-09 (coop out of scope for 1.0), GDD R-07 |
 | Rendering method | **Forward+** (`rendering/renderer/rendering_method = forward_plus`) | owner decision 2026-11-17 (TASK-BOOT Q2); revisit only if min-spec shows T2 warp shaders over SYS-001 §9's 1.2 ms |
 
-The GDD §2 row offering "512×288 **or** 640×360" is closed here: **640×360**. It is the resolution SYS-001's px values are written against and the one ART-002's module grid composes against (360 px = 5.625 modules of height; the entity composite at 512×256 therefore cannot fit the frame, which is ART-001 §2's scale-dread rule working by arithmetic rather than by staging).
+**Amended (owner, 2026-11-18, D-A):** the 640×360 grid binds the Act 0 arcade screen only; the low-res look is a skin/pretence, not a technical limit. The cabinet bezel is native-resolution print art (D-B) and leaves the frame at the end of Act 0 by a camera zoom-in. Post-Act 0 behaviour is decided but **not yet implemented**; the settings in §1.2 describe the current code.
+
+The GDD §2 row offering "512×288 **or** 640×360" is closed here: **640×360** (for the Act 0 screen and as the logical space; see above). It is the resolution SYS-001's px values are written against and the one ART-002's module grid composes against (360 px = 5.625 modules of height; the entity composite at 512×256 therefore cannot fit the frame, which is ART-001 §2's scale-dread rule working by arithmetic rather than by staging).
 
 ### 1.2 Project settings we set and never revisit
 
@@ -96,7 +100,7 @@ The GDD §2 row offering "512×288 **or** 640×360" is closed here: **640×360**
 |---|---|---|
 | `display/window/size/viewport_width` | 640 | §1.1 |
 | `display/window/size/viewport_height` | 360 | §1.1 |
-| `display/window/stretch/mode` | `viewport` | pixel-perfect at any window size |
+| `display/window/stretch/mode` | `viewport` (current; ✱ `canvas_items` with snapping off after Act 0 is proposed, not implemented, D-A) | pixel-perfect at any window size |
 | `display/window/stretch/aspect` | `keep` | no distortion, letterboxed bars |
 | `display/window/hidpi/nearest_filtering` | on | OS scaling must not re-filter art |
 | `rendering/textures/canvas_textures/default_texture_filter` | `Nearest` | ART-002 §1 |
@@ -610,7 +614,7 @@ The smoke run prints `BOOT_SMOKE: reached route 'sector'` and exits 0. GdUnit wr
 
 Result on 2026-11-18 (pxl + D-13 amendment): 100 test cases, 0 failures, 0 errors; boot smoke (attract → cabinet) exit 0 with no `ERROR`/`WARNING` lines.
 
-Not covered (honest list): window sizes other than the 640×360 logical viewport, real integer scaling at 1080p/1440p, gamepad glyphs (none exist), shaders, audio, Steam, performance. Slopes, stairs, doors and moving platforms are N/A (§2.6).
+Not covered (honest list): native-resolution rendering after Act 0 (decided, not implemented, D-A), window sizes other than the 640×360 logical viewport, real integer scaling at 1080p/1440p, gamepad glyphs (none exist), shaders, audio, Steam, performance. Slopes, stairs, doors and moving platforms are N/A (§2.6).
 
 ## 10. Import conventions
 **D-13:** no raster imports feed the game. The reference PNGs under `assets/sprites/` are local-only reference: kept on disk, **not in git** (`.gitignore`) and **ignored by Godot** (`assets/sprites/.gdignore`), so they are never imported, exported or pushed. Only `SPRITE_MANIFEST.csv` is tracked, as the inventory of parts to build (owner decision 2026-11-18). Exports must still exclude `tools/**` (set in the export preset when it is created). Historical, for the reference PNGs only: per ART-002 §7, canvas default filter Nearest (set in `project.godot`); pixel atlases import with `compress/mode = Lossless`, mipmaps off, `fix_alpha_border = true`. Every `.csv` under `assets/` imports as `keep` (ruling R-19), never as a translation; PNG import flags per ASSET-003. ART-002 §7 mentions a `godot/DarkStar/` path; the project root is the repo root (TASK-BOOT Q4), so that path is obsolete — §11 Q-T08. No import preset file is committed yet. `docs/`, `tools/`, `research/` and `Claude outputs/` carry `.gdignore`.
@@ -624,6 +628,11 @@ Not covered (honest list): window sizes other than the 640×360 logical viewport
 | Q-T15 | SYS-001 §1.4 `hits_needed = 13 - 3 + ceil(segments/7)` gives 10 at 0 segments, but its own note says "3 at 0 segments". The cabinet sidesteps it (the entity is only hittable once complete, 13 hits) | SYS-001 §1.4 | design rewrites the formula or its note |
 | Q-T16 | SYS-001 §2 phase 3 says "Compass starts lying" at Quickening; WARP-001 W0-02 says the Act 0 HUD is always honest (T0 lie budget 0). The cabinet keeps the compass honest (WARP-001 owns HUD lies) | SYS-001 §2, WARP-001 §2.1 | SYS-001 scopes the lie to T ≥ 3 |
 | Q-T17 | Cabinet ✱ values with no SYS-001 row: lives at start (3), respawn delay and shield (2 s each), lance range (0.9 s life), Grub seek speed (160 px/s) and flee radius (110 px), Acolyte engagement range (300 px) and shot life (2.2 s), Charge life (6 s), entity costume radius/contact inset/turn rate | `data/cabinet/cabinet_tuning.tres`, `sepulchre_ritual.gd` | add an Act 0 table to SYS-001 |
+| Q-T18 | NARR-001's ending has the credits peel "HUD, bezel, scanlines, the Cabinet's marquee", but the bezel leaves the frame for good after the Act 0 zoom-in (D-B). GDD §9 ending 4 ("the retro arcade shell being peeled away") and the GDD §8.7 T4 row ("the arcade shell slips") lean on the same image | NARR-001 ending; GDD §9, §8.7 | bookend return to the cabinet, or rewrite the beats |
+| Q-T19 | Are pxl raster renders used after Act 0? | ART-001 §14.8 | Act 0 only; Aether art stays runtime vector/shader |
+| Q-T20 | `PixelText` scales by integers only; native resolutions are not integer multiples of 360 | ART-001 §11, R-02 | pixel faces for the cabinet; scalable rendering of the chalk faces after Act 0 |
+| Q-T21 | SYS-001 §9 frame budget was never measured at native resolution; fog/post buffers likely need a fractional render scale and quality presets | SYS-001 §9 | measure at 1080p/1440p/4K before locking |
+| Q-T22 | Post-Act 0 camera scale / visible world area is a design number not yet set | D-A | design to set; no value invented |
 
 ### 11.1a Resolved questions (owner-delegated rulings, 2026-11-17)
 
@@ -631,7 +640,7 @@ The owner delegated every open ruling to the 2026-11-17 authoring pass. Each rul
 
 | # | Question | Ruling | Applied in |
 |---|---|---|---|
-| Q-T01 | 512×288 fallback still listed | **R-01:** 640×360 only | GDD §2, SYS-001 §9 |
+| Q-T01 | 512×288 fallback still listed | **R-01:** 640×360 only. *Superseded for post-Act 0 by D-A (owner, 2026-11-18, §11.2): 640×360 binds the Act 0 screen only* | GDD §2, SYS-001 §9 |
 | Q-T02 | No font spec; ART-001 §9 mis-cited | **R-02:** three bitmap faces (Ledger, Litany, Cabinet), 200 % = exact ×2, English coverage only (CJK plan dropped 2026-11-17) | ART-001 §11 |
 | Q-T03 | SYS-001 has no `ds_` keys | **R-03:** §3.4 here is the key registry; SYS tables gain a `ds_` column as each is next touched | §3.4 |
 | Q-T04 | 12 px hitbox: diameter or radius | **R-04:** diameter (6 px radius) — matches the code | SYS-001 §9 |
@@ -663,6 +672,11 @@ The owner delegated every open ruling to the 2026-11-17 authoring pass. Each rul
 | 2026-11-17 | Owner-delegated authoring pass: rulings R-01…R-19 (§11.1a); §4–§6 and §8 designed; `RunSession` and `AudioService` autoloads approved as planned; full GDD §4.1/§4.3 input map | owner (delegated) |
 | 2026-11-17 | **English only.** All non-English plans removed: per-locale number tables, the language setting and picker, pseudo-translation and right-to-left tests, the CJK font plan, translator workflow and vendor milestones. `tr()` keys and `en.po` stay so player text remains testable and a language can be added later (L10N-001 §7) | owner |
 | 2026-11-18 | Act 0 built as the Cabinet feature (§2.10): own torus simulation without Godot physics bodies; vector costume art from `Pal`; 5×7 Cabinet face via `PixelText`; `AudioService` built with synthesised placeholder cues; profile save reason `cabinet_score`; `--no-save` switch; New Vigil now routes to `cabinet` | production |
+| 2026-11-18 | **D-A (resolution):** 640×360 pixel-perfect, integer-scaled, nearest-filtered applies only to the Act 0 arcade screen; the bezel and everything after Act 0 render at native resolution. ✱ proposed, not owner-approved: keep 640×360 as the logical space, switch to `canvas_items` stretch with snapping off after the zoom-in. Decided, not implemented; open items Q-T20..Q-T22 | owner |
+| 2026-11-18 | **D-B (bezel):** the cabinet bezel is a real-world object at native resolution, full-colour printed cabinet art, not bound by the Neon Cabinet palette or screen role laws; generated in code (D-13); instruction text via `tr()`. At the end of Act 0 the camera zooms in to the screen and the bezel leaves the frame permanently (replaces the ART-001 §12.7 seam peel; reduced motion = 1-frame cut). Open: Q-T18 | owner |
+| 2026-11-18 | **D-C (UI after Act 0):** modern game-UI structure and UX (hierarchy, primary/secondary actions, focus, input glyphs, Returnal-style list/preview/detail) with chalk-and-brass as the skin; ART-001 §12 stays valid as the skin | owner |
+| 2026-11-18 | **D-B amended (the zoom):** the zoom-in carries the destruction: as the camera pushes in, the bezel peels, cracks, decays and warps out of frame. It is the game's main hook and must be a show-stopper; highest presentation bar (ART-001 §12.7, ART-004 §7.1). Decided, not implemented | owner |
+| 2026-11-18 | **D-D (visual benchmarks):** AAA comparison set for visual-quality reviews: Returnal, Saros (Housemarque) and Ball x Pit (top-down camera/genre and density-readability benchmark, not a budget comparison) | owner |
 | 2026-11-18 | **D-13 / D-14 (user directive): all graphics generated at runtime (vector or shader), all sound generated by code.** Raster pipeline (manifest import, atlases, sprite imports) retired; PNGs under `assets/sprites/` become reference only and are excluded from export; `tests/test_generated_assets_only.gd` enforces it; the reveal's PNG replaced by a generated body; `AudioService` cues are the design, not placeholders | user |
 | 2026-11-18 | Reference sprites (`assets/sprites/`, 83 PNGs) untracked from git and Godot-ignored (`.gdignore`): kept locally as the look generators reproduce, never pushed, never imported or exported. Only `SPRITE_MANIFEST.csv` stays tracked | owner |
 | 2026-11-18 | **D-14 amended (user directive):** chirp (uilianks/chirp, MIT) installed as a project Claude Code skill in `.claude/skills/chirp-game-audio/` (git-ignored); `audio/src/*.cx.js` → `assets/audio/generated/` WAV renders, committed; `AudioService` prefers renders, falls back to `SfxSynth`; asset test rewritten for the amended rule | user |
