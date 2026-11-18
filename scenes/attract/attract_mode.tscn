@@ -1,0 +1,80 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scenes/attract/attract_mode.gd" id="1"]
+[ext_resource type="Script" path="res://core/ui/screen_stack.gd" id="2"]
+[ext_resource type="Script" path="res://core/ui/input_mode_tracker.gd" id="3"]
+
+[node name="AttractMode" type="Control" node_paths=PackedStringArray("default_focus")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+default_focus = NodePath("Center/Menu/NewVigil")
+cancel_closes = false
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.0392157, 0.0392157, 0.0705882, 1)
+
+[node name="Center" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Menu" type="VBoxContainer" parent="Center"]
+layout_mode = 2
+custom_minimum_size = Vector2(160, 0)
+
+[node name="Title" type="Label" parent="Center/Menu"]
+layout_mode = 2
+theme_type_variation = &"HeaderLabel"
+text = "GAME_TITLE"
+horizontal_alignment = 1
+
+[node name="NewVigil" type="Button" parent="Center/Menu"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_neighbor_top = NodePath("../Quit")
+focus_neighbor_bottom = NodePath("../Settings")
+focus_previous = NodePath("../Quit")
+focus_next = NodePath("../Settings")
+text = "MENU_NEW_VIGIL"
+
+[node name="Settings" type="Button" parent="Center/Menu"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_neighbor_top = NodePath("../NewVigil")
+focus_neighbor_bottom = NodePath("../Quit")
+focus_previous = NodePath("../NewVigil")
+focus_next = NodePath("../Quit")
+text = "MENU_SETTINGS"
+
+[node name="Quit" type="Button" parent="Center/Menu"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_neighbor_top = NodePath("../Settings")
+focus_neighbor_bottom = NodePath("../NewVigil")
+focus_previous = NodePath("../Settings")
+focus_next = NodePath("../NewVigil")
+text = "MENU_QUIT"
+
+[node name="Overlays" type="CanvasLayer" parent="." node_paths=PackedStringArray("base_screen")]
+unique_name_in_owner = true
+layer = 10
+script = ExtResource("2")
+base_screen = NodePath("..")
+
+[node name="InputModeTracker" type="Node" parent="."]
+script = ExtResource("3")

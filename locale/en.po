@@ -1,0 +1,102 @@
+# DARKSTAR — English (source locale and fallback). Owner: L10N-001 (docs/04-production/LOCALIZATION.md).
+# msgid = stable key (UPPER_SNAKE, prefixed by surface). msgstr = English text.
+# "#." lines are translator notes. Keep UI copy to <= 2 lines per screen (GDD §10).
+msgid ""
+msgstr ""
+"Project-Id-Version: DARKSTAR\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8-bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. Game title on the attract screen. Do not translate the name.
+msgid "GAME_TITLE"
+msgstr "DARKSTAR"
+
+#. Attract screen primary action: start a new run. "Vigil" is the player's ship (glossary).
+msgid "MENU_NEW_VIGIL"
+msgstr "New Vigil"
+
+msgid "MENU_SETTINGS"
+msgstr "Settings"
+
+#. Quits to the desktop.
+msgid "MENU_QUIT"
+msgstr "Quit"
+
+msgid "MENU_BACK"
+msgstr "Back"
+
+msgid "MENU_RESUME"
+msgstr "Resume"
+
+#. Pause menu: end the current run and return to the title.
+msgid "MENU_ABANDON_RUN"
+msgstr "Abandon Run"
+
+msgid "PAUSE_TITLE"
+msgstr "Paused"
+
+msgid "CONFIRM_ABANDON_TITLE"
+msgstr "Abandon this run?"
+
+#. Must stay truthful: run power is lost; Lantern Tree and banked currency persist (SYS-001 §8).
+msgid "CONFIRM_ABANDON_BODY"
+msgstr "Run power is lost. Your Lantern Tree and banked currency are safe."
+
+msgid "CONFIRM_ABANDON_YES"
+msgstr "Abandon"
+
+msgid "CONFIRM_KEEP_PLAYING"
+msgstr "Keep Playing"
+
+msgid "SETTINGS_TITLE"
+msgstr "Settings"
+
+msgid "SETTINGS_LANGUAGE"
+msgstr "Language"
+
+#. Toggle: doubles text size (200 %).
+msgid "SETTINGS_LARGE_TEXT"
+msgstr "Large Text"
+
+msgid "SETTINGS_REDUCED_MOTION"
+msgstr "Reduced Motion"
+
+#. Removes flicker and strobing. Never hides information.
+msgid "SETTINGS_PHOTOSENSITIVITY"
+msgstr "Photosensitivity Mode"
+
+#. Accessibility option name from the glossary: keeps the HUD honest.
+msgid "SETTINGS_STEADY_LEDGER"
+msgstr "Steady Ledger"
+
+#. Language names are always written in their own language.
+msgid "LANGUAGE_NAME_EN"
+msgstr "English"
+
+#. HUD readout of the Vigil's remaining hull. {count} is a number.
+msgid "HUD_HULL_COUNT"
+msgid_plural "HUD_HULL_COUNT_PLURAL"
+msgstr[0] "Hull {count}"
+msgstr[1] "Hull {count}"
+
+#. Shown when the hull is breached in the bootstrap sector.
+msgid "HUD_HULL_BREACHED"
+msgstr "Hull breached"
+
+msgid "MSG_SAVE_FAILED"
+msgstr "Progress could not be saved. Your last saved progress is safe. Try again from the Ruins."
+
+msgid "MSG_SAVE_NEWER_VERSION"
+msgstr "This save is from a newer version of DARKSTAR. Update the game to continue it."
+
+msgid "MSG_SAVE_CORRUPT"
+msgstr "A save file could not be read. Your other progress is safe."
+
+msgid "MSG_SAVE_RECOVERED"
+msgstr "A save file was damaged. Your most recent backup was restored."
+
+msgid "MSG_SCREEN_FAILED"
+msgstr "That screen could not open. Your progress is safe. Returning to the title."

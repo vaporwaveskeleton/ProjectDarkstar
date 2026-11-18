@@ -1,0 +1,47 @@
+# DARKSTAR
+
+2D arcade roguelike. Godot **4.7.2**, GDScript only, 640×360 pixel-perfect, Windows + Steam, single-player.
+
+Current state: **architecture bootstrap.** The game boots into an attract (title) screen, starts a "New Vigil" into an empty sector stub with a movable Vigil, and has settings, pause and confirm overlays. No gameplay beyond that yet.
+
+## Run
+
+```
+tools\godot\Godot_v4.7.2-stable_win64.exe --path .                       # play (or open in the editor)
+tools\godot\Godot_v4.7.2-stable_win64_console.exe --headless --path . --import
+tools\godot\Godot_v4.7.2-stable_win64_console.exe --headless --path . -s addons/gdUnit4/bin/GdUnitCmdTool.gd -a core -a features -a scenes -a tests --ignoreHeadlessMode -c
+tools\godot\Godot_v4.7.2-stable_win64_console.exe --headless --path . --quit-after 600 -- --smoke
+```
+Controls: WASD move, mouse aim, Space brake, Esc pause. A gamepad works too (left stick move, right stick aim, Start pause).
+
+## Layout
+
+| Folder | Holds |
+|---|---|
+| `autoload/` | the three global services (`SettingsService`, `SaveService`, `SceneRouter`) — TECH-001 §2.8 |
+| `core/` | shared components, data registry, save, routing, UI base, i18n, physics layers |
+| `features/<glossary_name>/` | one folder per game feature (`vigil` is the only built one) |
+| `scenes/` | boot, attract, settings, sector stub, shared overlays |
+| `data/` | loose `.tres` tunables, theme, route table, audio buses |
+| `locale/` | `.po` translation files |
+| `shaders/`, `generated/` | empty for now |
+| `tests/` | cross-cutting test suites and helpers |
+| `addons/gdUnit4` | test framework (v6.2.3) |
+| `docs/` | design and production docs (ignored by Godot) |
+
+There is deliberately no `networking/` folder: the game is single-player (GDD D-09).
+
+## Where the rules live
+
+| You want | Read |
+|---|---|
+| AI / contributor rules (short) | [`CLAUDE.md`](CLAUDE.md) |
+| Architecture, scene tree, resources, save system, tests | [`docs/04-production/TECH_ARCHITECTURE.md`](docs/04-production/TECH_ARCHITECTURE.md) (TECH-001) |
+| Signals and events | [`docs/04-production/SIGNALS_AND_EVENTS.md`](docs/04-production/SIGNALS_AND_EVENTS.md) (EVT-001) |
+| Menus, buttons, focus, Theme | [`docs/04-production/UI_ARCHITECTURE.md`](docs/04-production/UI_ARCHITECTURE.md) (UI-001) |
+| Translation workflow | [`docs/04-production/LOCALIZATION.md`](docs/04-production/LOCALIZATION.md) (L10N-001) |
+| Adding a feature | [`docs/04-production/ADDING_A_FEATURE.md`](docs/04-production/ADDING_A_FEATURE.md) |
+| Every game number | [`docs/01-design/SYSTEMS_BIBLE_STATS.md`](docs/01-design/SYSTEMS_BIBLE_STATS.md) (SYS-001) |
+| What the game is | [`docs/01-design/GDD_DARKSTAR_v0.2.md`](docs/01-design/GDD_DARKSTAR_v0.2.md) |
+
+The generic bootstrap brief asked for `docs/ARCHITECTURE.md`, `SCENE_TREE_RULES.md`, `RESOURCES.md`, `SAVE_SYSTEM.md` and `AI_INSTRUCTIONS.md`. Those topics are TECH-001 §2, §2.1, §3 and §7, and `CLAUDE.md`. Each has one owner (see `docs/04-production/TASK_BOOTSTRAP_ARCHITECTURE.md` §2).

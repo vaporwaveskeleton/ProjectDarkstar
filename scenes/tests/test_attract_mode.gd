@@ -1,0 +1,134 @@
+extends GdUnitTestSuite
+## Attract mode: primary action focus, focus loop without dead ends, settings modal with
+## ui_cancel and focus restoration, repeated input, safe area at 200 % text, RTL, pseudolocale.
+
+const SCENE := "res://scenes/attract/attract_mode.tscn"
+
+var host: FakeRouteHost
+
+
+func before_test() -> void:
+	host = FakeRouteHost.install(self)
+	SettingsService.persist = false
+
+
+func after_test() -> void:
+	FakeRouteHost.uninstall(host)
+	UiTheme.apply_text_scale(1.0)
+	SettingsService.persist = true
+	TranslationServer.pseudolocalization_enabled = false
+
+
+func _focus() -> Control:
+	return get_viewport().gui_get_focus_owner()
+
+
+func test_primary_action_has_focus_on_open() -> void:
+	var runner := scene_runner(SCENE)
+	await runner.simulate_frames(2)
+	assert_object(_focus()).is_same(runner.find_child("NewVigil"))
+
+
+func test_focus_loop_reaches_every_button_and_wraps() -> void:
+	var runner := scene_runner(SCENE)
+	await runner.simulate_frames(2)
+	var seen: Array[String] = []
+	for i in 3:
+		seen.append(_focus().name)
+		runner.simulate_action_pressed("ui_down")
+		await runner.await_input_processed()
+	assert_array(seen).is_equal(["NewVigil", "Settings", "Quit"])
+	assert_str(_focus().name).is_equal("NewVigil")
+	runner.simulate_action_pressed("ui_up")
+	await runner.await_input_processed()
+	assert_str(_focus().name).is_equal("Quit")
+
+
+func test_settings_opens_modal_and_ui_cancel_restores_focus() -> void:
+	var runner := scene_runner(SCENE)
+	await runner.simulate_frames(2)
+	runner.simulate_action_pressed("ui_down")
+	await runner.await_input_processed()
+	runner.simulate_action_pressed("ui_accept")
+	await runner.simulate_frames(2)
+	var stack: ScreenStack = runner.find_child("Overlays")
+	assert_int(stack.depth()).is_equal(1)
+	assert_str(_focus().name).is_equal("Back")
+	runner.simulate_action_pressed("ui_cancel")
+	await runner.simulate_frames(2)
+	assert_int(stack.depth()).is_equal(0)
+	assert_str(_focus().name).is_equal("Settings")
+
+
+func test_ui_cancel_on_root_screen_does_nothing() -> void:
+	var runner := scene_runner(SCENE)
+	await runner.simulate_frames(2)
+	runner.simulate_action_pressed("ui_cancel")
+	await runner.simulate_frames(2)
+	assert_bool(is_instance_valid(runner.scene())).is_true()
+	assert_str(_focus().name).is_equal("NewVigil")
+
+
+func test_repeated_new_vigil_input_routes_once() -> void:
+	var runner := scene_runner(SCENE)
+	await runner.simulate_frames(2)
+	var btn: Button = runner.find_child("NewVigil")
+	btn.pressed.emit()
+	btn.pressed.emit()
+	btn.pressed.emit()
+	assert_bool(btn.disabled).is_true()
+	await runner.simulate_frames(5)
+	assert_array(host.mounted_routes).is_equal(["res://scenes/sector/sector_stub.tscn"])
+
+
+func test_all_buttons_inside_safe_area_at_200_percent_text() -> void:
+	SettingsService.set_value(&"text_scale", 2.0)
+	var runner := scene_runner(SCENE)
+	await runner.simulate_frames(3)
+	var view: Rect2 = runner.scene().get_viewport_rect()
+	for name in ["Title", "NewVigil", "Settings", "Quit"]:
+		var c: Control = runner.find_child(name)
+		assert_bool(view.encloses(c.get_global_rect())).override_failure_message("%s outside %s: %s" % [name, view, c.get_global_rect()]).is_true()
+	SettingsService.set_value(&"text_scale", 1.0)
+
+
+func test_settings_panel_inside_safe_area_at_200_percent_text() -> void:
+	SettingsService.set_value(&"text_scale", 2.0)
+	var runner := scene_runner(SCENE)
+	await runner.simulate_frames(2)
+	runner.invoke("open_settings")
+	await runner.simulate_frames(3)
+	var panel: Control = runner.find_child("Panel")
+	var view: Rect2 = runner.scene().get_viewport_rect()
+	assert_bool(view.encloses(panel.get_global_rect())).override_failure_message("settings panel %s exceeds %s" % [panel.get_global_rect(), view]).is_true()
+	SettingsService.set_value(&"text_scale", 1.0)
+
+
+func test_right_to_left_layout_keeps_menu_on_screen() -> void:
+	var runner := scene_runner(SCENE)
+	(runner.scene() as Control).layout_direction = Control.LAYOUT_DIRECTION_RTL
+	await runner.simulate_frames(3)
+	var view: Rect2 = runner.scene().get_viewport_rect()
+	for name in ["NewVigil", "Settings", "Quit"]:
+		var c: Control = runner.find_child(name)
+		assert_bool(c.is_layout_rtl()).is_true()
+		assert_bool(view.encloses(c.get_global_rect())).is_true()
+
+
+func test_pseudolocalized_text_fits_on_screen() -> void:
+	TranslationServer.pseudolocalization_enabled = true
+	var runner := scene_runner(SCENE)
+	await runner.simulate_frames(3)
+	var view: Rect2 = runner.scene().get_viewport_rect()
+	for name in ["Title", "NewVigil", "Settings", "Quit"]:
+		var c: Control = runner.find_child(name)
+		assert_bool(view.encloses(c.get_global_rect())).is_true()
+
+
+func test_visible_text_is_never_a_raw_key() -> void:
+	var runner := scene_runner(SCENE)
+	await runner.simulate_frames(2)
+	for name in ["Title", "NewVigil", "Settings", "Quit"]:
+		var c: Control = runner.find_child(name)
+		var shown: String = c.atr(c.text)
+		assert_bool(RegEx.create_from_string("^[A-Z][A-Z0-9_]+_[A-Z0-9_]+$").search(shown) == null).override_failure_message("%s shows raw key %s" % [name, shown]).is_true()

@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="RouteTable" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://core/routing/route_table.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+routes = {
+&"attract": "res://scenes/attract/attract_mode.tscn",
+&"sector": "res://scenes/sector/sector_stub.tscn"
+}
+initial_route = &"attract"

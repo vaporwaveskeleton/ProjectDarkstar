@@ -1,0 +1,31 @@
+# Normalize text line endings in the repo; Godot reads LF and CRLF alike.
+* text=auto
+
+# Godot text formats
+*.gd      text eol=lf
+*.tscn    text eol=lf
+*.tres    text eol=lf
+*.godot   text eol=lf
+*.import  text eol=lf
+*.uid     text eol=lf
+*.po      text eol=lf
+*.md      text eol=lf
+*.ps1     text eol=crlf
+
+# Small binary art: plain git (pixel art PNGs are tiny)
+*.png       binary
+*.aseprite  binary
+*.ase       binary
+
+# Large binaries: Git LFS
+*.wav   filter=lfs diff=lfs merge=lfs -text
+*.ogg   filter=lfs diff=lfs merge=lfs -text
+*.mp3   filter=lfs diff=lfs merge=lfs -text
+*.flac  filter=lfs diff=lfs merge=lfs -text
+*.mp4   filter=lfs diff=lfs merge=lfs -text
+*.webm  filter=lfs diff=lfs merge=lfs -text
+*.ogv   filter=lfs diff=lfs merge=lfs -text
+*.psd   filter=lfs diff=lfs merge=lfs -text
+*.kra   filter=lfs diff=lfs merge=lfs -text
+*.ttf   filter=lfs diff=lfs merge=lfs -text
+*.otf   filter=lfs diff=lfs merge=lfs -text

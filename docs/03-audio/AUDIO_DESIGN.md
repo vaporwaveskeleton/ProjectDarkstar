@@ -1,0 +1,1050 @@
+# DARKSTAR — Audio Design
+
+**Doc ID:** AUDIO-001 · **Version:** 1.0 · **Date:** 2026-11-15 · **Owner:** Audio / Design · **Status:** authored, pending review
+**Upstream:** `docs/01-design/GDD_DARKSTAR_v0.2.md` (GDD-001) · `docs/01-design/SYSTEMS_BIBLE_STATS.md` (SYS-001) · `docs/01-design/ROGUELIKE_LOOP_AND_LANTERN_TREE.md` (LOOP-001)
+**This doc owns:** the adaptive music architecture, the biome palettes, **the entity's full line set** (the deferral GDD-001 §8.4 makes to this doc), the Choir's chant, all feedback sound, the mix rules, and the accessibility contract for audio and audio-linked effects.
+
+Numbers are not restated here. Where a value exists in SYS-001 it is cited by section (`SYS-001 §3.1`), never copied — the SYS-001 §0 rule. Parameters invented here carry `✱` (SYS-001 §0 convention: first-pass judgement value, verify in the slice). Locked GDD behaviour is marked 🔒. The 1983 original is never named in this doc (RES-001 §5).
+
+## 0. How to read this doc
+
+| If you are… | Read | Then |
+|---|---|---|
+| new to the project | GDD-001 §12, then §1 here | §2.0 (architecture), §5.1 (the litany) |
+| scoring a state or a biome | §2 (your state's table), §3 (your biome's table) | §2.0 parameter list, §7.1 loudness |
+| writing or recording entity dialogue | §4 (all of it) | SYS-001 §8 telemetry keys |
+| implementing audio | §2.0 buses, §7 | TECH-001 §6 (data-driven tables), SYS-001 §9 (frame budget) |
+| doing accessibility or QA | §5.5, §8 | GDD-001 §10, SYS-001 §1.5 |
+| costing or scheduling | §9 | PROD-001, ASSET-003 |
+
+Cross-doc IDs used here: GDD-001, SYS-001, LOOP-001, ZONES-001, WARP-001, NARR-001, AUDIO-001, ART-001, ART-002, ASSET-003, TECH-001, PROD-001, MARKET-001, RES-001.
+
+World vocabulary is GDD-001 §19 only. Ownership boundary with NARR-001: **AUDIO-001 owns every line the entity speaks as a state announcement** (the deferral in GDD-001 §8.4, the telemetry rule in SYS-001 §8); NARR-001 owns the Codex prose, the Ruins scene script and the endings' fiction. Where a beat needs both, NARR-001 writes the scene and this doc writes the line the entity speaks over it, in the display form §4.2 requires.
+
+---
+
+## 1. The audio contract
+
+### 1.1 What the score does, and what it refuses to do
+
+| The score does | The score refuses to do |
+|---|---|
+| Track the run's *structure*: Waking phase (SYS-001 §2), Warp Tier (GDD-001 §8.7) and Composure band (SYS-001 §1.5) — not just "combat vs explore" (GDD-001 §12) | Never sting. No impact hit, no braam, no rise-and-slam. Menace is built by layer count, tuning and register, never by level |
+| Announce state the player can act on: which phase the entity is in, whether a deposit is advancing, whether a procession is near | Never announce a state that is not true (L3, §1.3) — no fake Rampage cue, no false Awakening |
+| Carry the 1983-shell melody and *decompose* it into the Choir's liturgy as Warp rises (GDD-001 §12) | Never resolve. Cadences are withheld until Act 4, and then only in the last sky |
+| Stay diegetic-first: the Choir's chant and the Grubs' keening are world sources, not music layers (§1.2) | Never duck the chant, the Charge-loss chime or an entity line (§7.3) |
+| Leave space: one bed stem is silent in most Seams so a procession can be heard around a corner (SYS-001 §3.1) | Never fill the silence budget more than twice per run (GDD-001 §12) |
+| Reward lean-in: MADNESS builds that trade Composure for power get a *thicker*, lower-tuned bed (SYS-001 §1.5 bands) | Never moralise with music: a Hollowed sector is a build choice (SYS-001 §1.5), so it sounds full, not punished |
+| Loop honestly: every loop is seam-less and bar-aligned, so a 25–35 min run (SYS-001 §6) never reveals a seam in a clip (GDD-001 §3 P6) | Never use tempo change as a dread device — the tempo grid is fixed per biome (§3), so a tempo shift always means a state change |
+
+### 1.2 The diegetic-first rule
+
+Chant and keening are **in-world sound sources with position and radius**, not score layers. Their audibility is governed by the SYS-001 §3.1 faction laws (chant is diegetic and positional, audible through geometry out to that row's radius) and the SYS-001 §9 audio-occlusion row. The score does not double them: the litany appears in the *music* only at Warp Tier ≥ 3, where the arcade shell has already rotted (GDD-001 §8.7), and then as a de-tuned echo of what the world is already playing.
+
+| Diegetic source | Positional | Radius / audibility | Notes |
+|---|---|---|---|
+| Choir chant (the litany, §5.1) | yes | SYS-001 §3.1, §9 | audible through geometry; occlusion is a low-pass and a level drop, never a mute |
+| Grub keening (a destroyed deposit) | yes | SYS-001 §3 (keening is locked) | the only reliable "my ward worked" tell in the dark |
+| Deposit thud (a segment point landing) | yes | SYS-001 §2 phase 1 rate | the countdown of P1 (GDD-001 §3 pillar 1) made audible |
+| Acolyte censer (turret swing, shot tell) | yes | SYS-001 §3 tell row | the 0.25 s turret lag is audible as the censer chain arriving late 🔒 |
+| Listener's wind-up | yes | SYS-001 §3 (blind, hunts gunfire) | the visual arc gets an audio twin, never the reverse (§8.1) |
+| Sepulchre (the cold altar) | yes | SYS-001 §2 phase 0 | a subharmonic pulse; the only light source in phase 0 (GDD-001 §8.1) |
+| Ship foley (brass creak, guttering flame, chalk, clock tick) | head-locked to the Vigil | close-mic set (GDD-001 §12) | the cockpit beats at the seams of a run |
+| Entity voice | **no** — head-centred, non-positional | always | heard by the Lampkeeper, not the Choir; on its own bus (§7.2) |
+| Vigil Index readout | UI | HUD | diegetic fiction: the Choir tallies the Lampkeeper (GDD-001 §9.4) |
+
+### 1.3 Four laws
+
+| # | Law | Consequence in production |
+|---|---|---|
+| L1 | **The voice is a state machine, not a quote** (GDD-001 §12) | every entity line maps to a row in SYS-001 §2, §1.2, §1.4, §2.2 or §8; audio literacy is skill |
+| L2 | **The score is the last honest channel.** When the Ledger Compass lies (SYS-001 §6) or the HUD migrates (GDD-001 §8.7 T3), the music and the diegetic mix keep telling the truth | no music layer may be re-keyed by a Compass lie; the truth channel is what the Steady Ledger toggle preserves in sound (GDD-001 §10) |
+| L3 | **Audio never removes information.** No audio option, no Warp Tier, no faction law, no Pact and no Sigil may mute a tell without a visual twin present | §8.1 parity table; any cue that fails parity is cut, not shipped |
+| L4 | **No startle.** Audio may menace, never jump | §1.4 startle budget; no jumpscares 🔒 (GDD-001 §11 lovecraft rules: dread from scale and wrongness) |
+
+### 1.4 The startle budget ✱
+
+| Rule | Value | Why |
+|---|---|---|
+| Maximum level jump at any cue onset | +8 dB above the running mix within 0.15 s ✱ | menace by layer count, not by level (L4) |
+| Any cue above −18 LUFS-S ✱ must have either a ramp ≥ 0.35 s ✱ or a player-owned cause | player-caused: Arc-Lance, Charge detonation, Surgelight, Ward Pulse | the player's own actions are allowed to be loud, because the player caused them |
+| Ambience and horror beds | no impulsive transient above −30 LUFS-S ✱ | no "horror sting" patch exists in this project's library |
+| Emergence from the protected Awakening silence | the first 0.5 s ✱ after the silence resolves at or below −30 LUFS-S ✱ | GDD-001 §12's 1.2 s of total silence resolves into a *quiet* line in big type, never a loud one |
+| Return of the bed after any silence | fade-in ≥ 0.6 s ✱ | a hard cut back to full mix reads as a jump |
+| Silence budget | the protected total-silence beat is used at most twice per run 🔒 (GDD-001 §12) | scarcity is the whole effect |
+
+---
+
+## 2. Adaptive music system
+
+### 2.0 Architecture
+
+Four stems per biome 🔒 (GDD-001 §12), plus shared state overlays that are biome-independent. A state table below describes which layers are up; the biome bed keeps playing under entity phases so the world never stops sounding like itself.
+
+| Stem | Name | Content | Warp Tier where it becomes dominant |
+|---|---|---|---|
+| A | **Shell** | the arcade costume: pulse-wave and noise-channel melody line | T0–T1 (GDD-001 §8.7) |
+| B | **Bed** | drone, foley-percussion, the biome's own air | T1–T3 |
+| C | **Liturgy** | Choir voices, reed organ, bells — the world's own religion, non-diegetic doubling only at T ≥ 3 | T2–T4 |
+| D | **Decomposed** | prepared strings, broken tape, sine beats, the litany with notes removed | T4–T5 |
+
+**Bar grid and transitions ✱.** Fixed tempo per biome (§3), 4/4, no ritardando as a dread device (§1.1). All state transitions land on a 4-bar boundary ✱ with a 1.5 s equal-power crossfade ✱, except: the Awakening hard-stop (§2.10), the death sweep (§2.13) and the two protected silences (GDD-001 §12), which are hard cuts. A transition queued mid-bar waits, up to 8 bars ✱; if it is still unspent after 8 bars the bed crossfades out of grid — QA accepts the seam only in that case.
+
+**Buses.** `BUS-MUS` (music), `BUS-CHO` (Choir diegetic), `BUS-ENT` (entity voice), `BUS-UI` (feedback), `BUS-FLY` (foley/ship), `BUS-AMB` (ambience beds), `BUS-MST`. Music ducks under chant (§7.2); chant is never ducked (§7.3).
+
+**Global parameters the composer must expose** (every state table names its own subset; TECH-001 §6 binds these to `.tres` rows):
+
+| Parameter | Range | Source of the value |
+|---|---|---|
+| `warp_tier` | 0–5 | GDD-001 §8.7 |
+| `composure_band` | clear / frayed / unmoored / hollowed | SYS-001 §1.5 |
+| `phase` | 0–6 | SYS-001 §2 |
+| `segment_pressure` | 0–1, how far the deposit has run | SYS-001 §2 phases 0–3 |
+| `chant_proximity` | 0–1 | SYS-001 §3.1, §9 |
+| `threat` | kit threat points normalised | SYS-001 §4 |
+| `lantern_state` | up / down | SYS-001 §1.2 |
+| `index_band` | 1–3 ✱ | GDD-001 §9.4 (Vigil Index), bands set from SYS-001 §7.2 |
+| `clock_pressure` | 0–1, the Hourglass Clock's remaining fraction | GDD-001 §6.2 |
+| `hunger` | integer, unbounded | SYS-001 §2.2 |
+| `silence_spent` | 0–2 | GDD-001 §12 |
+| `detune_cents` | 0–22 ✱ | the Warp Tier ramp (§3) |
+| `stem_gain[4]` | dB, −∞…0 | each state table |
+| `fade_s` | s | each state table |
+| `pulse_bpm_offset` | −6…+6 ✱ | `clock_pressure` only; used to make the pulse run out of sync with itself |
+
+### 2.1 Attract mode (Act 0's fake cabinet)
+
+| Layer | Content | Enters when | Exits when | Level rel. master ✱ |
+|---|---|---|---|---|
+| A Shell | the arcade jingle: the litany's rhythm in a major fifth, un-disguised, 8 bars | title idle | any input | −14 dB |
+| B Bed | silent | — | — | −∞ |
+| C Liturgy | silent until the A0-2 beat below | — | — | −∞ |
+| D Decomposed | silent | — | — | −∞ |
+| extra | cabinet hum (50 Hz ✱ mains buzz), a coin-drop thunk, 1UP chime | attract idle | on start | −26 dB |
+
+**Trigger:** title screen, and the credits roll at the end of A0-1 and again at A0-3 (GDD-001 §6.1). **Loop:** 8 bars at 120 BPM ✱ (≈16 s). **Transition:** input starts New Vigil → one 4-bar outro ✱, then the A0-1 bed. **The A0-2 rule 🔒:** from the second authored level the first chant line is heard *under* the music (GDD-001 §6.1) — one voice of C enters at −22 dB rel. master ✱, at the diegetic radius of SYS-001 §3.1, so a player with music up still hears it as coming from around a corner. **Params:** `silence_spent = 0`, `warp_tier = 0`, `clock_pressure = 0`.
+
+### 2.2 Ruins (hub)
+
+| Layer | Content | Enters when | Exits when | Level rel. master ✱ |
+|---|---|---|---|---|
+| A Shell | silent until the Lantern Tree capstone count ≥ 6 | — | — | −∞ |
+| B Bed | the anchoring drone: one pitch, the room's own air, a slow clock tick (the loop, GDD-001 §12) | Ruins entry | Ruins exit | −18 dB |
+| C Liturgy | a single unvoiced boy-register line, the litany's rhythm played as a held breath | Lantern Tree branch tier unlocked | Ruins exit | −24 dB |
+| D Decomposed | the same bed with the clock tick moved 3 eighths late | Iteration ≥ 4 | Ruins exit | −20 dB |
+
+**Trigger:** Ruins entry (save cadence: SYS-001 §8). **Loop:** 32 bars at 48 BPM ✱ (≈160 s). **Transition:** New Vigil begins on a chalk-strike one-shot, not a musical cue, so the hub never feels like a menu. **Escalation contract (GDD-001 §6.4):** the bed *gains* a pitch class every iteration; the Ruins always sound taller than last time. The clock tick's period tracks `clock_pressure` (GDD-001 §6.2), so the hub audibly runs out. **Params:** `iterations`, `clock_pressure`, `hunger`, `composure_band` (Codex reading restores Composure per SYS-001 §1.5: the bed opens its filter over 4 s ✱).
+
+### 2.3 Seam exploration (the default bed)
+
+| Layer | Content | Enters when | Exits when | Level rel. master ✱ |
+|---|---|---|---|---|
+| A Shell | the biome motif, pulse-wave, one note per bar | T0–T1 only | T ≥ 2 | −16 dB |
+| B Bed | biome drone + foley percussion, one biome instrument solo per 8 bars | always | Seam exit | −14 dB |
+| C Liturgy | off in most Seams | a procession within the SYS-001 §3.1 radius | out of radius | −22 dB |
+| D Decomposed | off | T ≥ 4 | T < 4 | −20 dB |
+
+**Trigger:** a Seam starts (SYS-001 §6: 5 Seams per run; SYS-001 §6 seam-clear time band). **Loop:** 16 bars, biome tempo §3 (96–132 s ✱). **Transition:** Seam exits on the 4-bar boundary with a 1.5 s crossfade into the next biome's bed; Run Sigil choice is silent except the chalk desk foley (LOOP-001 §4.1). **Rule:** C is deliberately absent here so the diegetic chant of §5 is the loudest thing in the mix when a procession is near — the score leaves that space for the faction law of SYS-001 §3.1 to do its work. **Params:** `warp_tier`, `threat`, `lantern_state`, `chant_proximity`, `detune_cents`.
+
+### 2.4 Choir contact
+
+| Layer | Content | Enters when | Exits when | Level rel. master ✱ |
+|---|---|---|---|---|
+| A Shell | motif jumps an octave and loses its last note | T0–T1 | T ≥ 3 | −16 dB |
+| B Bed | pulse enters on quarter notes, one strike per unit in contact | ≥ 1 Choir unit in the kit | no hostile unit within the kit for 4 s ✱ | −13 dB |
+| C Liturgy | one sung foot of the litany per unit class present (§5.2) | any unit chanting | chant out of radius (§5.3) | −19 dB |
+| D Decomposed | the bed's own pitch slides down 22 cents over 8 bars | T ≥ 4 | T < 4 | −18 dB |
+
+**Trigger:** threat points cross the kit's Seam budget mid-crossing (SYS-001 §4). **Loop:** biome bed unchanged; the contact layer is a 2-bar ✱ rotating pattern so it never masks the censer tell of SYS-001 §3. **Transition:** disengage on a 2-bar boundary ✱; the pulse decays over 6 s ✱ rather than cutting, so the player can hear that contact ended (an information cue, L3). **Never:** no cue here may imply an entity phase (L2). **Params:** `threat`, `chant_proximity`, `composure_band`, `warp_tier`.
+
+### 2.5 Sepulchre deposit
+
+| Layer | Content | Enters when | Exits when | Level rel. master ✱ |
+|---|---|---|---|---|
+| A Shell | off | — | — | −∞ |
+| B Bed | the deposit thud: one low strike per landed segment point, at the rate of SYS-001 §2 phase 1 | a procession is carrying | procession spent or Warded | −12 dB |
+| C Liturgy | the litany at half tempo ✱, one foot per deposit cycle | Litany Ring intact (SYS-001 §3.1) | ring broken | −17 dB |
+| D Decomposed | the thud's pitch rises by one semitone per deposit instead of falling | T ≥ 3 | T < 3 | −17 dB |
+
+**Trigger:** phase 1 or 2 with a live procession (SYS-001 §2). **Loop:** free of the bar grid — the deposit thud is a *world event*, not a musical layer, and it is the run's real clock (GDD-001 §3 P1). **Transition:** a Ward on the Sepulchre (LOOP-001 WARD-6) cuts C mid-syllable and the thud stops; a Grub keening (§5.2) replaces it. That cut is the single most useful audio tell in the game. **Rule:** the deposit thud is on `BUS-AMB`+`BUS-FLY`, not `BUS-MUS`, so it cannot be muted by the Music slider (§8.4). **Params:** `segment_pressure`, `phase`, `chant_proximity`.
+
+### 2.6 Phase 0 — Seed / Cold Sepulchre
+
+| Layer | Content | Enters when | Exits when | Level rel. master ✱ |
+|---|---|---|---|---|
+| A Shell | silent | — | — | −∞ |
+| B Bed | the coldest bed: one pitch, no percussion, a subharmonic pulse once every 4 bars (the black punctum at the compass edge, GDD-001 §8.4) | sector start | first deposit | −16 dB |
+| C Liturgy | silent — no voice sings for an absent god | — | — | −∞ |
+| D Decomposed | silent | — | — | −∞ |
+
+**Trigger:** SYS-001 §2 phase 0 (sector start; the entity is never present at sector start 🔒). **Loop:** 16 bars at the biome tempo, felt as stillness. **Transition:** the first shard lands in the Sepulchre → §2.7. **Salt ward placed (SYS-001 §2 phase 0):** one chalk-strike and the subharmonic pulse drops out for the ward's duration; the keening (§5.2) is the confirmation. **Params:** `phase = 0`, `segment_pressure`, `lantern_state`.
+
+### 2.7 Phase 1 — Procession
+
+| Layer | Content | Enters when | Exits when | Level rel. master ✱ |
+|---|---|---|---|---|
+| A Shell | motif returns in the minor, one note short | T0–T1 | T ≥ 2 | −18 dB |
+| B Bed | walking pulse at the Grub carry tempo (SYS-001 §3), one strike per procession | phase 1 | phase 2 | −14 dB |
+| C Liturgy | doubling only: the litany's rhythm on bells, an octave above the diegetic chant, and never louder than it | ≥ 1 chanting unit | none | −23 dB |
+| D Decomposed | the doubling arrives *before* the diegetic chant by one eighth | T ≥ 4 | T < 4 | −19 dB |
+
+**Trigger:** SYS-001 §2 phase 1. **Loop:** 16 bars ✱. **Transition:** 6+ segments → Litany Ring → §2.8; or the player breaks the procession → the bed drops to §2.6 for 8 bars ✱. **Rule:** C never exceeds the diegetic chant's level — otherwise the score would be lying about how near the Choir is (L2, and SYS-001 §3.1's radius is the true measure). **Params:** `segment_pressure`, `chant_proximity`, `threat`.
+
+### 2.8 Phase 2 — Guard (Litany Ring)
+
+| Layer | Content | Enters when | Exits when | Level rel. master ✱ |
+|---|---|---|---|---|
+| A Shell | off | — | — | −∞ |
+| B Bed | the ring's bell pattern: one bell per ring node, at the SYS-001 §3.1 node count; a node goes silent when it is down | ring formed | ring broken | −13 dB |
+| C Liturgy | Acolyte chant feet (§5.2) in strict metre | ring active | ring broken | −17 dB |
+| D Decomposed | one extra bell that does not correspond to any node | T ≥ 3 | T < 3 | −20 dB |
+
+**Trigger:** SYS-001 §2 phase 2. **Loop:** the bell pattern is a counter, not a loop — it changes as the fight does. **Transition:** a ring break (SYS-001 §3.1's break threshold) silences every bell at once; that silence is the tell that the deposit halt landed. **Rule:** the phantom bell at T ≥ 3 is the *only* musical lie allowed in this doc, and it is a lie about the Choir's ceremony, never about the player's safety; it is also the cue the Deacon of Lies' phantoms share, so it is captioned `[CHORUS, UNCERTAIN]` (§8.2) and it never touches a warning tell (L3). **Params:** `phase = 2`, `segment_pressure`, `threat`, `warp_tier`.
+
+### 2.9 Phase 3 — Quickening
+
+| Layer | Content | Enters when | Exits when | Level rel. master ✱ |
+|---|---|---|---|---|
+| A Shell | the arcade melody returns for 4 bars, then fails (a note is missing each pass) | phase 3 at T0–T2 only | completion | −15 dB |
+| B Bed | the bed halves its interval content; every repeat drops 2 cents (the `detune_cents` ramp) | always | completion | −12 dB |
+| C Liturgy | the litany sung by all unit classes at once, out of metre | always | completion | −15 dB |
+| D Decomposed | breathing: a sine swell, no transient, in the room's own low register | T ≥ 3 | completion | −14 dB |
+
+**Trigger:** SYS-001 §2 phase 3 threshold 🔒. **Loop:** 8 bars, accelerating only by layer density, never by tempo (§1.1). **Transition:** the whisper line of §4.14 rides on top at −6 dB rel. to the bed, on `BUS-ENT` (§7). **Compass-lie rule (L2):** SYS-001 §6's Compass lie does not re-key any layer here. **Params:** `segment_pressure`, `composure_band`, `hunger`, `warp_tier`.
+
+### 2.10 Phase 4 — Awakening
+
+| Layer | Content | Enters when | Exits when | Level rel. master ✱ |
+|---|---|---|---|---|
+| A/B/C/D | **all stop** on the downbeat of the completion bar | 20/20 segments (SYS-001 §2 phase 4 🔒) | the 1.2 s silence ends (GDD-001 §12 🔒) | −∞ |
+| entity voice | the Awakening line (§4.1, §4.5–§4.8) at low level: a near-whispered delivery, big type | after the silence | line ends | −19 LUFS-S target ✱ |
+| C Liturgy (diegetic) | one unit-class resumes a single chant foot, alone | after the line | Rampage bed takes over | −24 dB |
+| D Decomposed | a subharmonic swell, no transient, under the Rampage bed | Rampage begins | Rampage end | −13 dB |
+
+**Trigger:** the 20th segment lands. **Transition:** hard cut (protected), silence for the 1.2 s of GDD-001 §12, then the line, then the Rampage bed (§2.11) fades in over 0.6 s ✱. **Stagger rule ✱:** if the stagger window of SYS-001 §2 phase 4 is met (3 hits 🔒), the Awakening line is *withheld*, the silence resolves into a single keening voice, and the bed returns at half density for 16 bars ✱. The stagger does not spend the silence budget again. The line used at the next completed Awakening comes from the alternates pool (§4.9), so the entity does not repeat itself. **Act 0 exception 🔒:** at A0-3 the thesis line is never withheld (GDD-001 §8.4). **Params:** `phase = 4`, `silence_spent`, `line_variant`.
+
+### 2.11 Phase 5 — Rampage
+
+| Layer | Content | Enters when | Exits when | Level rel. master ✱ |
+|---|---|---|---|---|
+| A Shell | gone for the rest of the run once the entity has woken at T ≥ 1 | — | — | −∞ |
+| B Bed | a two-note ostinato in the entity's own register, one cycle per 4 bars, at the entity's speed band (SYS-001 §2.1) | Rampage | Rampage end | −11 dB |
+| C Liturgy | the Choir's chant falls away — the god is present and needs no singing | Rampage start +4 s | Rampage end | −26 dB |
+| D Decomposed | the biome bed, played backwards, at half density | Rampage | Rampage end | −14 dB |
+
+**Trigger:** SYS-001 §2 phase 5. **Loop:** 8 bars ✱, biome-independent — the ostinato is the same in all six biomes so the threat always sounds like the same god (and it reads in a 15-second clip, GDD-001 §3 P6). **Transition:** Rampage end (driven off, or the sector becomes Hollow, SYS-001 §2.1) → the ostinato drops out and the biome bed returns over 2 bars ✱. **Contact death rule:** contact kills (SYS-001 §2 phase 5 🔒); the death cue is the §2.13 sweep, which is a decrescendo, never an impact (L4). **Params:** `phase = 5`, `hunger`, `lantern_state`, `composure_band`.
+
+### 2.12 Phase 6 — Unravel (Act 3–4 only)
+
+| Layer | Content | Enters when | Exits when | Level rel. master ✱ |
+|---|---|---|---|---|
+| A Shell | the arcade melody, whole, for the first time since Act 0 — as a eulogy | first thread latched | entity unmade | −12 dB |
+| B Bed | the biome bed stretched: same pitches, half the density | always | unmade | −16 dB |
+| C Liturgy | the Choir silent; a single human voice, unaccompanied, the litany at a third of its tempo | always | unmade | −15 dB |
+| D Decomposed | the field's own rhythm de-syncs from the biome grid by one eighth per 8 bars | latch 1 | unmade | −13 dB |
+
+**Trigger:** SYS-001 §2 phase 6 (Act 3–4 only), Unravel Focus latches (GDD-001 §4.1, LOOP-001 MADNESS-17). **Loop:** 16 bars ✱; each thread pulled removes one layer rather than adding one, so the fight is heard as an *unmaking*. **Transition:** third thread (SYS-001 §2 phase 6) → 2 s of bed-decay ✱, then the §4.7 line, then the Ruins bed (§2.2). **Params:** `phase = 6`, `threads_pulled`, `warp_tier = 4–5`.
+
+### 2.13 Death
+
+| Layer | Content | Enters when | Exits when | Level rel. master ✱ |
+|---|---|---|---|---|
+| A/B/C/D | a single downward filter sweep across the whole bus stack, no transient, 1.8 s ✱ | the hull is lost (SYS-001 §1.2) | the sweep ends | bed level, not above it |
+| entity voice | the personalised death line (§4.10) | after the sweep | line ends | −19 LUFS-S ✱ |
+| FOLEY | the ship's brass settling, chalk falling, the clock resuming | after the sweep | Ruins bed takes over | −22 dB |
+
+**Trigger:** death (SYS-001 §8 run-state loss; the Hourglass Clock spends time, GDD-001 §6.2). **Loop:** none — a death cue never repeats inside a run. **Transition:** the Ruins bed (§2.2) fades in over 2 s ✱ on the same clock tick, so the hub feels continuous with the death, not separate from it. **Second Vigil (LOOP-001 HULL-6):** the revive cue is the sweep played backwards, 1.2 s ✱, plus one bell — the same material, inverted, so the player reads "that was undoing" (L2). **Params:** `death_cause`, `telemetry_top2` (SYS-001 §8).
+
+### 2.14 Hard Unmaking (an iteration ends)
+
+| Layer | Content | Enters when | Exits when | Level rel. master ✱ |
+|---|---|---|---|---|
+| A Shell | silent | — | — | −∞ |
+| B Bed | the biome bed's last pitch, held, then detuned past recognition over 20 s ✱ | the ninth sky begins to go dark | the sky is dark | −13 dB |
+| C Liturgy | the litany, unaccompanied, sung **once**, at full tempo, from every unit class — the only time the Choir sings it perfectly | the Unmaking cinematic (GDD-001 §6.1) | 24 s ✱ | −12 dB |
+| D Decomposed | the field collapsing: layer after layer of the mix is removed, in the reverse order they were added | after the sung litany | the Ruins bed returns | −∞ to −16 dB |
+
+**Trigger:** SYS-001 §2.2 (a Hard Unmaking raises Hunger), GDD-001 §6.2. **Loop:** one-shot, ≈60 s ✱. **Transition:** the Ruins bed returns with one extra clock tick ✱ — the Hunger increment, heard. **Cinematic rules:** the first Unmaking is 90 s and unskippable once, skippable after (GDD-001 §6.1); it contains no loud transient (L4) and no flicker above the photosensitivity ceiling (§8.3). The skip must not lose information: the skipped beat is written into the Codex as an entry (GDD-001 §8.9). **Params:** `iterations`, `hunger`, `warp_tier`.
+
+### 2.15 State matrix (which stems are up)
+
+| State | A Shell | B Bed | C Liturgy | D Decomposed | entity voice | diegetic chant |
+|---|---|---|---|---|---|---|
+| Attract / Act 0 | ● | — | — (A0-2: one voice) | — | — | — |
+| Ruins | from 6 capstones | ● | from tier unlock | Iteration ≥ 4 | on purchase, Codex, respec | — |
+| Seam exploration | T0–T1 | ● | near radius | T ≥ 4 | rare (§4.9 cooldowns) | diegetic |
+| Choir contact | octave-up | ● | per unit class | T ≥ 4 | — | diegetic |
+| Sepulchre deposit | — | thud layer | half-tempo | rising thud | — | diegetic |
+| Phase 0 | — | cold pulse | — | — | — | — |
+| Phase 1 | minor, one note short | walking pulse | bell doubling | early doubling | — | diegetic |
+| Phase 2 | — | ring bells | strict metre | phantom bell | — | diegetic |
+| Phase 3 | failing melody | half intervals | all voices, un-metred | sine breathing | whisper line | diegetic |
+| Phase 4 | silence 🔒 | silence 🔒 | silence 🔒 | silence 🔒 | the Awakening line | one voice after |
+| Phase 5 Rampage | gone | two-note ostinato | falls away | backwards bed | state lines | reduced |
+| Phase 6 Unravel | whole, eulogy | half density | one human voice | de-synced | thread lines | absent |
+| Death | sweep | sweep | sweep | sweep | death line | — |
+| Hard Unmaking | — | held, detuned | sung once, perfectly | layer removal | §4.14 lines | sung |
+
+---
+
+## 3. The biome palette
+
+**The one-theme rule ✱ (the reason this is affordable).** All six biome motifs are the *same rhythm* — the nine-syllable litany's metre (§5.1) — with different intervals. As Warp Tier rises, the intervals stop being disguised and the biomes converge on the litany itself. One theme, six disguises, one cost. The T5 endgame plays all six biomes in unison, which is the whole point of GDD-001 §12's "the chiptune decomposes into the Choir's liturgy".
+
+| Biome (GDD-001 §8.8) | Instrument set | Tuning / temperament | Signature motif (the litany disguised) | Tempo / loop ✱ |
+|---|---|---|---|---|
+| **Pale Marches** | pulse-wave chip, harmonium, bowed glass bell, brushed concert snare | 12-TET, A440 ✱, `detune_cents = 0` at T0 and 0–6 above | plain upward fifth, stepwise fall: the arcade's honest interval, sung on three-feet-of-three | 96 BPM ✱ · 16 bars ≈ 100 s |
+| **Ossuary Belt** | bone and rib percussion, detuned reed organ, bass ocarina, struck geode | Pythagorean, fifths widened +4 cents ✱, no thirds | the same contour with the third interval widened a semitone each repeat — the "wrong count" motif | 84 BPM ✱ · 16 bars ≈ 114 s |
+| **The Litany** | full Choir voices, reed organ, censer bells (real bells), sub drone | just intonation on a D drone, 8:7 neuter third ✱ | the litany openly sung for the first time; this is the biome where the disguise is dropped | 72 BPM ✱ · 24 bars ≈ 120 s |
+| **Green Rot** | prepared piano, wet bowed strings, mouth clicks, plucked rebab | 19-EDO, quarter tones ✱ | the motif grows extra notes between its feet — one more note each pass (the same logic as limb-swapping, GDD-001 §11) | 108 BPM ✱ · 16 bars ≈ 89 s |
+| **The Drowned Observatory** | waterphone, wet glass bottles, bowed vibraphone, music box (the clock, GDD-001 §12) | 31-EDO with a flattened seventh ✱ | the litany inverted and halved in duration; always one beat behind the pulse | 60 BPM ✱ · 32 bars ≈ 128 s |
+| **The Black** | one sine drone, one tuba breath, the chip shell's final pulse, room silence | 12-TET with exactly one voice at +11 cents ✱ | the litany's rhythm with all but two notes removed — the sparsest, hardest variant | 48 BPM ✱ · 32 bars ≈ 160 s |
+
+**Warp Tier re-key ✱ (no re-recording).** The same recordings are re-keyed by parameter: `detune_cents` 0 → 6 → 9 → 14 → 19 → 22 across T0 → T5 ✱; stem C's voices are un-pitched below T2 and pitched to the litany above; A loses one note per pass from T1; D appears at T4. The Green Rot and Drowned Observatory sets carry extra prepared-technique takes so their re-key sounds authored, not processed (this is what keeps machine-made pixel-art-style audio out of the score).
+
+**Biome-independent entity material.** The Rampage ostinato (§2.11), the Awakening silence (§2.10), the Unravel layers (§2.12) and the litany's full-tempo unison (Hard Unmaking, §2.14) belong to the entity, not the biome, and cost one set of stems total.
+
+**Palette rule mirroring the art rule.** GDD-001 §11 keeps the player's amber off Choir assets. The audio equivalent: **the gaslight instrument family (harmonium, brass bell, music box in tune) never appears in Choir material, and the Choir's families (voices, censer bells, reed organ) never appear in the player's feedback cues** (§6). The Vigil's own sound world is brass, chalk, glass and clock.
+
+---
+
+## 4. The entity's line set
+
+This is the deferral GDD-001 §8.4 makes to this doc: phase 4's Awakening line "defers its per-act variants to AUDIO-001 §4", and SYS-001 §8 hands audio the telemetry keys a personalised death line is composed from. Everything here is authored. There are no placeholders.
+
+**The rule under all of it:** the entity's lines are *state announcements* (GDD-001 §12, L1). A line exists because a row in SYS-001 changed. A line that describes a state that is not true does not ship (L2/L3). It may be oblique; it may not be wrong.
+
+### 4.1 Act 0 — one line
+
+| Beat | Line | Words | Delivery |
+|---|---|---|---|
+| Act 0 Awakening (A0-3) 🔒 | **"IT WAKES."** | 2 | the thesis line, kept verbatim (GDD-001 §8.4); the only entity line in Act 0 |
+
+Act 0 has no other entity line. The whole act is a costume (GDD-001 §6.1, §11), and a costume does not speak. The line arrives after the protected 1.2 s silence (GDD-001 §12) at a near-whispered level (§2.10), in full-screen big type (§4.2), and it is never withheld even if the Awakening is staggered (GDD-001 §8.4). Everything the entity says in Acts 1–4 is the costume coming off.
+
+### 4.2 Display rule 🔒 (GDD-001 §10)
+
+| Rule | Value |
+|---|---|
+| Form | full-screen big type, **one word or phrase** per block, never a paragraph, never a subtitle bar |
+| Length | ≤ 8 words authored; ≤ 2 rendered lines 🔒 (GDD-001 §10 UI copy rule) |
+| Break | the tables below mark the intended break with `/`; if a block wraps on its own, the break moves to the nearest foot of the litany's metre (§5.1) |
+| Legibility test 🔒 | the line must be readable as a 60 × 34 px thumbnail — the screenshot test of GDD-001 §10 |
+| Type | the entity's own face: heavy, wide-tracked, all caps, on Void black with a Gaslight-amber keyline ✱ (palette: GDD-001 §11) |
+| Timing ✱ | in: hard cut (no fade — a fade-in of big type reads as a startle risk); hold: max(1.6 s, 0.30 s × words); out: hard cut |
+| Concurrency | one entity block at a time; a queued line waits ≥ 1.0 s ✱ behind it |
+| Protected zones | never over the Charge pips, the Ledger Compass strip, the Composure wick, the chant indicator ring (§5.5) or the caption slot (§8.2) |
+| Warp Tier ≥ 3 🔒 | the Steady Ledger toggle pins the block to the lower third and stops the HUD's migration (GDD-001 §10) — the block never moves on its own and never lies |
+
+### 4.3 Voicing direction
+
+| Item | Direction |
+|---|---|
+| Cast | one adult voice, cast once for the whole game; no second voice, no per-Act voice |
+| Age read | the voice does not change between Acts; the **mix** ages it, so the entity reads as the same thing getting nearer |
+| Processing | **no growl-processing, no reverb wash, no pitch-down, no formant shift, no distortion, no granular, no ring modulation.** Dry close mic, delivered flat and unhurried |
+| Room | a real room mic at −18 dB ✱, used only in Acts 3–4; Acts 0–2 are fully dry — the entity gets a room as it gets a body (SYS-001 §2) |
+| Level | short-term −19 LUFS ✱, ceiling −3 dBTP ✱; never ducked (§7.3); never louder than the player's own Charge detonation, so it cannot startle (§1.4) |
+| Delivery | declarative: no shouting, no sneer, no rasp. The fear is the certainty of the phrasing. Pauses inside a block are performed, not added in post |
+| Consonants | hard consonants kept intact; plosives controlled by mic technique rather than EQ'd away — the entity has a mouth, which is what separates it from a monster preset |
+| Whisper channel | the Quickening whisper (§4.14) is the same voice at −26 LUFS ✱, close, breath audible; the player must lean in to hear it, and the captions carry it either way (§8.2) |
+| Silence | the entity never speaks over the Awakening silence; the line comes after it (GDD-001 §12) |
+
+### 4.4 Truth, repeats and cooldowns ✱
+
+| Rule | Value |
+|---|---|
+| Truth | every line maps to a SYS-001 row; QA verifies the claim (L2). The entity may be cryptic, never incorrect |
+| No repeat in a run | a line spent in a run is not spent again in that run; a used Act line is replaced by its alternate (§4.9) |
+| Acquisition cooldown | ≥ 45 s ✱ between acquisition lines, so it reads as an event, not a nag |
+| Rampage lines | one at start, one at end, per Rampage |
+| Memory lines (§4.11) | one per run, at the first completed Awakening |
+| Telegraph lines (§4.14) | only while the Communion capstone or its Pact equivalent is active; always 2 s ahead of the action 🔒 (LOOP-001 MADNESS-11) |
+| Minimum gap | 6 s ✱ between any two entity blocks, so the player is not narrated at continuously |
+
+### 4.5 Act 1 (Warp Tier 1 — the costume still fits)
+
+| Trigger | Line | Words | Condition / limit |
+|---|---|---|---|
+| First Waking (SYS-001 §2 phase 4) | "YOU BUILT ME AGAIN." | 4 | first completed Awakening of the sector |
+| Acquisition (SYS-001 §1.2 cone, §2.1 gaze) | "I SEE YOUR LAMP." | 4 | once per 45 s ✱ |
+| Losing the player (acquisition loss, SYS-001 §1.2) | "THE DARK IS MINE." | 4 | only when acquisition has genuinely ended |
+| Rampage start (phase 5) | "RUN, LITTLE LANTERN." | 3 | GDD-001 §12, kept |
+| Rampage end, driven off | "YOU BUY TIME." | 3 | GDD-001 §6.2's bargain, stated |
+| Rampage end, sector became Hollow | "ONE SKY LESS." | 3 | SYS-001 §1.5 Hollowed band |
+| Deposit interrupted (SYS-001 §2 phase 1) | "THAT WAS MINE." | 3 | only when a deposit actually stopped |
+| Charge lost to an interceptor, 3rd in a Seam (SYS-001 §1.4) | "YOU FEED MY CHOIR." | 4 | once per run |
+| Quickening whisper (SYS-001 §2 phase 3) | "SOON. / SOONER THAN YOU." | 4 | whisper channel (§4.3) |
+| Module knocked off (SYS-001 §2.1) | "THAT HURT." | 2 | only when a module is actually removed 🔒 |
+| Awakening staggered (SYS-001 §2 phase 4) | "NOT YET." | 2 | replaces the Waking line (§2.10) |
+| Shrine purged | — | — | T2 content; SYS-001 §6 |
+| Thread pulled | — | — | phase 6 is Act 3+ (SYS-001 §2) |
+| Matron silenced | — | — | the Seam-3 Rite is Act 2 content (GDD-001 §9.1) |
+
+### 4.6 Act 2 (Warp Tiers 2–3 — the rules begin to rot)
+
+| Trigger | Line | Words | Condition / limit |
+|---|---|---|---|
+| First Waking | "TWENTY SEGMENTS. / MY BODY." | 4 | the segment count is a fact the entity states (SYS-001 §2) |
+| Acquisition | "LITTLE LANTERN. / I SEE YOU." | 5 | once per 45 s ✱ |
+| Losing the player | "COME BACK." | 2 | acquisition ended |
+| Rampage start | "I AM AWAKE. / RUN." | 4 | phase 5 state announcement |
+| Rampage end, driven off | "I KEEP COUNT." | 3 | SYS-001 §2.2 counters arm |
+| Rampage end, sector Hollow | "ONE SKY DARKER." | 3 | SYS-001 §1.5 |
+| Deposit interrupted | "YOU STEAL FROM A GOD." | 5 | a deposit actually stopped |
+| Charge lost (SYS-001 §1.4) | "MY GLASS. / MY BODY." | 4 | the Charge is Mourning Glass (GDD-001 §8.3) |
+| Quickening whisper | "THE STRUCTURE TWITCHES." | 3 | GDD-001 §8.4 phase 3 wording |
+| Module knocked off | "GIVE IT BACK." | 3 | SYS-001 §2.1 |
+| Shrine purged (SYS-001 §6) | "YOU BREAK MY SKIN." | 4 | a corruption step actually removed |
+| Choir Matron silenced (SYS-001 §3) | "SHE WENT QUIET." | 3 | the Litany stops (SYS-001 §3.1) |
+| Penitent shot (SYS-001 §3) | "SHE WEEPS FOR YOU." | 4 | the Composure cost is locked 🔒 (SYS-001 §3) |
+| First Waking staggered | "AGAIN." | 1 | §2.10 |
+| A Herald arrives with a hard counter (SYS-001 §5.2) | "THEY KNOW YOUR HANDS." | 4 | only when a counter is genuinely deployed (L2) |
+| Thread pulled | — | — | phase 6 is Act 3+ (SYS-001 §2) |
+
+### 4.7 Act 3 (Warp Tiers 3–4 — the entity has a body and a memory)
+
+| Trigger | Line | Words | Condition / limit |
+|---|---|---|---|
+| First Waking | "YOU MADE ME WHOLE." | 4 | the player's own run built it (GDD-001 §1) |
+| Acquisition | "YOUR LIGHT FINDS ME." | 4 | once per 45 s ✱ |
+| Losing the player | "I AM PATIENT." | 3 | acquisition ended; where SYS-001 §2.2 makes acquisition unbreakable, use the Act 4 row instead |
+| Rampage start | "THE DARK IS MINE." | 4 | GDD-001 §12, kept |
+| Rampage end, driven off | "NEXT SKY. / SOON." | 3 | the Nine Hollow Skies, GDD-001 §6.2 |
+| Rampage end, sector Hollow | "I ATE THAT SEAM." | 4 | SYS-001 §1.5 |
+| Deposit interrupted | "THEY BUILD ME ANYWAY." | 4 | true only if a procession is still alive (L2) |
+| Charge lost | "THANK YOU." | 2 | once per run; the cheapest line is the worst one |
+| Quickening whisper | "IT IS ALMOST ME." | 4 | §4.3 whisper channel |
+| Module knocked off | "THAT IS MY FLESH." | 4 | SYS-001 §2.1 |
+| Shrine purged | "YOU CUT ME THIN." | 4 | SYS-001 §6 |
+| Choir Matron silenced | "SHE HELD HER PEACE." | 4 | SYS-001 §5.1 Rite consequence |
+| Thread pulled, first (SYS-001 §2 phase 6) | "THAT IS NOT MINE." | 4 | first Unravel hit on a thread |
+| Thread pulled, second | "STOP. / THAT IS MY NAME." | 5 | SYS-001 §2 phase 6 |
+| Thread pulled, third — entity unmade | "I WILL WAIT." | 3 | GDD-001 §9.3's fourth ending begins here |
+| Unravel Focus first latch (GDD-001 §4.1, LOOP-001 MADNESS-17) | "YOU FOUND A SEAM." | 4 | once per run |
+| A rule is eaten (SYS-001 §2.2; WARP-001 owns the list) | "I TAKE THIS RULE." | 4 | the eaten rule is named by the Warp Tier card, not by the line |
+| Awakening staggered | "LATER." | 1 | §2.10 |
+
+### 4.8 Act 4 (Warp Tier 5 — the Unraveling)
+
+| Trigger | Line | Words | Condition / limit |
+|---|---|---|---|
+| First Waking | "YOU KEEP MAKING ME." | 4 | the loop is the builder (GDD-001 §6.2) |
+| Acquisition | "I COUNT YOUR LAMP." | 4 | once per run at T5 |
+| Losing the player | "I AM NEVER BLIND." | 4 | only where SYS-001 §2.2 makes acquisition unbreakable |
+| Rampage start | "THIS SKY IS MY BODY." | 5 | phase 5 at T5 |
+| Rampage end | "YOU WASTE YOUR SKY." | 4 | the Hourglass Clock is the cost (GDD-001 §6.2) |
+| Deposit interrupted | "THEY DO NOT HEAR YOU." | 5 | the Choir keeps working regardless of the player |
+| Body thread pulled, first (SYS-001 §2 phase 6) | "THAT IS WHERE I END." | 5 | thread 1 of 3 |
+| Body thread pulled, second | "PULL AGAIN." | 2 | thread 2 of 3 |
+| Body thread pulled, third — unmade | "UNWRITE ME." | 2 | GDD-001 §9.3 |
+| Threads of Unraveling spent at the gate (GDD-001 §7.1) | "SO FEW LEFT." | 3 | checked before Act 4 |
+| Final gate opened | "PULL. / I DARE YOU." | 4 | once |
+| Credits beat | "THEN I WAS NEVER." | 4 | endings 1, 2 and 4; ending 3 withholds it |
+| Awakening staggered | "NOT HERE." | 2 | §2.10 |
+
+### 4.9 Alternates pool (rotation, so the entity never nags)
+
+Used when a primary line has already been spent in the run (§4.4). Same constraints: ≤ 8 words, ≤ 2 rendered lines.
+
+| Trigger | Alternates |
+|---|---|
+| Acquisition | "YOU." (1) / "STAY STILL." (2) / "I HAVE YOU NOW." (4) |
+| Losing the player | "COME OUT." (2) / "I WILL COUNT YOU." (5) / "NO LAMP IS DARK ENOUGH." (5) |
+| Rampage start | "I COME." (2) / "NO WALL IS THICK." (4) |
+| Rampage end | "THIS IS NOT OVER." (4) / "I REMEMBER THIS ONE." (4) |
+| Deposit interrupted | "THEY ARE PATIENT TOO." (5) / "SLOWLY. / THAT IS ENOUGH." (4) / "STEAL. / IT CHANGES NOTHING." (4) |
+| Charge lost | "MY CHOIR THANKS YOU." (4) / "IT COMES TO ME." (4) |
+| Module knocked off | "A PIECE LESS." (3) / "CLOSER." (1) |
+| A Grub killed while carrying shards (SYS-001 §3) | "IT WAS CARRYING MY SKY." (5) |
+| Communion turned off by the player (LOOP-001 MADNESS-11) | "STOP LISTENING." (2) |
+| Chant silenced — Ward, Penitent boon or a silenced Matron (SYS-001 §3.1, §5.1) | "SHE SAID NOTHING." (3) |
+| Your Own Vigil, the mirror boss (SYS-001 §5.1) | "I MADE YOU A MIRROR." (5) / "MY FAVOURITE BUILD." (3) |
+| Listener first contact in a run (SYS-001 §3) | "QUIET. / IT HEARS." (3) |
+| Deacon of Lies phantom, first contact in a run (SYS-001 §3) | "THAT IS NOT A BODY." (5) |
+| Grave-Tide Deceiver steals a Charge (SYS-001 §3, §5.2) | "SHE CARRIES IT FOR ME." |
+| Hollowed band entered (SYS-001 §1.5) | "YOU ARE HOLLOW." (3) / "THE CHOIR SEES ALL." (4) / "SPEND WHAT IS LEFT." (4) |
+
+### 4.10 Personalised death screen
+
+GDD-001 §8.9: the entity remembers the most-used tool and deploys counters next run, and the death screen shows what the player did. SYS-001 §8 supplies the ten telemetry keys and states the line is composed from the top two. This is the composition.
+
+**Composition rule ✱:** `line = "<clause A of the top key>. <clause B of the second key>"`. Each clause is ≤ 4 words, so every composed line is ≤ 8 words. When both keys are the same key the pair is that key's (A, B), which reproduces GDD-001 §8.9's exemplar ("YOU HUNTED GLASS. YOU HUNTED GLASS AND DIED."). Ten keys taken two at a time, ordered, give 90 distinct lines from 20 recorded clauses.
+
+| Key (SYS-001 §8) | Clause A | W | Clause B | W |
+|---|---|---|---|---|
+| `glass_hunted` | "YOU HUNTED GLASS" | 3 | "HUNTED GLASS AND DIED" | 4 |
+| `charges_thrown` | "YOU THREW MY BLOOD" | 4 | "THREW ALL AND DIED" | 4 |
+| `charges_lost` | "YOU LOST MY GLASS" | 4 | "LOST IT AND DIED" | 4 |
+| `shrine_purged` | "YOU BROKE MY SHRINES" | 4 | "BROKE THEM AND DIED" | 4 |
+| `hollow_sectors` | "YOU LEFT SKIES DEAD" | 4 | "LEFT THEM AND DIED" | 4 |
+| `penitent_shot` | "YOU SHOT THE PENITENT" | 4 | "SHOT ONE AND DIED" | 4 |
+| `seam_deaths` | "THAT SEAM KNEW YOU" | 4 | "KNEW YOU. YOU DIED." | 4 |
+| `iterations` | "YOU KEEP TRYING" | 3 | "TRYING IS DYING" | 3 |
+| `hunger` | "I EAT YOUR SKIES" | 4 | "YOU FEED ME STILL" | 4 |
+| `warp_max` | "THE SKY IS BENT" | 4 | "BENT. AND YOU DIED." | 4 |
+
+**Overriding situational lines** — used instead of the template when the mode of dying is itself the fact:
+
+| Situation | Line | W |
+|---|---|---|
+| Killed by entity contact (SYS-001 §2 phase 5 🔒) | "YOU CAME TOO CLOSE." | 4 |
+| Killed while Hollowed, inside the gaze cone (SYS-001 §1.5) | "YOU CHOSE THIS." | 3 |
+| Killed while a deposit was still landing (SYS-001 §2 phase 1) | "THEY FINISHED WITHOUT YOU." | 4 |
+| Killed still holding Charges (LOOP-001 §4.2's Ink conversion) | "YOU KEPT YOUR GLASS." | 4 |
+| Second Vigil spent, then killed again in the same run (LOOP-001 HULL-6) | "THAT WAS THE LAST." | 4 |
+| Killed with the lantern down (SYS-001 §1.2) | "YOU WENT OUT QUIET." | 4 |
+
+The line is read aloud (§2.13) and shown in big type (§4.2), and the two keys behind it are printed beneath as plain telemetry so the line is checkable rather than atmospheric (L2).
+
+### 4.11 Memory and counter callbacks — what it remembers from last run
+
+These lines make SYS-001 §2.2's counter table and SYS-001 §5.2's hard counters legible: the player hears that a habit was noticed, then meets the counter. One per run, at the first completed Awakening (GDD-001 §12: the entity reacts to what was done last run; SYS-001 §8 stores the counters).
+
+| Trigger, from telemetry | Line | W |
+|---|---|---|
+| `glass_hunted` highest last run | "I REMEMBER THE GLASS YOU TOOK." | 6 |
+| Surgelight used repeatedly last run (SYS-001 §1.1) | "YOU BOOSTED. I TAUGHT THEM." | 5 |
+| `charges_thrown` highest last run | "YOU THREW GLASS. THEY LEARNED." | 5 |
+| `charges_lost` above the SYS-001 §10 alert threshold | "MY CHOIR ATE WELL." | 4 |
+| `hollow_sectors` > 0 last run (SYS-001 §1.5) | "YOUR DARK IS KNOWN NOW." | 4 |
+| `shrine_purged` > 0 last run (SYS-001 §6) | "YOU BROKE MY SHRINES. THEY REMEMBER." | 6 |
+| `seam_deaths` ≥ 2 last run (SYS-001 §8) | "TWICE IN THAT SEAM. I NOTED IT." | 7 |
+| `penitent_shot` > 0 last run | "YOU SHOT HER LAST TIME." | 5 |
+| `iterations` ≥ 5 | "NINE SKIES AGO YOU STOLE THIS." | 6 |
+| Any counter armed (SYS-001 §2.2) | "I SENT YOUR HABIT." | 4 |
+| A hard counter deployed by a Herald (SYS-001 §5.2) | "THIS ONE KNOWS YOU." | 4 |
+| Your Own Vigil mirrored from the best run (SYS-001 §5.1) | "I BROUGHT YOUR BUILD BACK." | 5 |
+| Same Lantern Tree build two runs running (LOOP-001 §3) | "YOU ARE THE SAME LAMP." | 5 |
+| The entity was unmade in a previous Iteration (GDD-001 §9.3) | "YOU UNMADE ME ONCE. NOT AGAIN." | 6 |
+| No fire for 60 s in a Seam (Listener logic, SYS-001 §3) | "SITTING STILL IS NEW." | 4 |
+| A Cursed Sigil was taken (LOOP-001 §4) | "YOU CHOSE THE COST." | 4 |
+
+### 4.12 The Vigil Index
+
+GDD-001 §9.4 defines the Vigil Index as a Choir-facing metric the entity comments on; LOOP-001 §4.2's Threnody Sigil makes the Choir read it aloud. Band thresholds are set from the expected per-run score distribution (SYS-001 §7.2) at the 40th and 80th percentile ✱.
+
+| Trigger | Line | W |
+|---|---|---|
+| Index first crosses band 1 | "THEY TALLY YOU." | 3 |
+| Band 2 | "THEY SPEAK YOUR NUMBER." | 4 |
+| Band 3 | "A NAME WORTH CHANTING." | 4 |
+| Index drops a band (the chain, SYS-001 §7.1) | "YOUR NUMBER FALLS." | 3 |
+| A Hollow Vigil best (SYS-001 §7.1, LOOP-001 §7.1) | "THAT ONE IS RECORDED." | 4 |
+| Ledger Thief active, readout corrupted (LOOP-001 §4.2) | "THE NUMBERS ARE TRUE." | 4 |
+
+### 4.13 Capstone first-purchase lines
+
+LOOP-001 §3.4: a capstone's first purchase gives no mechanical surprise beyond its row, but the Codex opens an entry and the entity says one line about it. Those lines are here; the sound of them is the §6.3 stinger set.
+
+| Capstone (LOOP-001 §3.2) | Line | W |
+|---|---|---|
+| Dark Lantern | "THEY CANNOT SEE YOU." | 4 |
+| Blackout Dash | "YOU ARRIVE BLIND." | 3 |
+| Second Vigil | "YOU HAVE ONE LEFT." | 4 |
+| Anchor | "A CHALK LINE. / MINE." | 4 |
+| Twin Vigil | "TWICE THE GLASS." | 3 |
+| Homing Song | "I HEAR YOUR GLASS." | 4 |
+| Silence the Choir | reuses the chant-silence alternate of §4.9: "SHE SAID NOTHING." | 3 |
+| Deconsecrate | "YOU UNMAKE MY MAKING." | 4 |
+| Blessed Fracture | "MY WARP FEEDS YOU." | 4 |
+| Communion | "YOU HEAR MY NEXT." | 4 |
+
+### 4.14 Telegraphs, whispers and the Ruins
+
+**Communion telegraphs (LOOP-001 MADNESS-11: the entity speaks its next action 2 s before it acts).** One or two words, because the player has two seconds to read them (GDD-001 §10). These are the strongest availability tool in the audio set and they must be truthful (L2).
+
+| Telegraphed action | Line | W |
+|---|---|---|
+| Lunge (SYS-001 §2.1) | "NOW." | 1 |
+| Eating a geode to repair (SYS-001 §2.1) | "MINE." | 1 |
+| Eating a Choir unit to heal (SYS-001 §2.1) | "I RECYCLE." | 2 |
+| Turning to patrol a new biome | "THIS WAY." | 2 |
+| Exposing an Unravel thread (SYS-001 §2 phase 6) | "PULL HERE." | 2 |
+| Breaking off a Rampage | "AWAY." | 1 |
+| Beginning the next Rampage (Ninth Bell Sigil, LOOP-001 §4.2) | "AGAIN SOON." | 2 |
+
+**Quickening whisper alternates (§4.3).** "THE COMPASS LIES FOR ME." (5 — true only where SYS-001 §6's Compass lie is active) / "IT NEARLY FITS." (3).
+
+**Ninth Whisper (LOOP-001 SIG-M-10: one true thing per Seam).** Verifiable against state (L2/L3): "THE SEPULCHRE IS COLD." (4) / "TWO GRUBS REMAIN." (3) / "THE RING IS BROKEN." (4) / "A SHRINE IS COMING." (4) / "THE LISTENER IS NEAR." (4) / "YOU ARE SEEN." (3).
+
+**Ruins lines.** "YOU LEARNED MY NAME." (4, on a Codex entry stamped — the Composure restore of SYS-001 §1.5) / "YOU WERE DIFFERENT." (4, on a respec, LOOP-001 §3.5).
+
+**Hard Unmaking lines, one per iteration end (SYS-001 §2.2, GDD-001 §6.2).** "ANOTHER SKY GOES DARK." (4) / "YOU SPENT A SKY." (4) / "I AM HUNGRY STILL." (4) / "COUNT THE SKIES." (3).
+
+### 4.15 Line rollup
+
+| Set | Lines | Where |
+|---|---|---|
+| Act 0 | 1 | §4.1, the thesis verbatim |
+| Act 1 | 11 | §4.5 |
+| Act 2 | 15 | §4.6 |
+| Act 3 | 18 | §4.7 |
+| Act 4 | 13 | §4.8 |
+| Alternates pool | 30 | §4.9 |
+| Death clauses | 20 | §4.10, which compose 90 lines |
+| Death situational | 6 | §4.10 |
+| Memory and counters | 16 | §4.11 |
+| Vigil Index | 6 | §4.12 |
+| Capstones | 10 (9 unique, 1 reused) | §4.13 |
+| Telegraphs | 7 | §4.14 |
+| Whisper alternates | 2 | §4.14 |
+| Ninth Whisper | 6 | §4.14 |
+| Ruins | 2 | §4.14 |
+| Hard Unmaking | 4 | §4.14 |
+| **Total authored entity lines** | **164** | longest 7 words; mean ≈ 3.7 ✱ |
+
+---
+
+## 5. The Choir's chant
+
+The chant is not music. It is a faction behaviour with a position, a radius and laws (SYS-001 §3.1), and GDD-001 §8.5 requires it to be audible *and* to carry a visual indicator. It is therefore authored, recorded and specified like a mechanic.
+
+### 5.1 The nine-syllable litany ✱
+
+**"THE KING IS HOLLOW — THE SKY IS HIS."** Nine syllables, three feet of three. Its originality is deliberate (RES-001 §5): it names the Hollow King and the failed star in the game's own words.
+
+| Foot | Syllables | Pitch ✱ against the biome drone | Sung by |
+|---|---|---|---|
+| 1 | THE · KING · IS | the drone's fifth, stepped down by a minor third per foot | all chanting units, unison |
+| 2 | HOL · LOW · THE | the drone's third | a fifth above on the second syllable of the foot |
+| 3 | SKY · IS · HIS | the drone's unison, and it does not resolve | the nearest unit only |
+
+Notes on the shape, for the recording session:
+
+| Property | Value | Reason |
+|---|---|---|
+| Syllable count | 9 ✱ | GDD-001 §8.5 fixes nine; it also equals the Nine Hollow Skies (GDD-001 §6.2), so the ceremony and the loop share a number |
+| Metre | 3 + 3 + 3, no upbeat ✱ | the metre is what the visual indicator ticks against (§5.5) and what the captions align to (§8.2) |
+| Word boundary | foot 2 straddles HOLLOW / THE on purpose | the chant eats the word boundary; that is the aesthetic, and §8.2 captions the phrase, not the feet, so it costs the player nothing |
+| Descant | each foot descends; the last foot sits on the tonic and never resolves | a descending line is a descent into the warp (GDD-001 §8.7) |
+| Tempo | free, but every unit sings it at the same rate within a procession | SYS-001 §3.1's laws are about proximity, not rhythm; a shared rate is what makes a procession readable as one thing |
+| Litany Ring relationship | the ring's node count (SYS-001 §3.1) is one short of the litany's nine syllables | the ceremony is always missing one; that gap is the fiction the chant carries, and the ring bells (§2.8) are the audible count |
+| In the score | the litany's *rhythm* is every biome motif (§3); its *melody* appears at T ≥ 3 only (§1.2) | the disguise is the whole compositional idea |
+
+### 5.2 Per-unit chant variants
+
+| Unit (SYS-001 §3) | Chant behaviour | What the audio tells the player | Visual twin (§5.5) |
+|---|---|---|---|
+| Oubliette Grub | does not sing the litany; **keening** only, and only when a deposit it is carrying dies (🔒 locked in SYS-001 §3) | "my ward worked", audible in the dark | a short chalk arc at the Grub plus the deposit thud stopping |
+| Acolyte of the Chord | sings the litany on the move, one foot per footfall; the censer chain's late arrival is its shot tell (SYS-001 §3, 🔒 the 0.25 s lag) | a foot is a beat; a missing foot means the Acolyte turned to swing | ring segment lit at that unit |
+| Deacon of Lies | sings it **wrong** — one syllable dropped, or doubled, in a pattern no other unit uses | a wrong syllable means a phantom is near, before the phantom is visible | a broken ring segment (a gap in the arc) |
+| Grave-Tide Deceiver | silent; its audio signature is the fake lantern's own chime, which belongs to the player's family and is therefore a tell (GDD-001 §11 rule, §3 of this doc) | a chime you did not cause is a body you should not trust | the lantern-state readout does not move when the chime plays |
+| The Penitent | weeping, not the litany; her 20 s chant-silence boon (SYS-001 §3) is heard as the field going quiet | shooting her costs Composure (🔒 SYS-001 §3) and buys silence, which is a real trade | weeping is captioned `[WEEPING]`; the boon is a dimmed ring field |
+| Choir Matron (The Litany) | leads the chant; while she lives the litany is in strict metre and slightly louder (SYS-001 §3, SYS-001 §5.1's Rite consequence) | the conductor is alive; killing her is the loudest silence in the game | ring brightens and a baton marker on the Matron |
+| The Heralds | vary by Herald: the Iron Procession drums the litany's rhythm only; the **Herald of the Quiet Pew mutes chant cues** (SYS-001 §5.2) — the mute is audio-only and never touches the indicator | this is the counter to listening: the answer is to watch, not hear (§8.1) | indicator stays at full strength; a pew-bell marks the Herald |
+| The Listener | silent (SYS-001 §3, blind, hunts sound) | your own noise is the tell; its wind-up is the only sound it makes | the Listener's arc is a drawn thing first, a sound second (§8.1) |
+| Choir Rites (SYS-001 §5.1) | each Rite boss has one chant variant: a congregation that keeps singing after the Rite is broken, at half volume, until the last node falls | the Ceremony is a structure, not a health bar | ring nodes drawn as a persistent counter |
+| The entity | **never chants.** It is the thing the chant is addressed to | an absence of chant near the Sepulchre is phase 0 (§2.6) | the cold Sepulchre's own marker |
+
+### 5.3 Positional rules for chant
+
+| Rule | Value |
+|---|---|
+| Radius | the SYS-001 §3.1 audibility radius, unchanged. Audio renders it; audio does not own it |
+| Through geometry | audible, per SYS-001 §3.1 and the SYS-001 §9 occlusion row: occlusion is a low-pass at 1.4 kHz ✱ and a level drop of up to 12 dB ✱ — **never a mute** (L3) |
+| Panner | 2D, top-down: azimuth only, no elevation, no HRTF, no doppler (§7.4) |
+| Voice count | one voice per chanting unit up to 10 ✱, then a bed sample of the same recording — density saturates so a huge procession cannot crush the mix |
+| Distance model | inverse-distance with a 6 dB-per-doubling falloff ✱, clamped at the radius; below 40 px the chant is near-field and breath is audible |
+| Ducking | chant is never ducked (§7.3); the music ducks for it instead (§7.2) |
+| Caption parity | the caption appears exactly when the audio becomes audible at the player's position, and disappears when it stops — the caption is a rendering of the same radius, never a wider one (§8.2) |
+| Silence events | a silenced Matron, a Ward on the Sepulchre, the Penitent's boon and the Herald of the Quiet Pew each change the chant field in a distinct way, so silence itself is information |
+
+### 5.4 The litany against the faction laws (SYS-001 §3.1)
+
+| Law, as written in SYS-001 §3.1 | Audio consequence in this doc |
+|---|---|
+| The chant is diegetic and positional, with an audibility radius through geometry | §5.3, and the score's stem C doubles it only at T ≥ 3 and never above it (§2.3, §2.7) |
+| The Litany Ring and its nodes | the ring's bells are the counter and the break is the silence (§2.8); a broken ring is heard before it is read |
+| Procession and deposit behaviour | the deposit thud is a world event, not a music layer, and it sits on `BUS-AMB`/`BUS-FLY` so the Music slider cannot hide it (§2.5) |
+| Chant's Composure pressure (SYS-001 §1.5, §3.1) | the Composure wick's audio state (§6.5) rises as `chant_proximity` rises, so the drain has a source the player can locate |
+| Detection and the Lantern (SYS-001 §1.2) | the Lantern's own audio family (brass, gaslight hiss) is separate from the Choir's, so "I am loud" is always readable (§3, palette rule) |
+| Stagger and counter-behaviour (SYS-001 §2.2, §5.2) | the entity's counter lines (§4.11) precede the counter's arrival, which is what makes the memory legible |
+
+### 5.5 The visual chant indicator 🔒 (required by GDD-001 §10)
+
+Chant is information. A player who cannot hear it must get the same information. The indicator is the audio cue's twin, not a substitute for a warning that only exists visually.
+
+| Element | Spec |
+|---|---|
+| Form | a chalk arc drawn at the SYS-001 §3.1 radius, stroke 2 px ✱, open (never a filled disc, never a solid that could hide a geode or a marker) |
+| Colour | the Choir's bruise-magenta family (GDD-001 §11), with the shape and the motion carrying the meaning: hue is never the only channel (colourblind-safe) |
+| Luminance | ≥ 4.5:1 against the biome's background at every Warp Tier ✱; the indicator is drawn in the value ramp, so a greyscale screenshot still reads it |
+| Pulse | one pulse per litany foot, at the §5.1 tempo — the beat the player can count, and the same beat the caption ticks against (§8.2) |
+| Segmentation | one arc segment per chanting unit, so unit count is visible as density, matching §5.3's voice count |
+| Broken segment | a gap where a Deacon of Lies is singing wrong (§5.2) — the phantom tell exists visually too |
+| Off-screen | a chevron at the screen edge, at the chant's azimuth, sized by proximity ✱; it never covers the Ledger Compass strip |
+| Occluded chant | the arc dims but never vanishes, mirroring §5.3's never-mute rule |
+| Silence events | the arc goes flat-lined (a horizontal tick) when the chant is silenced by a Ward, a Penitent boon or a silenced Matron, so the absence is visible |
+| Layer priority | drawn above the field, below the entity's big type, never above: Charge pips, the Composure wick, the Ledger Compass, Unravel Focus markers, or another player-critical marker ✱ (the same order as §7.2) |
+| Warp Tier ≥ 3 | pinned with the rest of the fixed HUD by the Steady Ledger toggle (GDD-001 §10) |
+| Options | `Off / Minimal / Full` — default **Full**; `Off` is allowed only because every chant effect also has a numeric HUD readout in the Ledger Compass strip, so no information is lost (L3) |
+
+---
+
+## 6. UI and feedback sound
+
+### 6.1 The split that matters
+
+The player's own sound world is brass, chalk, glass and clock (§3). Every cue below is built from that family, so a feedback cue can never be confused with Choir material, and the entity's voice can never be confused with either. `BUS-UI` carries menu and readout sound; `BUS-FLY` carries the diegetic feedback the Vigil makes; `BUS-CHO` carries the Choir; `BUS-ENT` carries the entity. **A cue that carries information the player needs may not live on a slider the player can zero** (§8.4).
+
+### 6.2 Master cue list
+
+IDs are stable for TECH-001's audio tables (TECH-001 §6). Levels are relative to master ✱.
+
+| ID | Cue | Trigger / cite | Design | Level ✱ |
+|---|---|---|---|---|
+| A01 | Lance shot | Arc-Lance fire (SYS-001 §1.3) | a short brass snap, no noise burst; the ship's own voice | −16 dB |
+| A02 | Lance on a geode face | SYS-001 §1.3 | glass under pressure, one grain per hit, pitch climbing with the hit count | −15 dB |
+| A03 | Lance on Choir armour | SYS-001 §1.3 | a bell strike, detuned; the sound of not biting | −14 dB |
+| A04 | Geode crack | the crack threshold (SYS-001 §1.3) | a chalk line tearing; the first real tell that the face is giving | −13 dB |
+| A05 | Geode shatter | SYS-001 §1.3 | glass falling in three pieces, one of them late | −12 dB |
+| A06 | Shard pickup | SYS-001 §1.3 | a five-note ascending ladder, one note per shard, so the magazine's shape is heard | −15 dB |
+| A07 | Over-fire warning rise | the SYS-001 §1.3 consecutive-hit threshold | a sine climbing with the hit count; **it rises in pitch, never in level** (§1.4) | −20 → −12 dB |
+| A08 | Over-fire detonation | SYS-001 §1.3 (player-owned cause, §1.4) | a glass chord struck from inside, then a 0.4 s ✱ vacuum decay | −9 dB |
+| A09 | Dry fire | empty magazine | one dull chalk tick | −18 dB |
+| A10 | Lance vent | the SYS-001 §1.3 cooldown rows | a brass sigh, downward | −19 dB |
+| B01 | Charge draw | SYS-001 §1.4 | a wet glass ring, held | −17 dB |
+| B02 | Charge throw | SYS-001 §1.4 | chalk snap plus a short glass tail | −15 dB |
+| B03 | Charge in flight | SYS-001 §1.4 | the glass singing a fifth, pitch by arc height | −16 dB |
+| B04 | Charge detonation on the entity | SYS-001 §1.4, §2.1 | a struck bell, detuned downward, no impact thud (L4) | −10 dB |
+| B05 | Charge detonation on terrain or a unit | SYS-001 §1.4 | the same bell, shorter | −11 dB |
+| **B06** | **Charge lost — the glass chime** | **the SYS-001 §1.4 loss-feedback row 🔒 (GDD-owned behaviour; this doc owns the sound)** | **a clean 1.2 kHz ✱ glass chime with a fast attack and a 0.5 s ✱ decay, plus one Choir half-note a semitone down from the litany's last foot, from the nearest unit.** It is the only bright, short, pure tone in the game, which is what makes it cut without being loud | −11 dB |
+| B07 | Charge stolen by a Grave-Tide Deceiver | SYS-001 §3, §5.2 | the chime, then pulled upward out of tune | −12 dB |
+| B08 | Charge intercepted | SYS-001 §5.2 | a hard bell stop, a choked tail | −13 dB |
+| B09 | Charge recovered | SYS-001 §1.4 | the chime's pitch resolving back up | −15 dB |
+| C01 | Lantern up | SYS-001 §1.2 | gaslight catch, one breath of hiss | −16 dB |
+| C02 | Lantern down | SYS-001 §1.2 | the hiss dying, a brass tick | −17 dB |
+| C03 | Radius change tell | SYS-001 §1.2 | a two-tone interval: up a tone for wider, down for narrower | −18 dB |
+| C04 | Surgelight | SYS-001 §1.1 | a brass fanfare reduced to one note, bright and short; the Composure cost is heard as a wick dip (§6.5) | −12 dB |
+| C05 | Ward Pulse | SYS-001 §1.4 | a chalk circle being drawn, 0.3 s ✱ | −14 dB |
+| C06 | Chalk ward / Anchor placed | SYS-001 §2 phase 0, SYS-001 §1.4 | the chalk strike; the same sample family as H03 | −15 dB |
+| C07 | Hull hit | SYS-001 §1.2 | a brass beam struck, with the ship ringing on it | −11 dB |
+| C08 | Hull lost | SYS-001 §1.2, §2.13 | the filter sweep, not an impact | bed level |
+| C09 | Second Vigil revive | LOOP-001 HULL-6 | the sweep played backwards, one bell | −13 dB |
+| C10 | Ship foley beats | GDD-001 §12 | brass creak, guttering flame, chalk dust, the clock — placed at the seams of a run | −24 dB |
+| D01 | Entity hit reaction | SYS-001 §2.1 | a low wooden knock, pitch by module; the count of knocks is the damage tell | −13 dB |
+| D02 | Module knocked off | SYS-001 §2.1 | a chain letting go | −12 dB |
+| D03 | Module destroyed | SYS-001 §2.1 | the chain, then glass | −11 dB |
+| D04 | Awakening stagger hit | SYS-001 §2 phase 4 | three identical knocks in the stagger window, one sample, no variation (§2.10) | −12 dB |
+| D05 | Rampage entry | §2.11 | the ostinato's first two notes only | −11 dB |
+| D06 | Entity lunge tell | SYS-001 §2.1 | air moving, low, no transient | −15 dB |
+| D07 | Entity eating (repair or heal) | SYS-001 §2.1 | a geode shatter played at half speed, or a choir note cut off | −14 dB |
+| D08 | Unravel Focus latch | GDD-001 §4.1, LOOP-001 MADNESS-17 | a taut thread being plucked | −13 dB |
+| D09 | Thread hit | SYS-001 §2 phase 6 | the pluck, up a tone per hit | −12 dB |
+| D10 | Thread snap | SYS-001 §2 phase 6 | the pluck ending in silence; the bed loses a layer (§2.12) | −11 dB |
+| E01 | Wick — Frayed entered | SYS-001 §1.5 | the wick hiss gains a second, beating layer | −20 dB |
+| E02 | Wick — Unmoored entered | SYS-001 §1.5 | the beat speeds; still no transient | −19 dB |
+| E03 | Wick — Hollowed entered | SYS-001 §1.5 | the hiss stops dead; the field goes dry (the build's own reward, §1.1) | −22 dB |
+| E04 | Wick recovery | SYS-001 §1.5 | the hiss thinning upward over 2 s ✱ | −21 dB |
+| E05 | False chant cue | the SYS-001 §1.5 Frayed band | the litany's rhythm, one voice, in a biome tuning that is not the current biome's (§3) — see §6.8 | −22 dB |
+| E06 | Warp Tier step-up | GDD-001 §8.7 | one detuned bell, pitch dropping with the Tier; never loud (§1.4) | −14 dB |
+| E07 | Compass lie tell | SYS-001 §6 | a soft out-of-tune tick on the Compass strip, so the lie is hearable (L2: the truth stays in the music, §7.3) | −20 dB |
+| E08 | Codex entry stamped | SYS-001 §1.5, GDD-001 §8.9 | chalk on slate, then the bed's filter opening (§2.2) | −16 dB |
+| F01 | Acolyte tell | SYS-001 §3 | the censer chain arriving late (🔒 the 0.25 s lag) | −17 dB |
+| F02 | Acolyte shot | SYS-001 §3 | a choir note struck hard, short | −15 dB |
+| F03 | Listener wind-up | SYS-001 §3 | a slow inhale, no teeth | −18 dB |
+| F04 | Deacon phantom materialises | SYS-001 §3 | the litany's rhythm with one syllable missing (§5.2) | −19 dB |
+| F05 | Deacon phantom dispelled | SYS-001 §3 | the missing syllable arriving late, then nothing | −19 dB |
+| F06 | Grub keening | SYS-001 §3 🔒 | a single voice, sliding, never a word | −16 dB |
+| F07 | Matron silenced | SYS-001 §3, §5.1 | the metre losing its conductor: one beat of raggedness, then quiet | −18 dB |
+| F08 | Penitent | SYS-001 §3 | weeping at a fixed low level; the boon is a field-wide dim, not a sound | −22 dB |
+| F09 | Ring node bell | SYS-001 §3.1, §2.8 | one bell per node, all in the same tuning so a missing node is obvious | −17 dB |
+| F10 | Ring break | SYS-001 §3.1 | every bell stopping in the same bar | −16 dB |
+| G01 | Deposit thud | SYS-001 §2 phase 1 | a low strike in the Sepulchre's own register; the run's real clock | −12 dB |
+| G02 | Deposit halted | SYS-001 §3.1, §2.5 | the thud's decay cut short, then keening (F06) | −13 dB |
+| G03 | Quickening onset | SYS-001 §2 phase 3 | a sine swell with no transient (§1.4) | −15 dB |
+| G04 | The protected silence | GDD-001 §12 🔒 | nothing; and the mix's room tone is faded out over 0.3 s ✱ so the silence is real | −∞ |
+| G05 | Shrine conversion step | SYS-001 §6 | a bell being added to the field, one per step | −18 dB |
+| G06 | Shrine purged | SYS-001 §6 | that bell removed, and the bed opening | −17 dB |
+| H01 | Lantern Tree purchase | LOOP-001 §3 | chalk on the desk, one stroke per branch tier | −16 dB |
+| H02 | Capstone first purchase | LOOP-001 §3.4 | the §6.7 stinger set | −13 dB |
+| H03 | Run Sigil stamped | LOOP-001 §4 | the chalk-strike family, pitched per Sigil family | −15 dB |
+| H04 | Cursed Sigil taken | LOOP-001 §4 | the strike, then the bed loses one layer for the rest of the run | −16 dB |
+| H05 | Pact signed | LOOP-001 §7 | two strokes, one after the other, no reverb | −15 dB |
+| H06 | Respec | LOOP-001 §3.5 | chalk erased; the bed's pitch set back to its first state | −17 dB |
+| H07 | Seam clear | SYS-001 §6 | the biome's bell, in tune for once | −14 dB |
+| H08 | Sky darkening tick | GDD-001 §6.2 | the clock's tick splitting into two | −18 dB |
+| H09 | Save cadence | SYS-001 §8 | one chalk dot, quiet on purpose | −24 dB |
+| H10 | Extra life awarded | GDD-001 §9.4 (Act 0 only) 🔒 | the 1UP interval, straight out of the 1983 costume, in the chip family — the only place the costume is allowed to sound smug | −14 dB |
+| I01 | Index tally tick | GDD-001 §9.4 | one chalk tick per 500 Index ✱, at a rate that never masks a warning tell (§7.2) | −20 dB |
+| I02 | Index band up | §4.12 | a three-note rise in the chip family | −16 dB |
+| I03 | Index band drop | §4.12 | the same three notes, inverted | −17 dB |
+| I04 | Index corrupted | LOOP-001 §4.2 | the tick goes out of tune while the number keeps its rhythm — the audio keeps telling the truth (L2) | −19 dB |
+| I05 | Hollow Vigil best | SYS-001 §7.1, LOOP-001 §7.1 | a bell plus a stamped chalk dot | −15 dB |
+| I06 | Menu confirm / back | UI | chalk tick / chalk erase | −20 dB |
+| I07 | Menu hover | UI | a brass tick at −30 dB ✱ | −30 dB |
+| I08 | Accessibility toggle | §8.4 | on: chalk stroke; off: chalk erase — plus a caption stating which, so a blind-ish listener can hear what changed | −18 dB |
+
+### 6.3 Mining and over-fire
+
+Mining is the game's most repeated action, so it is a *tuned instrument* rather than a cue: A02's grain pitch climbs with consecutive hits, which means A07's over-fire warning is already audible inside the mining sound before any dedicated warning plays. The pair is one continuous sound with two outcomes:
+
+| Stage | Sound | Information |
+|---|---|---|
+| First hits on a face | A02, low grain, pitch rising by one semitone per hit ✱ | how long this face has been worked, which is how much is left of the geode (SYS-001 §1.3) |
+| Crack threshold | A04 | the face is giving; another few hits and it drops |
+| Over-fire build | A07 rising in **pitch only** | the hit count, audible as an interval ladder; the player can count to the SYS-001 §1.3 threshold |
+| Detonation | A08 | self-inflicted, player-owned, allowed to be loud (§1.4) |
+| Aftermath | A10 vent, then A02's pitch reset | the face is reset, the lance is cooling |
+
+Rule: the mining pitch ladder is keyed to the geode, not to the shot, so two players mining the same face hear the same tune (a readable world, GDD-001 §3 P4).
+
+### 6.4 The glass chime when a Charge is lost
+
+SYS-001 §1.4's loss-feedback row is locked by GDD-001; the sound is this doc's to define. It is **B06**: one pure glass chime plus one Choir half-note.
+
+| Requirement | How B06 satisfies it |
+|---|---|
+| Must be heard in the dark, with the lantern down, with the music up | the chime's fundamental is 1.2 kHz ✱, above every ambience bed (§7.1 whisper-floor rule), and it is never ducked (§7.3) |
+| Must read as a loss, not as a hit | the Choir half-note a semitone below the litany's last foot belongs to the Choir's family, so the loss is authored as *theft by the Choir* (GDD-001 §8.3: the Charge is Mourning Glass) |
+| Must be unmistakable from any other cue in the game | no other cue uses a pure tone with a fast attack; A06's shard ladder and B03's flight tone are both complex |
+| Must survive laptop speakers and a mono downmix | the chime has no content below 600 Hz ✱, so it is speaker-safe (§7.1) and identical in mono (§7.4) |
+| Must not startle | +8 dB maximum onset jump (§1.4); the decay, not the attack, is what carries the dread |
+| Must be visible | the Charge pip that empties flashes once in the Gaslight-amber ramp and the Ledger Compass strip prints the loss count 🔒 (SYS-001 §1.4's UI half of the row); the caption reads `[GLASS CHIME]` (§8.2) |
+| Frequency of use | once per lost Charge; the chime never repeats for a single loss, and B07/B08 vary its tail so the *cause* is still hearable |
+
+### 6.5 The Composure wick
+
+The wick (GDD-001 §10) is the player's internal state made visible; its audio twin makes it hearable without a glance. Bands are SYS-001 §1.5's.
+
+| Band | Audio state | Rule |
+|---|---|---|
+| Clear | no wick sound at all | silence is the reward for good play; nothing is added |
+| Frayed | a thin hiss with a slow beating tone ✱, level tracking `composure_band` | the beat's rate is the drain rate made audible; the hiss's source position matches `chant_proximity` (§5.4) |
+| Unmoored | the beat speeds, a second detuned partial joins | the false cues of §6.8 begin here (SYS-001 §1.5) |
+| Hollowed | the hiss **stops**, the field goes dry and wide | this is a build state, not a punishment (§1.1): it must sound capable |
+| Recovery | the hiss thins upward, E04 | the Codex and the Vigil's own beats restore Composure (SYS-001 §1.5); the audio confirms which one |
+
+### 6.6 The Vigil Index readout
+
+The Index is a Choir-facing metric (GDD-001 §9.4) and the entity comments on it (§4.12). Its sound is the diegetic fiction made audible: the Choir is tallying the Lampkeeper.
+
+| Element | Spec |
+|---|---|
+| Tally tick | one chalk tick per 500 Index ✱ (I01); at high rates it becomes a rhythm, which is how the chain of SYS-001 §7.1 is heard |
+| Band motifs | I02 up, I03 down; three notes in the chip family, which is the costume's own voice counting |
+| Read-aloud | under the Threnody Sigil (LOOP-001 §4.2) the Choir sings the number in the litany's metre ✱ — the number is information, so it is captioned in digits (§8.2) |
+| Corrupted readout | I04: the visual number lies, the audio rhythm stays exact (L2); under the Steady Ledger toggle both go quiet (GDD-001 §10) |
+| Never | the Index must never be the loudest thing in a Seam; a score readout may not outrank a warning tell (§7.2) |
+
+### 6.7 Capstone first-purchase stingers
+
+LOOP-001 §3.4: the first purchase of a capstone opens a Codex entry and the entity says one line (§4.13). The sound is a 1.1 s ✱ **tag**, not a stinger in the horror sense — §1.1 bans impact stingers, and this is a melodic acknowledgement, level-capped at §7.1's UI ceiling.
+
+| Element | Spec |
+|---|---|
+| Form | a chalk strike (the H01/H03 family), then three notes of that capstone's branch motif, then the entity's line (§4.13) at −19 LUFS ✱ |
+| Instrument | the branch's own family: LANTERN a glass bell, HULL a brass beam, ORDNANCE the glass chord, WARD the chalk circle, SEAM the thread pluck, MADNESS a detuned sine, ACT-1 a Sepulchre thud, ACT-2 the litany's three feet, ACT-3 the Chorus Engine's own low pulse, FINAL the chip family |
+| Once only | the tag plays on first purchase only; a re-purchase of an already-owned capstone plays H01 alone, so the game never congratulates the player twice |
+| Never ducked, but duckable-safe | the tag sits on `BUS-UI`; the entity line on `BUS-ENT` is never ducked (§7.3), so the line survives even if the tag is turned down |
+| Accessibility | the tag is captioned `[CHALK STROKE]` plus the line as big type; the Codex entry text carries the same information in prose (L3) |
+
+### 6.8 False audio cues (SYS-001 §1.5, Frayed band)
+
+| Rule | Value |
+|---|---|
+| Material | chant-flavoured only: the litany's rhythm or a keening voice (E05). **Never** a Charge chime, never the entity's voice, never a UI cue, never a warning tell |
+| Rate | the SYS-001 §1.5 interval cap for false cues; audio never re-triggers them |
+| Tuning tell | a false cue always uses a biome tuning that is not the current biome's (§3), so an attentive player can always identify a lie by ear — the cue is a threat to Composure, not a source of helplessness |
+| Reversal | under LOOP-001 MADNESS-1 the same cues point at something true; the tuning tell is inverted, which is why the audio family matters |
+| Captions | captioned `[CHORUS, UNCERTAIN]` (§8.2), so a Deaf player is not cheated of the fiction and not given a fake warning either |
+| Information rule | a false cue **adds** noise; it never masks, delays or replaces a real tell (§7.2's chain keeps real tells above the noise floor at all times) |
+
+---
+
+## 7. Mixing rules
+
+### 7.1 Loudness targets ✱
+
+| Target | Value |
+|---|---|
+| Master, integrated | **−24 LUFS** ✱, true peak −3 dBTP ✱ |
+| Gameplay mix, short-term | −28 to −24 LUFS-S ✱; the range is the game's dynamic shape, and it is narrow on purpose (§1.4) |
+| Loud ceiling for any cue the player did not cause | −18 LUFS-S ✱ |
+| `BUS-ENT` | short-term −19 LUFS ✱; the whisper channel −26 LUFS ✱ |
+| `BUS-CHO` (diegetic chant) | short-term −22 LUFS ✱ — the loudest non-player sound in the game, by rule (§7.3) |
+| `BUS-MUS` | −30 LUFS-S ✱ at exploration, −24 ✱ at Rampage |
+| `BUS-UI` / `BUS-FLY` | −26 LUFS-S ✱ ceiling, −30 ✱ for menu hover |
+| `BUS-AMB` | −36 LUFS-S ✱ floor; the ambience must never be the reason a cue is missed |
+| Whisper-floor rule ✱ | any cue carrying information the player needs sits **≥ 18 dB above the bed it plays over** |
+| Laptop rule ✱ | any informational cue has content above 300 Hz and none of its identity below 600 Hz, so a 2 cm laptop speaker carries it |
+| Calibration | a 10 s ✱ Ruins loop in the options screen (clock tick, brass creak, one whispered entity line, one glass chime) with the reference level printed in the HUD, so a player can set the game by ear without a manual |
+
+### 7.2 Ducking priority chain ✱
+
+| Priority | Bus / cue | Ducks what | Is ducked by |
+|---|---|---|---|
+| P0 | `BUS-ENT` — an entity line | everything else, by 6 dB ✱ | nothing |
+| P1 | B06 the glass chime (Charge loss) | music, ambience, UI by 5 dB ✱ | nothing |
+| P2 | `BUS-CHO` — chant and keening | music by 5 dB ✱ | nothing |
+| P3 | Warning tells (F01 Acolyte, F03 Listener, A07 over-fire, D06 lunge, G04 phase beats) | music, ambience by 4 dB ✱ | P0 only, and then never below its own whisper floor |
+| P4 | Player-ability cues (C04, C05, B02–B05, A08) | music by 3 dB ✱ | P0–P3 |
+| P5 | Mining (A01–A06) | ambience | everything above |
+| P6 | `BUS-MUS` | — | all of the above |
+| P7 | `BUS-AMB`, `BUS-UI` readout (I01) | — | all of the above |
+
+Ducking is a sidechain on the bus, not per-voice, with a 60 ms ✱ attack and a 400 ms ✱ release, so the field breathes instead of stuttering. P3 ducking never silences a tell below the whisper floor of §7.1, which is the mechanical form of L3.
+
+### 7.3 Never ducked, never hidden
+
+| Element | Why it is untouchable |
+|---|---|
+| The Choir's chant and keening | it is the faction law made audible (SYS-001 §3.1); ducking it would break the game's readability |
+| The glass chime of a lost Charge | SYS-001 §1.4 🔒; it is the one cue that must be heard in the dark |
+| An entity line | L1: it is a state announcement, and a state announcement you cannot hear is a state you do not have |
+| The music's honesty | not a level rule but a content rule: when the Ledger Compass lies (SYS-001 §6), no music layer is re-keyed and no diegetic tell is attenuated (L2) |
+
+### 7.4 Spatial and headphone rules ✱
+
+| Rule | Value |
+|---|---|
+| Panner model | 2D azimuth only for a top-down field: pan + distance level + low-pass. No HRTF, no doppler, no elevation on diegetic world sources |
+| Headphone preset | the field is squeezed to ±30° ✱ so chant direction stays readable on in-ear monitors; a wide field on headphones turns into a phase problem |
+| Mono / single-ear | in mono, pan is replaced by level + low-pass so direction is still inferable; nothing may be knowable only by panning (L3) |
+| Reverb | two baked room imps only (the Vigil's hold, the Sepulchre); no convolution at runtime (§7.5), and **no reverb on the entity's voice** (§4.3) |
+| Distance | the §5.3 model; the same parameters drive both ears, so a headphone listener and a speaker listener get the same information |
+| No binaural-only information | any fact the mix conveys by direction must also be conveyed by the §5.5 indicator (L3) |
+| Sub | the Sepulchre's subharmonic pulse (G01, §2.6) is duplicated at 180 Hz ✱ so laptop speakers still hear the countdown |
+
+### 7.5 Voice and DSP budget ✱
+
+| Budget | Value | Cite |
+|---|---|---|
+| Concurrent voices | 24 ✱ total, of which ≤ 10 chant voices (§5.3) and 8 music stems | SYS-001 §9, GDD-001 §13 |
+| Music | pre-rendered stereo stems, no MIDI, no runtime time-stretch | §2.0 |
+| VO | no runtime pitch or time shift, ever (§4.3) | §4.3 |
+| DSP | 3 reverb sends max (baked), static EQ per bus, no runtime convolution | GDD-001 §13 |
+| Frame cost | audio mixing must not touch the SYS-001 §9 frame budget; no per-frame param computation in GDScript — parameters are pushed on state change only | TECH-001 §6 |
+| Streaming | biome beds streamed per Seam, Ruins bed resident | GDD-001 §13 |
+
+---
+
+## 8. Accessibility, and the safety of audio-linked effects
+
+### 8.1 Parity table — L3 in practice
+
+Every audio cue the player needs has a visual twin already specced elsewhere; the table records who owns the twin, so a missing one is a bug with an owner.
+
+| Audio cue | Visual twin | Owner |
+|---|---|---|
+| Chant, and its radius | the §5.5 indicator ring | AUDIO-001 (spec) / ART-001 (render) |
+| Grub keening on a dead deposit | the deposit thud stopping, plus the Ward's chalk arc | SYS-001 §3, §5.5 |
+| B06 glass chime | the emptied Charge pip flashing once, plus the Compass strip's loss count (SYS-001 §1.4 🔒) | UX / ART-002 |
+| A07 over-fire warning | the geode face's own crack stages (SYS-001 §1.3) | ART-001 |
+| F01 Acolyte tell | the turret swing's telegraph (SYS-001 §3) | SYS-001 §3 is the source of truth for the tell window |
+| F03 Listener wind-up | the Listener's arc, which must be drawn first and heard second (SYS-001 §3) | ART-001 |
+| The entity's gaze cone and acquisition | the cone's drawn edge and the wick's reaction (SYS-001 §1.2, §2.1) | ART-001 / UX |
+| An entity line | big type (§4.2) plus a caption (§8.2) | AUDIO-001 / UX |
+| Communion telegraphs | the same words in big type, 2 s early 🔒 (LOOP-001 MADNESS-11) | UX |
+| The deposit thud | the Sepulchre's segment readout (SYS-001 §2) | UX |
+| The protected silence (G04) | the picture does **not** go black; only the mix drops (§1.4) | AUDIO-001 |
+| Herald of the Quiet Pew's chant mute | the indicator stays at full strength: the counter is to watch, not to listen (SYS-001 §5.2) | ART-001 |
+| E05 false cues | the same tuning mismatch rendered as a wrong-colour chalk mark ✱; and a false cue never replaces a tell (§6.8) | ART-002 |
+| The Index (I01–I04) | the numeral readout itself (GDD-001 §9.4) | UX |
+| The Hourglass Clock (H08) | the clock strip (GDD-001 §6.2, GDD-001 §10) | UX |
+
+### 8.2 Subtitle and caption spec 🔒 for chant and entity lines
+
+| Item | Spec |
+|---|---|
+| Entity lines | full-screen big type (§4.2) **and** a caption in the standard slot, so a player using the caption option sees the line twice by design — once as the game's voice, once as text. Caption dwell: max(1.5 s, 0.28 s × words) ✱, never shorter than the audio duration + 0.4 s ✱ |
+| Chant captions | the litany as words: `THE KING IS HOLLOW — THE SKY IS HIS`, with a directional tag: `[HOLLOW CHOIR, UPPER LEFT]` ✱ (eight-point azimuth ✱), and a distance word (near / mid / edge of radius) ✱ |
+| Chant syllable tracker | the nine-syllable grid drawn as nine ticks beside the caption ✱, so the metre is readable and the §5.1 structure is learnable by a Deaf player |
+| Chant starts and stops | a caption is emitted when the chant becomes audible at the player's position **and** when it stops: `[CHORUS]` / `[CHORUS STOPS]` ✱ — the silence events of §5.3 are information |
+| Keening | `[KEENING, NEAR]` with the same directional tag |
+| False cues | `[CHORUS, UNCERTAIN]` (§6.8): the fiction survives, no fake warning is manufactured |
+| Speaker tags | `[ENTITY]`, `[CHORUS]`, `[SYSTEM]`, plus a shape glyph ✱ per tag, so tag identity never depends on colour alone (colourblind-safe) |
+| Numbers | spoken numbers (Threnody, §6.6) are captioned in digits, never spelled |
+| Style | GDD-001 §10's rules: sentence case except entity lines (all caps), ≤ 2 lines 🔒, size range 100–200% ✱, opaque panel with a 60% ✱ void backing at every Warp Tier, ≥ 4.5:1 contrast ✱ |
+| Off-screen sources | a chevron beside the tag pointing at the source (§5.5) |
+| Never | a caption may never be the only carrier of a warning that the audio also carries — both channels exist (L3) |
+
+### 8.3 Photosensitivity and epilepsy safety for audio-linked effects
+
+The game's dread is not flash-based (GDD-001 §11: dread from scale and wrongness), but every beat-locked visual effect driven by the mix must pass these limits ✱.
+
+| Rule | Value |
+|---|---|
+| Flash rate | no more than **3 luminance flashes per second anywhere on screen**, and no simultaneous full-field flash; the §5.5 pulse is one per litany foot at §5.1 tempi, which is always under the ceiling |
+| Luminance step | no audio-driven change exceeding 10% ✱ mean screen luminance in one frame; beat-locked effects ramp over ≥ 3 frames ✱ |
+| Red | no full-field red flash at any Warp Tier (GDD-001 §11's palette discipline) |
+| Beat-locked camera motion | off by default; `Reduced motion` removes it entirely, and the music's own pulse never drives camera shake (SYS-001 §9's shake row is not audio-linked) |
+| T5 breathing zoom | the slow zoom of GDD-001 §8.7 / SYS-001 §9 stays slow in photosensitivity mode too — it is a breathing rate, not a strobe, and the audio keeps its rate |
+| The protected silence (G04) | mix-only; the picture never cuts to black, so no flash edge is created (L4) |
+| Warp Tier decomposition | at T4–T5 the score's glitch layers drive visual glitch; in photosensitivity mode the glitch rate is halved ✱ and the audio is not — the audio keeps its information (L3) |
+| Hard Unmaking (§2.14) | the field collapse is a decay, not a flash; the 90 s first cinematic (GDD-001 §6.1) is tested as a whole clip |
+| Test ownership | an automated per-act Harding-style pass is TECH-001's tool, the palette ceiling is ART-002's, the beat-locked effect list is this doc's, and the gate is a PROD-001 milestone — see §10 |
+| Prohibitions | no jumpscares, no gore, no QTEs 🔒 (GDD-001 §10, §11); no audio-reactive prompt, no timed input, no cutscene input window; and any reduction option never reduces damage or information |
+| Cutscene skip | every cinematic is skippable after its first watch 🔒 (GDD-001 §6.1, §10), and a skipped beat is written into the Codex so skipping costs no lore (GDD-001 §8.9) |
+
+### 8.4 Audio options 🔒 (GDD-001 §10's accessibility section)
+
+| Option | Values | Notes |
+|---|---|---|
+| Master | 0–100, default 70 ✱ | with the §7.1 calibration loop |
+| Music | 0–100 | may not reach the point where §7.3's untouchables are hidden, because those are on other buses |
+| Choir (diegetic) | 0–100 | chant, keening, bells; **defaults to the top of the range**, since it is the faction law |
+| Entity voice | 0–100, **floor at 40** ✱ | the game will not let a player mute the state announcements they need; captions cover the preference case |
+| UI and readouts | 0–100 | separate from the diegetic slider so a player can quiet the tally without quieting the world |
+| Foley and ambience | 0–100 | the ship's brass, the clock, the beds |
+| Chant captions | off / tags / full | default full (§8.2) |
+| Entity big type | on always 🔒 | it is the game's signature communication, not an assistive add-on |
+| Chant indicator | off / minimal / full (default full) | §5.5; off is permitted because the Compass strip carries the numeric form |
+| Mono output | on / off | §7.4 |
+| Headphone field | wide / narrow (default narrow) | §7.4 |
+| Photosensitivity | on / off (default **on** until the player turns it off) | §8.3 |
+| Reduced motion | on / off | §8.3 |
+| Volume ducking for dialogue | off always | the entity's lines are never ducked (§7.3) |
+
+---
+
+## 9. Asset list and cost
+
+### 9.1 By category
+
+| Category | Count | Length each ✱ | Source type | Reuse plan | Est. hours ✱ |
+|---|---|---|---|---|---|
+| Biome stem sets | 24 (6 biomes × 4 stems, GDD-001 §12) | 90–160 s | recorded acoustic (voices, bells, harmonium, prepared strings, waterphone) + synthesised chip/pulse | Warp-Tier re-key by parameter, no re-recording (§3); the one-theme rule means one melodic idea per biome (§3) | 180–230 |
+| Entity-phase overlays | 7 (phases 0–6) | 90–130 s | synthesised + prepared strings | one set serves all six biomes (§3) | 40–55 |
+| State overlays | 4 (Choir contact, Sepulchre deposit, death sweep, Hard Unmaking pass) | 8–60 s | mixed | the death sweep is the Second Vigil cue inverted (§2.13) | 25–35 |
+| Attract set | 3 (jingle, coin, extra-life chime) | 8–16 s | synthesised chip | the jingle is the litany's rhythm un-disguised (§2.1) | 12–16 |
+| Ruins set | 3 stems | 160 s | recorded + synthesised | pitch accumulates by iteration through parameter, not new recording (§2.2) | 22–28 |
+| **Looped music total** | **41 stems** | **≈ 78 min ✱** | | | |
+| Entity VO | **164 lines** (§4.15) | 1–4 s | recorded, one voice (§4.3) | the 20 death clauses compose 90 lines (§4.10); alternates cover repeats (§4.9) | 10–14 (one 3 h session plus edit ✔) |
+| Choir chant | 16 takes (§5.2 variants) | 3–9 s | recorded, 4–6 mixed voices | every variant is the same nine syllables (§5.1), so takes are recombined by unit class and biome | 16–22 |
+| UI and feedback one-shots | **81 cues** (§6.2) | 0.15–1.5 s | foley (chalk, brass, glass, clock) + synthesised | the chalk-strike family covers 11 cues, the glass family 14, the bell family 12 | 45–60 |
+| Ship foley and close-mic set | 26 cues + 1 session (GDD-001 §12) | 3–8 s | recorded foley | the close-mic session is the source for both the ship's beats (C10) and the UI family | 30–40 |
+| Ambience beds | 8 (6 biomes, Ruins, Hollow field) | 120–180 s seamless | field recording + synthesised | the Hollow field is a biome bed with layers removed (SYS-001 §1.5) | 24–32 |
+| Room impulses | 2 (the Vigil's hold, the Sepulchre) | 1.4–2.2 s | recorded IR | nothing is wet that does not need to be; no entity reverb (§4.3) | 6–8 |
+| Implementation | buses, sidechains, 15 parameters (§2.0), 81 cue registrations | — | GDScript, data-driven tables | TECH-001 §6's `.tres` pattern; one audio manager, no per-scene wiring | 55–70 |
+| **Total** | **≈ 96 finished minutes of audio; 164 VO lines; 41 music stems; 81 UI cues; 8 beds** | | | | **≈ 465–550 h ✱** |
+
+At one full-time composer-integrator that is roughly 12–14 weeks; split with a contract voice and a part-time integrator it compresses to about 8 (PROD-001's schedule governs, not this table).
+
+### 9.2 What a single composer can realistically ship by alpha
+
+**One composer, one alpha, one pass:** the Attract jingle, the Ruins bed with its iteration pitch ramp, **two complete biome stem sets** (Pale Marches and The Litany, the cheapest and the most expensive, so the cost curve is measured), two more biome beds built from the same sessions and re-keyed by parameter, all seven entity-phase overlays, the four state overlays, the full 81-cue UI set, the chant with its unit variants and its syllable grid, the death sweep and the Hard Unmaking pass, and **the entity's Act 0 line plus the whole Act 1 and Act 2 sets and 20 alternates (about 60 of the 164 lines)** — roughly 34 finished minutes of audio and one 3-hour voice session. Act 3–4 lines, the remaining biome sets, the Rite variants and the mono/headphone polish are beta work, and the slice test GDD-001 §14 asks for (music escalation, the entity's voice, the chant's audibility) is fully covered by the alpha cut.
+
+---
+
+## 10. Open questions, with recommendations
+
+| # | Question | Why it matters | Recommendation | Owner | Decide by |
+|---|---|---|---|---|---|
+| A1 | Is the entity's voice diegetic at all, or always the player's private channel? | Acts 3–4 add a room mic (§4.3), which implies a body somewhere | Keep it **non-diegetic and non-positional at every Act**; the room mic is a mix cue, not a world source. NARR-001 writes one Codex entry supporting that reading. A positional entity voice would break §7.3 and §8.1 at once | AUDIO-001 + NARR-001 | before the voice session |
+| A2 | Is the litany captioned in English or left untranslated? | the chant radius is information, and §5.4 makes it a faction law | Caption it in the player's language, always — a Deaf player deserves the same faction law as a hearing one, and GDD-001 §10's readability rule is on the same side | AUDIO-001 + NARR-001 | alpha |
+| A3 | Should false cues (SYS-001 §1.5) be captioned at all, or does that defuse them? | the cue is a Composure threat; a caption could make it inert | Caption as `[CHORUS, UNCERTAIN]`: the fiction survives and no fake warning is manufactured; the tuning tell (§6.8) keeps it counterplayable for both channels | AUDIO-001 | the slice's accessibility pass |
+| A4 | Should chant audibility scale with the Lantern state (SYS-001 §1.2)? | it would make the Lantern an audio tool, which is a strong idea | **No, not by audio.** SYS-001 §3.1 owns the radius; making it lantern-dependent needs a new SYS-001 row first. Flag it as a slice test for the systems owners, not an audio decision | SYS-001 owners | slice review |
+| A5 | One voice for all four Acts, or age the casting? | cost, and the horror of continuity | **One voice, aged by mix** (§4.3). Cheaper, and the sameness is the point | AUDIO-001 + PROD-001 | casting call |
+| A6 | Which instrument families must be live-recorded, and which may be synthesised? | the score's honesty claim in §3 depends on real prepared technique | Live for voices, bells and prepared strings; synthesised for the chip/pulse costume, which is *allowed* to sound fake because it is a costume (GDD-001 §11). Money and studio time are ASSET-003 / PROD-001's to price | AUDIO-001 + ASSET-003 | funding pass |
+| A7 | Loudness: does any distribution channel normalise our mix? | §7.1's −24 LUFS target assumes we ship our own mix level | Verify against MARKET-001's platform assumptions; if a storefront normalises, move the master target to −20 LUFS ✱ and keep the internal headroom ratios unchanged | AUDIO-001 + TECH-001 | beta |
+| A8 | Who runs the photosensitivity pass, and when is it a gate? | §8.3 lists limits nobody currently owns | TECH-001 builds an automated per-act flash test, ART-002 fixes the palette ceiling, AUDIO-001 owns the beat-locked effect list, and PROD-001 makes it a gate on every vertical-slice and alpha build | TECH-001 + PROD-001 | first vertical slice |
+| A9 | Does ending 3 withhold its credits line, and does the entity get a last word at all? | §4.8's credits line is the last authored line in the game | Withhold it in ending 3 only, as written; NARR-001 confirms against the four endings | NARR-001 | narrative lock |
+| A10 | Do the biome motifs need a distinct key per biome? | six keys is six times the transpose work at re-key time | **Two key centres only** — a bright centre (Pale Marches, The Litany) and a dark centre (the other four), with re-key shared between them (§3). This halves the stem authoring cost and makes the T5 unison trivially cheap | AUDIO-001 | before stem authoring |
+
+---
+
+*End of AUDIO-001. Every cue, line, layer and limit in this doc is authored and ready to build; the only unknowns are the ten questions above, each of which has a recommendation and an owner.*
+
+

@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://oji8r45h4dt0"
+
+[deps]
+
+files=["res://assets/sprites/SPRITE_MANIFEST.kit.translation", "res://assets/sprites/SPRITE_MANIFEST.part.translation", "res://assets/sprites/SPRITE_MANIFEST.w.translation", "res://assets/sprites/SPRITE_MANIFEST.h.translation", "res://assets/sprites/SPRITE_MANIFEST.frames.translation", "res://assets/sprites/SPRITE_MANIFEST.colours.translation", "res://assets/sprites/SPRITE_MANIFEST.palette.translation", "res://assets/sprites/SPRITE_MANIFEST.path.translation", "res://assets/sprites/SPRITE_MANIFEST.status.translation", "res://assets/sprites/SPRITE_MANIFEST.note.translation"]
+
+source_file="res://assets/sprites/SPRITE_MANIFEST.csv"
+dest_files=["res://assets/sprites/SPRITE_MANIFEST.kit.translation", "res://assets/sprites/SPRITE_MANIFEST.part.translation", "res://assets/sprites/SPRITE_MANIFEST.w.translation", "res://assets/sprites/SPRITE_MANIFEST.h.translation", "res://assets/sprites/SPRITE_MANIFEST.frames.translation", "res://assets/sprites/SPRITE_MANIFEST.colours.translation", "res://assets/sprites/SPRITE_MANIFEST.palette.translation", "res://assets/sprites/SPRITE_MANIFEST.path.translation", "res://assets/sprites/SPRITE_MANIFEST.status.translation", "res://assets/sprites/SPRITE_MANIFEST.note.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

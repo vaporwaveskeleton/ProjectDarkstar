@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="VigilMoveStats" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://features/vigil/vigil_move_stats.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+ds_namespace = "ds_vigil.move"
+source_section = "SYS-001 §1.1 (movement), §9 (hitbox policy)"
+max_speed = 340.0
+accel = 2600.0
+drag = 3.4
+brake = 5200.0
+snap_turn = 720.0
+hitbox_circle_px = 12.0

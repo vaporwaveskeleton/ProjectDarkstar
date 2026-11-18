@@ -1,0 +1,146 @@
+[gd_resource type="Theme" load_steps=11 format=3]
+
+; DARKSTAR UI theme — "chalk on slate" (ART-001 §7): BONE-5 text on VOID-1 panels, 1 px BONE-1 keyline.
+; Every colour here must be an ART-001 §4 palette entry (enforced by core/ui/tests/test_theme_palette.gd).
+; Focus = GAS-3 outline (✱ open question in UI-001 §9: ART-001 does not define focus colour).
+
+[sub_resource type="StyleBoxFlat" id="panel"]
+content_margin_left = 8.0
+content_margin_top = 6.0
+content_margin_right = 8.0
+content_margin_bottom = 6.0
+bg_color = Color(0.0745098, 0.0784314, 0.156863, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.352941, 0.360784, 0.403922, 1)
+
+[sub_resource type="StyleBoxFlat" id="btn_normal"]
+content_margin_left = 10.0
+content_margin_top = 4.0
+content_margin_right = 10.0
+content_margin_bottom = 4.0
+bg_color = Color(0.0745098, 0.0784314, 0.156863, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.352941, 0.360784, 0.403922, 1)
+
+[sub_resource type="StyleBoxFlat" id="btn_hover"]
+content_margin_left = 10.0
+content_margin_top = 4.0
+content_margin_right = 10.0
+content_margin_bottom = 4.0
+bg_color = Color(0.113725, 0.12549, 0.25098, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.72549, 0.721569, 0.682353, 1)
+
+[sub_resource type="StyleBoxFlat" id="btn_pressed"]
+content_margin_left = 10.0
+content_margin_top = 4.0
+content_margin_right = 10.0
+content_margin_bottom = 4.0
+bg_color = Color(0.164706, 0.188235, 0.341176, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.968627, 0.956863, 0.909804, 1)
+
+[sub_resource type="StyleBoxFlat" id="btn_disabled"]
+content_margin_left = 10.0
+content_margin_top = 4.0
+content_margin_right = 10.0
+content_margin_bottom = 4.0
+bg_color = Color(0.0392157, 0.0392157, 0.0705882, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.227451, 0.231373, 0.266667, 1)
+
+[sub_resource type="StyleBoxFlat" id="btn_focus"]
+draw_center = false
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.85098, 0.603922, 0.180392, 1)
+expand_margin_left = 1.0
+expand_margin_top = 1.0
+expand_margin_right = 1.0
+expand_margin_bottom = 1.0
+
+[sub_resource type="StyleBoxFlat" id="bar_bg"]
+bg_color = Color(0.0745098, 0.0784314, 0.156863, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.352941, 0.360784, 0.403922, 1)
+
+[sub_resource type="StyleBoxFlat" id="bar_fill"]
+bg_color = Color(0.203922, 0.658824, 0.560784, 1)
+
+[sub_resource type="StyleBoxFlat" id="dim"]
+bg_color = Color(0.0392157, 0.0392157, 0.0705882, 0.85)
+
+[sub_resource type="StyleBoxEmpty" id="empty"]
+
+[resource]
+default_font_size = 14
+Button/colors/font_color = Color(0.968627, 0.956863, 0.909804, 1)
+Button/colors/font_disabled_color = Color(0.352941, 0.360784, 0.403922, 1)
+Button/colors/font_focus_color = Color(0.968627, 0.956863, 0.909804, 1)
+Button/colors/font_hover_color = Color(0.968627, 0.956863, 0.909804, 1)
+Button/colors/font_hover_pressed_color = Color(0.968627, 0.956863, 0.909804, 1)
+Button/colors/font_pressed_color = Color(0.968627, 0.956863, 0.909804, 1)
+Button/styles/disabled = SubResource("btn_disabled")
+Button/styles/focus = SubResource("btn_focus")
+Button/styles/hover = SubResource("btn_hover")
+Button/styles/hover_pressed = SubResource("btn_pressed")
+Button/styles/normal = SubResource("btn_normal")
+Button/styles/pressed = SubResource("btn_pressed")
+CheckButton/colors/font_color = Color(0.968627, 0.956863, 0.909804, 1)
+CheckButton/colors/font_focus_color = Color(0.968627, 0.956863, 0.909804, 1)
+CheckButton/colors/font_hover_color = Color(0.968627, 0.956863, 0.909804, 1)
+CheckButton/colors/font_pressed_color = Color(0.968627, 0.956863, 0.909804, 1)
+CheckButton/styles/focus = SubResource("btn_focus")
+CheckButton/styles/hover = SubResource("btn_hover")
+CheckButton/styles/normal = SubResource("btn_normal")
+CheckButton/styles/pressed = SubResource("btn_pressed")
+Label/colors/font_color = Color(0.968627, 0.956863, 0.909804, 1)
+Label/colors/font_outline_color = Color(0.0392157, 0.0392157, 0.0705882, 1)
+HeaderLabel/base_type = &"Label"
+HeaderLabel/colors/font_color = Color(0.894118, 0.87451, 0.819608, 1)
+HeaderLabel/font_sizes/font_size = 28
+HintLabel/base_type = &"Label"
+HintLabel/colors/font_color = Color(0.541176, 0.54902, 0.576471, 1)
+ErrorLabel/base_type = &"Label"
+ErrorLabel/colors/font_color = Color(1, 0.290196, 0.341176, 1)
+OptionButton/colors/font_color = Color(0.968627, 0.956863, 0.909804, 1)
+OptionButton/colors/font_focus_color = Color(0.968627, 0.956863, 0.909804, 1)
+OptionButton/colors/font_hover_color = Color(0.968627, 0.956863, 0.909804, 1)
+OptionButton/styles/focus = SubResource("btn_focus")
+OptionButton/styles/hover = SubResource("btn_hover")
+OptionButton/styles/normal = SubResource("btn_normal")
+OptionButton/styles/pressed = SubResource("btn_pressed")
+PanelContainer/styles/panel = SubResource("panel")
+Panel/styles/panel = SubResource("panel")
+DimPanel/base_type = &"Panel"
+DimPanel/styles/panel = SubResource("dim")
+ProgressBar/colors/font_color = Color(0.968627, 0.956863, 0.909804, 1)
+ProgressBar/styles/background = SubResource("bar_bg")
+ProgressBar/styles/fill = SubResource("bar_fill")
+VBoxContainer/constants/separation = 6
+MarginContainer/constants/margin_left = 0
+TooltipPanel/styles/panel = SubResource("panel")
+LineEdit/styles/focus = SubResource("btn_focus")
+LineEdit/styles/normal = SubResource("btn_normal")
+LineEdit/colors/font_color = Color(0.968627, 0.956863, 0.909804, 1)
+ScrollContainer/styles/panel = SubResource("empty")

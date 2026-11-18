@@ -1,0 +1,79 @@
+extends Node
+## SceneRouter (autoload) — why global: exactly one top-level scene is active at a time and every
+## screen must be able to request a change without knowing who owns the tree. TECH-001 §2.8.
+##
+## Top-level scenes are mounted under a *host* (Boot's %RouteHost). Boot stays alive for the whole
+## session, so the transition curtain and the error fallback always exist. Without a host (e.g. a
+## scene run directly from the editor) the router falls back to SceneTree.change_scene_to_packed.
+## Overlays (pause, settings, confirm) are NOT routes: they are pushed on a ScreenStack.
+
+signal route_changed(route_id: StringName)
+signal route_failed(route_id: StringName, reason: StringName)
+
+const TABLE_PATH := "res://data/routes/route_table.tres"
+
+var table: RouteTable
+var current_route: StringName = &""
+var is_busy: bool = false
+var _host: Node
+
+
+func _ready() -> void:
+	table = load(TABLE_PATH) as RouteTable
+	if table == null:
+		push_error("SceneRouter: route table missing at %s" % TABLE_PATH)
+
+
+func register_host(host: Node) -> void:
+	_host = host
+
+
+func unregister_host(host: Node) -> void:
+	if _host == host:
+		_host = null
+
+
+func has_host() -> bool:
+	return is_instance_valid(_host)
+
+
+## Request a route change. Repeated requests while a change is in flight are ignored (returns false).
+## The change happens on a later frame so the calling button/scene is never freed mid-callback.
+func go_to(route_id: StringName, params: Dictionary = {}) -> bool:
+	if is_busy:
+		return false
+	if table == null or not table.has_route(route_id):
+		push_error("SceneRouter: unknown route %s" % route_id)
+		route_failed.emit(route_id, &"unknown_route")
+		return false
+	is_busy = true
+	_perform.call_deferred(route_id, params)
+	return true
+
+
+func _perform(route_id: StringName, params: Dictionary) -> void:
+	var packed := load(table.path_for(route_id)) as PackedScene
+	if packed == null:
+		push_error("SceneRouter: could not load scene for route %s" % route_id)
+		is_busy = false
+		route_failed.emit(route_id, &"load_failed")
+		return
+	if has_host():
+		if _host.has_method("transition_out"):
+			await _host.transition_out()
+		var scene := packed.instantiate()
+		_host.mount(scene)
+		if scene.has_method("on_route_entered"):
+			scene.on_route_entered(params)
+		current_route = route_id
+		if _host.has_method("transition_in"):
+			await _host.transition_in()
+	else:
+		var err := get_tree().change_scene_to_packed(packed)
+		if err != OK:
+			is_busy = false
+			route_failed.emit(route_id, &"load_failed")
+			return
+		current_route = route_id
+	is_busy = false
+	route_changed.emit(route_id)

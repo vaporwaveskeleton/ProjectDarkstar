@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="HealthStats" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://core/components/health_stats.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+ds_namespace = "ds_vigil.hull"
+source_section = "SYS-001 §1.2 Hull HP (base 1). D-08 open: A/B by editing max_hp."
+max_hp = 1
+invulnerable_after_hit_s = 0.0
