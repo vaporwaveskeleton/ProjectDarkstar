@@ -13,7 +13,7 @@ This is the progression contract. GDD-001 §6–§7 promises a run structure, a 
 | new to the project | GDD-001 §1–§3, §6, then §1–§2 here | §3 (Lantern Tree), §7 (Pacts) |
 | designing or tuning a node | §3 conventions, then SYS-001 §1, §7 | the branch table for your node |
 | building the save/persistence layer | §2 save layers, §9 economy flow | SYS-001 §8 invariants |
-| authoring content (kits, rites) | §1 run anatomy, §10 iteration unlocks | ZONES-001 |
+| authoring content (kits, rites) | §6.1 run anatomy, §10 iteration unlocks | ZONES-001 |
 | writing fiction or UI copy | §11 endings, §8 Codex | NARR-001 |
 | planning the build | §12 content cost, §13 coverage | PROD-001 |
 
@@ -131,7 +131,7 @@ Branch tables follow. "Rules-bending?" marks the 30 nodes that change a rule rat
 | HULL-14 | Plate Remembers | 4 | 520 | Ember | Plating re-arms at the start of each Seam instead of once per run; the SYS-001 §1.2 `Hull HP` ceiling of 2 is unchanged. | yes | HULL-4 | A fresh plate welds itself on at every Seam with a shower of sparks |
 | HULL-15 | Hard Vigil | 4 | 520 | Ember | SYS-001 §1.1 `brake` a further +25%; confirmed-stop window 0.3 → 0.4 s (brake ceiling needed [^gap]). | no | HULL-5 | Braking throws visible chalk dust and the ship plants like a stake |
 | HULL-16 | Anchor Overdrive | 4 | 60 | Unwritten Ink | The Anchor field's freeze 6.0 → 8.0 s, with the ring at its 436 px ceiling (SYS-001 §1.1 `anchor` rows). | no | HULL-9, HULL-13 | Choir units stand frozen while their chant frays at the edges |
-| HULL-17 | Anchor Against God | 5 | 900 | Ember | Capstone: the Anchor ring suspends the Waking Dark's contact death for you for 1.5 s, once per rampage (extends SYS-001 §2 phase 4 and the §1.1 Anchor note to the entity; new `✱` row). Stays inside the agency-loss budget of GDD-001 §8.7 criterion 3. | yes | HULL-9, HULL-13 | The Dark Star stops dead on a chalk circle drawn by a lamp |
+| HULL-17 | Anchor Against God | 5 | 900 | Ember | Capstone: the Anchor field suspends the Waking Dark's contact death for you for 1.5 s, once per rampage (extends SYS-001 §2 phase 4 and the §1.1 Anchor note to the entity; new `✱` row). Stays inside the agency-loss budget of GDD-001 §8.7 criterion 3. | yes | HULL-9, HULL-13 | The Dark Star stops dead on a chalk circle drawn by a lamp |
 | HULL-18 | Hollow Hull | 5 | 90 | Unwritten Ink | Capstone: while Frayed or worse your silhouette reads to the Choir as one of its own (SYS-001 §3.1 `Targeting law`, §3 `Deacon of Lies` phantoms); units will not fire first, and mining or lance fire breaks it. | yes | HULL-6 | Grubs walk past you mid-carry — but the Ledger Compass still reads you as you, and that is the tell |
 
 #### ORDNANCE (branch O) — Arc-Lance and Null-Iron Charges
@@ -556,7 +556,7 @@ Five Seams, two gates, three cards, three objects, one clock (SYS-001 §6 `Seams
 | Seed kind | Who sets it | Fixed by the seed | Notes |
 |---|---|---|---|
 | Open run | the player | world layout, kit order, geode and Shrine placement, Sigil pools, Relic pools and which half of each 1-of-2 pair is offered, warp state, the entity's counter-behaviour order | the default; a run with no seed is still seeded, just from a rolling number |
-| Daily / weekly | the clock | same list, identical for every player | the only comparison layer the game ships at 1.0 (GDD-001 §18 D-06, bounded by WARP-001 D-06) |
+| Daily / weekly | the clock | same list, identical for every player | the only comparison layer the game ships at 1.0 (GDD-001 §18 D-06, bounded by WARP-001 §6.1 D-06) |
 | Cursed | a shared 12-character code (GDD-001 §6.3) | same list, plus one forced Cursed Sigil at Seam 1 (§4.1) | the code is the community's joke channel; the price is printed, never hidden |
 
 - The **warp state must be derivable from the seed alone** — SYS-001 §10 locks this as a seed contract, and it is the precondition for any comparison mode: two players on one seed must see the same eaten rules in the same order. TECH-001 implements it; WARP-001 §8 R-05 is the request that closed it.
@@ -640,7 +640,7 @@ A Pact is the run's contract, written at the Chalk Desk in the Ruins before the 
 | **PACT-10** | **Nine in a Breath** | H8 — SYS-001 §1.3 `Over-fire detonation` fires again | the geode stops eating Mourning Glass, and the shards it had already swallowed stay swallowed: no refund, no double release | must not raise the detonation threshold, must not grant extra shards | Act 3+ |
 | **PACT-13** | **Lance Against the Quiet** | H10 — the Arc-Lance damages Oubliette Grubs at SYS-001 §3's HP values | the Grubs keep the E7 opt-in attack rule (SYS-001 §4): the Pact buys the lance back, not your safety | must not reduce Grub HP, must not extend to other Choir units, must not remove the E7 attack rule | Act 4+ |
 | **PACT-16** | **Burn It Clean** | H12 — SYS-001 §1.5 `Surgelight` regains its tier condition and the §9 Shroud row offers the Surgelight clear alongside the Ward clear | the cost row's value does not move, and the clear stays single-cell: you are buying back the *condition*, not a stronger burn | must not change the cost value, must not clear Shroud at range or over multiple cells per burn | blocked on the owed SYS-001 §9 Shroud-clear row (LR-06) |
-| **PACT-19** | **Name in the Ledger** | H16 — the Compass may show the entity marker again, subject to the ordinary SYS-001 §6 lie allowance at T ≥ 3 | the marker is a dot, nothing else: no phase, no segment count, no Waking state — those are §4.7 never-lies elements and the Pact cannot reach them | as stated in WARP-001 §3.3 | Act 4+ |
+| **PACT-19** | **Name in the Ledger** | H16 — the Compass may show the entity marker again, subject to the ordinary WARP-001 §4.2 lie allowance at T ≥ 3 | the marker is a dot, nothing else: no phase, no segment count, no Waking state — those are §4.7 never-lies elements and the Pact cannot reach them | as stated in WARP-001 §3.3 | Act 4+ |
 | **PACT-22** | **Unmake in the Third Sky** | H18 — rule-level unmaking is legal in Act 3 as well as Act 4, at SYS-001 §2 phase 6's latch time | the run must still expose three threads in the open way; nothing about the fight's shape is softened | must not pre-attach or spend a thread, must not reduce the 3-thread requirement or `Unravel hits`, must not stack with itself | Act 5 / NG+ |
 
 ### 7.3 The sixteen shape Pacts

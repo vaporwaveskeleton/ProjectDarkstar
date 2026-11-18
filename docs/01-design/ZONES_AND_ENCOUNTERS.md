@@ -95,7 +95,7 @@ SYS-001 §10 lists "Threat budgets per Seam" as the tunable to move if a kit fai
 The Encounter Kit is how a level is made; the sprite part kit (ART-002, ART-001 §8) is how the things inside it are drawn. Both are reuse systems and they are why 32 kits plus one unit kit covers the whole campaign:
 - **Design reuse:** 32 kits × per-tier re-key packs × mirror policy = the run variety, at zero extra geometry cost. Cut order (GDD R-03) applies to kits the same way it applies to sprites: BK-* and DO-* geometry sets land last and are the ones that ship with a `placeholder` status in §3.
 - **Art reuse:** a kit asks for **geometry clusters** (bone stacks, arches, coral, lens rings — biome-level props, one set per biome) plus the unit/entity sprites already covered by the part kit. A kit never asks for a unique boss or a unique unit.
-- **The horror pairing:** a kit re-keys its *slots*; the warp re-keys its *contents'* sprite parts at runtime (ART-001 §8.2). One system changes the room, the other changes what is standing in it, and neither needs new art.
+- **The horror pairing:** a kit re-keys its *slots*; the warp re-keys its *contents'* sprite parts at runtime (ART-002 §5.3). One system changes the room, the other changes what is standing in it, and neither needs new art.
 
 ### 1.7 What a kit physically is (Godot scene tree)
 One kit = one PackedScene, `res://scenes/zones/kits/<KIT_ID>.tscn`, plus its `kit_definition.tres`. Names are stable and are the manifest keys for art asks.

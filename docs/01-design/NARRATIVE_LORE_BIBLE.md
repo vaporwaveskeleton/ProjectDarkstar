@@ -1,6 +1,6 @@
 # DARKSTAR — Narrative & Lore Bible
 
-**Doc ID:** NARR-001 · **Version:** 1.0 · **Date:** 2026-11-16 · **Owner:** narrative · **Status:** complete-draft
+**Doc ID:** NARR-001 · **Version:** 1.0 · **Date:** 2026-11-16 · **Owner:** narrative · **Status:** INCOMPLETE — only §0–§1 are on disk; §2–§14 are cited throughout but not written (2026-11-17 doc review)
 **Upstream:** `docs/01-design/GDD_DARKSTAR_v0.2.md` (GDD-001) · `docs/01-design/SYSTEMS_BIBLE_STATS.md` (SYS-001) · `docs/01-design/ROGUELIKE_LOOP_AND_LANTERN_TREE.md` (LOOP-001)
 **This doc owns:** the fiction, the factions' theology, the entity's interior logic, the Ruins' cast, the Codex prose, the endings as fiction, the chronicle, the writing's refusals, and the voice/text inventory outside the entity's state announcements.
 

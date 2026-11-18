@@ -23,7 +23,7 @@
 | Brief asks for | Goes to | Why |
 |---|---|---|
 | `README.md` | **new**, repo root | none exists; short, points at docs/ |
-| `docs/ARCHITECTURE.md` | **TECH-001** §2 onward | TECH-001 owns architecture. It stops at §1.5 today; §2–§8 are referenced but not written |
+| `docs/ARCHITECTURE.md` | **TECH-001** §2 onward | TECH-001 owns architecture. §2–§11 written 2026-11-17 (several subsections still planned; see TECH-001 §0.3) |
 | `docs/SCENE_TREE_RULES.md` | TECH-001 §2 (scene tree, `SectorHost`, `CompositeRig`, anchors) | §0.1 table assigns it there |
 | `docs/SIGNALS_AND_EVENTS.md` | **new** `docs/04-production/SIGNALS_AND_EVENTS.md` (EVT-001) | not owned by any doc; add a row to TECH-001 §0.1 |
 | `docs/RESOURCES.md` | TECH-001 §3 (`TunableRegistry`, `ds_` keys, data lint) | already assigned |
@@ -101,6 +101,6 @@ Done = boots into `boot.tscn`, reaches `sector_stub.tscn` with no log errors, al
 Opus is used twice (phase 1 and 6). Everything that reads large files or logs goes to haiku.
 
 ## 6. Known gaps found during the correlation
-- TECH-001 ends at §1.5 (156 lines) but §0.1/§0.3 reference §2–§11. Phase 1 must write them, otherwise agents will cite sections that do not exist.
+- ~~TECH-001 ends at §1.5~~ — resolved 2026-11-17: §2–§11 written. Still planned (cited but not yet subsections): §4.3, §4.4, §4.9, §5.1–§5.4, §6.3, §8.1–§8.4.
 - `ASSET_PIPELINE.md` (ASSET-003), `PRODUCTION_PLAN_MILESTONES.md` and `STEAM_MARKET_PLAN.md` are referenced but not on disk.
 - GDD §2 allows 512×288 as a fallback; TECH-001 §1.1 closes it to 640×360. SYS-001 §9 still lists the fallback. Ask the owner to strike it.

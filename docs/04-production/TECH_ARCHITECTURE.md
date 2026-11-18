@@ -15,7 +15,7 @@
 | **This doc (TECH-001)** | `docs/04-production/TECH_ARCHITECTURE.md` | Engine and build config; the Godot scene tree and node ownership; the anchor-node contracts; the data-resource layout and the `ds_` key convention; the tunable-class rules and the data lint; the seeded-RNG and replay design; the shader stack and the draw-call/memory ceilings; manifest **consumption** at build time; save layout, versioning, migration, telemetry keys, Steamworks scope; the per-frame budget split; the automated-test set | Any game number (SYS-001). Any art rule (ART-001/ART-002). Any level parameter (ZONES-001). Any run-structure rule (LOOP-001). Any lore claim (NARR-001) |
 | Game design document | `docs/01-design/GDD_DARKSTAR_v0.2.md` | What the game is; the pillars; the systems as fiction and as player experience; the locked decisions (GDD §18) and the glossary (GDD §19) | Numbers, scene structure, file formats |
 | Systems bible | `docs/01-design/SYSTEMS_BIBLE_STATS.md` | **Every number.** Stats, threat budgets, corruption constants, Composure deltas, feel and performance constants (§9), the tunables register (§10), the save and telemetry invariants (§8) | How a number is stored, cached, ticked or rendered |
-| Zones & encounters | `docs/01-design/ZONES_AND_ENCOUNTERS.md` | Biomes, the 32 Encounter Kits, kit `.tres` parameters, the seam assembler's rules, the **anchor-node names** (§1.6) and the geometry contracts each anchor carries | The node classes that implement those anchors; budgets |
+| Zones & encounters | `docs/01-design/ZONES_AND_ENCOUNTERS.md` | Biomes, the 32 Encounter Kits, kit `.tres` parameters, the seam assembler's rules, the **anchor-node names** (§1.7) and the geometry contracts each anchor carries | The node classes that implement those anchors; budgets |
 | Roguelike loop & Lantern Tree | `docs/01-design/ROGUELIKE_LOOP_AND_LANTERN_TREE.md` | Iterations, Run Sigils, Pacts, Relics, the ~90 Lantern Tree nodes, the five endings | Save schema, unlock persistence mechanics |
 | Reality-warp escalation | `docs/01-design/REALITY_WARP_ESCALATION.md` | Warp Tiers T0–T5 as authored content; eaten-rule list; the UI-eating and Compass-lying content | The shader that implements a tier, the tier state machine |
 | Art bible | `docs/02-art/ART_BIBLE.md` | Palette roles, silhouette grammar, lighting law | File formats, atlas packing, import flags |
@@ -64,7 +64,7 @@ Game-world words come only from GDD §19. The following are **engineering** name
 | `SteadyLedger` | The accessibility option that forces the HUD honest | §5.3 |
 | `RunSeed`, `SeedCode`, `ReplayVerifier` | Deterministic run identity, the 12-character shareable form, and the hash-comparison test | §4.9 |
 | `SaveEnvelope` | The versioned wrapper around every persisted block | §7.1 |
-| `ContactBudget` | The runtime counter enforcing SYS-001 §9's on-screen contact ceiling | §8.2 |
+| `ContactBudget` | The runtime counter enforcing an on-screen contact ceiling — **no SYS-001 row exists yet** (§11 Q-T14) | §8.2 |
 | `FrameBudget` | The per-system split of the 16.7 ms frame | §8.1 |
 
 ---
@@ -154,8 +154,8 @@ Modders: we ship the `.tres` files loose in the PCK's `data/` folder so a player
 | Movement, lance, charges, Composure, Warp Tier state, Hourglass Clock, spawn budgets, Choir AI state machines, Lantern Tree, save, telemetry, HUD, menus, dialogue, Codex, sector assembly | **GDScript** | all of it is state machines over small numbers, bounded by SYS-001 §3 spawn budgets and §9 contact ceilings — not by arithmetic volume |
 | Per-pixel work (light masks, Shroud, warp distortion) | **canvas-item shaders**, GLSL-like Godot shader language | GPU-side; no GDScript pixel loops ever |
 | Composite atlas lookups, part pooling | **GDScript**, table-driven | lookups are dictionary hits, not per-pixel work |
-| Anything measured over 10,000 objects per frame | would need GDExtension/Rust or C++ | **the ceiling is never reached**: SYS-001 §3.1 caps Choir on-screen at 32 entities + 20 entity modules + 24 geodes, and §9 caps contacts at 24 and active shots at 180 |
-| A native collision or spatial-hash rewrite | refused for v1 | Godot's 2D physics at ~80 colliders per sector is far inside budget; §8.3 measures before we decide |
+| Anything measured over 10,000 objects per frame | would need GDExtension/Rust or C++ | **expected never to be reached**, but the on-screen caps that would prove it (Choir units, entity modules, geodes, contacts, active shots) are **not in SYS-001 yet** — earlier figures here had no source and were removed (§11 Q-T14) |
+| A native collision or spatial-hash rewrite | refused for v1 | Godot's 2D physics is expected to be inside budget (collider count per sector ✱ unmeasured); §8.3 measures before we decide |
 | Steamworks | GDExtension (`GDSteamworks`, community build, pinned version ✱) | the one exception we accept, because it is a binding, not gameplay code |
 
 **We refuse to write native code for v1.** Not because GDScript is fast, but because nothing in this game's per-frame work is arithmetic-bound: the frame cost is draw calls, shader invocations and scene churn, and those are engine-side regardless of what language authors them. A GDScript hot spot found in §8 profiling gets a data-structure fix or a move to a shader first; a GDExtension rewrite is a documented, logged decision with a profile attached, and no such decision has been taken as of this doc. The single native component we will ship is the pinned Steamworks binding, which contains no game logic and can be stubbed out for non-Steam builds.
@@ -255,7 +255,7 @@ Source: `core/physics/physics_layers.gd` (`PhysicsLayers`) and `project.godot [l
 
 Ownership: all hit truth resolves in `_physics_process` (60 Hz, §1.2). Animation never toggles shapes directly. Expensive bodies (future Choir) disable processing when off-screen beyond the audio-occlusion radius (SYS-001 §9) — planned, to be measured in §8. Single-player only (D-09): there is no authority or rollback layer.
 
-Bullet-layer decision (TASK-BOOT Q1, owner 2026-11-17): Godot `Area2D`/`ShapeCast2D` first. GDD §13's custom quadtree is built only if §8 profiling shows the 180-shot ceiling missing budget.
+Bullet-layer decision (TASK-BOOT Q1, owner 2026-11-17): Godot `Area2D`/`ShapeCast2D` first. GDD §13's custom quadtree is built only if §8 profiling shows the bullet layer missing budget at the SYS-001 active-shot ceiling (row owed, §11 Q-T14).
 
 ### 2.7 Audio buses
 `data/audio/default_bus_layout.tres`: `Master` (= AUDIO-001's `BUS-MST`; Godot requires bus 0 to be the master), `BUS-MUS`, `BUS-CHO`, `BUS-ENT`, `BUS-UI`, `BUS-FLY`, `BUS-AMB`, all sending to `Master`. Ducking sidechains (AUDIO-001 §7.2) and the never-ducked rules (§7.3) are **not wired yet**. No `AudioService` autoload exists; one needs a §2.8 row first.
@@ -406,6 +406,7 @@ Per ART-002 §7: canvas default filter Nearest (set in `project.godot`); pixel a
 | Q-T11 | No invulnerability-after-hit value exists; `invulnerable_after_hit_s = 0` ✱ | SYS-001 §1.2 | design adds a row if D-08 lands on > 1 HP |
 | Q-T12 | Gamepad bindings for Surgelight (RB), brake (LB), pause (Start) and fire (RT) are ✱; the GDD gives keyboard/mouse only | GDD §4.1, D-01 | design confirms |
 | Q-T13 | GDD §19 says "Seam (a run level)"; this doc and the code use "sector" for the playfield (`SectorHost`, `sector_stub`) | GDD §19, TECH-001 §0.3 | owner confirms both words, or rename |
+| Q-T14 | TECH-001 §1.5 and §0.3 quoted on-screen caps (Choir units, entity modules, geodes, contacts, active shots) as SYS-001 §3.1/§9 rows; SYS-001 has none of them, and SYS-001 §1.1 refers to a "§9 contact budget" that does not exist | SYS-001 §1.1, §3.1, §9 | design adds the cap rows to SYS-001 §9; TECH-001 §8.2 then cites them |
 
 ### 11.2 Decision log
 | Date | Decision | By |
@@ -415,3 +416,4 @@ Per ART-002 §7: canvas default filter Nearest (set in `project.godot`); pixel a
 | 2026-11-17 | GdUnit4 v6.2.3 vendored into `addons/gdUnit4` | owner |
 | 2026-11-17 | Route scenes mount under Boot's `RouteHost` (not `change_scene_to_*`) so the curtain persists and UI tests can use a fake host | production |
 | 2026-11-17 | §1.1 multiplayer citation corrected from D-11 to D-09 | production |
+| 2026-11-17 | Doc review: fixed 13 mechanical citation/status errors across TECH-001, SYS-001, LOOP-001, ZONES-001, WARP-001, AUDIO-001, NARR-001, UI-001, EVT-001, TASK-BOOT; removed unsourced on-screen cap numbers from §0.3/§1.5/§2.6 (Q-T14). WARP-001 §6.1 decision IDs kept (its §9.2 freezes the `WARP-001 §6.1 D-nn` citation form); ambiguous bare uses now say §6.1 | production |

@@ -720,7 +720,7 @@ IDs are stable for TECH-001's audio tables (TECH-001 §6). Levels are relative t
 | C05 | Ward Pulse | SYS-001 §1.4 | a chalk circle being drawn, 0.3 s ✱ | −14 dB |
 | C06 | Chalk ward / Anchor placed | SYS-001 §2 phase 0, SYS-001 §1.4 | the chalk strike; the same sample family as H03 | −15 dB |
 | C07 | Hull hit | SYS-001 §1.2 | a brass beam struck, with the ship ringing on it | −11 dB |
-| C08 | Hull lost | SYS-001 §1.2, §2.13 | the filter sweep, not an impact | bed level |
+| C08 | Hull lost | SYS-001 §1.2; §2.13 here | the filter sweep, not an impact | bed level |
 | C09 | Second Vigil revive | LOOP-001 HULL-6 | the sweep played backwards, one bell | −13 dB |
 | C10 | Ship foley beats | GDD-001 §12 | brass creak, guttering flame, chalk dust, the clock — placed at the seams of a run | −24 dB |
 | D01 | Entity hit reaction | SYS-001 §2.1 | a low wooden knock, pitch by module; the count of knocks is the damage tell | −13 dB |
@@ -749,10 +749,10 @@ IDs are stable for TECH-001's audio tables (TECH-001 §6). Levels are relative t
 | F06 | Grub keening | SYS-001 §3 🔒 | a single voice, sliding, never a word | −16 dB |
 | F07 | Matron silenced | SYS-001 §3, §5.1 | the metre losing its conductor: one beat of raggedness, then quiet | −18 dB |
 | F08 | Penitent | SYS-001 §3 | weeping at a fixed low level; the boon is a field-wide dim, not a sound | −22 dB |
-| F09 | Ring node bell | SYS-001 §3.1, §2.8 | one bell per node, all in the same tuning so a missing node is obvious | −17 dB |
+| F09 | Ring node bell | SYS-001 §3.1; §2.8 here | one bell per node, all in the same tuning so a missing node is obvious | −17 dB |
 | F10 | Ring break | SYS-001 §3.1 | every bell stopping in the same bar | −16 dB |
 | G01 | Deposit thud | SYS-001 §2 phase 1 | a low strike in the Sepulchre's own register; the run's real clock | −12 dB |
-| G02 | Deposit halted | SYS-001 §3.1, §2.5 | the thud's decay cut short, then keening (F06) | −13 dB |
+| G02 | Deposit halted | SYS-001 §3.1; §2.5 here | the thud's decay cut short, then keening (F06) | −13 dB |
 | G03 | Quickening onset | SYS-001 §2 phase 3 | a sine swell with no transient (§1.4) | −15 dB |
 | G04 | The protected silence | GDD-001 §12 🔒 | nothing; and the mix's room tone is faded out over 0.3 s ✱ so the silence is real | −∞ |
 | G05 | Shrine conversion step | SYS-001 §6 | a bell being added to the field, one per step | −18 dB |
@@ -929,7 +929,7 @@ Every audio cue the player needs has a visual twin already specced elsewhere; th
 | Audio cue | Visual twin | Owner |
 |---|---|---|
 | Chant, and its radius | the §5.5 indicator ring | AUDIO-001 (spec) / ART-001 (render) |
-| Grub keening on a dead deposit | the deposit thud stopping, plus the Ward's chalk arc | SYS-001 §3, §5.5 |
+| Grub keening on a dead deposit | the deposit thud stopping, plus the Ward's chalk arc | SYS-001 §3; §5.5 here |
 | B06 glass chime | the emptied Charge pip flashing once, plus the Compass strip's loss count (SYS-001 §1.4 🔒) | UX / ART-002 |
 | A07 over-fire warning | the geode face's own crack stages (SYS-001 §1.3) | ART-001 |
 | F01 Acolyte tell | the turret swing's telegraph (SYS-001 §3) | SYS-001 §3 is the source of truth for the tell window |

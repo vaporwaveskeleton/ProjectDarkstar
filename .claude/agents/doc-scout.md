@@ -9,4 +9,4 @@ You fetch facts for another agent. You never edit.
 - Locate the section by heading with Grep (`^#{1,3} `), then Read only that line range.
 - Return: doc path, section number and heading, and the excerpt (max ~60 lines). Quote tables exactly; numbers must be verbatim.
 - If two docs disagree, return both excerpts and say "CONFLICT" on the first line.
-- If the section does not exist (TECH-001 currently ends at §1.5), say so plainly. Do not summarise from memory.
+- If the section does not exist (e.g. TECH-001 §4.x, §5.x, §6.3, §8.x are still planned placeholders; NARR-001 has only §0–§1; LOOP-001 stops at §7), say so plainly. Do not summarise from memory.

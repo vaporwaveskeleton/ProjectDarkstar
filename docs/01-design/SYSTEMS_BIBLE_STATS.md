@@ -46,7 +46,7 @@ Conventions used everywhere:
 | `anchor` ring radius (HULL-9 chain) | 190 px | 256 px (HULL-10, +35%); 436 px ceiling (HULL-13) | ✱ first-pass. The ring deliberately out-reaches the 340 px lantern ceiling once paid for. |
 | `anchor_freeze` duration | 6.0 s | 8.0 s (HULL-16) | ✱ Choir units inside stop moving, chanting and firing; elites and Heralds freeze for half duration. It never damages: a stall, not a kill, per GDD-001 §8.7. |
 | `anchor_rearm` | 20 s | 14 s (HULL-12) | ✱ the timer starts when the freeze lands, not when the field is raised. |
-| `anchor` exclusions and cap | Sepulchre and The Penitent are never frozen; max 6 units per cast | — | ✱ frozen units still count against §4 spawn budgets and the §9 contact budget. Stopping a deposit is WARD-6's job, not the ring's. |
+| `anchor` exclusions and cap | Sepulchre and The Penitent are never frozen; max 6 units per cast | — | ✱ frozen units still count against §4 spawn budgets and the §9 contact budget (row not yet written — see TECH-001 §11 Q-T14). Stopping a deposit is WARD-6's job, not the ring's. |
 
 ### 1.2 Hull, lantern and the dark
 
@@ -174,7 +174,7 @@ All units are assembled from the 64×64 modular part kit (ART-002), which is how
 | **The Penitent** | unkillable except by you | 60 px/s drift | none | n/a | 0 (toy) | 3 hits → **Vigil Boon** (one of: temp shield 8 s / +1 Charge / 20 s chant silence); −1 Composure for shooting it 🔒 risk/reward |
 | **Choir Matron** *(mini-boss)* | 60 | 90 px/s | spawns 3 Grubs / 9 s; **Litany** +40% deposit within 400 px | n/a | 12 | **silence, do not kill**: killing stops the chant and *rains* the sector (Shroud bloom, +1 Corruption) — Seam-3 gate |
 | **The Listener** | 12 | 90 (silent) / 380 (charge, 2.5 s) | contact 1 dmg | 8 f after your gunfire | 6 | blind; hunts gunfire within a 90° arc; **immune to a silent player** — it loses interest after 6 s without sound |
-| **Herald of the Failed Star** *(elite, 6 named)* | 25–40 | unit-derived | hard-counter to your most-used tool | 24 f | 10–14 | Entropy-gated; see §5.3 |
+| **Herald of the Failed Star** *(elite, 6 named)* | 25–40 | unit-derived | hard-counter to your most-used tool | 24 f | 10–14 | Entropy-gated; see §5.2 |
 
 ### 3.1 Faction laws that are numbers, not mood 🔒
 

@@ -2,7 +2,7 @@
 
 **Doc ID:** UI-001 · **Version:** 1.0 · **Date:** 2026-11-17 · **Owner:** production
 **Upstream:** GDD §10 (menus, accessibility), ART-001 §4 (palette) and §7 (UI art), WARP-001 §4 (HUD lie law, Steady Ledger), AUDIO-001 §6.2 (I06–I08 UI cues), SYS-001 §9 (safe area at 200 % text)
-**Not here:** HUD lie content (WARP-001 §4), diegetic HUD implementation (TECH-001 §5.2), localization (L10N-001)
+**Not here:** HUD lie content (WARP-001 §4), diegetic HUD implementation (TECH-001 §5, `DiegeticHud` row), localization (L10N-001)
 
 ## 1. Screen inventory
 

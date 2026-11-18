@@ -31,7 +31,7 @@ Rules: signal names are past tense (`hull_breached`, `save_failed`), payloads ar
 | `SaveService` | `save_completed` | `slot: StringName` | future save indicator | built |
 | `SaveService` | `save_failed` | `slot, reason: StringName` | future toast via `PlayerMessages.save_message` | built |
 | `SaveService` | `load_failed` | `slot, reason: StringName` | same | built |
-| `SettingsService` | `setting_changed` | `key: StringName, value: Variant` | settings screen, future HUD/warp (Steady Ledger, photosensitivity) | built |
+| `SettingsService` | `setting_changed` | `key: StringName, value: Variant` | none yet (the settings screen reads values on open); future HUD/warp (Steady Ledger, photosensitivity) | built |
 | `Screen` | `closed` | — | the screen's opener | built |
 | `ConfirmScreen` | `confirmed`, `cancelled` | — | the opener (`PauseScreen`) | built |
 | `PauseScreen` | `abandon_requested` | — | `SectorStub` | built |
