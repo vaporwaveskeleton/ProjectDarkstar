@@ -192,7 +192,7 @@ Status: **specified, not drawn.** Until the three faces below exist as glyph she
 | Line height | 12 px (24 at 200 %) | 22 px (44 at 200 %) | 8 px (16 at 200 %) |
 | Sheet ids (ART-002 §2) | `ds_ui_fontLedger`, `ds_ui_fontLedgerGlitch` | `ds_ui_fontLitany`, `ds_ui_fontLitanyGlitch` | `ds_ui_fontCabinet` |
 
-**Ledger vertical layout inside its 12 px cell** (row 0 at the top): rows 0–1 hold the accents on capitals (`É Ü Ñ`); rows 2–8 hold cap height (baseline under row 8); rows 4–8 are the x-height band; rows 9–10 hold descenders and the cedilla; row 11 is the line gap. Lowercase accents (`é ü ñ`) sit in rows 2–3. This is why the cell is 12 px: Latin-1 capitals fit without clipping, and the 12 px line matches the CJK fallback (§11.6).
+**Ledger vertical layout inside its 12 px cell** (row 0 at the top): rows 0–1 are reserved headroom (above-cap marks, should a language with accents ever be added — L10N-001 §7); rows 2–8 hold cap height (baseline under row 8); rows 4–8 are the x-height band; rows 9–10 hold descenders; row 11 is the line gap. The 12 px cell keeps that headroom so a future extension never changes line height.
 
 **Cabinet** normalises the existing `FONT5x7` table in `tools/pixel-art/src/ds_pixextras.ps1`. That table is a prototype: several glyphs are 6 px wide and the space glyph contains lit pixels (ASSET-003 §9). The drawn face must be strictly 5 × 7.
 
@@ -225,42 +225,36 @@ The entity's lines are the most screenshotted text in the game, so the layout is
 | Band | a full-width **NULL band** behind the line, line height + 8 px top and bottom (38 px at 1×). The band guarantees contrast against any warp palette and reads as a hole torn in the frame |
 | Position | centred horizontally; band centre at **y = 120 of 360**, the upper third, so the line never covers the Vigil (centre of view) or the HUD strips. If the Vigil is in the upper third, the band moves to y = 240 |
 | Length | 1 line preferred, 2 lines maximum, ≤ 5 words (AUDIO-001 §4) |
-| Width | maximum 560 px (40 px margins). Overflow order: break at a word; then tighten tracking 2 → 1 px; then use 2 lines. **Never scale down.** L10N-001 translator notes carry this limit |
+| Width | maximum 560 px (40 px margins). Overflow order: break at a word; then tighten tracking 2 → 1 px; then use 2 lines. **Never scale down.** `en.po` context notes carry this limit (L10N-001 §3) |
 | Thumbnail test | the line must be readable when the frame is shrunk to 160 × 90 (a 25 % store or social thumbnail). At 1× a 16 px cap becomes 4 px, which is the floor; at 200 % text it is comfortable |
 | Never | animated letters, per-letter colour, SIGNAL, gradients, glow. The horror is the hard cut and the silence before it (GDD-001 §12) |
 
-### 11.6 Coverage and the CJK plan
+### 11.6 Coverage (English only)
+
+The game ships in English only (L10N-001 §1, owner decision 2026-11-17). Other scripts and accented Latin are deferred; if a language is added later, its coverage is specified here at that time.
 
 | Face | Required coverage |
 |---|---|
-| Ledger | printable ASCII (95); the Latin-1 Supplement letters and marks (`À–ÿ`, `¡ ¿ « » ·`); Latin Extended-A as needed for de/fr/es/pt-BR (`Œ œ Ÿ`); typographic `‘ ’ “ ” – — …`; arrows `← → ↑ ↓`; `× •`. This covers GDD-001 §2's Latin launch locales |
-| Litany | `A–Z 0–9 . , ! ? ' – …` and every capital in the Ledger Latin set (`À É Ü Ñ Ç Œ` …). German `ß` in capitals is written `SS` (house rule, recorded in L10N-001) |
-| Cabinet | `A–Z 0–9 - . : ! / ' % ©` plus the Latin-1 capitals, because the attract text is translated too |
-
-**CJK (zh-CN, ja).** Hand-drawing thousands of CJK glyphs is out of scope. The plan is a **12 × 12 open-licence pixel CJK face** as the fallback for all three roles:
-- Ledger role: the face at 1× (its 12 px line matches Ledger's).
-- Litany role: the same face at ×2 (24 px) with the Litany colour treatment (BONE-5, NULL outline, NULL band). Integer scale, so §11.1 law 2 holds.
-- Cabinet role: the face at 1× inside the costume.
-
-Candidates: **Ark Pixel Font** and **Fusion Pixel Font**, 12 px editions. **Licence not yet verified**: confirm the licence and Simplified Chinese and Japanese coverage before adoption, and record the result in ASSET-003. The Latin glyphs inside a CJK font are never used; Latin always comes from our faces. CJK locales do not build until this face is adopted and passes §11.9 (GDD-001 §2).
+| Ledger | printable ASCII (95); typographic `‘ ’ “ ” – — …`; arrows `← → ↑ ↓`; `× •` |
+| Litany | `A–Z 0–9 . , ! ? ' – …` |
+| Cabinet | `A–Z 0–9 - . : ! / ' % ©` |
 
 ### 11.7 How the warp corrupts text
 WARP-001 owns *when* text lies (§4.2 "Glyph" deviation class and tell family; §4.4 Steady Ledger disables glyph corruption). This section owns *how it is drawn*:
-1. Corruption always operates on the **translated, laid-out string**, glyph by glyph, never on the translation key, and never by re-ordering letters.
-2. A corrupted glyph is replaced by a glyph from that face's **glitch set** (`*Glitch` sheets): 12 drawn variants per face (mirrored, rotated 90°, half-erased, chalk-smeared, ink-blotted, doubled stroke). **It is never replaced by another real letter.** That prevents accidental words, including offensive ones, in any language, and keeps the value readable. That is the Glyph-class promise.
-3. CJK glyphs are corrupted by an overlay (smear or strike from the glitch set) drawn over the real glyph, never by substitution.
-4. Corruption never changes a glyph's advance width, so lines do not reflow and anchors do not move (SYS-001 §9: warp may hide an element, never displace one).
-5. Photosensitivity mode: corruption is static. A glyph may be wrong, but it never flickers.
+1. Corruption always operates on the **displayed, laid-out string**, glyph by glyph, never on the text key, and never by re-ordering letters.
+2. A corrupted glyph is replaced by a glyph from that face's **glitch set** (`*Glitch` sheets): 12 drawn variants per face (mirrored, rotated 90°, half-erased, chalk-smeared, ink-blotted, doubled stroke). **It is never replaced by another real letter.** That prevents accidental words, including offensive ones, and keeps the value readable. That is the Glyph-class promise.
+3. Corruption never changes a glyph's advance width, so lines do not reflow and anchors do not move (SYS-001 §9: warp may hide an element, never displace one).
+4. Photosensitivity mode: corruption is static. A glyph may be wrong, but it never flickers.
 
 ### 11.8 Delivery format
 Each face ships as a PNG glyph sheet on a fixed grid (one cell per glyph, `VOID-0`-free, transparent background, the fill colour only; colour roles are applied in-engine) plus a character map. TECH-001 owns the in-engine font resource (BMFont `.fnt` or Godot `FontFile`). ASSET-003 §6 owns the export step. The sheets live under kit `ui`: `assets/sprites/generated/ui/` once generated, or `assets/sprites/source/ui/` if hand-drawn in Aseprite.
 
 ### 11.9 Typography QA (a face is done when)
 1. Every required glyph exists on the grid and matches §11.2's metrics.
-2. The **test sheet** renders: the pangram set for every Latin launch locale; every entity line from AUDIO-001 §4 in Litany; every `en.po` string in Ledger; and the glitch set. It renders on VOID-0, VOID-1, the T3 palette and in 50 % greyscale, at 1× and 2×.
+2. The **test sheet** renders: an English pangram set; every entity line from AUDIO-001 §4 in Litany; every `en.po` string in Ledger; and the glitch set. It renders on VOID-0, VOID-1, the T3 palette and in 50 % greyscale, at 1× and 2×.
 3. No two glyphs touch at default tracking, including kerned pairs.
 4. Tabular digits verified: a counter ticking 0–9999 never shifts its neighbours.
-5. The thumbnail test of §11.5 passes for the longest shipped entity line in each locale.
+5. The thumbnail test of §11.5 passes for the longest shipped entity line.
 
 ---
 

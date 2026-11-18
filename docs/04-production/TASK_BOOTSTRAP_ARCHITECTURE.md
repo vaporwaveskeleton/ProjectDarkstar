@@ -65,6 +65,8 @@ Applies: swept ShapeCast for the lance and fast shots, one-hit-per-window, layer
 - Brief items with nothing to build yet: shop, equipment, skills screens. Lantern Tree screen comes later.
 
 ### 3.5 Localization — keep, scoped to the locales in GDD §2
+
+> **Superseded 2026-11-17:** the game is English only (L10N-001 §1). The locale, RTL, pseudo-translation and CJK items below were removed from code, tests and docs. Kept here as history.
 Launch: EN; then de/fr/es/pt-BR/zh-CN/ja. No RTL locale is planned, so RTL is "architecture must not block it" + one pseudo-RTL test, not a shipping requirement.
 Godot has no ICU: use gettext `.po` with plural forms and `msgctxt`. CJK needs the bitmap-font pass (ART-001 §9) before those locales build. Warp effects that corrupt text must work on the translated string, not the key. Pseudolocale must pass under T0–T2 warp.
 

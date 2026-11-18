@@ -86,7 +86,7 @@ Public-facing copy may say "for fans of action roguelikes and arcade shooters". 
 | Title | **DARKSTAR** | subtitle *The Nine Hollow Skies* reserved for the free update or a later edition (GDD-001 header) |
 | Developer / publisher | the studio name (owner to confirm) | — |
 | Release date field | "Coming soon" until the date is locked in PROD-001 M6 | never show a quarter we may miss |
-| Languages at launch | English (full); de/fr/es/pt-BR/zh-CN/ja listed only once shipped (L10N-001 §1) | listing a language we do not ship damages reviews |
+| Languages at launch | **English only** (L10N-001 §1, owner decision 2026-11-17). No other language is listed until it ships | listing a language we do not ship damages reviews |
 | Steam Deck | "Verified" is the target (GDD-001 §2); claim nothing until Valve's review returns | PROD-001 M3 gate |
 | Controller | full gamepad support (D-01, GDD-001 §4.3) | tag it |
 | Content descriptors | cosmic horror, mild occult themes, no gore (GDD-001 §2 ESRB T / PEGI 12 target) | rating is a target, not a certificate |

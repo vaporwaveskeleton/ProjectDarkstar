@@ -29,7 +29,7 @@
 | Writer (contract or lead) | 0.2 FTE M2–M6 | NARR-001 §7–§8 text volume: eat lines, death grammar, Codex |
 | Community / creator manager | 0.3 FTE from M4 (store page live) | MARKET-001 §8–§9 |
 | QA / playtest coordination | Discord volunteers + 2 paid test rounds ✱ (M2, M5) | GDD-001 §15 interview metrics need structured sessions |
-| Localization | vendor, M6–M7 (L10N-001 §7) | only after text lock |
+| Localization | **none** — English only (owner decision 2026-11-17, L10N-001 §1) | revisit after 1.0 |
 
 If the team is smaller than this table, §7's cut order fires earlier; dates never stretch silently.
 
@@ -197,7 +197,7 @@ Fired in order, one item at a time, only by the owner, each recorded in GDD-001 
 | 2 | Two biomes (The Black and Green Rot become post-launch) | ~9 kits + Shroud polish | the race and the warp |
 | 3 | Six Herald elites → two | elite AI and art | Entropy still escalates |
 | 4 | Ending 3's Choir mode stays post-launch (already planned) | — | — |
-| 5 | Localization moves to +1 month (GDD-001 §2 allows it) | vendor time before launch | launch date |
+| 5 | ~~Localization moves to +1 month~~ — removed: English only (L10N-001 §1) | — | — |
 | 6 | Daily Hollow Vigil moves later than M8 | leaderboard work | the update still ships content |
 
 Never cut: Act 0 and the floor-drop, the Waking race, Steady Ledger and the accessibility set (GDD-001 §10), the save cadence rule (SYS-001 §8), ending 5.

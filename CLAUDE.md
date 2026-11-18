@@ -19,7 +19,7 @@ This file is loaded every turn: keep it short. Detail lives in `docs/`; cite it,
 | Audio buses, cues, ducking | `docs/03-audio/AUDIO_DESIGN.md` (AUDIO-001) §6–7 | |
 | Signals register, no event bus | `docs/04-production/SIGNALS_AND_EVENTS.md` (EVT-001) | Add a row before adding a signal |
 | Menus, `Screen`/`ScreenStack`, Theme, focus, control states | `docs/04-production/UI_ARCHITECTURE.md` (UI-001) | |
-| Translation keys, locales, formatting | `docs/04-production/LOCALIZATION.md` (L10N-001) | |
+| Player text keys (English only), formatting | `docs/04-production/LOCALIZATION.md` (L10N-001) | English only for now; no other languages, no language setting. Still use `tr()` keys |
 | New feature checklist | `docs/04-production/ADDING_A_FEATURE.md` | |
 
 Design docs are 15–140 KB. **Do not read them whole.** Use the `doc-scout` agent to fetch the cited section.

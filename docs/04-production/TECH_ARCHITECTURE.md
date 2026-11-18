@@ -26,7 +26,7 @@
 | Source research | `docs/00-research/REFERENCE_SINISTAR_SOURCE_MATERIAL.md` (RES-001) | What the 1983 original did; the IP guardrail | Any shipped name or asset |
 | Signals and events | `docs/04-production/SIGNALS_AND_EVENTS.md` (EVT-001) | Every cross-node signal, its sender, payload, listeners; when to use a signal vs a call | Scene tree (here §2) |
 | UI architecture | `docs/04-production/UI_ARCHITECTURE.md` (UI-001) | Menu/overlay stack, `Screen` contract, Theme, control states, focus and input rules, UI tests | HUD lie content (WARP-001 §4); palette (ART-001 §4) |
-| Localization | `docs/04-production/LOCALIZATION.md` (L10N-001) | Keys, `.po` files, locales, fallback, formatting, pseudoloc, validation commands | Copy tone (GDD §10), fonts (ART-001, pending) |
+| Player text (English) | `docs/04-production/LOCALIZATION.md` (L10N-001) | Text keys, `en.po`, English fallback and formatting, text validation; localization deferred | Copy tone (GDD §10), fonts (ART-001 §11) |
 | Feature workflow | `docs/04-production/ADDING_A_FEATURE.md` | Step-by-step checklist for a new feature folder | Any rule it links to |
 | AI rules | `CLAUDE.md` (repo root) | Short rules every AI session loads; points here | Detail (lives in the docs above) |
 | Bootstrap brief mapping | `docs/04-production/TASK_BOOTSTRAP_ARCHITECTURE.md` | How the generic bootstrap brief maps to DARKSTAR; owner answers Q1–Q6 | Anything after bootstrap |
@@ -142,7 +142,7 @@ We refuse non-integer scaling. A fractional scale blurs a 1 px outline, and the 
 | `manifest_import` | pre-build, CI and local | `generated/sprite_table.gd` from `SPRITE_MANIFEST.csv` (§6.3) |
 | `data_lint` | pre-build, CI | every SYS-001 §10 row ↔ exactly one `ds_` key; class check (§3.3) |
 | `palette_lint` | pre-build, consumer-side only | every manifest row's used colours ⊆ its kit's `palette_lock`; ≤ 10 colours (ART-002 §1) |
-| `localize_extract` | nightly | string table; CJK needs the ART-001 §9 font pass before those locales build |
+| `localize_extract` | deferred | English only (L10N-001 §1); `locale/en.po` is edited directly |
 | `export_presets` | release | `Windows Desktop` preset, PCK packed, no encryption at 1.0 |
 
 Modders: we ship the `.tres` files loose in the PCK's `data/` folder so a player can edit a tunable in a text editor, and we ship no mod API, no loader hooks and no Steam Workshop at 1.0. Editing a `.tres` is supported as a supported-as-is affordance and is deliberately not a feature; §3.3 rejects a save that carries an out-of-class edit.
@@ -266,7 +266,7 @@ An autoload exists only when the service genuinely needs a global lifetime. Addi
 
 | Autoload | File | Why global | Must not | Status |
 |---|---|---|---|---|
-| `SettingsService` | `autoload/settings_service.gd` | locale, text scale and accessibility apply before the first frame and across scenes | hold game state; read saves | built |
+| `SettingsService` | `autoload/settings_service.gd` | text scale and accessibility apply before the first frame and across scenes (English only; no language setting) | hold game state; read saves | built |
 | `SaveService` | `autoload/save_service.gd` | slots outlive scenes; one place enforces SYS-001 §8 cadence | decide *when* to save (callers do); store display text | built |
 | `SceneRouter` | `autoload/scene_router.gd` | one top-level scene at a time; any screen may request a change | own overlays/modals or UI state | built |
 | `RunSession` | `autoload/run_session.gd` | run and Iteration state (LOOP-001 §2) outlive every sector scene across 5 Seams and must be readable by the Ruins and `SaveService`; owns the Hourglass Clock tick (§4.1) | own sector nodes; write saves itself (it hands payloads to `SaveService` at allowed reasons) | **planned** (approved 2026-11-17) |
@@ -468,7 +468,7 @@ Naming (ART-002 §2 grammar), palette (every row's colours ⊆ its kit's `kit_lo
 
 Profile flags for endings, Archivist variant and achievements are LOOP-001 §11.7 (invariant IDs). `act0_clean_hands` is evaluated **per Act 0 playthrough** (a replay from the Cabinet starts a fresh evaluation) and only ever sets the profile flag true.
 
-`SaveService.save_slot(slot, payload, reason)` refuses any other reason with `save_failed(slot, &"not_allowed_now")`. Payloads hold invariant IDs and numbers only, never translated text. No gameplay writes any slot yet.
+`SaveService.save_slot(slot, payload, reason)` refuses any other reason with `save_failed(slot, &"not_allowed_now")`. Payloads hold invariant IDs and numbers only, never display text. No gameplay writes any slot yet.
 
 ### 7.3 Storage, recovery, migration
 `FileSaveBackend` writes `user://saves/<slot>.json` via `.tmp` then rename, keeping the previous file as `.bak`. A corrupt or tampered main copy loads from `.bak` (`recovered = true`). A newer schema is refused and never overwritten. Migration: bump `SCHEMA_VERSION`, add one step in `SaveEnvelope.migrate`, never edit a shipped step. `MemorySaveBackend` is for tests. Steam Cloud is a future backend; not built.
@@ -536,18 +536,18 @@ The smoke run prints `BOOT_SMOKE: reached route 'sector'` and exits 0. GdUnit wr
 | `core/components/tests/test_hitbox_component.gd` | closed windows, repeated overlap = one hit, acceptance reporting |
 | `core/save/tests/test_save_service.gd` | round trip, cadence refusal, unknown slot, missing, corrupt→backup, tamper, newer schema, wrong slot, write failure, file atomicity, player text for every reason |
 | `core/data/tests/test_tunable_registry.gd` | data lint (§3.3) |
-| `core/i18n/tests/test_localization.gd` | missing/unused keys, placeholders, fallback, plurals, number formats, pseudoloc expansion, glyph coverage |
+| `core/i18n/tests/test_localization.gd` | missing/unused keys, placeholders, English fallback, plurals, English number format, glyph coverage |
 | `core/ui/tests/test_theme_palette.gd` | theme and scene colours ⊆ palette, text-scale application |
 | `features/vigil/tests/test_vigil_motor.gd` | speed cap, drag, brake, 30/60/144 Hz independence, full reversal 0.28 s, turn rate, ±π wrap |
 | `features/vigil/tests/test_vigil_collision.gd` | data-driven radius, wall stop, no tunnelling at 6000 px/s, overlap recovery, live hitbox one hit per window → breach → HUD |
-| `scenes/tests/test_attract_mode.gd` | default focus, focus loop/wrap, settings modal + ui_cancel + focus restore, root ui_cancel no-op, repeated input, 200 % text safe area (menu + settings), RTL layout, pseudoloc fit, no raw keys |
+| `scenes/tests/test_attract_mode.gd` | default focus, focus loop/wrap, settings modal + ui_cancel + focus restore, root ui_cancel no-op, repeated input, 200 % text safe area (menu + settings), no raw keys |
 | `scenes/tests/test_sector_and_pause.gd` | spawn at anchor, HUD text, pause action, ui_cancel/pause resume, confirm defaults to the safe choice, abandon routes + unpauses, three-deep modal unwind |
 | `tests/test_boot_flow.gd` | route table loads, unknown route fails safely, input-mode switching, accessibility defaults |
 | `tests/test_input_map.gd` | every GDD §4.1 key/mouse binding and GDD §4.3 pad binding (ruling R-12); no two gameplay actions share a key |
 
-Result on 2026-11-17 (after the rulings pass): 77 test cases, 0 failures, 0 errors; boot smoke exit 0 with no `ERROR`/`WARNING` lines.
+Result on 2026-11-17 (after the English-only pass): 74 test cases, 0 failures, 0 errors; boot smoke exit 0 with no `ERROR`/`WARNING` lines.
 
-Not covered (honest list): window sizes other than the 640×360 logical viewport, real integer scaling at 1080p/1440p, gamepad glyphs (none exist), shaders, audio, Steam, per-locale screenshots (no second locale exists), performance. Slopes, stairs, doors and moving platforms are N/A (§2.6).
+Not covered (honest list): window sizes other than the 640×360 logical viewport, real integer scaling at 1080p/1440p, gamepad glyphs (none exist), shaders, audio, Steam, performance. Slopes, stairs, doors and moving platforms are N/A (§2.6).
 
 ## 10. Import conventions
 Per ART-002 §7: canvas default filter Nearest (set in `project.godot`); pixel atlases import with `compress/mode = Lossless`, mipmaps off, `fix_alpha_border = true`. Every `.csv` under `assets/` imports as `keep` (ruling R-19), never as a translation; PNG import flags per ASSET-003. ART-002 §7 mentions a `godot/DarkStar/` path; the project root is the repo root (TASK-BOOT Q4), so that path is obsolete — §11 Q-T08. No import preset file is committed yet. `docs/`, `tools/`, `research/` and `Claude outputs/` carry `.gdignore`.
@@ -565,7 +565,7 @@ The owner delegated every open ruling to the 2026-11-17 authoring pass. Each rul
 | # | Question | Ruling | Applied in |
 |---|---|---|---|
 | Q-T01 | 512×288 fallback still listed | **R-01:** 640×360 only | GDD §2, SYS-001 §9 |
-| Q-T02 | No font spec; ART-001 §9 mis-cited | **R-02:** three bitmap faces (Ledger, Litany, Cabinet), 200 % = exact ×2, CJK fallback candidates pending licence check | ART-001 §11 |
+| Q-T02 | No font spec; ART-001 §9 mis-cited | **R-02:** three bitmap faces (Ledger, Litany, Cabinet), 200 % = exact ×2, English coverage only (CJK plan dropped 2026-11-17) | ART-001 §11 |
 | Q-T03 | SYS-001 has no `ds_` keys | **R-03:** §3.4 here is the key registry; SYS tables gain a `ds_` column as each is next touched | §3.4 |
 | Q-T04 | 12 px hitbox: diameter or radius | **R-04:** diameter (6 px radius) — matches the code | SYS-001 §9 |
 | Q-T05 | Where accessibility settings persist | **R-05:** device-level `settings.cfg`, loaded before any profile; "save-scoped" = never reset by a run or Iteration | LOOP-001 §2, §7.3 here |
@@ -594,3 +594,4 @@ The owner delegated every open ruling to the 2026-11-17 authoring pass. Each rul
 | 2026-11-17 | §1.1 multiplayer citation corrected from D-11 to D-09 | production |
 | 2026-11-17 | Doc review: fixed 13 mechanical citation/status errors across TECH-001, SYS-001, LOOP-001, ZONES-001, WARP-001, AUDIO-001, NARR-001, UI-001, EVT-001, TASK-BOOT; removed unsourced on-screen cap numbers from §0.3/§1.5/§2.6 (Q-T14). WARP-001 §6.1 decision IDs kept (its §9.2 freezes the `WARP-001 §6.1 D-nn` citation form); ambiguous bare uses now say §6.1 | production |
 | 2026-11-17 | Owner-delegated authoring pass: rulings R-01…R-19 (§11.1a); §4–§6 and §8 designed; `RunSession` and `AudioService` autoloads approved as planned; full GDD §4.1/§4.3 input map | owner (delegated) |
+| 2026-11-17 | **English only.** All non-English plans removed: per-locale number tables, the language setting and picker, pseudo-translation and right-to-left tests, the CJK font plan, translator workflow and vendor milestones. `tr()` keys and `en.po` stay so player text remains testable and a language can be added later (L10N-001 §7) | owner |

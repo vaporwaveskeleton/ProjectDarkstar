@@ -44,7 +44,7 @@ Four nested layers, from tightest to loosest. A player is always inside exactly 
 | **Run state** | Seam index, seed, Run Sigils, Relics, active Pact, Charges, Composure, in-run Ember/Ink | no | no | no | run slot, written between Seams only |
 | **Iteration state** | Hourglass Clock, sky count, sector corruption map, Hollow sector list, entity memory (telemetry counters) | yes | **consumed** by Hard Unmaking, which raises Chronicle Hunger and rewrites the map | reset deliberately | iteration slot |
 | **Anchored state** | Lantern Tree purchases, Threads of Unraveling, banked Ember/Ink/Fragments, Codex, Ruins shape, endings seen and ending flags (§11.7), Chalk Desk ledger, Vigil Index bests, Chronicle Hunger (it carries across Iterations and only rises, §10.3) | yes | yes | yes | profile slot |
-| **Device settings** | accessibility (Steady Ledger, photosensitivity, text scale, reduced motion), language, audio and input bindings | yes | yes | yes | **device-level, not a save slot** — `user://settings.cfg`, loaded before any profile so it works from the attract screen (TECH-001 §7.3; ruling R-05, 2026-11-17). Never reset by a run, an Iteration or a new Chronicle |
+| **Device settings** | accessibility (Steady Ledger, photosensitivity, text scale, reduced motion), audio and input bindings | yes | yes | yes | **device-level, not a save slot** — `user://settings.cfg`, loaded before any profile so it works from the attract screen (TECH-001 §7.3; ruling R-05, 2026-11-17). Never reset by a run, an Iteration or a new Chronicle |
 
 The diegetic reason is GDD-001 §6.2: the Lantern Tree, the Ruins and the Codex sit in a pocket the loop cannot touch. It is stated once, in the first Ruins scene, and never in a menu.
 

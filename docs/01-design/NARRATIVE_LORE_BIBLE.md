@@ -523,7 +523,7 @@ A sector gone **Hollow** (ZONES-001 §1.2, §6.5) gets a Codex `cx_place_` amend
 | Ending text | NARR-001 §9 | |
 | Chant syllables | AUDIO-001 §5 | |
 
-Every string in this section enters `locale/en.po` with the key prefix in the table of §7.7 and a translator note quoting this section (L10N-001 §2).
+Every string in this section enters `locale/en.po` with the key prefix in the table of §7.7 and a context note quoting this section (L10N-001 §3).
 
 ### 7.2 Death lines — the fiction, the report, and composed examples
 
@@ -1130,7 +1130,7 @@ MARKET-001 uses this table. A tier may appear in a channel only if the channel's
 
 | Guard (RES-001 §5) | Applied to narrative |
 |---|---|
-| the 1983 trademark is never used | not in any line, name, Codex entry, chant, file name, translator note or community post. The Cabinet's title is DARKSTAR, never anything else |
+| the 1983 trademark is never used | not in any line, name, Codex entry, chant, file name, `en.po` context note or community post. The Cabinet's title is DARKSTAR, never anything else |
 | no re-use of original expression | no 1983 voice line, nor a structural paraphrase of one (no "I live", "I hunger", "run, coward", "beware" constructions). Every entity line is checked against this before it is added to AUDIO-001 §4 or §7.3 here |
 | mechanics may be reinterpreted | the boss-build race, the speech-as-state idea and the mining-to-bombs loop are reinterpreted, and the fiction gives each one a new reason (§1.3, §3.2) |
 | "inspired by the classic arcade boss-you-have-to-build" is fine | MARKET-001 may use it in comps sections only, never in diegetic text |
@@ -1161,7 +1161,7 @@ MARKET-001 uses this table. A tier may appear in a channel only if the channel's
 | Q-02 | Does the Archivist epilogue need its own credits, or append to the reached ending's? | append: the variant is a reward, not a sixth ending | narrative |
 | Q-03 | Act 0 initials entry on the honour roll (needed by `cx_vigil_honour_roll` and by the beat-3 honour roll under T.L., §5.4): is there a high-score initials screen in Act 0? | **add it** (3 letters, Cabinet register). It is the cheapest high-impact line in the game: the player sees their own initials on the Cabinet one line under T.L. Requested of LOOP-001 §11 / UI-001 | design + UI |
 | Q-04 | Superseded 2026-11-17: the proposal that the Cabinet replay your deaths as its attract loop is dropped. LOOP-001 §10.4 beat 4 shows past deaths as stained glass instead, which costs no replay system | closed | — |
-| Q-05 | Eat lines in languages where 4 English words become 9 | the line may grow to 2 rendered lines; the ≤ 8-word rule is English-only; translators keep "state, not plan" | localisation |
+| Q-05 | ~~Eat lines in other languages~~ | closed 2026-11-17: the game is English only (L10N-001 §1); the ≤ 8-word rule stands | — |
 | Q-06 | Should Wick's Matron (Mother Ashe) appear as a Rite or Herald memory? | no; she stays a name. A boss version would cheapen him | narrative |
 | **Q-07** | **Is Sable Vane a previous Lampkeeper?** | **Unresolved by design.** Evidence on screen: the ring (one frame in the Rehearsal), knowledge of restores, the chalk colour in Act 4. Staff do not answer it, in docs, in community posts or to each other. Any line that would confirm or deny it is cut | narrative (sealed) |
 | Q-08 | Does ending 3's "becomes the Lampkeeper" need a Codex page? | yes, one `cx_chron_` page in Choir register only: "The ninth voice came." | narrative |

@@ -48,24 +48,10 @@ theme_type_variation = &"HeaderLabel"
 text = "SETTINGS_TITLE"
 horizontal_alignment = 1
 
-[node name="LanguageRow" type="HBoxContainer" parent="Center/Panel/Scroll/Rows"]
-layout_mode = 2
-
-[node name="LanguageLabel" type="Label" parent="Center/Panel/Scroll/Rows/LanguageRow"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "SETTINGS_LANGUAGE"
-
-[node name="Language" type="OptionButton" parent="Center/Panel/Scroll/Rows/LanguageRow"]
-unique_name_in_owner = true
-layout_mode = 2
-focus_neighbor_top = NodePath("../../Back")
-focus_neighbor_bottom = NodePath("../../LargeText")
-
 [node name="LargeText" type="CheckButton" parent="Center/Panel/Scroll/Rows"]
 unique_name_in_owner = true
 layout_mode = 2
-focus_neighbor_top = NodePath("../LanguageRow/Language")
+focus_neighbor_top = NodePath("../Back")
 focus_neighbor_bottom = NodePath("../ReducedMotion")
 text = "SETTINGS_LARGE_TEXT"
 
@@ -94,5 +80,5 @@ text = "SETTINGS_STEADY_LEDGER"
 unique_name_in_owner = true
 layout_mode = 2
 focus_neighbor_top = NodePath("../SteadyLedger")
-focus_neighbor_bottom = NodePath("../LanguageRow/Language")
+focus_neighbor_bottom = NodePath("../LargeText")
 text = "MENU_BACK"

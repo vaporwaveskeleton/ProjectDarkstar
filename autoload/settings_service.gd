@@ -1,21 +1,19 @@
 extends Node
-## SettingsService (autoload) — why global: language, text scale and accessibility must be
-## applied before the first frame and stay valid across every scene. TECH-001 §2.8.
-## Persists to user://settings.cfg (device-level). Keys are invariant IDs, never display text.
-## OPEN (TECH-001 §11): LOOP-001 §2 puts accessibility in the profile slot; WARP-001 §4.4 says
-## "save-scoped". Until the owner rules, accessibility lives here and must never lie (WARP-001 §4.7).
+## SettingsService (autoload) — why global: text scale and accessibility must be applied before
+## the first frame and stay valid across every scene. TECH-001 §2.8.
+## Persists to user://settings.cfg (device-level, ruling R-05). Keys are invariant IDs, never
+## display text. Accessibility settings must never lie (WARP-001 §4.7).
+## Language: English only for now (L10N-001 §1); there is no language setting.
 
 signal setting_changed(key: StringName, value: Variant)
 
 const PATH := "user://settings.cfg"
 const SECTION := "settings"
 
-## Launch locale set (L10N-001). Add a locale here only after its .po passes validation.
-const SUPPORTED_LOCALES := ["en"]
+## The game ships in English only (L10N-001 §1). Adding a language later: L10N-001 §7.
 const FALLBACK_LOCALE := "en"
 
 const DEFAULTS := {
-	&"locale": "",                 # "" = follow OS if supported, else fallback
 	&"text_scale": 1.0,            # 1.0 or 2.0 (GDD §10: 200 % text scaling)
 	&"reduced_motion": false,
 	&"photosensitivity": false,    # kills flicker/strobe; never hides information (GDD §10)
@@ -59,9 +57,7 @@ func set_value(key: StringName, value: Variant) -> void:
 	if _values.get(key) == value:
 		return
 	_values[key] = value
-	if key == &"locale":
-		_apply_locale()
-	elif key == &"text_scale":
+	if key == &"text_scale":
 		UiTheme.apply_text_scale(value)
 	_save()
 	setting_changed.emit(key, value)
@@ -72,20 +68,8 @@ func reset_to_defaults() -> void:
 		set_value(key, DEFAULTS[key])
 
 
-## The locale actually in use after fallback.
-func resolve_locale(requested: String) -> String:
-	if requested == "":
-		requested = OS.get_locale_language()
-	if SUPPORTED_LOCALES.has(requested):
-		return requested
-	var lang := requested.split("_")[0]
-	if SUPPORTED_LOCALES.has(lang):
-		return lang
-	return FALLBACK_LOCALE
-
-
 func _apply_locale() -> void:
-	TranslationServer.set_locale(resolve_locale(str(_values.get(&"locale", ""))))
+	TranslationServer.set_locale(FALLBACK_LOCALE)
 
 
 func _save() -> void:

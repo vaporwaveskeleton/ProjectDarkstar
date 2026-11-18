@@ -64,7 +64,7 @@ DARKSTAR **opens as a 1983-style arcade shooter**: black space, one ship, astero
 | Engine / language | Godot 4.7.2 stable, GDScript, 2D renderer, custom canvas-item shaders for warp effects |
 | Resolution model | Internal **640×360** pixel-perfect integer scale, nearest filtering, optional CRT shader (512×288 fallback struck 2026-11-17; TECH-001 §1.1) |
 | Steam features (launch) | Steamworks: achievements (30), cloud saves, statistics, full glyph/rebind support, remote play, Deck-verified target, local co-op *not* at launch |
-| Localization (launch) | EN, then de/fr/es/pt-br/zh-cn/ja (1.0 or +1 month); CJK requires art pass on the bitmap font |
+| Language | **English only** (owner decision 2026-11-17). Other languages are deferred, not scheduled (L10N-001 §1) |
 
 ---
 

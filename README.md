@@ -23,7 +23,7 @@ Controls: WASD move, mouse aim, Space brake, Esc pause. A gamepad works too (lef
 | `features/<glossary_name>/` | one folder per game feature (`vigil` is the only built one) |
 | `scenes/` | boot, attract, settings, sector stub, shared overlays |
 | `data/` | loose `.tres` tunables, theme, route table, audio buses |
-| `locale/` | `.po` translation files |
+| `locale/` | `en.po`, the English text for every on-screen key (English only) |
 | `shaders/`, `generated/` | empty for now |
 | `tests/` | cross-cutting test suites and helpers |
 | `addons/gdUnit4` | test framework (v6.2.3) |
@@ -39,7 +39,7 @@ There is deliberately no `networking/` folder: the game is single-player (GDD D-
 | Architecture, scene tree, resources, save system, tests | [`docs/04-production/TECH_ARCHITECTURE.md`](docs/04-production/TECH_ARCHITECTURE.md) (TECH-001) |
 | Signals and events | [`docs/04-production/SIGNALS_AND_EVENTS.md`](docs/04-production/SIGNALS_AND_EVENTS.md) (EVT-001) |
 | Menus, buttons, focus, Theme | [`docs/04-production/UI_ARCHITECTURE.md`](docs/04-production/UI_ARCHITECTURE.md) (UI-001) |
-| Translation workflow | [`docs/04-production/LOCALIZATION.md`](docs/04-production/LOCALIZATION.md) (L10N-001) |
+| Player text keys (English only) | [`docs/04-production/LOCALIZATION.md`](docs/04-production/LOCALIZATION.md) (L10N-001) |
 | Adding a feature | [`docs/04-production/ADDING_A_FEATURE.md`](docs/04-production/ADDING_A_FEATURE.md) |
 | Every game number | [`docs/01-design/SYSTEMS_BIBLE_STATS.md`](docs/01-design/SYSTEMS_BIBLE_STATS.md) (SYS-001) |
 | What the game is | [`docs/01-design/GDD_DARKSTAR_v0.2.md`](docs/01-design/GDD_DARKSTAR_v0.2.md) |

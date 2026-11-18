@@ -1,11 +1,11 @@
 extends GdUnitTestSuite
-## L10N-001 validation: missing / unused keys, fallback, plurals, number formatting,
-## pseudolocalization expansion, glyph coverage of the current UI font.
+## L10N-001 validation (English only): missing / unused keys, placeholders, English fallback,
+## plurals, number formatting, glyph coverage of the current UI font.
 
 const PO_PATH := "res://locale/en.po"
 const SCAN_ROOTS := ["res://scenes", "res://features", "res://core", "res://autoload"]
 ## Key prefixes that mark a string literal as a translation key.
-const KEY_PREFIXES := ["GAME_", "MENU_", "PAUSE_", "CONFIRM_", "SETTINGS_", "LANGUAGE_NAME_", "HUD_", "MSG_",
+const KEY_PREFIXES := ["GAME_", "MENU_", "PAUSE_", "CONFIRM_", "SETTINGS_", "HUD_", "MSG_",
 	"NARR_", "CX_", "ACH_"]
 
 var _saved_locale := ""
@@ -17,7 +17,6 @@ func before_test() -> void:
 
 func after_test() -> void:
 	TranslationServer.set_locale(_saved_locale)
-	TranslationServer.pseudolocalization_enabled = false
 
 
 static func po_keys() -> Dictionary:
@@ -82,9 +81,7 @@ func test_every_used_key_exists_in_source_locale() -> void:
 
 func test_no_unused_keys() -> void:
 	var used := used_keys()
-	# dynamic keys: language names built from SUPPORTED_LOCALES, plural ids built by LocFormat.tr_count
-	for code: String in SettingsService.SUPPORTED_LOCALES:
-		used["LANGUAGE_NAME_%s" % code.to_upper()] = true
+	# dynamic keys: plural ids built by LocFormat.tr_count
 	for k in used.keys():
 		used["%s_PLURAL" % k] = true
 	var unused: Array[String] = []
@@ -102,8 +99,7 @@ func test_no_empty_or_placeholder_translations() -> void:
 
 
 func test_unsupported_locale_falls_back_to_english() -> void:
-	assert_str(SettingsService.resolve_locale("xx_YY")).is_equal("en")
-	assert_str(SettingsService.resolve_locale("en_GB")).is_equal("en")
+	assert_str(TranslationServer.get_locale()).is_equal("en")
 	TranslationServer.set_locale("xx")
 	assert_str(TranslationServer.translate("MENU_NEW_VIGIL")).is_equal("New Vigil")
 
@@ -115,21 +111,12 @@ func test_plural_forms_and_count_placeholder() -> void:
 	assert_str(LocFormat.tr_count("HUD_HULL_COUNT", 1200)).is_equal("Hull 1,200")
 
 
-func test_locale_aware_number_formatting() -> void:
-	assert_str(LocFormat.format_int(1234567, "en")).is_equal("1,234,567")
-	assert_str(LocFormat.format_int(1234567, "de")).is_equal("1.234.567")
-	assert_str(LocFormat.format_int(-1000, "en")).is_equal("-1,000")
-	assert_str(LocFormat.format_int(999, "fr")).is_equal("999")
-	assert_str(LocFormat.format_decimal(1234.5, 1, "de")).is_equal("1.234,5")
-	assert_str(LocFormat.format_decimal(0.25, 2, "en")).is_equal("0.25")
-
-
-func test_pseudolocalization_expands_text() -> void:
-	TranslationServer.set_locale("en")
-	var plain := TranslationServer.translate("CONFIRM_ABANDON_BODY")
-	TranslationServer.pseudolocalization_enabled = true
-	var pseudo := TranslationServer.pseudolocalize(plain)
-	assert_int(pseudo.length()).is_greater(plain.length())
+func test_english_number_formatting() -> void:
+	assert_str(LocFormat.format_int(1234567)).is_equal("1,234,567")
+	assert_str(LocFormat.format_int(-1000)).is_equal("-1,000")
+	assert_str(LocFormat.format_int(999)).is_equal("999")
+	assert_str(LocFormat.format_decimal(1234.5, 1)).is_equal("1,234.5")
+	assert_str(LocFormat.format_decimal(0.25, 2)).is_equal("0.25")
 
 
 func test_ui_font_covers_every_source_glyph() -> void:

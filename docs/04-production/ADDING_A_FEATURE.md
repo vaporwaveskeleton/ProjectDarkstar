@@ -33,7 +33,7 @@ data/<feature>/<name>.tres  the tunable values (TECH-001 §3)
 - [ ] Past tense, typed payload, ids not text. Add a row to EVT-001 §2.
 
 ## 5. UI and text
-- [ ] Every visible string is a key in `locale/en.po` with a translator note (L10N-001 §2).
+- [ ] Every visible string is a key in `locale/en.po` with a context note when the meaning is not obvious (L10N-001 §3).
 - [ ] New screens follow UI-001 §8.
 - [ ] Colours come from the palette (ART-001 §4); the palette test must stay green.
 

@@ -1,6 +1,6 @@
-# DARKSTAR — English (source locale and fallback). Owner: L10N-001 (docs/04-production/LOCALIZATION.md).
+# DARKSTAR — English (the only shipped language for now; L10N-001 §1). Owner: L10N-001 (docs/04-production/LOCALIZATION.md).
 # msgid = stable key (UPPER_SNAKE, prefixed by surface). msgstr = English text.
-# "#." lines are translator notes. Keep UI copy to <= 2 lines per screen (GDD §10).
+# "#." lines are context notes for writers (and for translators, if languages are added later). Keep UI copy to <= 2 lines per screen (GDD §10).
 msgid ""
 msgstr ""
 "Project-Id-Version: DARKSTAR\n"
@@ -54,9 +54,6 @@ msgstr "Keep Playing"
 msgid "SETTINGS_TITLE"
 msgstr "Settings"
 
-msgid "SETTINGS_LANGUAGE"
-msgstr "Language"
-
 #. Toggle: doubles text size (200 %).
 msgid "SETTINGS_LARGE_TEXT"
 msgstr "Large Text"
@@ -71,10 +68,6 @@ msgstr "Photosensitivity Mode"
 #. Accessibility option name from the glossary: keeps the HUD honest.
 msgid "SETTINGS_STEADY_LEDGER"
 msgstr "Steady Ledger"
-
-#. Language names are always written in their own language.
-msgid "LANGUAGE_NAME_EN"
-msgstr "English"
 
 #. HUD readout of the Vigil's remaining hull. {count} is a number.
 msgid "HUD_HULL_COUNT"

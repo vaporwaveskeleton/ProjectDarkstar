@@ -1,6 +1,6 @@
 extends GdUnitTestSuite
 ## Attract mode: primary action focus, focus loop without dead ends, settings modal with
-## ui_cancel and focus restoration, repeated input, safe area at 200 % text, RTL, pseudolocale.
+## ui_cancel and focus restoration, repeated input, safe area at 200 % text, no raw keys.
 
 const SCENE := "res://scenes/attract/attract_mode.tscn"
 
@@ -16,7 +16,6 @@ func after_test() -> void:
 	FakeRouteHost.uninstall(host)
 	UiTheme.apply_text_scale(1.0)
 	SettingsService.persist = true
-	TranslationServer.pseudolocalization_enabled = false
 
 
 func _focus() -> Control:
@@ -104,25 +103,6 @@ func test_settings_panel_inside_safe_area_at_200_percent_text() -> void:
 	SettingsService.set_value(&"text_scale", 1.0)
 
 
-func test_right_to_left_layout_keeps_menu_on_screen() -> void:
-	var runner := scene_runner(SCENE)
-	(runner.scene() as Control).layout_direction = Control.LAYOUT_DIRECTION_RTL
-	await runner.simulate_frames(3)
-	var view: Rect2 = runner.scene().get_viewport_rect()
-	for name in ["NewVigil", "Settings", "Quit"]:
-		var c: Control = runner.find_child(name)
-		assert_bool(c.is_layout_rtl()).is_true()
-		assert_bool(view.encloses(c.get_global_rect())).is_true()
-
-
-func test_pseudolocalized_text_fits_on_screen() -> void:
-	TranslationServer.pseudolocalization_enabled = true
-	var runner := scene_runner(SCENE)
-	await runner.simulate_frames(3)
-	var view: Rect2 = runner.scene().get_viewport_rect()
-	for name in ["Title", "NewVigil", "Settings", "Quit"]:
-		var c: Control = runner.find_child(name)
-		assert_bool(view.encloses(c.get_global_rect())).is_true()
 
 
 func test_visible_text_is_never_a_raw_key() -> void:
