@@ -3,7 +3,7 @@ extends Node
 ## Owns: the RouteHost the router mounts top-level scenes into, and the transition curtain.
 ## Does not own any game state.
 ##
-## `-- --smoke` on the command line runs the boot smoke path: attract -> sector -> quit(0).
+## `-- --smoke` on the command line runs the boot smoke path: attract -> cabinet (Act 0) -> quit(0).
 
 const TRANSITION_S := 0.2   ## ✱ inside the 150–300 ms UI transition rule (UI-001 §4)
 const SMOKE_FRAMES := 30    ## ✱ frames to run the sector before declaring the smoke test passed
@@ -51,14 +51,22 @@ func _fade_to(alpha: float) -> void:
 	await tw.finished
 
 
+## `-- --smoke-frames=N` lets a capture run longer than the smoke default.
+func _smoke_frames() -> int:
+	for a in OS.get_cmdline_user_args():
+		if a.begins_with("--smoke-frames="):
+			return int(a.trim_prefix("--smoke-frames="))
+	return SMOKE_FRAMES
+
+
 func _on_route_changed(route_id: StringName) -> void:
 	if not _smoke:
 		return
 	match route_id:
 		&"attract":
-			SceneRouter.go_to(&"sector")
-		&"sector":
-			for i in SMOKE_FRAMES:
+			SceneRouter.go_to(&"cabinet")
+		&"cabinet":
+			for i in _smoke_frames():
 				await get_tree().physics_frame
-			print("BOOT_SMOKE: reached route 'sector'")
+			print("BOOT_SMOKE: reached route 'cabinet'")
 			get_tree().quit(0)

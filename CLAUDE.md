@@ -46,7 +46,7 @@ assets/  docs/           (docs/, tools/, research/ carry a .gdignore)
 - Composition: small components (`HealthComponent`, `HurtboxComponent`…) as child scenes. No god scripts for player, game manager or level.
 - Data in `Resource` subclasses (`.tres`), never in code constants. Tunables extend `TunableResource` with a `ds_namespace` (TECH-001 §3.4). New **scene** when it needs nodes/transform/collision/lifetime; new **Resource** when it is shared or tuned data.
 - Signals when the sender must not know the receiver; direct calls parent→child. No `get_node("../../x")`; use `@export` refs, `%UniqueName` inside a scene, groups, or a resource. Routes by id (`SceneRouter.go_to(&"sector")`), never by scene path.
-- Autoloads only for global-lifetime services. Built: `SettingsService`, `SaveService`, `SceneRouter`; approved, not built: `RunSession`, `AudioService` (TECH-001 §2.8). Adding one needs a §2.8 row first. No UI manager, game manager or event bus autoloads.
+- Autoloads only for global-lifetime services. Built: `SettingsService`, `SaveService`, `SceneRouter`, `AudioService`; approved, not built: `RunSession` (TECH-001 §2.8). Adding one needs a §2.8 row first. No UI manager, game manager or event bus autoloads.
 - UI: screens extend `Screen`, overlays go on the scene's `ScreenStack`, rows inside `FitScrollContainer`; one default focus, explicit focus neighbours, `ui_cancel` works (UI-001).
 - Saves: `SaveService.save_slot(slot, payload, reason)` with an allowed reason; never mid-run; payloads hold ids and numbers only (TECH-001 §7).
 - Warnings are errors here: give a variable an explicit type when its value comes from a `Dictionary`/`Array`/`Variant`.
@@ -59,9 +59,10 @@ assets/  docs/           (docs/, tools/, research/ carry a .gdignore)
 GODOT=tools\godot\Godot_v4.7.2-stable_win64_console.exe
 %GODOT% --headless --path . --import                        # first run / after asset changes
 %GODOT% --headless --path . -s addons/gdUnit4/bin/GdUnitCmdTool.gd -a core -a features -a scenes -a tests --ignoreHeadlessMode -c   # all tests (GdUnit4 v6.2.3)
-%GODOT% --headless --path . --quit-after 600 -- --smoke     # boot smoke: must print "BOOT_SMOKE: reached route 'sector'", exit 0, no ERROR lines
+%GODOT% --headless --path . --quit-after 600 -- --smoke     # boot smoke: must print "BOOT_SMOKE: reached route 'cabinet'", exit 0, no ERROR lines
 ```
 Expected `ERROR`/`WARNING` lines in the test log come only from negative-path tests (corrupt save, unknown route); the smoke log must have none.
+Act 0 (the Cabinet, TECH-001 §2.10) takes capture switches after `--`: `--autopilot --stage=N --segments=N --hits=N --smoke-frames=N --no-save`. Always pass `--no-save` when capturing, so the player's saves are never written.
 Prefer the `godot-ai` MCP (`test_run`, `logs_read`, `project_run`, `scene_*`) when the editor is open. Fall back to the console exe.
 
 ## 5. Model delegation (token budget)

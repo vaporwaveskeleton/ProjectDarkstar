@@ -8,14 +8,16 @@
 
 | Screen | Required by | Status |
 |---|---|---|
-| Attract mode (title): New Vigil, Settings, Quit | GDD §10 (three clicks to play) | built — `scenes/attract/` |
+| Attract mode (title): the cabinet marquee (DARKSTAR in the Cabinet face), INSERT CREDIT, high score, drifting vector field, CRT glass; New Vigil, Settings, Quit; 30 s idle plays the autopilot demo, any input returns | GDD §10, WARP-001 W0-01/W0-03 | built — `scenes/attract/` |
 | Settings: large text, reduced motion, photosensitivity, Steady Ledger (no language setting: English only, L10N-001 §1) | GDD §10, WARP-001 §4.4 | built (subset) — `scenes/settings/` |
 | Pause: Resume, Settings, Abandon Run | GDD §4.1, WARP-001 §4.4 W4-07 | built — `scenes/sector/pause_screen.tscn` |
 | Confirmation (two-choice, safe default) | brief | built — `scenes/common/confirm_screen.tscn` |
 | Loading / transition curtain | brief | built (fade) — `scenes/boot/boot.tscn` |
-| HUD (diegetic, may lie) | WARP-001 §4 | stub: one honest hull label |
+| Act 0 cabinet HUD: 4:3 bezel, 1UP/score, Vigils, glass-lamp Charge pips, Ledger Compass mini-map; READY card, banners, captions, credits, the entity's big type | WARP-001 W0-01/W0-02/W0-04, ART-001 §11.5 | built — `features/cabinet/` (TECH-001 §2.10) |
+| HUD (diegetic, may lie) | WARP-001 §4 | Act 1+: stub (one honest hull label) |
 | Rebinding, mouse sensitivity, aim assist, colourblind variants, subtitles, audio options | GDD §10, AUDIO-001 §8.4 | planned |
 | Death / cause-of-death screen | GDD §6.3, §8.9; AUDIO-001 §4.10 | planned |
+| Ruins first arrival (title, the lit sapling, continue) | GDD §6.4 | stub — `scenes/ruins/` |
 | Ruins hub, Lantern Tree, Chalk Desk, Codex, run summary | GDD §6.4, LOOP-001 §3, §7 | planned |
 | Endings / credits | GDD §9.3 | planned |
 | Act 0 high-score screen ("honour roll"): three-letter initials entry after any Act 0 clear, Cabinet face (ART-001 §11); from Hard Unmaking 3 the table also lists `T.L. — 0 WARD 0 SURGE` | NARR-001 §14 Q-03, LOOP-001 §11.6 | planned |

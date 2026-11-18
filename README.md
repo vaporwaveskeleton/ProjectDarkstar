@@ -2,7 +2,13 @@
 
 2D arcade roguelike. Godot **4.7.2**, GDScript only, 640×360 pixel-perfect, Windows + Steam, single-player.
 
-Current state: **architecture bootstrap.** The game boots into an attract (title) screen, starts a "New Vigil" into an empty sector stub with a movable Vigil, and has settings, pause and confirm overlays. No gameplay beyond that yet.
+Current state: **Act 0 is playable.** The game boots into the cabinet's attract screen; **New Vigil** starts *The Last Normal Day*, the 1983-style arcade shell (GDD §6.1):
+
+1. **First Vigil** — mine geodes for Mourning Glass, turn it into Charges, and break a Cold Sepulchre before the Grubs rebuild it.
+2. **The Last Normal Day** — Grubs race you for the same glass to build the Dark Star; Acolytes guard it; at 20 segments the chant stops, *IT WAKES*, and it hunts you. Unmake it with 13 Charges.
+3. **The Pretence** — then the cabinet stops pretending. (Play it.)
+
+After that you land in the Ruins of the Ninth Sky (a stub for now). Act 1 onward is designed in `docs/` but not built.
 
 ## Run
 
@@ -12,7 +18,9 @@ tools\godot\Godot_v4.7.2-stable_win64_console.exe --headless --path . --import
 tools\godot\Godot_v4.7.2-stable_win64_console.exe --headless --path . -s addons/gdUnit4/bin/GdUnitCmdTool.gd -a core -a features -a scenes -a tests --ignoreHeadlessMode -c
 tools\godot\Godot_v4.7.2-stable_win64_console.exe --headless --path . --quit-after 600 -- --smoke
 ```
-Controls: WASD move, mouse aim, Space brake, Esc pause. A gamepad works too (left stick move, right stick aim, Start pause).
+Controls: **WASD** move · **mouse** aim · **left click** Arc-Lance (mine and shoot) · **right click** throw a Null-Iron Charge (homes on the Sepulchre / the Dark Star) · **Shift** Surgelight · **Space** brake · **Esc** pause. Gamepad: left stick move, right stick aim, RT lance, LT Charge, A Surgelight, left-stick click brake, Start pause.
+
+Tips: fire in calm bursts — over-firing a geode (9 hits in 1.2 s) shatters it and scatters the glass where the Grubs can steal it. Shoot Grubs that are carrying glass. Acolytes' censers lag a quarter-second behind you: keep moving.
 
 ## Layout
 

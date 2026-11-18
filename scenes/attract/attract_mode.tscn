@@ -1,8 +1,21 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scenes/attract/attract_mode.gd" id="1"]
 [ext_resource type="Script" path="res://core/ui/screen_stack.gd" id="2"]
 [ext_resource type="Script" path="res://core/ui/input_mode_tracker.gd" id="3"]
+[ext_resource type="Script" path="res://scenes/attract/attract_backdrop.gd" id="4"]
+[ext_resource type="Script" path="res://scenes/attract/attract_logo.gd" id="5"]
+[ext_resource type="Shader" path="res://shaders/crt.gdshader" id="6"]
+
+[sub_resource type="ShaderMaterial" id="crt_mat"]
+shader = ExtResource("6")
+shader_parameter/costume = 1.0
+shader_parameter/scanline_strength = 0.22
+shader_parameter/curvature = 0.06
+shader_parameter/vignette = 0.35
+shader_parameter/desaturate = 0.0
+shader_parameter/tear = 0.0
+shader_parameter/time_s = 0.0
 
 [node name="AttractMode" type="Control" node_paths=PackedStringArray("default_focus")]
 layout_mode = 3
@@ -15,7 +28,7 @@ script = ExtResource("1")
 default_focus = NodePath("Center/Menu/NewVigil")
 cancel_closes = false
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Backdrop" type="Control" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -23,7 +36,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-color = Color(0.0392157, 0.0392157, 0.0705882, 1)
+script = ExtResource("4")
 
 [node name="Center" type="CenterContainer" parent="."]
 layout_mode = 1
@@ -37,10 +50,18 @@ grow_vertical = 2
 layout_mode = 2
 custom_minimum_size = Vector2(160, 0)
 
-[node name="Title" type="Label" parent="Center/Menu"]
+[node name="Logo" type="Control" parent="Center/Menu"]
+unique_name_in_owner = true
 layout_mode = 2
-theme_type_variation = &"HeaderLabel"
-text = "GAME_TITLE"
+mouse_filter = 2
+script = ExtResource("5")
+
+[node name="Omen" type="Label" parent="Center/Menu"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_type_variation = &"HintLabel"
+text = "ATTRACT_FIRST_SKY_DARK"
 horizontal_alignment = 1
 
 [node name="NewVigil" type="Button" parent="Center/Menu"]
@@ -69,6 +90,16 @@ focus_neighbor_bottom = NodePath("../NewVigil")
 focus_previous = NodePath("../Settings")
 focus_next = NodePath("../NewVigil")
 text = "MENU_QUIT"
+
+[node name="Crt" type="ColorRect" parent="."]
+material = SubResource("crt_mat")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
 
 [node name="Overlays" type="CanvasLayer" parent="." node_paths=PackedStringArray("base_screen")]
 unique_name_in_owner = true

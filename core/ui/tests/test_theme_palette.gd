@@ -50,3 +50,16 @@ func test_text_scale_applies_and_restores() -> void:
 	assert_int(t.default_font_size).is_equal(UiTheme.BASE_FONT_SIZE * 2)
 	UiTheme.apply_text_scale(1.0)
 	assert_int(t.default_font_size).is_equal(UiTheme.BASE_FONT_SIZE)
+
+
+func test_code_palette_constants_match_the_palette_file() -> void:
+	# Pal (code-drawn costume art) must be the ART-001 §4 palette, entry for entry.
+	var data: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(PALETTE_JSON))
+	var bad: Array[String] = []
+	for entry: Dictionary in data["index"]:
+		var name := str(entry["name"])
+		if not Pal.ALL.has(name):
+			bad.append("missing " + name)
+		elif not (Pal.ALL[name] as Color).is_equal_approx(Color.html(str(entry["hex"]))):
+			bad.append("wrong " + name)
+	assert_array(bad).is_empty()

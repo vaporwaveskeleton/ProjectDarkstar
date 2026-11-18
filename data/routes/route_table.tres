@@ -6,6 +6,8 @@
 script = ExtResource("1")
 routes = {
 &"attract": "res://scenes/attract/attract_mode.tscn",
+&"cabinet": "res://features/cabinet/cabinet_game.tscn",
+&"ruins": "res://scenes/ruins/ruins_stub.tscn",
 &"sector": "res://scenes/sector/sector_stub.tscn"
 }
 initial_route = &"attract"

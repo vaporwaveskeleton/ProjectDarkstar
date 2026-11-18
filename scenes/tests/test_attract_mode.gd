@@ -77,7 +77,7 @@ func test_repeated_new_vigil_input_routes_once() -> void:
 	btn.pressed.emit()
 	assert_bool(btn.disabled).is_true()
 	await runner.simulate_frames(5)
-	assert_array(host.mounted_routes).is_equal(["res://scenes/sector/sector_stub.tscn"])
+	assert_array(host.mounted_routes).is_equal(["res://features/cabinet/cabinet_game.tscn"])
 
 
 func test_all_buttons_inside_safe_area_at_200_percent_text() -> void:
@@ -85,7 +85,7 @@ func test_all_buttons_inside_safe_area_at_200_percent_text() -> void:
 	var runner := scene_runner(SCENE)
 	await runner.simulate_frames(3)
 	var view: Rect2 = runner.scene().get_viewport_rect()
-	for name in ["Title", "NewVigil", "Settings", "Quit"]:
+	for name in ["Logo", "NewVigil", "Settings", "Quit"]:
 		var c: Control = runner.find_child(name)
 		assert_bool(view.encloses(c.get_global_rect())).override_failure_message("%s outside %s: %s" % [name, view, c.get_global_rect()]).is_true()
 	SettingsService.set_value(&"text_scale", 1.0)
@@ -108,7 +108,7 @@ func test_settings_panel_inside_safe_area_at_200_percent_text() -> void:
 func test_visible_text_is_never_a_raw_key() -> void:
 	var runner := scene_runner(SCENE)
 	await runner.simulate_frames(2)
-	for name in ["Title", "NewVigil", "Settings", "Quit"]:
+	for name in ["NewVigil", "Settings", "Quit"]:
 		var c: Control = runner.find_child(name)
 		var shown: String = c.atr(c.text)
 		assert_bool(RegEx.create_from_string("^[A-Z][A-Z0-9_]+_[A-Z0-9_]+$").search(shown) == null).override_failure_message("%s shows raw key %s" % [name, shown]).is_true()

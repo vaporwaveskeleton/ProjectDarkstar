@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="CabinetStage" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://features/cabinet/cabinet_stage.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"a0_3"
+title_key = "CAB_STAGE_A0_3"
+subtitle_key = "CAB_STAGE_A0_3_SUB"
+geodes = 11
+grubs = 4
+acolytes = 1
+guard_acolytes = 1
+sepulchre_start_segments = 0
+sepulchre_wakes = true
+chant = true
+goal = 1
+seed = 9

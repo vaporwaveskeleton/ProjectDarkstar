@@ -1,0 +1,150 @@
+[gd_scene load_steps=25 format=3]
+
+[ext_resource type="Script" path="res://features/cabinet/cabinet_game.gd" id="1"]
+[ext_resource type="Resource" path="res://data/cabinet/stage_first_vigil.tres" id="2"]
+[ext_resource type="Resource" path="res://data/cabinet/stage_last_normal_day.tres" id="3"]
+[ext_resource type="Resource" path="res://data/cabinet/cabinet_tuning.tres" id="4"]
+[ext_resource type="Script" path="res://features/cabinet/sim/arcade_world.gd" id="5"]
+[ext_resource type="Resource" path="res://data/vigil/vigil_move.tres" id="6"]
+[ext_resource type="Script" path="res://features/cabinet/sim/starfield.gd" id="7"]
+[ext_resource type="Script" path="res://features/cabinet/sim/geode_field.gd" id="8"]
+[ext_resource type="Script" path="res://features/cabinet/sim/glass_field.gd" id="9"]
+[ext_resource type="Script" path="res://features/cabinet/sim/sepulchre_ritual.gd" id="10"]
+[ext_resource type="Script" path="res://features/cabinet/sim/grub_flock.gd" id="11"]
+[ext_resource type="Script" path="res://features/cabinet/sim/acolyte_squad.gd" id="12"]
+[ext_resource type="Script" path="res://features/cabinet/sim/shot_layer.gd" id="13"]
+[ext_resource type="Script" path="res://features/cabinet/sim/vigil_ship.gd" id="14"]
+[ext_resource type="Script" path="res://features/cabinet/sim/fx_layer.gd" id="15"]
+[ext_resource type="Script" path="res://features/cabinet/maw_view.gd" id="16"]
+[ext_resource type="Texture2D" path="res://assets/sprites/generated/sepulchre/ds_sepulchre_ASSEMBLED_awake.png" id="17"]
+[ext_resource type="Script" path="res://features/cabinet/cabinet_hud.gd" id="18"]
+[ext_resource type="Shader" path="res://shaders/crt.gdshader" id="19"]
+[ext_resource type="Script" path="res://features/cabinet/cabinet_messages.gd" id="20"]
+[ext_resource type="Script" path="res://features/cabinet/pretence_reveal.gd" id="21"]
+[ext_resource type="Script" path="res://core/ui/screen_stack.gd" id="22"]
+[ext_resource type="Script" path="res://features/cabinet/sim/autopilot.gd" id="23"]
+
+[sub_resource type="ShaderMaterial" id="crt_mat"]
+shader = ExtResource("19")
+shader_parameter/costume = 1.0
+shader_parameter/scanline_strength = 0.22
+shader_parameter/curvature = 0.06
+shader_parameter/vignette = 0.35
+shader_parameter/desaturate = 0.0
+shader_parameter/tear = 0.0
+shader_parameter/time_s = 0.0
+
+[node name="CabinetGame" type="Node"]
+script = ExtResource("1")
+stages = Array[Resource]([ExtResource("2"), ExtResource("3")])
+tuning = ExtResource("4")
+
+[node name="World" type="Node2D" parent="."]
+unique_name_in_owner = true
+script = ExtResource("5")
+tuning = ExtResource("4")
+move_stats = ExtResource("6")
+
+[node name="Stars" type="Node2D" parent="World"]
+unique_name_in_owner = true
+script = ExtResource("7")
+
+[node name="Geodes" type="Node2D" parent="World"]
+unique_name_in_owner = true
+script = ExtResource("8")
+
+[node name="Glass" type="Node2D" parent="World"]
+unique_name_in_owner = true
+script = ExtResource("9")
+
+[node name="Ritual" type="Node2D" parent="World"]
+unique_name_in_owner = true
+script = ExtResource("10")
+
+[node name="Grubs" type="Node2D" parent="World"]
+unique_name_in_owner = true
+script = ExtResource("11")
+
+[node name="Acolytes" type="Node2D" parent="World"]
+unique_name_in_owner = true
+script = ExtResource("12")
+
+[node name="Shots" type="Node2D" parent="World"]
+unique_name_in_owner = true
+script = ExtResource("13")
+
+[node name="Vigil" type="Node2D" parent="World"]
+unique_name_in_owner = true
+script = ExtResource("14")
+
+[node name="Fx" type="Node2D" parent="World"]
+unique_name_in_owner = true
+script = ExtResource("15")
+
+[node name="Autopilot" type="Node" parent="." node_paths=PackedStringArray("world")]
+unique_name_in_owner = true
+process_physics_priority = -20
+script = ExtResource("23")
+world = NodePath("../World")
+
+[node name="MawLayer" type="CanvasLayer" parent="."]
+layer = 1
+
+[node name="Maw" type="Node2D" parent="MawLayer"]
+unique_name_in_owner = true
+visible = false
+texture_filter = 1
+script = ExtResource("16")
+body_texture = ExtResource("17")
+
+[node name="HudLayer" type="CanvasLayer" parent="."]
+layer = 2
+
+[node name="Hud" type="Control" parent="HudLayer"]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("18")
+
+[node name="CrtLayer" type="CanvasLayer" parent="."]
+layer = 3
+
+[node name="Crt" type="ColorRect" parent="CrtLayer"]
+unique_name_in_owner = true
+material = SubResource("crt_mat")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="MessageLayer" type="CanvasLayer" parent="."]
+layer = 4
+
+[node name="Messages" type="Control" parent="MessageLayer"]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("20")
+
+[node name="Reveal" type="Node" parent="." node_paths=PackedStringArray("maw")]
+unique_name_in_owner = true
+script = ExtResource("21")
+maw = NodePath("../MawLayer/Maw")
+
+[node name="Overlays" type="CanvasLayer" parent="."]
+unique_name_in_owner = true
+process_mode = 3
+layer = 10
+script = ExtResource("22")

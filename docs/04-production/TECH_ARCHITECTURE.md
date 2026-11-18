@@ -175,7 +175,7 @@ root (Window, 640×360 logical)
 ├─ SettingsService, SaveService, SceneRouter      autoloads (§2.8)
 └─ Boot  (scenes/boot/boot.tscn — main scene, lives for the whole session)
    ├─ RouteHost          exactly one route scene at a time (mounted by SceneRouter)
-   │   └─ AttractMode | SectorStub (SectorHost) | later: Ruins, LanternTree…
+   │   └─ AttractMode | CabinetGame (Act 0, §2.10) | RuinsStub | SectorStub (SectorHost, Act 1 stub) | later: LanternTree…
    └─ CurtainLayer (CanvasLayer 100) / Curtain     fade between routes
 ```
 
@@ -270,7 +270,7 @@ An autoload exists only when the service genuinely needs a global lifetime. Addi
 | `SaveService` | `autoload/save_service.gd` | slots outlive scenes; one place enforces SYS-001 §8 cadence | decide *when* to save (callers do); store display text | built |
 | `SceneRouter` | `autoload/scene_router.gd` | one top-level scene at a time; any screen may request a change | own overlays/modals or UI state | built |
 | `RunSession` | `autoload/run_session.gd` | run and Iteration state (LOOP-001 §2) outlive every sector scene across 5 Seams and must be readable by the Ruins and `SaveService`; owns the Hourglass Clock tick (§4.1) | own sector nodes; write saves itself (it hands payloads to `SaveService` at allowed reasons) | **planned** (approved 2026-11-17) |
-| `AudioService` | `autoload/audio_service.gd` | music stems, the chant and the entity voice cross scene changes; owns ducking (AUDIO-001 §7.2) | decide *when* a line plays (gameplay signals do) | **planned** (approved 2026-11-17) |
+| `AudioService` | `autoload/audio_service.gd` | music stems, the chant and the entity voice cross scene changes; owns ducking (AUDIO-001 §7.2) | decide *when* a line plays (gameplay signals do) | **built** 2026-11-18: one-shot pool, chant bed, silence budget; cues synthesised by `core/audio/sfx_synth.gd` as placeholders until recorded audio exists |
 
 Refused as autoloads: a UI manager (menus use a per-scene `ScreenStack`), a game manager (state lives in features), a networking service (D-09), a global event bus (EVT-001 §3).
 
@@ -279,6 +279,7 @@ Refused as autoloads: a UI manager (menus use a per-scene `ScreenStack`), a game
 | Brief term | DARKSTAR folder(s) | Status |
 |---|---|---|
 | characters | `features/vigil`, `features/choir`, `features/sepulchre` | vigil built (move + aim + hull) |
+| Act 0 arcade (the Cabinet) | `features/cabinet` | **built** — §2.10 |
 | combat | `features/arc_lance`, `features/charges` | empty |
 | inventory | `features/run` (Run Sigils, Relics, Pacts) — no classic inventory/equipment | empty |
 | dialogue | `features/entity_voice` (big-type lines; no branching dialogue) | empty |
@@ -287,6 +288,46 @@ Refused as autoloads: a UI manager (menus use a per-scene `ScreenStack`), a game
 | (game-specific) | `features/composure`, `features/warp`, `features/sector`, `features/hud` | empty |
 
 Each empty folder has a `README.md` naming its owner doc. Shared, feature-agnostic code lives in `core/` (`components`, `data`, `save`, `routing`, `ui`, `i18n`, `physics`). Menus and the bootstrap sector live in `scenes/`.
+
+### 2.10 Act 0 — the Cabinet (`features/cabinet/`)
+
+Act 0 (GDD §6.1) is the in-world arcade machine (NARR-001 §5: the Cabinet). It is built as its own feature because ART-001 §7 makes it a **separate, peelable costume layer**: 1983-style vector art on a 4:3 bezel (WARP-001 W0-01), not the 64×64-module art of Act 1+. Status: **built** (stages A0-1 and A0-3; A0-2's beats are folded into A0-3).
+
+```
+CabinetGame (Node, cabinet_game.gd)             stage flow only: READY → play → death/respawn/game over
+│                                                → stage clear → credits → THE PRETENCE → route "ruins"
+├─ World (ArcadeWorld)                          torus field, camera, shake, shared services; ticks layers in order:
+│   Stars · Geodes · Glass · Ritual · Grubs · Acolytes · Shots · Vigil · Fx   (each an ArcadeLayer)
+├─ Autopilot (CabinetAutopilot)                 attract demo (W0-03), captures, the end-to-end test
+├─ MawLayer/Maw (MawView)                        the hole that opens in the reveal; shows the real pixel art
+├─ HudLayer/Hud (CabinetHud)                     bezel, 1UP/score/lives, Charge lamps, Ledger Compass
+├─ CrtLayer/Crt                                  shaders/crt.gdshader: scanlines, curvature, tear, desaturation
+├─ MessageLayer/Messages (CabinetMessages)       READY card, banners, captions, credits, the entity's big type
+├─ Reveal (PretenceReveal)                       the scripted W0-07/W0-08 sequence (skippable once seen)
+└─ Overlays (ScreenStack)                        pause
+```
+
+| Layer | Owns (rules) | Source |
+|---|---|---|
+| `GeodeField` | drift; calm mining (a face per `face_hits`, one shard each, calm total = 3 + 1); over-fire detonation (9 hits / 1.2 s → 4–6 shards total, scattered) | SYS-001 §1.3 |
+| `GlassField` | shards, magnet, Charge pips (overflow glass stays), homing Null-Iron Charges, interception by Grubs/Acolytes/geodes | SYS-001 §1.4 |
+| `SepulchreRitual` | deposits → segments (3 shards each), Guard/Quickening, Awakening (silence → "IT WAKES." → 3 s stagger window), rampage (contact death, eats to heal), 13 Charges to unmake, module knock-off before waking, Cold Sepulchre | SYS-001 §2, §2.1 |
+| `GrubFlock` | claim → carry → deposit; flee the lamp unless carrying; keening on a lost deposit; rebirth from the Sepulchre | SYS-001 §3 |
+| `AcolyteSquad` | hold range, censer shots on a 1.8 s cycle with a 21-frame tell, turret lag 0.25 s, mining at 50 %, Guard reinforcements | SYS-001 §3 |
+| `ShotLayer` | lance bolts and censer shots, swept in ≤ 4 px steps (no tunnelling), capped at SYS-001 §9's 180 | SYS-001 §1.3, §9 |
+| `VigilShip` | the Vigil in costume: **reuses `VigilMotor.step_velocity`** with SYS-001 §1.1 numbers, one-hit death, Surgelight, respawn shield | SYS-001 §1.1, §9 |
+| `ScoreKeeper` | the 1983 score table, extra Vigil at 10,000 then every 20,000, cap 5 | SYS-001 §7.1, GDD §9.4 |
+
+**Physics decision (2026-11-18):** the Cabinet does **not** use Godot physics bodies. Its field is a torus (GDD §4.2), drawn by every layer through `ArcadeWorld.to_screen()` with the short-way-round delta (`core/math/torus.gd`). Circle overlaps in torus space are exact, deterministic and cheap at Act 0 counts. Act 1+ sectors keep the §2.6 component architecture (CharacterBody2D, Area2D hurt/hitboxes).
+
+Data: `data/cabinet/cabinet_tuning.tres` (`CabinetTuning`, `ds_cabinet.tuning.*`, every value cites SYS-001 or is ✱) and one `CabinetStage` per level (`stage_first_vigil.tres`, `stage_last_normal_day.tres`), inside SYS-001 §4's Seam 1 T0 budget.
+
+Art: everything is code-drawn from `Pal` (`core/ui/pal.gd`, checked against the palette file by a test). Text uses the **Cabinet face**, a 5 × 7 bitmap drawn by `PixelText` (`core/ui/pixel_text.gd`, ART-001 §11) at integer scales only. The one exception is the reveal, which draws `ds_sepulchre_ASSEMBLED_awake.png` at ×2: the first time the real art appears.
+
+Capture and test switches (after `--`): `--autopilot`, `--stage=N`, `--segments=N`, `--hits=N`, `--smoke-frames=N`, `--no-save` (SaveService keeps slots in memory). Example, film the reveal:
+```
+tools\godot\Godot_v4.7.2-stable_win64_console.exe --path . --write-movie out\f.png --fixed-fps 30 --quit-after 1500 -- --smoke --smoke-frames=99999 --autopilot --stage=1 --segments=20 --hits=2 --no-save
+```
 
 ---
 
@@ -462,7 +503,7 @@ Naming (ART-002 §2 grammar), palette (every row's colours ⊆ its kit's `kit_lo
 
 | Slot | Persistence class (LOOP-001 §2) | Allowed save reasons | Status |
 |---|---|---|---|
-| `profile` | Anchored | `ruins_entry`, `tree_purchase`, `iteration_end` | interface built |
+| `profile` | Anchored | `ruins_entry`, `tree_purchase`, `iteration_end`, `cabinet_score` (Act 0 high score / game over) | built: Act 0 writes `cabinet_hi_score`, `act0_complete`, `pretence_seen` |
 | `iteration` | Iteration | `ruins_entry`, `iteration_end`, `new_iteration` | interface built |
 | `run` | Run | `seam_boundary` only (never mid-run, SYS-001 §8) | interface built |
 
@@ -543,9 +584,10 @@ The smoke run prints `BOOT_SMOKE: reached route 'sector'` and exits 0. GdUnit wr
 | `scenes/tests/test_attract_mode.gd` | default focus, focus loop/wrap, settings modal + ui_cancel + focus restore, root ui_cancel no-op, repeated input, 200 % text safe area (menu + settings), no raw keys |
 | `scenes/tests/test_sector_and_pause.gd` | spawn at anchor, HUD text, pause action, ui_cancel/pause resume, confirm defaults to the safe choice, abandon routes + unpauses, three-deep modal unwind |
 | `tests/test_boot_flow.gd` | route table loads, unknown route fails safely, input-mode switching, accessibility defaults |
+| `features/cabinet/tests/test_cabinet_rules.gd` | torus maths, extra Vigils, calm mining vs over-fire, glass → Charges with overflow, Charge homing + module knock-off + interception, Grub deposits → segments, Cold Sepulchre never wakes, Awakening silence → line → rampage, contact death, lance cannot bite the entity, 13 Charges unmake for 15,000, censer lag 0.25 s, **autopilot clears A0-1 end to end** |
 | `tests/test_input_map.gd` | every GDD §4.1 key/mouse binding and GDD §4.3 pad binding (ruling R-12); no two gameplay actions share a key |
 
-Result on 2026-11-17 (after the English-only pass): 74 test cases, 0 failures, 0 errors; boot smoke exit 0 with no `ERROR`/`WARNING` lines.
+Result on 2026-11-18 (Act 0 cabinet slice): 90 test cases, 0 failures, 0 errors; boot smoke (attract → cabinet) exit 0 with no `ERROR`/`WARNING` lines.
 
 Not covered (honest list): window sizes other than the 640×360 logical viewport, real integer scaling at 1080p/1440p, gamepad glyphs (none exist), shaders, audio, Steam, performance. Slopes, stairs, doors and moving platforms are N/A (§2.6).
 
@@ -556,7 +598,11 @@ Per ART-002 §7: canvas default filter Nearest (set in `project.godot`); pixel a
 
 ### 11.1 Open questions
 
-None open in this doc as of 2026-11-17. New conflicts go here as `Q-T15` onward.
+| # | Question | Found in | Proposed |
+|---|---|---|---|
+| Q-T15 | SYS-001 §1.4 `hits_needed = 13 - 3 + ceil(segments/7)` gives 10 at 0 segments, but its own note says "3 at 0 segments". The cabinet sidesteps it (the entity is only hittable once complete, 13 hits) | SYS-001 §1.4 | design rewrites the formula or its note |
+| Q-T16 | SYS-001 §2 phase 3 says "Compass starts lying" at Quickening; WARP-001 W0-02 says the Act 0 HUD is always honest (T0 lie budget 0). The cabinet keeps the compass honest (WARP-001 owns HUD lies) | SYS-001 §2, WARP-001 §2.1 | SYS-001 scopes the lie to T ≥ 3 |
+| Q-T17 | Cabinet ✱ values with no SYS-001 row: lives at start (3), respawn delay and shield (2 s each), lance range (0.9 s life), Grub seek speed (160 px/s) and flee radius (110 px), Acolyte engagement range (300 px) and shot life (2.2 s), Charge life (6 s), entity costume radius/contact inset/turn rate | `data/cabinet/cabinet_tuning.tres`, `sepulchre_ritual.gd` | add an Act 0 table to SYS-001 |
 
 ### 11.1a Resolved questions (owner-delegated rulings, 2026-11-17)
 
@@ -595,3 +641,4 @@ The owner delegated every open ruling to the 2026-11-17 authoring pass. Each rul
 | 2026-11-17 | Doc review: fixed 13 mechanical citation/status errors across TECH-001, SYS-001, LOOP-001, ZONES-001, WARP-001, AUDIO-001, NARR-001, UI-001, EVT-001, TASK-BOOT; removed unsourced on-screen cap numbers from §0.3/§1.5/§2.6 (Q-T14). WARP-001 §6.1 decision IDs kept (its §9.2 freezes the `WARP-001 §6.1 D-nn` citation form); ambiguous bare uses now say §6.1 | production |
 | 2026-11-17 | Owner-delegated authoring pass: rulings R-01…R-19 (§11.1a); §4–§6 and §8 designed; `RunSession` and `AudioService` autoloads approved as planned; full GDD §4.1/§4.3 input map | owner (delegated) |
 | 2026-11-17 | **English only.** All non-English plans removed: per-locale number tables, the language setting and picker, pseudo-translation and right-to-left tests, the CJK font plan, translator workflow and vendor milestones. `tr()` keys and `en.po` stay so player text remains testable and a language can be added later (L10N-001 §7) | owner |
+| 2026-11-18 | Act 0 built as the Cabinet feature (§2.10): own torus simulation without Godot physics bodies; vector costume art from `Pal`; 5×7 Cabinet face via `PixelText`; `AudioService` built with synthesised placeholder cues; profile save reason `cabinet_score`; `--no-save` switch; New Vigil now routes to `cabinet` | production |

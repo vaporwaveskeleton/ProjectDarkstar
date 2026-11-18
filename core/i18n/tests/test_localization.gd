@@ -3,10 +3,10 @@ extends GdUnitTestSuite
 ## plurals, number formatting, glyph coverage of the current UI font.
 
 const PO_PATH := "res://locale/en.po"
-const SCAN_ROOTS := ["res://scenes", "res://features", "res://core", "res://autoload"]
+const SCAN_ROOTS := ["res://scenes", "res://features", "res://core", "res://autoload", "res://data"]
 ## Key prefixes that mark a string literal as a translation key.
 const KEY_PREFIXES := ["GAME_", "MENU_", "PAUSE_", "CONFIRM_", "SETTINGS_", "HUD_", "MSG_",
-	"NARR_", "CX_", "ACH_"]
+	"NARR_", "CX_", "ACH_", "CAB_", "ENTITY_", "REVEAL_", "RUINS_", "ATTRACT_"]
 
 var _saved_locale := ""
 
@@ -63,7 +63,7 @@ static func _files(root: String) -> PackedStringArray:
 		var full := root.path_join(n)
 		if dir.current_is_dir() and not n.begins_with("."):
 			out.append_array(_files(full))
-		elif n.ends_with(".gd") or n.ends_with(".tscn"):
+		elif n.ends_with(".gd") or n.ends_with(".tscn") or n.ends_with(".tres"):
 			out.append(full)
 		n = dir.get_next()
 	return out

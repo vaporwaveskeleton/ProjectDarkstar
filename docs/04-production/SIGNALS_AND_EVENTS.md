@@ -37,6 +37,14 @@ Rules: signal names are past tense (`hull_breached`, `save_failed`), payloads ar
 | `PauseScreen` | `abandon_requested` | — | `SectorStub` | built |
 | `ScreenStack` | `screen_pushed`, `screen_popped`, `emptied` | `screen` / — | `SectorStub` (unpause on `emptied`) | built |
 | `InputModeTracker` | `input_mode_changed` | `mode: Mode` | future glyph widgets, cursor visibility | built |
+| `ArcadeWorld` (Act 0) | `score_awarded` | `points: int, at: Vector2` | `CabinetGame` → `ScoreKeeper` | built |
+| `ArcadeWorld` | `vigil_destroyed` | — | `CabinetGame` (respawn / game over) | built |
+| `ArcadeWorld` | `charges_changed` | `count: int` | `CabinetGame` → HUD lamps | built |
+| `ArcadeWorld` | `segments_changed`, `phase_changed` | `count: int` / `phase: int` | tests; future music escalation | built |
+| `ArcadeWorld` | `entity_line`, `caption` | `key: String` (an `en.po` key, never text) | `CabinetGame` → `CabinetMessages` | built |
+| `ArcadeWorld` | `entity_unmade`, `sepulchre_cleared` | — | `CabinetGame` (stage flow) | built |
+| `ScoreKeeper` | `score_changed`, `lives_changed`, `extra_life_awarded` | `int` / `int` / — | `CabinetGame` → HUD | built |
+| `PretenceReveal` | `finished` | — | `CabinetGame` (save flags, route to the Ruins) | built |
 
 Add a row before you add a signal. Remove the row when you remove the signal.
 

@@ -93,3 +93,106 @@ msgstr "A save file was damaged. Your most recent backup was restored."
 
 msgid "MSG_SCREEN_FAILED"
 msgstr "That screen could not open. Your progress is safe. Returning to the title."
+
+#. Act 0 cabinet bezel (the arcade costume, WARP-001 W0-01/W0-04). Arcade house style: capitals.
+msgid "CAB_1UP"
+msgstr "1UP"
+
+msgid "CAB_HI"
+msgstr "HI"
+
+#. Label over the remaining-ships icons.
+msgid "CAB_VIGILS"
+msgstr "VIGILS"
+
+#. Label over the Charge pips (Mourning Glass in the magazine).
+msgid "CAB_GLASS"
+msgstr "GLASS"
+
+#. Blinks at the foot of the bezel. Part of the arcade costume.
+msgid "CAB_CREDIT"
+msgstr "INSERT CREDIT"
+
+#. The cabinet maker's mark. The Lantern Office is the in-world body that built the machine (NARR-001, spoiler tier S1).
+msgid "CAB_MAKER"
+msgstr "© LANTERN OFFICE"
+
+msgid "CAB_READY"
+msgstr "READY, VIGIL"
+
+#. A0-1 title card. The Sepulchre here is cold: it never wakes.
+msgid "CAB_STAGE_A0_1"
+msgstr "FIRST VIGIL"
+
+msgid "CAB_STAGE_A0_1_SUB"
+msgstr "MINE THE GLASS. BREAK THE SEPULCHRE."
+
+#. A0-3 title card: the level where the entity wakes.
+msgid "CAB_STAGE_A0_3"
+msgstr "THE LAST NORMAL DAY"
+
+msgid "CAB_STAGE_A0_3_SUB"
+msgstr "THEY ARE BUILDING SOMETHING. STOP THEM."
+
+msgid "CAB_GAME_OVER"
+msgstr "GAME OVER"
+
+msgid "CAB_VIGIL_COMPLETE"
+msgstr "VIGIL COMPLETE"
+
+msgid "CAB_ENTITY_DOWN"
+msgstr "THE DARK STAR IS DOWN"
+
+msgid "CAB_EXTRA_VIGIL"
+msgstr "EXTRA VIGIL"
+
+#. Caption for the chant (GDD §10: the chant is audio-critical, so it is always captioned).
+msgid "CAB_CAPTION_WHISPER"
+msgstr "[ a choir sings, close by ]"
+
+#. The cabinet's credits roll. It is propaganda: cheerful, official, slightly wrong.
+msgid "CAB_CREDITS_1"
+msgstr "CONGRATULATIONS, VIGIL"
+
+msgid "CAB_CREDITS_2"
+msgstr "THE LIGHT IS SAFE"
+
+msgid "CAB_CREDITS_3"
+msgstr "YOUR QUOTA IS MET"
+
+msgid "CAB_CREDITS_4"
+msgstr "DARKSTAR"
+
+msgid "CAB_CREDITS_5"
+msgstr "A LANTERN OFFICE PRODUCTION"
+
+msgid "CAB_CREDITS_6"
+msgstr "KEEP THE VIGIL"
+
+msgid "CAB_CREDITS_7"
+msgstr "THANK YOU FOR YOUR SERVICE"
+
+#. The entity's only line in Act 0 (AUDIO-001 §4.1, locked). Big type, never animated.
+msgid "ENTITY_IT_WAKES"
+msgstr "IT WAKES."
+
+#. THE PRETENCE (GDD §6.1 A0-3): the arcade shell is revealed as a lie.
+msgid "REVEAL_PRETENCE"
+msgstr "THAT WAS A PRETENCE."
+
+#. Entity line as the first sky goes dark (AUDIO-001 §4.5).
+msgid "REVEAL_ONE_SKY_LESS"
+msgstr "ONE SKY LESS."
+
+msgid "RUINS_TITLE"
+msgstr "THE RUINS OF THE NINTH SKY"
+
+msgid "RUINS_LINE_1"
+msgstr "Something in here is still lit."
+
+msgid "RUINS_CONTINUE"
+msgstr "TO BE CONTINUED  —  PRESS ANY KEY"
+
+#. Shown under the title once Act 0 has been finished. The arcade is no longer innocent.
+msgid "ATTRACT_FIRST_SKY_DARK"
+msgstr "THE FIRST SKY IS DARK."

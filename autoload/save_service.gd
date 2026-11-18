@@ -19,7 +19,7 @@ const SLOT_RUN := &"run"
 
 ## Allowed save reasons per slot (SYS-001 §8 save cadence; LOOP-001 §2 "run slot, written between Seams only").
 const ALLOWED_REASONS := {
-	&"profile": [&"ruins_entry", &"tree_purchase", &"iteration_end"],
+	&"profile": [&"ruins_entry", &"tree_purchase", &"iteration_end", &"cabinet_score"],
 	&"iteration": [&"ruins_entry", &"iteration_end", &"new_iteration"],
 	&"run": [&"seam_boundary"],
 }
@@ -33,6 +33,12 @@ const REASON_NEWER := &"newer_version"
 const REASON_MISSING := &"missing"
 
 var backend: SaveBackend = FileSaveBackend.new()
+
+
+## `-- --no-save` (captures, demos, CI): keep every slot in memory, never touch the player's saves.
+func _ready() -> void:
+	if OS.get_cmdline_user_args().has("--no-save"):
+		backend = MemorySaveBackend.new()
 
 
 func set_backend(p_backend: SaveBackend) -> void:
