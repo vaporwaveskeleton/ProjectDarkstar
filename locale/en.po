@@ -101,18 +101,6 @@ msgstr "1UP"
 msgid "CAB_HI"
 msgstr "HI"
 
-#. Label over the remaining-ships icons.
-msgid "CAB_VIGILS"
-msgstr "VIGILS"
-
-#. Label over the Charge pips (Mourning Glass in the magazine).
-msgid "CAB_GLASS"
-msgstr "GLASS"
-
-#. Label over the Sepulchre segment count on the bezel (Act 0 costume).
-msgid "CAB_SEPULCHRE"
-msgstr "SEPULCHRE"
-
 #. Shown in place of the segment count once the Sepulchre is awake.
 msgid "CAB_SEP_AWAKE"
 msgstr "AWAKE"

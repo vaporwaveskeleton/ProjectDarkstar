@@ -1,4 +1,4 @@
-[gd_scene load_steps=29 format=3]
+[gd_scene load_steps=30 format=3]
 
 [ext_resource type="Script" path="res://features/cabinet/cabinet_game.gd" id="1"]
 [ext_resource type="Resource" path="res://data/cabinet/stage_first_vigil.tres" id="2"]
@@ -27,6 +27,7 @@
 [ext_resource type="Script" path="res://features/cabinet/screen_rig.gd" id="26"]
 [ext_resource type="Script" path="res://features/cabinet/arcade_screen.gd" id="27"]
 [ext_resource type="Resource" path="res://data/cabinet/cabinet_screen.tres" id="28"]
+[ext_resource type="Script" path="res://features/cabinet/bezel_field.gd" id="29"]
 
 [sub_resource type="ShaderMaterial" id="crt_mat"]
 resource_local_to_scene = true
@@ -38,7 +39,7 @@ shader_parameter/vignette = 0.35
 shader_parameter/desaturate = 0.0
 shader_parameter/tear = 0.0
 shader_parameter/time_s = 0.0
-shader_parameter/rows = 360.0
+shader_parameter/rows = 304.0
 
 [sub_resource type="ShaderMaterial" id="aether_mat"]
 shader = ExtResource("24")
@@ -66,8 +67,8 @@ unique_name_in_owner = true
 material = SubResource("crt_mat")
 texture_filter = 1
 layout_mode = 0
-offset_right = 640.0
-offset_bottom = 360.0
+offset_right = 256.0
+offset_bottom = 304.0
 script = ExtResource("27")
 spec = ExtResource("28")
 
@@ -76,13 +77,14 @@ unique_name_in_owner = true
 snap_2d_transforms_to_pixel = true
 snap_2d_vertices_to_pixel = true
 canvas_item_default_texture_filter = 0
-size = Vector2i(640, 360)
+size = Vector2i(256, 304)
 render_target_update_mode = 4
 
 [node name="World" type="Node2D" parent="Rig/ArcadeScreen/ScreenViewport"]
 unique_name_in_owner = true
 script = ExtResource("5")
 tuning = ExtResource("4")
+screen_spec = ExtResource("28")
 move_stats = ExtResource("6")
 
 [node name="Stars" type="Node2D" parent="Rig/ArcadeScreen/ScreenViewport/World"]
@@ -145,6 +147,7 @@ unique_name_in_owner = true
 visible = false
 texture_filter = 1
 script = ExtResource("16")
+spec = ExtResource("28")
 
 [node name="HudLayer" type="CanvasLayer" parent="Rig/ArcadeScreen/ScreenViewport"]
 layer = 2
@@ -173,8 +176,9 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("20")
+spec = ExtResource("28")
 
-[node name="Hud" type="Control" parent="Rig" node_paths=PackedStringArray("screen_hud")]
+[node name="Hud" type="Control" parent="Rig" node_paths=PackedStringArray("screen_hud", "field")]
 unique_name_in_owner = true
 layout_mode = 3
 anchors_preset = 15
@@ -185,6 +189,14 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("18")
 screen_hud = NodePath("../ArcadeScreen/ScreenViewport/HudLayer/ScreenHud")
+field = NodePath("Field")
+
+[node name="Field" type="Control" parent="Rig/Hud" node_paths=PackedStringArray("rig")]
+layout_mode = 3
+anchors_preset = 0
+mouse_filter = 2
+script = ExtResource("29")
+rig = NodePath("../..")
 
 [node name="Reveal" type="Node" parent="." node_paths=PackedStringArray("maw", "aether")]
 unique_name_in_owner = true

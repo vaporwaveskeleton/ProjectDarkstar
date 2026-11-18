@@ -7,6 +7,7 @@ extends RefCounted
 ## min 1, centred, so every texel is exactly k display px (the integer law holds for the screen only).
 ## The "hole" is the screen's footprint in the 640×360 reference: the grid at 1×, centred. The rig
 ## transform maps reference units to root canvas units so the hole lands exactly on the screen.
+## `bezel_rect` is the whole window in those units (the bezel fills the window; no bars, any aspect).
 ## Everything here is a function of sizes; nothing reads the engine.
 
 const REF := Vector2i(640, 360)
@@ -57,3 +58,12 @@ static func window_to_screen(window: Vector2i, grid: Vector2i, p: Vector2, ref: 
 static func screen_to_window(window: Vector2i, grid: Vector2i, p: Vector2, ref: Vector2i = REF) -> Vector2:
 	var r := screen_rect_physical(window, grid, ref)
 	return Vector2(r.position) + p * float(integer_scale(window, ref))
+
+
+## The whole window in rig units (reference units: one unit = k display px), so the bezel can fill
+## every pixel at any aspect ratio (no bars). The hole stays where `hole_rect` puts it; the rect grows
+## around it to the window's aspect. Lay the bezel out against this, never against REF.
+static func bezel_rect(window: Vector2i, grid: Vector2i, ref: Vector2i = REF) -> Rect2:
+	var k := float(integer_scale(window, ref))
+	var phys := Vector2(screen_rect_physical(window, grid, ref).position)
+	return Rect2(hole_rect(grid, ref).position - phys / k, Vector2(window) / k)

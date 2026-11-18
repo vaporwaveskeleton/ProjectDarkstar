@@ -13,11 +13,15 @@ func _game() -> Node:
 	return game
 
 
-func test_spec_is_a_ds_tunable_with_the_640x360_grid() -> void:
+func test_spec_is_a_ds_tunable_with_the_portrait_grid_and_hud_strip() -> void:
 	var spec := load(SPEC) as CabinetScreenSpec
 	assert_str(spec.ds_namespace).is_equal("ds_cabinet.screen")
-	assert_object(spec.grid).is_equal(Vector2i(640, 360))
+	assert_object(spec.grid).is_equal(Vector2i(256, 304))
+	assert_int(spec.hud_strip_height).is_equal(40)
+	assert_object(spec.play_rect()).is_equal(Rect2(0, 40, 256, 264))
+	assert_vector(spec.play_centre()).is_equal(Vector2(128, 172))
 	assert_bool(spec.ds_keys().has("ds_cabinet.screen.grid")).is_true()
+	assert_bool(spec.ds_keys().has("ds_cabinet.screen.hud_strip_height")).is_true()
 
 
 func test_screen_viewport_matches_the_grid_and_carries_the_crt_material() -> void:
@@ -125,3 +129,61 @@ func test_paused_tree_does_not_forward_into_the_screen() -> void:
 	var forwarded := probe.hits
 	screen.queue_free()
 	assert_int(forwarded).is_equal(0)
+
+
+func test_world_view_and_centre_come_from_the_spec() -> void:
+	var game := _game()
+	var world := game.get_node("%World") as ArcadeWorld
+	var spec := load(SPEC) as CabinetScreenSpec
+	assert_object(world.view_rect).is_equal(spec.play_rect())
+	assert_vector(world.view_size).is_equal(spec.play_size())
+	assert_vector(world.screen_centre).is_equal(spec.play_centre())
+	# the camera is glued to the Vigil, which is drawn at the centre of the play view
+	world.start(game.stages[0])
+	assert_vector(world.to_screen(world.vigil.pos)).is_equal_approx(spec.play_centre(), Vector2(0.01, 0.01))
+	assert_bool(world.on_screen(world.vigil.pos, 0.0)).is_true()
+	# the HUD strip is not part of the view
+	var above := world.vigil.pos - Vector2(0, spec.play_size().y * 0.5 + 8.0)
+	assert_bool(world.on_screen(above, 0.0)).is_false()
+	game.queue_free()
+
+
+func test_ledger_compass_sits_inside_the_strip_and_the_maw_is_centred_in_the_play_view() -> void:
+	var spec := load(SPEC) as CabinetScreenSpec
+	assert_bool(spec.strip_rect().encloses(CabinetScreenHud.COMPASS)).is_true()
+	var game := _game()
+	assert_vector((game.get_node("%Maw") as MawView).centre).is_equal(spec.play_centre())
+	game.queue_free()
+
+
+## Owner ruling Q5 (2026-11-18): Acolytes do not fire from off-screen.
+func test_acolyte_off_screen_never_fires() -> void:
+	var game := _game()
+	var world := game.get_node("%World") as ArcadeWorld
+	world.start(game.stages[0])
+	var vigil := world.vigil
+	# one Acolyte inside the range but outside the play view (above it), the Vigil centred
+	world.acolytes.items.clear()
+	var a := world.acolytes.spawn(world.torus.wrap(vigil.pos + Vector2(0, -(world.view_size.y * 0.5 + 60.0))))
+	a.cycle = 0.0
+	assert_bool(world.on_screen(a.pos, 0.0)).is_false()
+	assert_float(world.torus.distance(a.pos, vigil.pos)).is_less(world.tuning.acolyte_range)
+	var shots_before := world.shots.shots.size()
+	world.acolytes.tick(0.05)
+	assert_float(a.cycle).is_equal(0.0)   # its cycle did not run
+	assert_int(world.shots.shots.size()).is_equal(shots_before)
+	# bring it into view: now the cycle runs and it fires
+	a.pos = world.torus.wrap(vigil.pos + Vector2(0, -60.0))
+	assert_bool(world.on_screen(a.pos, 0.0)).is_true()
+	world.acolytes.tick(0.05)
+	assert_float(a.cycle).is_greater(0.0)
+	assert_int(world.shots.shots.size()).is_equal(shots_before + 1)
+	game.queue_free()
+
+
+func test_the_screen_fills_the_hole_in_the_rig() -> void:
+	var game := _game()
+	var screen := game.get_node("%ArcadeScreen") as ArcadeScreen
+	assert_object(Rect2(screen.position, screen.size)).is_equal(ScreenFit.hole_rect(screen.spec.grid))
+	assert_object(Rect2(screen.position, screen.size)).is_equal(CabinetBezel.hole())
+	game.queue_free()

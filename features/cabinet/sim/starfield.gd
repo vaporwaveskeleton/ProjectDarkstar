@@ -11,19 +11,20 @@ const LAYERS := [
 
 var _stars: Array[PackedVector2Array] = []
 var pull := 0.0                      ## 0..1, set by the reveal
-var pull_target := Vector2(320, 180) ## screen point the sky drains into
+var pull_target := Vector2.ZERO    ## screen point the sky drains into (the play view centre, set in reset)
 var desaturate := 0.0                ## 0..1, T0→T1 costume removal (W0-08)
 var show_seams := true
 
 
 func reset() -> void:
 	_stars.clear()
+	pull_target = world.screen_centre
 	var r := RandomNumberGenerator.new()
 	r.seed = 77
 	for layer in LAYERS:
 		var pts := PackedVector2Array()
 		for i in int(layer.count):
-			pts.append(Vector2(r.randf() * 640.0, r.randf() * 360.0))
+			pts.append(Vector2(r.randf() * world.view_size.x, r.randf() * world.view_size.y))
 		_stars.append(pts)
 
 
@@ -31,6 +32,8 @@ func _draw() -> void:
 	if world == null or world.torus == null:
 		return
 	var cam := world.view_centre
+	var tile := world.view_size
+	var origin := world.view_rect.position
 	for li in LAYERS.size():
 		var layer: Dictionary = LAYERS[li]
 		var par: float = layer.parallax
@@ -40,7 +43,7 @@ func _draw() -> void:
 		var off := -cam * par
 		for i in _stars[li].size():
 			var s: Vector2 = _stars[li][i]
-			var p := Vector2(fposmod(s.x + off.x, 640.0), fposmod(s.y + off.y, 360.0))
+			var p := origin + Vector2(fposmod(s.x + off.x, tile.x), fposmod(s.y + off.y, tile.y))
 			if pull > 0.0:
 				p = p.lerp(pull_target, clampf(pull * (1.0 + par), 0.0, 1.0))
 			var twinkle := (i * 7 + int(world.time * 3.0)) % 23 == 0
@@ -53,13 +56,14 @@ func _draw() -> void:
 func _draw_seams() -> void:
 	var size := world.torus.size
 	var origin := world.to_screen(Vector2.ZERO)
+	var view := world.view_rect
 	for kx in [-1, 0, 1]:
 		var x: float = origin.x + kx * size.x
-		if x >= 0.0 and x <= 640.0:
-			for y in range(0, 360, 8):
+		if x >= view.position.x and x <= view.end.x:
+			for y in range(int(view.position.y), int(view.end.y), 8):
 				draw_line(Vector2(x, y), Vector2(x, y + 3), Look.c(Pal.BONE_0))
 	for ky in [-1, 0, 1]:
 		var y: float = origin.y + ky * size.y
-		if y >= 0.0 and y <= 360.0:
-			for x in range(0, 640, 8):
+		if y >= view.position.y and y <= view.end.y:
+			for x in range(int(view.position.x), int(view.end.x), 8):
 				draw_line(Vector2(x, y), Vector2(x + 3, y), Look.c(Pal.BONE_0))

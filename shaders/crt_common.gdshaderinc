@@ -7,7 +7,7 @@ uniform float vignette : hint_range(0.0, 1.0) = 0.35;
 uniform float desaturate : hint_range(0.0, 1.0) = 0.0;
 uniform float tear : hint_range(0.0, 1.0) = 0.0;     // W0-07 Pretence Tear: horizontal slice offsets
 uniform float time_s = 0.0;
-uniform float rows = 360.0;                           // ✱ scanline row count = the grid height (ds_cabinet.screen)
+uniform float rows = 304.0;                           // scanline row count = the grid height; the arcade screen and AttractCrt set it from CabinetScreenSpec
 
 vec2 crt_warp(vec2 uv) {
 	vec2 c = uv * 2.0 - 1.0;

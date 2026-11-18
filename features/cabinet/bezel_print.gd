@@ -1,6 +1,6 @@
 class_name BezelPrint
 extends Control
-## One printed bezel column (80 × 360) drawn from its BezelPiece list (BezelArt). The art is drawn
+## One printed bezel column (80 × 360, flush against the screen hole) drawn from its BezelPiece list (BezelArt). The art is drawn
 ## once and redrawn only when the crack or the inks change: there is no per-frame redraw. The
 ## costume's peel slides the whole column sideways by its position (left slides left, right slides
 ## right), it never redraws. A Control drawn behind its parent (the HUD / attract frame), so the
@@ -59,7 +59,7 @@ func _apply_peel() -> void:
 
 
 func _base_x() -> float:
-	return 0.0 if column == &"left" else CabinetBezel.RIGHT_X
+	return CabinetBezel.left_x() if column == &"left" else CabinetBezel.right_x()
 
 
 func _draw() -> void:

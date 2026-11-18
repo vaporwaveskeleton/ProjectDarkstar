@@ -6,9 +6,9 @@ extends RefCounted
 ## never an RNG. The lists are the seam the later "zoom destruction" (peel, crack, curl, decay)
 ## drives piece by piece: each piece has an id, a z and a pivot.
 ##
-## Left: score window, Vigils window, the Vigil as a rocket-skiff, the how-to-play card, credit window.
-## Right: HI window, Glass window, the Sepulchre as a reliquary moon with one slit eye, its window,
-## the starburst sticker, the coin-door backing. The 2 px nearest the screen is a key-black lip.
+## Left: the Vigil as a rocket-skiff and the how-to-play card. Right: the Sepulchre as a reliquary moon
+## with one slit eye, the starburst sticker and the coin-door backing. No readout windows: the live
+## readouts are lit on the screen strip. The 2 px nearest the screen is a key-black lip.
 
 const L := &"left"
 const R := &"right"
@@ -68,11 +68,8 @@ class _Acc extends RefCounted:
 
 static func build_left() -> Array[BezelPiece]:
 	var a := _Acc.new(L)
-	var covered: Array[Rect2] = [CabinetBezel.LEFT_SCORE, CabinetBezel.LEFT_VIGILS, CabinetBezel.LEFT_ART, CabinetBezel.LEFT_HOWTO, CabinetBezel.LEFT_CREDIT]
+	var covered: Array[Rect2] = [CabinetBezel.LEFT_ART, CabinetBezel.LEFT_HOWTO]
 	_background(a, covered)
-	_window(a, &"score", CabinetBezel.LEFT_SCORE)
-	_window(a, &"vigils", CabinetBezel.LEFT_VIGILS)
-	_window(a, &"credit", CabinetBezel.LEFT_CREDIT)
 	_vigil_illustration(a, CabinetBezel.LEFT_ART)
 	_howto_card(a, CabinetBezel.LEFT_HOWTO)
 	_caps(a)
@@ -83,11 +80,8 @@ static func build_left() -> Array[BezelPiece]:
 
 static func build_right() -> Array[BezelPiece]:
 	var a := _Acc.new(R)
-	var covered: Array[Rect2] = [CabinetBezel.RIGHT_HI, CabinetBezel.RIGHT_GLASS, CabinetBezel.RIGHT_ART, CabinetBezel.RIGHT_SEPULCHRE, CabinetBezel.RIGHT_STICKER, Rect2(6, 249, 68, 100)]
+	var covered: Array[Rect2] = [CabinetBezel.RIGHT_ART, CabinetBezel.RIGHT_STICKER, Rect2(6, 249, 68, 100)]
 	_background(a, covered)
-	_window(a, &"hi", CabinetBezel.RIGHT_HI)
-	_window(a, &"glass", CabinetBezel.RIGHT_GLASS)
-	_window(a, &"sepulchre", CabinetBezel.RIGHT_SEPULCHRE)
 	_sepulchre_illustration(a, CabinetBezel.RIGHT_ART)
 	_sticker(a, CabinetBezel.RIGHT_STICKER)
 	_coin_door_backing(a)
@@ -207,17 +201,6 @@ static func _background(a: _Acc, covered: Array[Rect2]) -> void:
 		burst_y = [63.5, 122.0, 180.0]
 	for i in burst_y.size():
 		a.fill(StringName("sparkle_%d" % i), star_pts(Vector2(40, burst_y[i]), 2.5, 0.6, 4), &"yellow", Z_STARS + 1)
-
-
-## A readout window: smoked glass with a 1 px chrome bevel (light top/left, dark bottom/right),
-## cut into the print. The readout text drawn over it is a lit lamp behind the glass.
-static func _window(a: _Acc, id: StringName, r: Rect2) -> void:
-	a.rect(StringName("%s_cut" % id), r.grow(1), &"key_black", Z_WINDOW)
-	a.rect(StringName("%s_glass" % id), r, &"smoked_glass", Z_WINDOW)
-	a.rect(StringName("%s_bevel_top" % id), Rect2(r.position, Vector2(r.size.x, 1)), &"chrome_light", Z_WINDOW)
-	a.rect(StringName("%s_bevel_left" % id), Rect2(r.position, Vector2(1, r.size.y)), &"chrome_light", Z_WINDOW)
-	a.rect(StringName("%s_bevel_bottom" % id), Rect2(r.position + Vector2(0, r.size.y - 1), Vector2(r.size.x, 1)), &"chrome_dark", Z_WINDOW)
-	a.rect(StringName("%s_bevel_right" % id), Rect2(r.position + Vector2(r.size.x - 1, 0), Vector2(1, r.size.y)), &"chrome_dark", Z_WINDOW)
 
 
 static func _caps(a: _Acc) -> void:

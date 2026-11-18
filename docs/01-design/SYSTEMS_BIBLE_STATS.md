@@ -15,7 +15,7 @@ Conventions used everywhere:
 
 | Convention | Value |
 |---|---|
-| `px`, `px/s` | logical pixels and pixels/second (640×360 logical space, GDD §2; one logical px = display height / 360, owner 2026-11-18; the Act 0 arcade screen grid is 240×320, approved 2026-11-18, not yet built, where one screen px = one logical px on 16:9; TECH-001 §1.1) |
+| `px`, `px/s` | logical pixels and pixels/second (640×360 logical space, GDD §2; one logical px = display height / 360, owner 2026-11-18; the Act 0 arcade screen grid is 256×304 with a 40 px HUD strip, owner 2026-11-18, where one screen px = one logical px on 16:9; TECH-001 §1.1) |
 | `dmg unit` | 1 unit = one unshielded hull hit. The Vigil's hull is **1 HP** (GDD §8.1); anything ≥1 kills it |
 | `hit` | one Arc-Lance projectile impact, or one Unravel hit for the entity (§2) |
 | Frames | 60 Hz. A "tell" of 21 frames = 0.35 s |
@@ -353,7 +353,7 @@ Hunger raises the entity only. It never reduces player currency (GDD P4: progres
 
 | Constant | Value | Why |
 |---|---|---|
-| Internal resolution | 640×360 🔒 | pixel-perfect integer scale (512×288 fallback struck 2026-11-17, TECH-001 §1.1). **Amended (owner, 2026-11-18):** the pixel-perfect grid binds the Act 0 arcade screen only; the bezel and everything after Act 0 render at native resolution, 640×360 staying the logical space (root implemented, PR A). The Act 0 screen grid is **240×320 portrait**, approved 2026-11-18, **not yet built** (it is 640×360 in the build today); 640×360 🔒 holds as the logical space for the rest (TECH-001 §1.1, Q-T25). Frame budget not yet measured at native resolution (Q-T24) |
+| Internal resolution | 640×360 🔒 | pixel-perfect integer scale (512×288 fallback struck 2026-11-17, TECH-001 §1.1). **Amended (owner, 2026-11-18):** the pixel-perfect grid binds the Act 0 arcade screen only; the bezel and everything after Act 0 render at native resolution, 640×360 staying the logical space (root implemented, PR A). The Act 0 screen grid is **256×304 portrait** with a **40 px HUD strip** (owner, 2026-11-18, replacing the 240×320 approval; built in PR B); 640×360 🔒 holds as the logical space for the rest (TECH-001 §1.1, Q-T25). Frame budget not yet measured at native resolution (Q-T24) |
 | Frame budget (min spec) | 1.2 ms/frame for warp effects | GDD §8.7 acceptance criterion 5 |
 | Player agency loss | ≤ 1.5 s max, any warp effect | GDD §8.7 criterion 3 |
 | Input latency budget | < 3 frames at 120 Hz | GDD §4.3 |

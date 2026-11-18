@@ -105,3 +105,20 @@ static func draw_centered(ci: CanvasItem, centre_x: float, y: float, text: Strin
 static func draw_shadowed(ci: CanvasItem, pos: Vector2, text: String, color: Color, shadow: Color, scale: int = 1) -> void:
 	draw(ci, pos + Vector2(scale, scale), text, shadow, scale)
 	draw(ci, pos, text, color, scale)
+
+
+## `text` broken at spaces into lines no wider than `max_w` px at `scale`. A single word wider than
+## the limit stays whole on its own line (the caller must pick a smaller scale for it).
+static func wrap(text: String, scale: int, max_w: float) -> PackedStringArray:
+	var out := PackedStringArray()
+	var line := ""
+	for word in text.split(" ", false):
+		var trial := word if line == "" else line + " " + word
+		if line != "" and float(width(trial, scale)) > max_w:
+			out.append(line)
+			line = word
+		else:
+			line = trial
+	if line != "" or out.is_empty():
+		out.append(line)
+	return out

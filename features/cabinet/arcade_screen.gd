@@ -17,6 +17,7 @@ func _ready() -> void:
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	viewport.size = spec.grid
 	size = Vector2(spec.grid)
+	position = ScreenFit.hole_rect(spec.grid).position   # the screen fills the hole, in the rig's reference units
 	var mat := crt_material()
 	if mat != null:
 		mat.set_shader_parameter(&"rows", float(spec.grid.y))

@@ -18,7 +18,7 @@ extends TunableResource
 @export var brass: Color = Color8(0xB0, 0x8A, 0x3E)
 @export var chrome_light: Color = Color8(0xD8, 0xDC, 0xE6)
 @export var chrome_dark: Color = Color8(0x5A, 0x60, 0x70)
-@export var smoked_glass: Color = Color8(0x10, 0x12, 0x24)     ## key black tinted slightly navy: the readout windows
+@export var smoked_glass: Color = Color8(0x10, 0x12, 0x24)     ## key black tinted slightly navy: the smoked glass (unused since the readouts moved onto the screen strip)
 @export var plexi_glare: Color = Color(1.0, 1.0, 1.0, 0.06)    ## the diagonal reflection band over the print
 
 const _DEFAULT_PATH := "res://data/cabinet/bezel_inks.tres"

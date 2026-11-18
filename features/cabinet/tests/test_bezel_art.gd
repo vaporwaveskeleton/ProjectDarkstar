@@ -6,7 +6,7 @@ extends GdUnitTestSuite
 const GAME_SCENE := "res://features/cabinet/cabinet_game.tscn"
 const ATTRACT_SCENE := "res://scenes/attract/attract_mode.tscn"
 const COLUMN := Rect2(0, 0, 80, 360)
-const SCREEN := Rect2(80, 0, 480, 360)    ## the field, in screen space
+const SCREEN := Rect2(192, 28, 256, 304)    ## the hole in rig units (spec grid 256×304 centred in 640×360)
 
 
 func _both() -> Array[BezelPiece]:
@@ -96,7 +96,7 @@ func test_pieces_are_sorted_by_z() -> void:
 func test_no_piece_covers_the_screen() -> void:
 	for p in _both():
 		var b := _bounds(p)
-		var offset := Vector2(CabinetBezel.RIGHT_X if p.column == &"right" else 0.0, 0.0)
+		var offset := Vector2(CabinetBezel.right_x() if p.column == &"right" else CabinetBezel.left_x(), 0.0)
 		assert_bool(Rect2(b.position + offset, b.size).intersects(SCREEN)) \
 			.override_failure_message("%s reaches the screen" % p.id).is_false()
 
@@ -151,3 +151,44 @@ func test_attract_frame_and_coin_slot_draw_after_the_crt() -> void:
 	assert_int(order["Frame"]).is_greater(order["Crt"])
 	assert_int(order["CoinSlot"]).is_greater(order["Crt"])
 	assert_int(order["PowerOn"]).is_less(order["Crt"])
+
+
+func test_the_hole_comes_from_the_spec_and_the_columns_sit_flush_against_it() -> void:
+	assert_object(CabinetBezel.hole()).is_equal(SCREEN)
+	assert_float(CabinetBezel.left_x() + CabinetBezel.SIDE).is_equal(SCREEN.position.x)
+	assert_float(CabinetBezel.right_x()).is_equal(SCREEN.end.x)
+	assert_object(CabinetBezel.coin_plate()).is_equal(Rect2(CabinetBezel.right_x() + 12.0, 252, 56, 80))
+
+
+## At every target window the print field plus the two columns leave no uncovered window area outside
+## the hole, and nothing (field, edge, column, coin plate) paints over the hole.
+func test_field_and_columns_tile_the_window_and_never_touch_the_hole() -> void:
+	var field := BezelField.new()
+	add_child(field)
+	auto_free(field)
+	var spec := load("res://data/cabinet/cabinet_screen.tres") as CabinetScreenSpec
+	var sizes: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(2560, 1440), Vector2i(2560, 1600), Vector2i(3840, 2160),
+		Vector2i(3440, 1440), Vector2i(1920, 1200), Vector2i(1366, 768), Vector2i(1280, 800)]
+	for win in sizes:
+		var area := ScreenFit.bezel_rect(win, spec.grid)
+		field.set_area(area)
+		var parts: Array[Rect2] = field.bands()
+		var left_col := Rect2(CabinetBezel.left_x(), SCREEN.position.y, CabinetBezel.SIDE, SCREEN.size.y)
+		var right_col := Rect2(CabinetBezel.right_x(), SCREEN.position.y, CabinetBezel.SIDE, SCREEN.size.y)
+		parts.append_array([left_col, right_col])
+		var covered := 0.0
+		for p in parts:
+			covered += p.get_area()
+			assert_bool(p.intersects(SCREEN)).override_failure_message("%s overlaps the hole at %s" % [p, win]).is_false()
+			assert_bool(area.encloses(p)).override_failure_message("%s leaves the window at %s" % [p, win]).is_true()
+		# the parts and the hole tile the window exactly: no gap, no overlap
+		assert_float(covered + SCREEN.get_area()).is_equal_approx(area.get_area(), 0.5)
+		for e in field.edges():
+			assert_bool(e.intersects(SCREEN)).is_false()
+	assert_int(field.painted().size()).is_equal(6)
+
+
+func test_coin_plate_and_columns_stay_out_of_the_hole() -> void:
+	assert_bool(CabinetBezel.coin_plate().intersects(SCREEN)).is_false()
+	assert_bool(Rect2(CabinetBezel.left_x(), 0, CabinetBezel.SIDE, 360).intersects(SCREEN)).is_false()
+	assert_bool(Rect2(CabinetBezel.right_x(), 0, CabinetBezel.SIDE, 360).intersects(SCREEN)).is_false()

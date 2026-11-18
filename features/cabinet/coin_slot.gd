@@ -5,7 +5,7 @@ extends Control
 ## moments a prompt teaches the two inputs the attract screen needs:
 ##   tape  — drag it off with the mouse, or hold accept (gamepad / keys) while the door has focus;
 ##   coin  — click the slit, or press accept: one credit, spent by New Vigil.
-## Placed at CabinetBezel.COIN_PLATE. Draws its own prompt below the field, pointing at the door.
+## Placed at CabinetBezel.coin_plate(). Draws its own prompt on the print beside the door (never over the screen), pointing at it.
 ## Holds no saved state: the attract screen saves "tape peeled" when `tape_peeled` fires.
 
 signal tape_peeled
@@ -40,8 +40,8 @@ func _ready() -> void:
 	focus_mode = Control.FOCUS_ALL
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	position = CabinetBezel.COIN_PLATE.position
-	size = CabinetBezel.COIN_PLATE.size
+	position = CabinetBezel.coin_plate().position
+	size = CabinetBezel.coin_plate().size
 
 
 ## The tape came off on an earlier visit (profile `cabinet_tape_peeled`).
@@ -236,21 +236,27 @@ func _strip(a: Vector2, b: Vector2, face: bool) -> void:
 	draw_polyline(PackedVector2Array([a + n, b + n, b - n, a - n, a + n]), Look.c(Pal.GAS_2), 1.0)
 
 
-## The prompt sits on the field's bottom line, right-aligned to the bezel, with an arrow to the door.
+const HINT_X := 78.0               ## plate-local x where the prompt starts: just right of the printed column
+const HINT_W := 96.0               ## px: the print beside the column is at least this wide at every aspect
+
+
+## The prompt sits on the print to the right of the door's column (never over the screen), wrapped to
+## fit, with an arrow back to the door.
 func _draw_hint() -> void:
 	var text := hint_text()
 	if text == "":
 		return
 	var blink: bool = int(_t * 1.5) % 2 == 0 or bool(SettingsService.get_value(&"photosensitivity"))
 	var col := Look.c(Pal.GAS_4) if blink else Look.c(Pal.GAS_2)
-	var right := -14.0
-	var y := size.y + 12.0 - PixelText.H
-	PixelText.draw(self, Vector2(right - PixelText.width(text), y), text, col)
-	var tip := Vector2(-2.0, size.y - 6.0)
-	var tail := Vector2(right + 4.0, y + 3.0)
+	var lines := PixelText.wrap(text, 1, HINT_W)
+	var y := size.y * 0.5 - lines.size() * 5.0
+	for i in lines.size():
+		PixelText.draw(self, Vector2(HINT_X, y + i * 10.0), lines[i], col)
+	var tail := Vector2(HINT_X - 4.0, y + lines.size() * 5.0)
+	var tip := Vector2(size.x + 14.0, tail.y)
 	draw_line(tail, tip, col, 1.0)
-	draw_line(tip, tip + Vector2(-4, 0), col, 1.0)
-	draw_line(tip, tip + Vector2(0, 4), col, 1.0)
+	draw_line(tip, tip + Vector2(4, -4), col, 1.0)
+	draw_line(tip, tip + Vector2(4, 4), col, 1.0)
 
 
 ## The current prompt, worded for the device in use.
