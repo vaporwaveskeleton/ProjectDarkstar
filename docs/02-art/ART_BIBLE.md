@@ -408,7 +408,7 @@ The `horror` dial interpolates *within* a tier, so no change between tiers is ev
 Type is generated too. The Cabinet face exists as glyph data drawn rect by rect (`core/ui/pixel_text.gd`). The Ledger and Litany faces (§11) follow the same pattern: glyph grids as data in code, drawn at integer scale. No font files are loaded, except Godot's built-in fallback font in the real UI until Ledger is coded.
 
 ### 14.6 The raster art on disk
-The PNGs under `assets/sprites/` (the v0.1 PowerShell generator pass, ASSET-003) are **reference only**. They are the target look the generators reproduce, and they are never loaded by the game. A test (`tests/test_generated_assets_only.gd`) fails the build if any scene, script or resource references an image or audio file. `assets/reference/` mood boards stay out of git (§9).
+The PNGs under `assets/sprites/` (the v0.1 PowerShell generator pass, ASSET-003) are **reference only** — the target look the generators reproduce. They are local-only reference: kept on disk, **not in git** (`.gitignore`) and **ignored by Godot** (`assets/sprites/.gdignore`), so they are never imported, exported or pushed. Only `SPRITE_MANIFEST.csv` is tracked, as the inventory of parts to build (owner decision 2026-11-18). A machine without them loses nothing the game needs. A test (`tests/test_generated_assets_only.gd`) fails the build if any scene, script or resource references an image or audio file. `assets/reference/` mood boards stay out of git (§9).
 
 ### 14.7 Definition of done for a generator (replaces §10 for parts)
 1. Reads in a 160 × 90 thumbnail and in 50 % greyscale at T0 (the §10 checks still apply to the output).

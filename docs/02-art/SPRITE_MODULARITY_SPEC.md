@@ -9,7 +9,7 @@ Rev 1.1 (2026-11-17): §7 import paths corrected to the repo-root project (rulin
 > | §1 module grid, §4 kits, §5 assembly and sockets, §8 palette pools | **normative**: generators use the same grid, kit ids, sockets and colour pools |
 > | §2 naming grammar | **normative for part ids**: `ds_<kit>_<part>…` names a generator, not a file |
 > | §6 animation rules | **normative as parameter tracks**: frame counts become `phase` curves; tags become named parameter sets |
-> | §3 folder layout, §7 atlas and import settings, §9 PNG deliverables, §10 file inventory | **retired** for the game; kept as the record of the v0.1 raster pass (reference only, never loaded) |
+> | §3 folder layout, §7 atlas and import settings, §9 PNG deliverables, §10 file inventory | **retired** for the game; the v0.1 raster pass is local-only reference: kept on disk, **not in git** (`.gitignore`) and **ignored by Godot** (`assets/sprites/.gdignore`), so they are never imported, exported or pushed. Only `SPRITE_MANIFEST.csv` is tracked, as the inventory of parts to build |
 
 **Source of truth for:** module grid, part kits, sockets, part-id naming, animation parameter tracks, runtime mutation. (Atlases and import settings: retired by D-13.)
 **Related:** `ART_BIBLE.md` (look), `ASSET_PIPELINE.md` (how files are produced), `assets/sprites/SPRITE_MANIFEST.csv` (what exists).

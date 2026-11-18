@@ -57,3 +57,10 @@ desktop.ini
 !/tools/aseprite/ai-artist/.vscode/
 .idea/
 *.swp
+
+# --- Reference sprites (D-13: never loaded, never shipped, never pushed) -------
+# The v0.1 raster pass stays on local disks as the look the generators reproduce.
+# Godot ignores the folder (.gdignore), so no export can include it.
+/assets/sprites/*
+!/assets/sprites/.gdignore
+!/assets/sprites/SPRITE_MANIFEST.csv

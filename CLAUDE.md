@@ -50,7 +50,7 @@ assets/  docs/           (docs/, tools/, research/ carry a .gdignore)
 - UI: screens extend `Screen`, overlays go on the scene's `ScreenStack`, rows inside `FitScrollContainer`; one default focus, explicit focus neighbours, `ui_cancel` works (UI-001).
 - Saves: `SaveService.save_slot(slot, payload, reason)` with an allowed reason; never mid-run; payloads hold ids and numbers only (TECH-001 §7).
 - Warnings are errors here: give a variable an explicit type when its value comes from a `Dictionary`/`Array`/`Variant`.
-- **Generated assets only (D-13, D-14):** never add or reference image, texture, font or audio files in game code, scenes or data. Visuals = vector draw calls or shaders with `Pal` colours (ART-001 §14); text = `PixelText`; sound = `SfxSynth`/`AudioService` synthesis (AUDIO-001 §11). PNGs under `assets/sprites/` are reference only. `tests/test_generated_assets_only.gd` enforces this.
+- **Generated assets only (D-13, D-14):** never add or reference image, texture, font or audio files in game code, scenes or data. Visuals = vector draw calls or shaders with `Pal` colours (ART-001 §14); text = `PixelText`; sound = `SfxSynth`/`AudioService` synthesis (AUDIO-001 §11). PNGs under `assets/sprites/` are local-only reference: not in git, Godot-ignored, never shipped — never re-add them. `tests/test_generated_assets_only.gd` enforces this.
 - Gameplay collision is separate from sprites and animation; animation fires events, it never owns hit truth.
 - Every player-visible string goes through `tr()` with a stable key. No raw errors, IDs, enum names or paths on screen. (Diegetic HUD "lies" are authored content per WARP-001 §4.2, not debug output; Steady Ledger must always be honest.)
 
