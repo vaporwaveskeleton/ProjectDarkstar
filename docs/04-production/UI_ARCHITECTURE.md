@@ -62,8 +62,8 @@ Route scene (e.g. AttractMode : Screen)        one per SceneRouter route
 | Immediate feedback | Theme hover/pressed/focus styles. Audio cues I06 (confirm/back) and I07 (hover) from AUDIO-001 §6.2 are **not wired yet** |
 | Input-method changes | `InputModeTracker` emits `input_mode_changed`. Glyph widgets are planned |
 | Text scaling | `SettingsService.text_scale` 1.0 / 2.0 → `UiTheme.apply_text_scale` resizes the project Theme |
-| Safe area at 200 % text | all controls stay inside the 640×360 logical rect (SYS-001 §9); tested for attract and settings |
-| Resolution / aspect | `viewport` stretch, `keep` aspect, integer scale (TECH-001 §1.2–§1.3). Layouts use anchors/containers only |
+| Safe area at 200 % text | all controls stay inside the 640×360 logical rect (SYS-001 §9; stays valid in logical units after Act 0); tested for attract and settings |
+| Resolution / aspect | `viewport` stretch, `keep` aspect, integer scale (TECH-001 §1.2–§1.3) is the current code. Owner, 2026-11-18: after Act 0 the UI renders at native resolution (decided, not yet implemented; TECH-001 §1.1, Q-T23). Layouts use anchors/containers only. Post-Act 0 UI is modern game-UI structure and UX (hierarchy, primary vs secondary actions, focus, input glyphs, list/preview/detail) with chalk-and-brass as the skin (D-C) |
 | Touch-safe targets | Windows-only, mouse targets ≥ ~22 logical px tall (✱ content margins). No touch support planned |
 | Steady Ledger / Esc always pauses | the `pause` action opens the real pause screen whenever the overlay stack is empty (WARP-001 §4.4) |
 | Accessibility rows never lie or hide | settings read live from `SettingsService` (WARP-001 §4.7) |

@@ -1,6 +1,6 @@
 # DARKSTAR — Claude Code instructions
 
-Godot **4.7.2**, **GDScript only**, 2D, 640×360 pixel-perfect, Windows + Steam, single-player (no networking).
+Godot **4.7.2**, **GDScript only**, 2D, Act 0 screen 640×360 pixel-perfect, native resolution elsewhere (decided 2026-11-18, not yet implemented; TECH-001 §1.1), Windows + Steam, single-player (no networking).
 This file is loaded every turn: keep it short. Detail lives in `docs/`; cite it, do not copy it.
 
 ## 1. Sources of truth (read the owner, never guess)
@@ -16,6 +16,7 @@ This file is loaded every turn: keep it short. Detail lives in `docs/`; cite it,
 | Kits, anchors, seam assembly | `docs/01-design/ZONES_AND_ENCOUNTERS.md` (ZONES-001) §1.7 (kit tree + anchor names), §4 | |
 | Sprite naming, sockets, import flags | `docs/02-art/SPRITE_MODULARITY_SPEC.md` (ART-002) §2, §7 | |
 | Palette, UI/VFX art rules | `docs/02-art/ART_BIBLE.md` (ART-001) §4, §7 | Palette violations are bugs (palette test enforces UI) |
+| Scoring visual quality vs benchmarks | `docs/02-art/VISUAL_QUALITY_RUBRIC.md` (ART-004) | Score only from captured evidence; unprovided states are "not evaluated" |
 | Audio buses, cues, ducking | `docs/03-audio/AUDIO_DESIGN.md` (AUDIO-001) §6–7 | |
 | Signals register, no event bus | `docs/04-production/SIGNALS_AND_EVENTS.md` (EVT-001) | Add a row before adding a signal |
 | Menus, `Screen`/`ScreenStack`, Theme, focus, control states | `docs/04-production/UI_ARCHITECTURE.md` (UI-001) | |
@@ -50,7 +51,7 @@ assets/  docs/           (docs/, tools/, research/ carry a .gdignore)
 - UI: screens extend `Screen`, overlays go on the scene's `ScreenStack`, rows inside `FitScrollContainer`; one default focus, explicit focus neighbours, `ui_cancel` works (UI-001).
 - Saves: `SaveService.save_slot(slot, payload, reason)` with an allowed reason; never mid-run; payloads hold ids and numbers only (TECH-001 §7).
 - Warnings are errors here: give a variable an explicit type when its value comes from a `Dictionary`/`Array`/`Variant`.
-- **Generated assets only (D-13, D-14, both amended):** never add hand-made or recorded files. Visuals = runtime vector/shader with `Pal` colours (ART-001 §14), or pxl renders: `art/src/*.px.js` (start with a palette include, no `image()`) built into `assets/art/generated/` (ART-001 §14.8) — anything that must morph continuously stays runtime. **Fidelity ladder (ART-001 §15):** Act 0 is minimal neon on black (cabinet colours go through `Look.c()`); after the Pretence space is the **Aether** — retro-future Victorian, full of fog, colour, life and crystal spheres, never a black vacuum; the only true black is the entity (ART-001 §16); lighting, fog, bloom and complex particles grow with the tier; role laws (faction hues, phosphor = truth, SIGNAL ≤ 3) hold at every tier; text = `PixelText`; sound = code: chirp sources `audio/src/*.cx.js` rendered to `assets/audio/generated/` (never hand-edit renders; never `sample()`), or runtime `SfxSynth` (AUDIO-001 §11, §11.7). PNGs under `assets/sprites/` are local-only reference: not in git, Godot-ignored, never shipped — never re-add them. `tests/test_generated_assets_only.gd` enforces this.
+- **Generated assets only (D-13, D-14, both amended):** never add hand-made or recorded files. Visuals = runtime vector/shader with `Pal` colours (ART-001 §14), or pxl renders: `art/src/*.px.js` (start with a palette include, no `image()`) built into `assets/art/generated/` (ART-001 §14.8) — anything that must morph continuously stays runtime. **Fidelity ladder (ART-001 §15):** Act 0 is minimal neon on black (cabinet colours go through `Look.c()`); after the Pretence space is the **Aether** — retro-future Victorian, full of fog, colour, life and crystal spheres, never a black vacuum; the only true black is the entity (ART-001 §16); lighting, fog, bloom and complex particles grow with the tier; role laws (faction hues, phosphor = truth, SIGNAL ≤ 3) hold at every tier; text = `PixelText` (post-Act 0 scaling open: TECH-001 Q-T23); sound = code: chirp sources `audio/src/*.cx.js` rendered to `assets/audio/generated/` (never hand-edit renders; never `sample()`), or runtime `SfxSynth` (AUDIO-001 §11, §11.7). PNGs under `assets/sprites/` are local-only reference: not in git, Godot-ignored, never shipped — never re-add them. `tests/test_generated_assets_only.gd` enforces this.
 - Gameplay collision is separate from sprites and animation; animation fires events, it never owns hit truth.
 - Every player-visible string goes through `tr()` with a stable key. No raw errors, IDs, enum names or paths on screen. (Diegetic HUD "lies" are authored content per WARP-001 §4.2, not debug output; Steady Ledger must always be honest.)
 
