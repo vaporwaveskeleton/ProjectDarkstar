@@ -36,7 +36,7 @@ addons/  autoload/  core/  features/<feature>/  scenes/  shaders/  data/  genera
 assets/  docs/           (docs/, tools/, research/ carry a .gdignore)
 ```
 - `features/<feature>/` holds that feature's scenes, scripts, resource classes and `tests/`. Feature names come from the glossary (`vigil`, `arc_lance`, `charges`, `choir`, `sepulchre`, `composure`, `warp`, `sector`, `lantern_tree`, `run`, `hud`, `codex`, `entity_voice`, `interactions`); map in TECH-001 §2.9.
-- `core/` = feature-agnostic code (`components`, `data`, `save`, `routing`, `ui`, `i18n`, `physics`). `scenes/` = boot, attract, settings, sector stub, shared overlays.
+- `core/` = feature-agnostic code (`audio`, `components`, `data`, `i18n`, `math`, `physics`, `rng`, `routing`, `save`, `ui`). `scenes/` = boot, attract, settings, sector stub, shared overlays.
 - `data/<feature>/*.tres` = loose tunables (TECH-001 §3). `generated/` = build output (`sprite_table.gd`); never hand-edit.
 - Tests sit next to code in `tests/` subfolders (`core/**/tests`, `features/<f>/tests`, `scenes/tests`); cross-cutting suites and helpers in root `tests/`.
 - No `networking/` folder (D-09, TECH-001 §1.1).

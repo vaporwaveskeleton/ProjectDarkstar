@@ -70,7 +70,7 @@ If the team is smaller than this table, §7's cut order fires earlier; dates nev
 | Art | Vigil kit, Grub kit, geode kit, Sepulchre seed parts (ART-002 §4) at slice quality for PM kits only |
 | Audio | synthesised lance/mining/chime (AUDIO-001 §11); the glass chime (AUDIO-001 §6.4) final, because it carries the race |
 | Narrative | none required |
-| Progress | **Slice 1 done (2026-11-18):** Arc-Lance base + D-08 hull switch. **Slice 2 part A done (2026-11-18):** D-08 A/B playable by CLI (`--hull=1|2`, `HullMode`), so exit criterion 4 is met for CLI testers (no in-game setting yet). Part B (seeded RNG, TECH-001 §4.9) blocked on TECH-001 Q-T26..Q-T28. Shard-count conflict needs an owner ruling (Q-T29). Remaining: over-fire, Mourning Glass magnet, Charges, Grub/Sepulchre, Ledger Compass stub, seeded RNG, camera |
+| Progress | **Slice 1 done (2026-11-18):** Arc-Lance base + D-08 hull switch. **Slice 2 part A done (2026-11-18):** D-08 A/B playable by CLI (`--hull=1|2`, `HullMode`), so exit criterion 4 is met for CLI testers (no in-game setting yet). Part B (seeded RNG, TECH-001 §4.9) unblocked: Q-T26..Q-T28 resolved 2026-11-18, spec and test vectors in §4.9. Shard-count conflict needs an owner ruling (Q-T29). Remaining: over-fire, Mourning Glass magnet, Charges, Grub/Sepulchre, Ledger Compass stub, seeded RNG, camera |
 | Docs | TECH-001 §4.3 (shard magnet), §4.9 (seed); SYS-001 rows for anything new |
 | Risks | the race is invisible at 640×360 → fix with art/audio, not with UI text (GDD-001 P5) |
 
