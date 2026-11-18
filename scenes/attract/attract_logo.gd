@@ -5,6 +5,7 @@ extends Control
 
 const SCALE := 6
 var hi_score := 0
+var has_credit := false          ## a coin is in: the marquee asks for New Vigil instead
 var _t := 0.0
 
 
@@ -30,5 +31,6 @@ func _draw() -> void:
 	var band_x := lerpf(cx - 160.0, cx + 160.0, sweep)
 	draw_rect(Rect2(band_x, 4, 6, 7 * SCALE), Color(Look.c(Pal.GAS_5), 0.35))
 	if int(_t * 1.6) % 2 == 0:
-		PixelText.draw_centered(self, cx, 58, tr("CAB_CREDIT"), Look.c(Pal.BONE_4), 1)
+		var prompt := tr("CAB_PRESS_NEW_VIGIL") if has_credit else tr("CAB_CREDIT")
+		PixelText.draw_centered(self, cx, 58, prompt, Look.c(Pal.GAS_4) if has_credit else Look.c(Pal.BONE_4), 1)
 	PixelText.draw_centered(self, cx, 70, "%s %s" % [tr("CAB_HI"), LocFormat.format_int(hi_score)], Look.c(Pal.BONE_2), 1)

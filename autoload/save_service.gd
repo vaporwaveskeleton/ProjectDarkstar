@@ -19,7 +19,7 @@ const SLOT_RUN := &"run"
 
 ## Allowed save reasons per slot (SYS-001 §8 save cadence; LOOP-001 §2 "run slot, written between Seams only").
 const ALLOWED_REASONS := {
-	&"profile": [&"ruins_entry", &"tree_purchase", &"iteration_end", &"cabinet_score"],
+	&"profile": [&"ruins_entry", &"tree_purchase", &"iteration_end", &"cabinet_score", &"cabinet_tape"],
 	&"iteration": [&"ruins_entry", &"iteration_end", &"new_iteration"],
 	&"run": [&"seam_boundary"],
 }

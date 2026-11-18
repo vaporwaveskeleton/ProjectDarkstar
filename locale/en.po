@@ -196,3 +196,179 @@ msgstr "TO BE CONTINUED  —  PRESS ANY KEY"
 #. Shown under the title once Act 0 has been finished. The arcade is no longer innocent.
 msgid "ATTRACT_FIRST_SKY_DARK"
 msgstr "THE FIRST SKY IS DARK."
+
+#. Cabinet power-on self-test (owner request 2026-11-18). Arcade house style: capitals, ≤ 6 words.
+msgid "CAB_BOOT_HEADER"
+msgstr "VIGIL HALL TRAINING CABINET"
+
+msgid "CAB_BOOT_RAM"
+msgstr "RAM TEST"
+
+msgid "CAB_BOOT_ROM"
+msgstr "ROM TEST"
+
+#. The Charge lamps on the bezel.
+msgid "CAB_BOOT_LAMPS"
+msgstr "LAMP TEST"
+
+msgid "CAB_BOOT_GLASS"
+msgstr "GLASS TEST"
+
+msgid "CAB_BOOT_OK"
+msgstr "OK"
+
+msgid "CAB_BOOT_DONE"
+msgstr "SELF TEST COMPLETE"
+
+#. Price label on the coin door of the bezel.
+msgid "CAB_COIN_PRICE"
+msgstr "1 CREDIT"
+
+#. Bottom of the left bezel panel. %d = credits in the machine (0 or 1).
+msgid "CAB_CREDIT_COUNT"
+msgstr "CREDIT %d"
+
+#. Coin-door prompts (attract). Mouse wording.
+msgid "CAB_HINT_PEEL_DRAG"
+msgstr "DRAG THE TAPE OFF THE SLOT"
+
+#. Gamepad wording. %s = the accept button, e.g. A.
+msgid "CAB_HINT_PEEL_HOLD"
+msgstr "HOLD %s TO PEEL THE TAPE"
+
+msgid "CAB_HINT_INSERT_CLICK"
+msgstr "CLICK THE SLOT TO INSERT CREDIT"
+
+#. %s = the accept button, e.g. A.
+msgid "CAB_HINT_INSERT_PRESS"
+msgstr "PRESS %s TO INSERT CREDIT"
+
+#. Attract instruction cards (WARP-001 W0-03). Canon attract copy, NARR-001 §11 Cabinet register.
+msgid "NARR_CAB_ATTRACT_1"
+msgstr "INSERT CREDIT, LITTLE LANTERN"
+
+msgid "NARR_CAB_ATTRACT_2"
+msgstr "THE SKY IS COUNTING ON YOU"
+
+msgid "NARR_CAB_ATTRACT_3"
+msgstr "MINE GLASS · MAKE CHARGES · SAVE THE LIGHT"
+
+msgid "CAB_PAGE_CONTROLS"
+msgstr "HOW TO PLAY"
+
+msgid "CAB_CTRL_STEER"
+msgstr "STEER"
+
+msgid "CAB_CTRL_AIM"
+msgstr "AIM"
+
+msgid "CAB_CTRL_FIRE"
+msgstr "FIRE ARC-LANCE"
+
+msgid "CAB_CTRL_CHARGE"
+msgstr "THROW CHARGE"
+
+msgid "CAB_CTRL_SURGE"
+msgstr "SURGELIGHT"
+
+msgid "CAB_CTRL_BRAKE"
+msgstr "BRAKE"
+
+msgid "CAB_CTRL_PAUSE"
+msgstr "PAUSE"
+
+msgid "CAB_PAGE_MISSION"
+msgstr "THE MISSION"
+
+msgid "CAB_MISSION_1"
+msgstr "SHOOT GEODES. CATCH THE GLASS."
+
+msgid "CAB_MISSION_2"
+msgstr "GLASS LIGHTS YOUR CHARGES."
+
+msgid "CAB_MISSION_3"
+msgstr "GRUBS BUILD THE SEPULCHRE."
+
+msgid "CAB_MISSION_4"
+msgstr "THROW CHARGES TO BREAK IT."
+
+msgid "CAB_PAGE_SCORES"
+msgstr "SCORE TABLE"
+
+msgid "CAB_SCORE_SHARD"
+msgstr "GLASS SHARD"
+
+msgid "CAB_SCORE_GRUB"
+msgstr "GRUB"
+
+msgid "CAB_SCORE_ACOLYTE"
+msgstr "ACOLYTE"
+
+msgid "CAB_SCORE_MODULE"
+msgstr "SEPULCHRE MODULE"
+
+msgid "CAB_SCORE_ENTITY"
+msgstr "THE DARK STAR"
+
+#. %s = score for the first extra Vigil, e.g. 10,000.
+msgid "CAB_SCORE_EXTRA"
+msgstr "EXTRA VIGIL AT %s"
+
+#. Binding names on the HOW TO PLAY card. Capitals: the cabinet face has no lower case.
+msgid "ATTRACT_MOUSE"
+msgstr "MOUSE"
+
+msgid "ATTRACT_MOUSE_LEFT"
+msgstr "LEFT MOUSE"
+
+msgid "ATTRACT_MOUSE_RIGHT"
+msgstr "RIGHT MOUSE"
+
+msgid "ATTRACT_MOUSE_MIDDLE"
+msgstr "MIDDLE MOUSE"
+
+msgid "ATTRACT_PAD_A"
+msgstr "A"
+
+msgid "ATTRACT_PAD_B"
+msgstr "B"
+
+msgid "ATTRACT_PAD_X"
+msgstr "X"
+
+msgid "ATTRACT_PAD_Y"
+msgstr "Y"
+
+msgid "ATTRACT_PAD_BACK"
+msgstr "BACK"
+
+msgid "ATTRACT_PAD_START"
+msgstr "START"
+
+msgid "ATTRACT_PAD_LS"
+msgstr "LEFT STICK PRESS"
+
+msgid "ATTRACT_PAD_RS"
+msgstr "RIGHT STICK PRESS"
+
+msgid "ATTRACT_PAD_LB"
+msgstr "LB"
+
+msgid "ATTRACT_PAD_RB"
+msgstr "RB"
+
+msgid "ATTRACT_PAD_LSTICK"
+msgstr "LEFT STICK"
+
+msgid "ATTRACT_PAD_RSTICK"
+msgstr "RIGHT STICK"
+
+msgid "ATTRACT_PAD_LT"
+msgstr "LT"
+
+msgid "ATTRACT_PAD_RT"
+msgstr "RT"
+
+#. Marquee blink once a credit is in (replaces INSERT CREDIT). Names the menu button.
+msgid "CAB_PRESS_NEW_VIGIL"
+msgstr "PRESS NEW VIGIL"

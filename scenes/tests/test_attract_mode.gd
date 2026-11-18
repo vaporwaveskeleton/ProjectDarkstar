@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## Attract mode: primary action focus, focus loop without dead ends, settings modal with
+## Attract mode: primary action focus (the coin door until a credit is in), focus loop without dead ends, settings modal with
 ## ui_cancel and focus restoration, repeated input, safe area at 200 % text, no raw keys.
 
 const SCENE := "res://scenes/attract/attract_mode.tscn"
@@ -25,7 +25,7 @@ func _focus() -> Control:
 func test_primary_action_has_focus_on_open() -> void:
 	var runner := scene_runner(SCENE)
 	await runner.simulate_frames(2)
-	assert_object(_focus()).is_same(runner.find_child("NewVigil"))
+	assert_object(_focus()).is_same(runner.find_child("CoinSlot"))
 
 
 func test_focus_loop_reaches_every_button_and_wraps() -> void:
@@ -36,8 +36,8 @@ func test_focus_loop_reaches_every_button_and_wraps() -> void:
 		seen.append(_focus().name)
 		runner.simulate_action_pressed("ui_down")
 		await runner.await_input_processed()
-	assert_array(seen).is_equal(["NewVigil", "Settings", "Quit"])
-	assert_str(_focus().name).is_equal("NewVigil")
+	assert_array(seen).is_equal(["CoinSlot", "Settings", "Quit"])
+	assert_str(_focus().name).is_equal("CoinSlot")
 	runner.simulate_action_pressed("ui_up")
 	await runner.await_input_processed()
 	assert_str(_focus().name).is_equal("Quit")
@@ -65,19 +65,8 @@ func test_ui_cancel_on_root_screen_does_nothing() -> void:
 	runner.simulate_action_pressed("ui_cancel")
 	await runner.simulate_frames(2)
 	assert_bool(is_instance_valid(runner.scene())).is_true()
-	assert_str(_focus().name).is_equal("NewVigil")
+	assert_str(_focus().name).is_equal("CoinSlot")
 
-
-func test_repeated_new_vigil_input_routes_once() -> void:
-	var runner := scene_runner(SCENE)
-	await runner.simulate_frames(2)
-	var btn: Button = runner.find_child("NewVigil")
-	btn.pressed.emit()
-	btn.pressed.emit()
-	btn.pressed.emit()
-	assert_bool(btn.disabled).is_true()
-	await runner.simulate_frames(5)
-	assert_array(host.mounted_routes).is_equal(["res://features/cabinet/cabinet_game.tscn"])
 
 
 func test_all_buttons_inside_safe_area_at_200_percent_text() -> void:
@@ -85,7 +74,7 @@ func test_all_buttons_inside_safe_area_at_200_percent_text() -> void:
 	var runner := scene_runner(SCENE)
 	await runner.simulate_frames(3)
 	var view: Rect2 = runner.scene().get_viewport_rect()
-	for name in ["Logo", "NewVigil", "Settings", "Quit"]:
+	for name in ["Logo", "Pages", "NewVigil", "Settings", "Quit", "CoinSlot"]:
 		var c: Control = runner.find_child(name)
 		assert_bool(view.encloses(c.get_global_rect())).override_failure_message("%s outside %s: %s" % [name, view, c.get_global_rect()]).is_true()
 	SettingsService.set_value(&"text_scale", 1.0)

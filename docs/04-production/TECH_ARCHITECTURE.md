@@ -320,6 +320,26 @@ CabinetGame (Node, cabinet_game.gd)             stage flow only: READY → play 
 
 **Physics decision (2026-11-18):** the Cabinet does **not** use Godot physics bodies. Its field is a torus (GDD §4.2), drawn by every layer through `ArcadeWorld.to_screen()` with the short-way-round delta (`core/math/torus.gd`). Circle overlaps in torus space are exact, deterministic and cheap at Act 0 counts. Act 1+ sectors keep the §2.6 component architecture (CharacterBody2D, Area2D hurt/hitboxes).
 
+**Boot-up and attract (owner request 2026-11-18).** `Boot` routes the first attract of a launch with params `{"power_on": true}` (not under `--smoke`); later visits pass nothing.
+
+```
+AttractMode (scenes/attract/)                   on_route_entered(params) handles power_on
+├─ Frame (AttractFrame)                         bezel side panels via CabinetBezel, 1UP, CREDIT n counter
+├─ Logo (attract_logo.gd)                       marquee; blink INSERT CREDIT → PRESS NEW VIGIL once a credit is in
+├─ Pages (AttractPages)                         4 cards under chasing marquee bulbs: PITCH (canon NARR Cabinet attract lines), HOW TO PLAY (live bindings per device), THE MISSION, SCORE TABLE (read from CabinetTuning)
+├─ CoinSlot (features/cabinet/coin_slot.gd)     focusable Control on the right bezel
+└─ PowerOn (PowerOnTest)                        CRT warm-up line, scrolling garbage-RAM noise, top-down wipe, self-test lines (RAM/ROM/LAMP/GLASS … OK, SELF TEST COMPLETE); any key/click skips; noise frozen under photosensitivity or reduced motion; scrolls, never full-field flashes
+```
+
+- `CoinSlot` phases: TAPED → FALLING → OPEN → DROPPING → CREDITED; `spend()` returns to OPEN. Signals `tape_peeled`, `credit_inserted` (EVT-001). After `tape_hint_delay` a prompt says how to remove the tape (mouse: drag it off; pad/keys: hold accept while the coin door has focus), then how to insert a coin (click the slit / accept).
+- New Vigil is greyed and out of the focus loop until a credit is in; one credit max; New Vigil spends it. Default focus is the CoinSlot until credited; loop = [New Vigil if credited] → Settings → Quit → CoinSlot.
+- No idle demo while a credit is waiting or a peel gesture is in progress; otherwise W0-03's 30 s idle demo is unchanged.
+- Tape removal is saved forever: profile key `cabinet_tape_peeled`, save reason `cabinet_tape` (§7.2), written in attract, never mid-run.
+- `CabinetBezel` (`cabinet_bezel.gd`) holds the static bezel draw helpers (`SIDE` = 80, `COIN_PLATE`); `CabinetHud` and `AttractFrame` share it, and the HUD draws the open, untaped coin door. Placeholder art (§11.1 Q-T20).
+- `InputLabels` (`core/ui/input_labels.gd`) names bindings per device from the live `InputMap`; `is_accept()` adds a pad-A fallback (§11.1 Q-T19).
+- `CabinetBootTuning` (`ds_cabinet.boot`, §3.4) holds all ✱ presentation timings.
+- Cues `power_on`, `tape_peel`, `coin`: AUDIO-001 §11.7. Glyph "·" added to `PixelText` for the canon line.
+
 Data: `data/cabinet/cabinet_tuning.tres` (`CabinetTuning`, `ds_cabinet.tuning.*`, every value cites SYS-001 or is ✱) and one `CabinetStage` per level (`stage_first_vigil.tres`, `stage_last_normal_day.tres`), inside SYS-001 §4's Seam 1 T0 budget.
 
 Art: everything is code-drawn from `Pal` (`core/ui/pal.gd`, checked against the palette file by a test). Text uses the **Cabinet face**, a 5 × 7 bitmap drawn by `PixelText` (`core/ui/pixel_text.gd`, ART-001 §11) at integer scales only. There are no exceptions (D-13): the reveal's "true body" inside the maw is a richer generator (`MawView`), not a sprite.
@@ -354,6 +374,7 @@ Create a **Resource** when data is shared, tuned, or authored (stats, items, abi
 | `ds_vigil.move.hitbox_circle_px` | SYS-001 §9 hitbox policy | 🔒 (reading open, §11 Q-T04) |
 | `ds_vigil.hull.max_hp` | SYS-001 §1.2 Hull HP | 🔒 base 1; D-08 A/B by data edit |
 | `ds_vigil.hull.invulnerable_after_hit_s` | no SYS-001 row; 0 | ✱ |
+| `ds_cabinet.boot.*` (`CabinetBootTuning`, `data/cabinet/cabinet_boot_tuning.tres`): `warmup_seconds`, `noise_seconds`, `noise_scroll`, `test_line_seconds`, `test_hold_seconds`, `page_seconds`, `tape_hint_delay`, `tape_hold_seconds`, `tape_drag_px`, `tape_fall_seconds`, `coin_drop_seconds` | presentation timings, no SYS-001 row (§11.1 Q-T18) | ✱ |
 
 ---
 
@@ -524,7 +545,7 @@ Naming (ART-002 §2 grammar), palette (every row's colours ⊆ its kit's `kit_lo
 
 | Slot | Persistence class (LOOP-001 §2) | Allowed save reasons | Status |
 |---|---|---|---|
-| `profile` | Anchored | `ruins_entry`, `tree_purchase`, `iteration_end`, `cabinet_score` (Act 0 high score / game over) | built: Act 0 writes `cabinet_hi_score`, `act0_complete`, `pretence_seen` |
+| `profile` | Anchored | `ruins_entry`, `tree_purchase`, `iteration_end`, `cabinet_score` (Act 0 high score / game over), `cabinet_tape` (coin-slot hazard tape removed; written in attract, never mid-run) | built: Act 0 writes `cabinet_hi_score`, `act0_complete`, `pretence_seen`, `cabinet_tape_peeled` |
 | `iteration` | Iteration | `ruins_entry`, `iteration_end`, `new_iteration` | interface built |
 | `run` | Run | `seam_boundary` only (never mid-run, SYS-001 §8) | interface built |
 
@@ -603,12 +624,13 @@ The smoke run prints `BOOT_SMOKE: reached route 'sector'` and exits 0. GdUnit wr
 | `features/vigil/tests/test_vigil_motor.gd` | speed cap, drag, brake, 30/60/144 Hz independence, full reversal 0.28 s, turn rate, ±π wrap |
 | `features/vigil/tests/test_vigil_collision.gd` | data-driven radius, wall stop, no tunnelling at 6000 px/s, overlap recovery, live hitbox one hit per window → breach → HUD |
 | `scenes/tests/test_attract_mode.gd` | default focus, focus loop/wrap, settings modal + ui_cancel + focus restore, root ui_cancel no-op, repeated input, 200 % text safe area (menu + settings), no raw keys |
+| `scenes/tests/test_attract_coin_slot.gd` | 16 tests: tape prompt delay, peel by hold / drag / pad A, press off the tape ignored, tape flag saved, coin → credit → New Vigil spends once, no New Vigil without a credit, tape stays off, no demo while credited, power-on start / skip / self-finish, route without `power_on`, page cycle, binding labels |
 | `scenes/tests/test_sector_and_pause.gd` | spawn at anchor, HUD text, pause action, ui_cancel/pause resume, confirm defaults to the safe choice, abandon routes + unpauses, three-deep modal unwind |
 | `tests/test_boot_flow.gd` | route table loads, unknown route fails safely, input-mode switching, accessibility defaults |
 | `features/cabinet/tests/test_cabinet_rules.gd` | torus maths, extra Vigils, calm mining vs over-fire, glass → Charges with overflow, Charge homing + module knock-off + interception, Grub deposits → segments, Cold Sepulchre never wakes, Awakening silence → line → rampage, contact death, lance cannot bite the entity, 13 Charges unmake for 15,000, censer lag 0.25 s, **autopilot clears A0-1 end to end** |
 | `tests/test_input_map.gd` | every GDD §4.1 key/mouse binding and GDD §4.3 pad binding (ruling R-12); no two gameplay actions share a key |
 
-Result on 2026-11-18 (pxl + D-13 amendment): 100 test cases, 0 failures, 0 errors; boot smoke (attract → cabinet) exit 0 with no `ERROR`/`WARNING` lines.
+Result on 2026-11-18 (attract boot / coin slot): 118 test cases, 0 failures, 0 errors; boot smoke (`-- --smoke --no-save`, attract → cabinet) exit 0 with no `ERROR`/`WARNING` lines. Not verified: real gamepad hardware, real mouse-drag feel, audio by ear.
 
 Not covered (honest list): window sizes other than the 640×360 logical viewport, real integer scaling at 1080p/1440p, gamepad glyphs (none exist), shaders, audio, Steam, performance. Slopes, stairs, doors and moving platforms are N/A (§2.6).
 
@@ -624,6 +646,9 @@ Not covered (honest list): window sizes other than the 640×360 logical viewport
 | Q-T15 | SYS-001 §1.4 `hits_needed = 13 - 3 + ceil(segments/7)` gives 10 at 0 segments, but its own note says "3 at 0 segments". The cabinet sidesteps it (the entity is only hittable once complete, 13 hits) | SYS-001 §1.4 | design rewrites the formula or its note |
 | Q-T16 | SYS-001 §2 phase 3 says "Compass starts lying" at Quickening; WARP-001 W0-02 says the Act 0 HUD is always honest (T0 lie budget 0). The cabinet keeps the compass honest (WARP-001 owns HUD lies) | SYS-001 §2, WARP-001 §2.1 | SYS-001 scopes the lie to T ≥ 3 |
 | Q-T17 | Cabinet ✱ values with no SYS-001 row: lives at start (3), respawn delay and shield (2 s each), lance range (0.9 s life), Grub seek speed (160 px/s) and flee radius (110 px), Acolyte engagement range (300 px) and shot life (2.2 s), Charge life (6 s), entity costume radius/contact inset/turn rate | `data/cabinet/cabinet_tuning.tres`, `sepulchre_ritual.gd` | add an Act 0 table to SYS-001 |
+| Q-T18 | `CabinetBootTuning` ✱ values (`ds_cabinet.boot.*`: warm-up, noise, scroll speed, self-test line/hold, card time, tape hint delay, tape hold, tape drag distance, tape fall, coin drop) have no SYS-001 rows (2026-11-18) | `data/cabinet/cabinet_boot_tuning.tres` | add presentation-timing rows to SYS-001 or keep as ✱ |
+| Q-T19 | Godot's built-in `ui_accept` has **no gamepad binding** here (`InputMap.action_get_events(&"ui_accept")` lists only Enter, Kp Enter, Space). `CoinSlot` accepts `JOY_BUTTON_A` explicitly via `InputLabels.is_accept()`, but ordinary menu Buttons may not respond to pad A: D-01 gamepad parity gap. Not fixed (2026-11-18) | `tests/test_input_map.gd` owns the input map | owner decides whether to add a pad event to `ui_accept` |
+| Q-T20 | The Act 0 bezel side panels and coin door are a placeholder mockup (owner: "a quick mockup is fine", 2026-11-18); detailed bezel design is still to be written | `features/cabinet/cabinet_bezel.gd` | ART-001 gets a bezel design section |
 
 ### 11.1a Resolved questions (owner-delegated rulings, 2026-11-17)
 
@@ -663,6 +688,7 @@ The owner delegated every open ruling to the 2026-11-17 authoring pass. Each rul
 | 2026-11-17 | Owner-delegated authoring pass: rulings R-01…R-19 (§11.1a); §4–§6 and §8 designed; `RunSession` and `AudioService` autoloads approved as planned; full GDD §4.1/§4.3 input map | owner (delegated) |
 | 2026-11-17 | **English only.** All non-English plans removed: per-locale number tables, the language setting and picker, pseudo-translation and right-to-left tests, the CJK font plan, translator workflow and vendor milestones. `tr()` keys and `en.po` stay so player text remains testable and a language can be added later (L10N-001 §7) | owner |
 | 2026-11-18 | Act 0 built as the Cabinet feature (§2.10): own torus simulation without Godot physics bodies; vector costume art from `Pal`; 5×7 Cabinet face via `PixelText`; `AudioService` built with synthesised placeholder cues; profile save reason `cabinet_score`; `--no-save` switch; New Vigil now routes to `cabinet` | production |
+| 2026-11-18 | Arcade boot-up and attract (§2.10): a first-attract-of-launch power-on self-test (`PowerOnTest`), four instruction cards (`AttractPages`), and a hazard-taped coin slot (`CoinSlot`) on the Act 0 bezel; New Vigil is greyed and out of the focus loop until one credit is in (one credit max, New Vigil spends it). Tape removal is saved forever (`cabinet_tape_peeled`, save reason `cabinet_tape`, `profile` slot). Bezel and coin-door art is a placeholder mockup. **GDD §10 "3 clicks max" still holds:** first launch = drag tape + click slot + New Vigil (3 actions); later launches = slot + New Vigil (2). The power-on test is skippable by any key/click and is not an action | owner (request in session) |
 | 2026-11-18 | **D-13 / D-14 (user directive): all graphics generated at runtime (vector or shader), all sound generated by code.** Raster pipeline (manifest import, atlases, sprite imports) retired; PNGs under `assets/sprites/` become reference only and are excluded from export; `tests/test_generated_assets_only.gd` enforces it; the reveal's PNG replaced by a generated body; `AudioService` cues are the design, not placeholders | user |
 | 2026-11-18 | Reference sprites (`assets/sprites/`, 83 PNGs) untracked from git and Godot-ignored (`.gdignore`): kept locally as the look generators reproduce, never pushed, never imported or exported. Only `SPRITE_MANIFEST.csv` stays tracked | owner |
 | 2026-11-18 | **D-14 amended (user directive):** chirp (uilianks/chirp, MIT) installed as a project Claude Code skill in `.claude/skills/chirp-game-audio/` (git-ignored); `audio/src/*.cx.js` → `assets/audio/generated/` WAV renders, committed; `AudioService` prefers renders, falls back to `SfxSynth`; asset test rewritten for the amended rule | user |

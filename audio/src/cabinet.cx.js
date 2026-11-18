@@ -107,6 +107,26 @@ sfx("quota", { vol: 0.35 },
 sfx("menu_move", { vol: 0.15 }, tone({ wave: "square", freq: 880, dur: 0.025, duty: 0.25, env: [0.001, 0.02, 0, 0.01] }))
 sfx("menu_accept", { vol: 0.2 }, tone({ wave: "square", freq: 660, to: 990, slide: 0.06, dur: 0.07, duty: 0.25, env: [0.001, 0.04, 0.3, 0.03] }))
 
+// --- Power-on and the coin door (attract, owner request 2026-11-18) -----------------------------
+
+// the cabinet switching on: a relay thump, the degauss shudder, and the faint whine of the tube
+sfx("power_on", { vol: 0.5, fx: [crush({ bits: 10 })] },
+  tone({ wave: "sine", freq: 70, to: 40, dur: 0.5, env: [0.001, 0.2, 0.2, 0.25] }),
+  noise({ color: "brown", dur: 0.9, env: [0.005, 0.3, 0.4, 0.4], filter: { type: "lp", cutoff: 300 }, tremolo: { rate: 50, depth: 0.7 }, vol: 0.5 }),
+  at(0.2, tone({ wave: "sine", freq: 5200, dur: 1.2, env: [0.3, 0.2, 0.5, 0.5], vol: 0.04 })))
+
+// tape torn off the coin door: a rising crackle
+sfx("tape_peel", { vol: 0.35 },
+  noise({ color: "white", dur: 0.35, env: [0.01, 0.1, 0.6, 0.1], filter: { type: "bp", from: 1500, to: 4200, q: 1.5 }, tremolo: { rate: 38, depth: 0.8 } }))
+
+// a coin clinks into the mech, rattles down, and the credit lamp beeps twice
+sfx("coin", { vol: 0.4 },
+  tone({ wave: "triangle", freq: "E7", dur: 0.08, env: [0.001, 0.06, 0, 0.02] }),
+  at(0.05, tone({ wave: "triangle", freq: "G7", dur: 0.14, env: [0.001, 0.1, 0, 0.04], vol: 0.7 })),
+  at(0.16, noise({ color: "white", dur: 0.12, env: [0.001, 0.05, 0.2, 0.05], filter: { type: "hp", cutoff: 3000 }, tremolo: { rate: 30, depth: 0.9 }, vol: 0.3 })),
+  at(0.35, tone({ wave: "square", freq: "A5", dur: 0.07, duty: 0.25, env: [0.001, 0.04, 0.4, 0.02], vol: 0.5 })),
+  at(0.45, tone({ wave: "square", freq: "E6", dur: 0.16, duty: 0.25, env: [0.001, 0.08, 0.4, 0.06], vol: 0.5 })))
+
 // --- The entity (AUDIO-001 §4) ------------------------------------------------------------------
 
 // the Awakening hit that lands with "IT WAKES.": a sub drop, a torn noise and a falling saw
