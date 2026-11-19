@@ -50,6 +50,7 @@ class DeathMark:
 	var killer_radius: float
 	var from_dir: Vector2     ## unit, from the Vigil toward the killer
 	var vigil_pos: Vector2
+	var shooter_id: int = -1  ## a shot kill: the firing Acolyte's id (-1 = none); the chalk rings the shooter, not the spent shot
 	var age: float = 0.0      ## sim seconds since death
 	var facing: float = -PI / 2.0   ## the Vigil's facing at death (for the coroner's outline)
 
@@ -110,8 +111,9 @@ func chalk_tick(at: Vector2, dir: Vector2) -> void:
 
 ## S6: the coroner's chalk: the Vigil's outline at the death spot, one arrow in from the killer, a ring round a small killer.
 ## Anchored to the world positions at death; held until clear_death_marks() (no rng).
-func death_mark(killer_pos: Vector2, killer_radius: float, from_dir: Vector2, vigil_pos: Vector2, facing: float = INF) -> void:
+func death_mark(killer_pos: Vector2, killer_radius: float, from_dir: Vector2, vigil_pos: Vector2, facing: float = INF, shooter_id: int = -1) -> void:
 	var m := DeathMark.new()
+	m.shooter_id = shooter_id
 	m.killer_pos = killer_pos
 	m.killer_radius = killer_radius
 	m.from_dir = from_dir.normalized() if from_dir.length() > 0.0 else Vector2.UP
@@ -247,17 +249,28 @@ func death_is_big(m: DeathMark) -> bool:
 	return m.killer_radius > world.fx_tuning.death_big_killer_px
 
 
-## Where the killer is NOW: a big killer (the entity) is tracked live (torus-aware via the deltas
-## below); a small one (a shot) stays where it killed.
+## Where the killer is NOW, one function for every death: the entity is its live entity_pos; a shot
+## kill is its shooter's live Acolyte position (by id). Vector2.INF = gone (the shooter was killed /
+## despawned, or there never was one): the arrow alone.
 func death_killer_pos(m: DeathMark) -> Vector2:
-	if death_is_big(m) and world.ritual != null:
-		return world.ritual.entity_pos
-	return m.killer_pos
+	if death_is_big(m):
+		return world.ritual.entity_pos if world.ritual != null else m.killer_pos
+	var a := world.acolytes.find_by_id(m.shooter_id)
+	return a.pos if a != null else Vector2.INF
 
 
-## Chalk ring radius round a small killer: its drawn silhouette + pad, never closer than MIN_RING_GAP_PX.
+func death_killer_gone(m: DeathMark) -> bool:
+	return not death_killer_pos(m).is_finite()
+
+
+## Drawn radius of the live killer: the entity's body, or the shooting Acolyte.
+func death_killer_radius(m: DeathMark) -> float:
+	return m.killer_radius if death_is_big(m) else AcolyteSquad.DRAWN_RADIUS
+
+
+## Chalk ring radius round the shooter (or entity): drawn silhouette + pad, never closer than MIN_RING_GAP_PX.
 func death_ring_radius(m: DeathMark) -> float:
-	return m.killer_radius + maxf(MIN_RING_GAP_PX, world.fx_tuning.death_ring_pad_px)
+	return death_killer_radius(m) + maxf(MIN_RING_GAP_PX, world.fx_tuning.death_ring_pad_px)
 
 
 ## The ring round a shot is bigger than the hull -> the coarse 3/3 rhythm; otherwise the fine 2/1.
@@ -291,7 +304,7 @@ func death_arrow(m: DeathMark) -> PackedVector2Array:
 ## to the killer's live position for a big killer.
 func death_edge_tick(m: DeathMark) -> PackedVector2Array:
 	var kp := death_killer_pos(m)
-	if world.on_screen(kp, 0.0):
+	if not kp.is_finite() or world.on_screen(kp, 0.0):
 		return PackedVector2Array()
 	var d := world.torus.delta(m.vigil_pos, kp)
 	if d.length() < 0.001:
@@ -309,7 +322,10 @@ func death_edge_tick(m: DeathMark) -> PackedVector2Array:
 func death_leader(m: DeathMark) -> PackedVector2Array:
 	var ft := world.fx_tuning
 	var s_vigil := world.to_screen(m.vigil_pos).round()
-	var to_k := world.torus.delta(m.vigil_pos, death_killer_pos(m))
+	var kp := death_killer_pos(m)
+	if not kp.is_finite():
+		return PackedVector2Array()
+	var to_k := world.torus.delta(m.vigil_pos, kp)
 	if to_k.length() < 0.001:
 		return PackedVector2Array()
 	var dir := to_k.normalized()
@@ -322,7 +338,7 @@ func death_leader(m: DeathMark) -> PackedVector2Array:
 		for p in death_outline(m):
 			reach = maxf(reach, (p - s_vigil).dot(dir))
 		start = s_vigil + dir * (reach + maxf(MIN_RING_GAP_PX, ft.death_ring_pad_px))
-	var end := s_vigil + to_k - dir * (m.killer_radius + maxf(MIN_RING_GAP_PX, ft.death_ring_pad_px))
+	var end := s_vigil + to_k - dir * (death_killer_radius(m) + maxf(MIN_RING_GAP_PX, ft.death_ring_pad_px))
 	var tick := death_edge_tick(m)
 	if tick.size() == 2:
 		end = tick[1]
@@ -401,6 +417,26 @@ func _chalk_line(a: Vector2, b: Vector2, col: Color) -> void:
 	draw_line(e[0], e[1], col, 1.0)
 
 
+## Dashed ring round the live shooter as short chords between INTEGER screen points, drawn through
+## _chalk_line so every end is pixel-centred (draw_arc through integer centres vanished in real
+## renders, TECH-001 §1.3). Empty for the entity, a gone / absent shooter, or an off-view one.
+func death_ring_segments(m: DeathMark, frac: float) -> Array[PackedVector2Array]:
+	var out: Array[PackedVector2Array] = []
+	if death_is_big(m) or death_killer_gone(m):
+		return out
+	var kp := death_killer_pos(m)
+	var rr := death_ring_radius(m)
+	if not visible_at(kp, rr):
+		return out
+	var coarse := ring_uses_coarse_dashes(rr)
+	var centre := world.to_screen(kp).round()
+	for span in dash_spans(rr, frac, DASH_RING_ON if coarse else DASH_SMALL_ON, DASH_RING_OFF if coarse else DASH_SMALL_OFF):
+		var p0 := (centre + Vector2.from_angle(span.x) * rr).round()
+		var p1 := (centre + Vector2.from_angle(span.y) * rr).round()
+		out.append(PackedVector2Array([p0, p1]))
+	return out
+
+
 func _draw_death_marks() -> void:
 	var col := Look.c(Pal.BONE_4)
 	var ft := world.fx_tuning
@@ -416,13 +452,12 @@ func _draw_death_marks() -> void:
 					_chalk_line(seg[0], seg[1], col)
 				_chalk_line(arrow[1], arrow[2], col)
 				_chalk_line(arrow[1], arrow[3], col)
-		if not death_is_big(m):
-			var rr := death_ring_radius(m)
-			if visible_at(m.killer_pos, rr) and o > 0.0:
-				var coarse := ring_uses_coarse_dashes(rr)
-				var centre := world.to_screen(m.killer_pos).round()
-				for span in dash_spans(rr, o, DASH_RING_ON if coarse else DASH_SMALL_ON, DASH_RING_OFF if coarse else DASH_SMALL_OFF):
-					draw_arc(centre, rr, span.x, span.y, 4, col, 1.0)
+		if o > 0.0:
+			for seg in death_ring_segments(m, o):
+				if seg[0] == seg[1]:
+					draw_rect(Rect2(seg[0], Vector2.ONE), col)
+				else:
+					_chalk_line(seg[0], seg[1], col)
 		if a >= 1.0:
 			var lead := death_leader(m)
 			if lead.size() == 2:
