@@ -1539,9 +1539,9 @@ The Quiet Pew chant mute itself is the caller's (SYS-001 §5.2); `herald_hush` o
 
 ### 12.16 The Act 0 shift (PM-directed 2026-11-19, coordinated with the Arcade layer chat)
 
-**Status: specified; renders in `audio/src/cabinet.cx.js` (cites this section); all UNAUDITIONED; levels are dBFS from the chirp build info, LUFS not measured; all mono, Cabinet chiptune voice.** The Act 0 shift is five stages: First Vigil, Drift, Censer Watch, Shoal, Hollow. No stings (§1.1): a zone card is a short jingle, not a sting. Numbers are first-pass ✱.
+**Status: specified; renders in `audio/src/cabinet.cx.js` (cites this section); all UNAUDITIONED; levels are dBFS from the chirp build info, LUFS not measured; all mono, Cabinet chiptune voice.** The Act 0 shift is five stages: First Vigil, Drift, Censer Watch, Shoal, Stillwater (renamed from Hollow, 2026-11-19). No stings (§1.1): a zone card is a short jingle, not a sting. Numbers are first-pass ✱.
 
-**Zone jingles.** One shared three-note motif (the litany's foot), re-voiced per zone: Drift calm and major; Censer Watch minor, answered by the censer bell; Shoal a rippling arpeggio; Hollow falling with its last note missing ("always one short"). Each is at most 2.5 s, the READY card (`CabinetGame.READY_SECONDS` ✱). Caller: `CabinetGame.start_stage()` when the stage has a zone.
+**Zone jingles.** One shared three-note motif (the litany's foot), re-voiced per zone: Drift calm and major; Censer Watch minor, answered by the censer bell; Shoal a rippling arpeggio; Stillwater (was Hollow) falling with its last note missing ("always one short"). Each is at most 2.5 s, the READY card (`CabinetGame.READY_SECONDS` ✱). Caller: `CabinetGame.start_stage()` when the stage has a zone.
 
 | Cue | Use and caller | Length | Peak / RMS dBFS | Bus, priority, voices, gate, jitter |
 |---|---|---|---|---|
@@ -1549,7 +1549,7 @@ The Quiet Pew chant mute itself is the caller's (SYS-001 §5.2); `herald_hush` o
 | `zone_drift` | Drift card | 1.45 s | −15.43 / −25.88 | `BUS-UI`, P2, 1 voice, 2000 ms gate |
 | `zone_censer_watch` | Censer Watch card | 1.28 s | −15.43 / −25.98 | same |
 | `zone_shoal` | Shoal card | 1.63 s | −15.67 / −26.73 | same |
-| `zone_hollow` | Hollow card | 1.63 s | −14.82 / −28.58 | same |
+| `zone_stillwater` | Stillwater card (was `zone_hollow`, Hollow; renamed by PM ruling 2026-11-19) | 1.63 s | −14.82 / −28.58 | same |
 | `continue_tick` | CONTINUE? countdown tick, one call per step; the countdown and its timing are Visual Design's (attract pass 2b), not set here | 0.06 s | −16.17 / −22.18 | `BUS-UI`, P2, 1 voice, 200 ms gate |
 | `continue_taken` | a continued stage starts; `CabinetGame.on_route_entered` | 0.64 s | −15.4 / −23.79 | `BUS-UI`, P2, 1 voice, 1000 ms gate |
 

@@ -593,7 +593,7 @@ pitch_jitter_cents = 0.0
 
 [sub_resource type="Resource" id="p65"]
 script = ExtResource("2")
-id = &"zone_hollow"
+id = &"zone_stillwater"
 bus = &"BUS-UI"
 priority = 2
 max_concurrent = 1

@@ -644,7 +644,7 @@ note = "render only, Act 0 shift (AUDIO-001 12.16)"
 
 [sub_resource type="Resource" id="e71"]
 script = ExtResource("2")
-id = &"zone_hollow"
+id = &"zone_stillwater"
 doc_id = ""
 act0_only = true
 has_synth_fallback = false

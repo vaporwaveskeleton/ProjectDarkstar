@@ -472,7 +472,7 @@ func test_act0_shift_cues_are_listed_rendered_mono_and_have_policy() -> void:
 		&"zone_drift": ["BUS-UI", 2, 1, 2000, 0.0],
 		&"zone_censer_watch": ["BUS-UI", 2, 1, 2000, 0.0],
 		&"zone_shoal": ["BUS-UI", 2, 1, 2000, 0.0],
-		&"zone_hollow": ["BUS-UI", 2, 1, 2000, 0.0],
+		&"zone_stillwater": ["BUS-UI", 2, 1, 2000, 0.0],
 		&"continue_tick": ["BUS-UI", 2, 1, 200, 0.0],
 		&"continue_taken": ["BUS-UI", 2, 1, 1000, 0.0],
 	}
