@@ -1,4 +1,4 @@
-[gd_scene load_steps=34 format=3]
+[gd_scene load_steps=38 format=3]
 
 [ext_resource type="Script" path="res://scenes/sector/sector_stub.gd" id="1"]
 [ext_resource type="PackedScene" path="res://features/vigil/vigil.tscn" id="2"]
@@ -31,6 +31,10 @@
 [ext_resource type="Resource" path="res://data/run/run_session.tres" id="29"]
 [ext_resource type="PackedScene" path="res://features/aether/aether_far_layer.tscn" id="30"]
 [ext_resource type="Resource" path="res://data/aether/pm01_pale_marches_t1.tres" id="31"]
+[ext_resource type="Script" path="res://features/warp/warp_composer.gd" id="w1"]
+[ext_resource type="Resource" path="res://data/warp/t1_frayed.tres" id="w2"]
+[ext_resource type="Resource" path="res://data/warp/warp_tier.tres" id="w3"]
+[ext_resource type="Script" path="res://features/hud/vigil_index_strip.gd" id="w4"]
 
 [node name="SectorStub" type="Node2D"]
 script = ExtResource("1")
@@ -136,6 +140,20 @@ mouse_filter = 2
 script = ExtResource("6")
 stats = ExtResource("7")
 
+[node name="VigilIndexStrip" type="Control" parent="Hud"]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -128.0
+offset_top = 4.0
+offset_right = -12.0
+offset_bottom = 24.0
+grow_horizontal = 0
+mouse_filter = 2
+script = ExtResource("w4")
+
 [node name="ComposureWick" type="Control" parent="Hud"]
 unique_name_in_owner = true
 layout_mode = 3
@@ -159,3 +177,9 @@ unique_name_in_owner = true
 process_mode = 3
 layer = 10
 script = ExtResource("3")
+
+[node name="WarpComposer" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("w1")
+warp_set = ExtResource("w2")
+tier_stats = ExtResource("w3")

@@ -5,6 +5,8 @@
 
 **Number discipline.** Dates, team sizes, hour budgets and counts that are not GDD/SYS facts are **planning assumptions `✱`**. Game numbers stay in SYS-001. A milestone is "done" only when its exit criteria were *measured*; nothing here is claimed as measured unless its row says so.
 
+**Rev 1.4 (2026-11-19, PM under owner autonomy grant, 2026-11-19):** the slice T1 warp set is built (§4 warp row; TECH-001 §5.1a); WarpComposer T0–T2 is built as T1 plus the tier computation for every act.
+
 **Rev 1.3 (2026-11-19, PM ruling under owner grant):** M2's warp-effect line is the slice's T1 set (§3 M2 Code, §4), closing TECH-001 Q-T100.
 
 **Rev 1.2 (2026-11-18, PM ruling under owner grant, Act 1 vertical slice):** M2 gains a polished front, the first ten minutes after THE PRETENCE (§3 M2 rows, §4 rows, new §4.1 socks-off checklist = M2 exit test 7). Additive: GDD-001 §17 slice content and criteria 1–6 are unchanged. Source: research/act1_vertical_slice.md; decisions in TECH-001 §11.2; warp-effect count conflict open as TECH-001 Q-T100. **Same day, amended after The Reviewer's notes:** the checklist grows to 19 items (photosensitivity-safe erasure, skip after the first watch); the §4 Unmaking row gains the look-only reveal, the inside-out erasure and the afterglow ember; the §4 Ruins row gains the physical launch gate and the EMBER tickets.
@@ -261,7 +263,7 @@ Not covered yet: Composure, the full Ledger Compass and the Litany Ring are not 
 | Full Waking lifecycle at T1–T2 | GDD-001 §8.4 | M2 |
 | 30-node Lantern Tree stub in the Ruins | GDD-001 §17 | M2 |
 | 12 Run Sigils | GDD-001 §17 | M2 |
-| Warp effects: the slice's T1 set: standing W1-01 Wrong Three, W1-02 Breathing, W1-03 Parallax Arrives, W1-05 Teeth in the Rock, W1-08 Chant Under Music; transient W1-07 False Chant, W1-09 Smudged Blip, W1-10 Ledger Smudge; W1-06 Chromatic Edge only on dropping to Frayed (amended from "6 warp effects", PM ruling 2026-11-19; TECH-001 Q-T100 resolved) | GDD-001 §17; WARP-001 §2 | M2 |
+| Warp effects: the slice's T1 set: standing W1-01 Wrong Three, W1-02 Breathing, W1-03 Parallax Arrives, W1-05 Teeth in the Rock, W1-08 Chant Under Music; transient W1-07 False Chant, W1-09 Smudged Blip, W1-10 Ledger Smudge; W1-06 Chromatic Edge only on dropping to Frayed (amended from "6 warp effects", PM ruling 2026-11-19; TECH-001 Q-T100 resolved). **Built 2026-11-19** (TECH-001 §5.1a; `WarpComposer` + `HudLiar` T1 slice; scenario `warp_t1_capture`); cost measurement on min spec still owed (M3) | GDD-001 §17; WARP-001 §2 | M2 |
 | Eat tranche H2, H4, H14 with PACT-01/PACT-04 | WARP-001 §6.1 D-10 | M2 |
 | Entity voice (formant synthesiser, AUDIO-001 §11.3) | GDD-001 §17 | M2 |
 | The first ten minutes after THE PRETENCE, polished (research/act1_vertical_slice.md) | GDD-001 §17; PM ruling 2026-11-18 | M2 |

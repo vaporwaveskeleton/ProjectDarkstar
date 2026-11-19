@@ -31,6 +31,9 @@ const PAUSE_SCENE := preload("res://scenes/sector/pause_screen.tscn")
 @onready var _wick: ComposureWick = %ComposureWick
 ## The Aether behind the play layer (TECH-001 §2.9; look PM-01 Pale Marches T1, M2 slice beat 12).
 @onready var _far: AetherFarLayer = %AetherFarLayer
+## Warp T1 (TECH-001 §5.1): the sector's single warp owner, and the Vigil Index it may smudge (W1-10).
+@onready var _warp: WarpComposer = %WarpComposer
+@onready var _index: VigilIndexStrip = %VigilIndexStrip
 
 var vigil: Vigil
 ## The sector's wrap-around space. Features that need positions or distances on this sector take it
@@ -58,6 +61,27 @@ var run_session: bool:
 ## The far layer's look id (`ds_aether.<biome>_t<n>` namespace), "" without a far layer.
 var far_look: String:
 	get: return str(_far.look.ds_namespace) if _far and _far.look else ""
+
+## Read-only scalars for the automation id `sector/warp` (TECH-001 §9.1). Dev/QA reads.
+var warp_tier: int:
+	get: return _warp.current_tier() if _warp else 0
+var warp_live: int:
+	get: return _warp.live_count() if _warp else 0
+var warp_novel: int:
+	get: return _warp.schedule.novel_used if _warp else 0
+var warp_cost_ms: float:
+	get: return _warp.live_cost_ms() if _warp else 0.0
+var warp_smear: bool:
+	get: return _warp.is_live(&"W1-09") if _warp else false
+var warp_glyph: bool:
+	get: return _index.smudged() if _index else false
+var warp_frayed_edge: bool:
+	get: return _warp.is_live(&"W1-06") if _warp else false
+var warp_false_chant: bool:
+	get: return _warp.is_live(&"W1-07") if _warp else false
+var warp_teeth: int:
+	get: return get_tree().get_nodes_in_group(LedgerCompass.GROUP).filter(
+		func(n: Node) -> bool: return n.has_node(^"WarpTeeth")).size() if _warp else 0
 
 ## Read-only scalars for the automation id `sector/vigil` (core/automation/ui_view.gd). Dev/QA reads.
 var vigil_x: float:
@@ -163,6 +187,7 @@ func _ready() -> void:
 	_overlays.emptied.connect(_on_overlays_emptied)
 	_use_session(_throwaway_session(), true)
 	_start_far()
+	_bind_warp()
 	_refresh_hud()
 
 
@@ -171,6 +196,7 @@ func on_route_entered(params: Dictionary) -> void:
 	for key: Variant in ["session", &"session"]:
 		if params.has(key) and params[key] is RunSessionCore:
 			_use_session(params[key] as RunSessionCore, false)
+			_bind_warp()
 			return
 
 
@@ -186,6 +212,14 @@ func _start_far() -> void:
 
 func _process(_delta: float) -> void:
 	_step_far()
+	if _index:
+		_index.value = score
+
+
+## Warp at Seam entry (WARP-001 §1.3): the composer reads the session's drives and builds the tier's set.
+func _bind_warp() -> void:
+	if _warp:
+		_warp.bind(session, _composure, _far, _compass, _index, _camera, torus, vigil)
 
 
 ## Accumulate the camera's travel through torus rebases (the shortest step each frame), so the far

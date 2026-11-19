@@ -45,6 +45,9 @@ var torus: Torus:
 
 ## The truth the compass reads (TECH-001 §5.2). The drawing reads `model.presented()` only.
 var model: HudModel = HudModel.new()
+## W1-09 (presented model): the smeared slot (-1 none) and the widget point of its true position.
+var smear_slot: int = -1
+var smear_tail_point: Vector2 = Vector2.ZERO
 ## Widget-local marker positions and kinds from the last sample (≤ max_markers).
 var marker_points: PackedVector2Array = PackedVector2Array()
 var marker_kinds: Array[StringName] = []
@@ -120,10 +123,15 @@ func refresh() -> void:
 	marker_kinds.assign(shown.marker_kinds)
 	for i in shown.marker_world.size():
 		marker_points[i] = layout.to_widget(shown.marker_world[i], world_rect)
+	smear_slot = shown.smear_slot
+	if smear_slot >= 0:
+		smear_tail_point = layout.to_widget(shown.smear_tail, world_rect)
 	refresh_count += 1
 	if _markers:
 		_markers.points = marker_points
 		_markers.kinds = marker_kinds
+		_markers.smear_slot = smear_slot
+		_markers.smear_tail = smear_tail_point
 		_markers.queue_redraw()
 
 

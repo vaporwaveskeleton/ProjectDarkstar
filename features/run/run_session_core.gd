@@ -46,6 +46,8 @@ const PAUSE_RUINS_MENU := &"ruins_menu"
 const PARAM_ACT0_VI := "act0_vigil_index"
 
 const _SKY_EPS := 1e-6
+## The act the M2 slice's runs play (WARP-001 §1.3 act window: Act 1 = T1). TECH-001 Q-T200.
+const WARP_ACT_SLICE := 1
 
 var stats: RunSessionStats
 
@@ -354,6 +356,21 @@ func in_seam() -> bool:
 func hourglass_visible() -> bool:
 	return _run.is_active() and _iteration.started \
 		and _iteration.loop_min_left <= stats.show_threshold_loop_min + _SKY_EPS
+
+
+## The four warp drives at Seam entry (WARP-001 §1.2, §1.3), read by the sector's WarpComposer, which
+## computes the tier. The tier itself is never saved (WARP-001 §1.5). Slice values: the run plays Act 1
+## (WARP_ACT_SLICE until LOOP-001 act progression is built, TECH-001 Q-T200); no Entropy selector and
+## no Hollow sector exist yet, so those terms are 0.
+func warp_inputs() -> Dictionary:
+	return {
+		"act": WARP_ACT_SLICE,
+		"entropy": 0,
+		"hollow": false,
+		"composure_zero": _run.composure == 0.0,
+		"seam_index": maxi(1, _run.seam_index),
+		"seed": _run.seed_value,
+	}
 
 
 # --- snapshot / restore ----------------------------------------------------------------------------
