@@ -410,7 +410,7 @@ Hunger raises the entity only. It never reduces player currency (GDD P4: progres
 | Lance bite, chalk tick length (`ds_cabinet.fx.tick_len_px`; M1 `ds_arc_lance.fx.tick_len_px`) | 3 px ⚙ | the tick where the lance cannot bite (Sepulchre, entity; in M1 any hurtbox with `bites` off); owner-approved 2026-11-18 |
 | Lance bite, chalk tick life (`ds_cabinet.fx.tick_life_s`; M1 `ds_arc_lance.fx.tick_life_s`) | 0.15 s ⚙ | owner-approved 2026-11-18 |
 | Lance bite, `lance_dull` cue volume (`ds_cabinet.fx.lance_dull_db`; M1 `ds_arc_lance.fx.lance_dull_db`) | 0.0 dB ⚙ | offset on the cue's own level (AUDIO-001 §12.11); owner-approved 2026-11-18 |
-| Readable death, dashed ring gap (`ds_cabinet.fx.death_ring_pad_px`) | 6 px ⚙ | chalk gap beyond a shot-killer's drawn silhouette; PM-approved 2026-11-18 (owner authority; TECH-001 Q-T73) |
+| Readable death, dashed ring gap (`ds_cabinet.fx.death_ring_pad_px`) | 6 px ⚙ | chalk gap beyond a shot-killer's drawn silhouette; PM-approved 2026-11-18 (owner authority; TECH-001 Q-T65) |
 | Readable death, arrow length (`ds_cabinet.fx.death_arrow_px`) | 30 px ⚙ | = hull length 15 × outline scale; PM-approved 2026-11-18 (owner authority) |
 | Readable death, outline scale (`ds_cabinet.fx.death_outline_scale`) | 2.0 × ⚙ | the coroner outline (and arrow) is this many times the hull size; PM-approved 2026-11-18 (owner authority) |
 | Readable death, outline draw-on time (`ds_cabinet.fx.death_outline_draw_s`) | 0.15 s ⚙ | PM-approved 2026-11-18 (owner authority) |
