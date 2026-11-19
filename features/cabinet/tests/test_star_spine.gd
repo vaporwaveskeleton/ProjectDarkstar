@@ -114,3 +114,12 @@ func test_no_rng_is_consumed_and_regular_stars_unchanged() -> void:
 	_start(false)
 	assert_array(stars._stars).is_equal(with)
 	assert_int(stars._stars[0].size() + stars._stars[1].size() + stars._stars[2].size()).is_equal(180)
+
+
+func test_spine_stars_arrive_before_the_maw_shows_its_first_vertebra() -> void:
+	# pretence_reveal.gd tweens stars.pull 0 -> 1 over 8 s (TRANS_QUAD, EASE_IN, so pull = (t/8)^2)
+	# and starts maw.reveal 2.5 s later. Every spine star must have finished travelling by then,
+	# so the stars visibly BECOME the vertebrae instead of vanishing mid-flight.
+	var pull_when_reveal_starts := pow(2.5 / 8.0, 2.0)
+	var arrival_pull := world.fx_tuning.spine_hold_pull + world.fx_tuning.spine_pull_span
+	assert_float(arrival_pull).is_less(pull_when_reveal_starts)

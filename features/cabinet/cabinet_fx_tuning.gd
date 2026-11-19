@@ -112,7 +112,7 @@ extends TunableResource
 
 @export_group("star spine ✱ PROPOSED (owner approval pending; not SYS-001 yet)")
 @export var spine_hold_pull: float = 0.02                 ## Starfield.pull ✱ PROPOSED: the spine stars brighten and hold below this pull (~1.1 s of the 8 s ease-in quad)
-@export var spine_pull_span: float = 0.25                 ## Starfield.pull ✱ PROPOSED: pull range over which they travel to the vertebrae
+@export var spine_pull_span: float = 0.07                 ## Starfield.pull ✱ PROPOSED: pull range over which they travel to the vertebrae; 0.07 lands them at pull 0.09 (~2.4 s), before reveal starts showing vertebrae (~2.5 s, pull ~0.098)
 @export_group("")
 
 # --- Hit-stop ⚙ (owner-approved 2026-11-18, SYS-001 §9) ---
