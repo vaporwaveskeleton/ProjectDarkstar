@@ -29,7 +29,11 @@ uniform vec3 void_hi : source_color = vec3(0.235, 0.27, 0.455);     // VOID_4: w
 // cold VOID middle band the fog's far step shows (mix(VOID_1, VOID_4, 0.22), as in aether_fog_band)
 // ✱ share of crazing cells lifted out as fragments, and the band fraction they start at
 const float A_ENT_FRAGMENTS = 0.22;
-const float A_ENT_FRAGMENT_FROM = 0.2;
+const float A_ENT_FRAGMENT_FROM = 0.45;
+// ✱ pass 6 (B2): how much of a cell the cracks have eaten at the mass (fraction of the cell side);
+// it falls to 0 at the band's outer edge (pow curve A_ENT_ERODE_K), so the tiles shrink inward
+const float A_ENT_ERODE = 0.42;
+const float A_ENT_ERODE_K = 1.3;
 
 vec2 cell_pt(vec2 id) {
 	return vec2(a_hash(id + seed * 3.7), a_hash(id.yx + seed * 1.3 + 7.1));
@@ -99,22 +103,30 @@ void fragment() {
 		vec4 c = vec4(0.0);
 		if (!inside && band > 0.0 && s < band) {
 			float s_frac = s / band;
-			vec3 cd = crack_dist(p, 6.2831853 / crack_cells * 0.25, s_frac);
+			float cell = 6.2831853 / crack_cells * 0.25;
+			vec3 cd = crack_dist(p, cell, s_frac);
 			float dn = cd.x;
+			// pass 6 (B2): a GRADIENT OF DISINTEGRATION, not a uniform pale mosaic. s_frac = 1 at the
+			// band's outer edge (the world: large intact tiles, sparse hairline cracks), 0 at the mass.
+			// Inward every border erodes (er: the cracks widen into deep cold VOID gaps), so the tiles
+			// shrink, their lit rims dim, and the last of them are specks on the VOID.
+			float er = A_ENT_ERODE * cell * pow(1.0 - s_frac, A_ENT_ERODE_K);
 			// half-width in px: 0.9 at the mass, a hairline at the band edge, where the crazing stops
 			// along the loss contour (a hairline end on a contour, never a tapering thorn)
 			float hw = mix(0.9, 0.35, s_frac) / radius;
 			float rim_w = 0.7 / radius;
-			float lit = 1.0 - smoothstep(0.55, 1.0, s_frac);   // the glaze's own light fades outward
+			// the glaze's own light: dims inward toward the mass, and fades just before the outer edge so
+			// the band never ends on a lit contour
+			float lit = mix(0.15, 1.0, smoothstep(0.0, 0.75, s_frac)) * (1.0 - 0.7 * smoothstep(0.88, 1.0, s_frac));
 			if (cd.z < A_ENT_FRAGMENTS && s_frac > A_ENT_FRAGMENT_FROM) {
 				// a fragment lifted out: the flat cold VOID behind it, its broken edge catching light
 				float e = cd.y;
 				c = e < rim_w ? vec4(rim_col, 0.85 * lit + 0.15) : vec4(mix(gap_col, void_hi, 0.22), 1.0);
 				drawn = true;
-			} else if (dn < hw) {
+			} else if (dn < hw || cd.y < er) {
 				c = vec4(gap_col, 1.0);   // the gap itself: deep cold, never black
 				drawn = true;
-			} else if (dn < hw + rim_w) {
+			} else if (dn < hw + rim_w || cd.y < er + rim_w) {
 				c = vec4(rim_col, 0.5 * lit);   // the gap's edge lit from inside the glaze
 				drawn = c.a > 0.02;
 			}
