@@ -1,6 +1,6 @@
 # DARKSTAR — Production Plan & Milestones
 
-**Doc ID:** PROD-001 · **Version:** 1.0 · **Date:** 2026-11-17 · **Owner:** producer · **Status:** complete-draft; only M0 is done
+**Doc ID:** PROD-001 · **Version:** 1.1 · **Date:** 2026-11-18 · **Owner:** producer · **Status:** M0 done; M1 in progress
 **Upstream:** GDD-001 §2, §15, §16, §17; TECH-001 §9 (tests), §11 (open questions); ZONES-001 §3 (kits); WARP-001 §6.1 D-10/D-11 (slice tranche, warp lint); MARKET-001 §13 (beat calendar) · **Downstream:** every milestone review, MARKET-001 beat gating, CLAUDE.md §6 definition of done
 
 **Number discipline.** Dates, team sizes, hour budgets and counts that are not GDD/SYS facts are **planning assumptions `✱`**. Game numbers stay in SYS-001. A milestone is "done" only when its exit criteria were *measured*; nothing here is claimed as measured unless its row says so.
@@ -40,7 +40,7 @@ If the team is smaller than this table, §7's cut order fires earlier; dates nev
 | ID | Name | Target window ✱ | Gate for marketing (MARKET-001 §13) | Status |
 |---|---|---|---|---|
 | **M0** | Architecture bootstrap | 2026-11-17 | — | **done** — 72 tests pass, boot smoke clean (TECH-001 §9) |
-| **M1** | Feel prototype | 2027-01 | studio socials | planned |
+| **M1** | Feel prototype | 2027-01 | studio socials | **in progress** (§3 M1 Progress) |
 | **M2** | Vertical slice | 2027-04 | **store page + announcement trailer** (2027-05) | planned |
 | **M3** | Performance & platform gate | 2027-06 | — | planned |
 | **M4** | Demo | 2027-09 | **public demo, Steam Next Fest** (2027-10 ✱) | planned |
@@ -70,9 +70,38 @@ If the team is smaller than this table, §7's cut order fires earlier; dates nev
 | Art | Vigil kit, Grub kit, geode kit, Sepulchre seed parts (ART-002 §4) at slice quality for PM kits only |
 | Audio | synthesised lance/mining/chime (AUDIO-001 §11); the glass chime (AUDIO-001 §6.4) final, because it carries the race |
 | Narrative | none required |
-| Progress | **Slice 1 done (2026-11-18):** Arc-Lance base + D-08 hull switch. **Slice 2 part A done (2026-11-18):** D-08 A/B playable by CLI (`--hull=1|2`, `HullMode`), so exit criterion 4 is met for CLI testers (no in-game setting yet). **Slice 2 part B done (2026-11-18):** `RunSeed` and `SeedCode` built in `core/rng/` (FNV-1a 64 + SplitMix64, CRC-5 checksum; owner ruling, TECH-001 §4.9); `ReplayVerifier` and wiring into features pending (needs a deterministic sim). Shard-count conflict needs an owner ruling (Q-T29). Remaining: over-fire, Mourning Glass magnet, Charges, Grub/Sepulchre, Ledger Compass stub, camera |
+| Progress | **Slice 1 done (2026-11-18):** Arc-Lance base + D-08 hull switch. **Slice 2 part A done (2026-11-18):** D-08 A/B playable by CLI (`--hull=1|2`, `HullMode`), so exit criterion 4 is met for CLI testers (no in-game setting yet). **Slice 2 part B done (2026-11-18):** `RunSeed` and `SeedCode` built in `core/rng/` (FNV-1a 64 + SplitMix64, CRC-5 checksum; owner ruling, TECH-001 §4.9); `ReplayVerifier` and wiring into features pending (needs a deterministic sim). Shard-count conflict needs an owner ruling (Q-T29). Remaining: over-fire, Mourning Glass magnet, Charges, Grub/Sepulchre, Ledger Compass stub, camera. **Not yet done by a human:** the slice 1 real-input mouse-fire check, and a real `--hull=2` launch |
 | Docs | TECH-001 §4.3 (shard magnet), §4.9 (seed); SYS-001 rows for anything new |
 | Risks | the race is invisible at 640×360 → fix with art/audio, not with UI text (GDD-001 P5) |
+
+#### Status notes (2026-11-18)
+
+**Work landed 2026-11-18 (not M1 scope).** Merged PRs; detail lives in the owning doc, not here.
+- #1: arcade power-on, attract cards, taped coin slot (TECH-001 §2.10; UI-001).
+- #2, #3, #6: the M1 slices (Progress row above; TECH-001 §4.9 for #6).
+- #4: the seeded RNG spec; superseded by #6 and #9 (TECH-001 §4.9).
+- #5: ART-004 visual quality rubric (`docs/02-art/VISUAL_QUALITY_RUBRIC.md`) and Act 0 quick wins.
+- #7: Act 0 printed bezel art (ART-001 §12.7a).
+- #10: the arcade screen in its own SubViewport, native-resolution root (TECH-001 §2.10).
+- #11: Act 0 portrait grid 256×304, 40 px HUD strip, bezel fills the window (TECH-001 §2.10; Q-T31 resolved).
+- #8: audio voice policy, mono renders, five M1 cues (AUDIO-001 §12; TECH-001 §2.7).
+- #9: SeedCode checksum CRC-5 (TECH-001 §4.9).
+
+**In flight (2026-11-18).** None of this is built or measured yet unless stated.
+- Visual Design: Act 0 video limits (16 colours from RGB332; approved, not built), then PR C (VectorText and the full bezel art) and PR D (zoom destruction).
+- Sizzle: in-game polish batch S0 effect tunables, S1 hit-stop, S7 credits service record, S3 last-Charge slow-mo, S4 Lance bite. Approved; values pending owner approval.
+- Game audio: the sizzle sound cues.
+- Workflow tools research.
+- On hold: the web fix for `core/ui/input_labels.gd` (`keyboard_get_keycode_from_physical` is unsupported on Web), held until the Visual Design rework.
+
+**Web build feasibility (2026-11-18).** A single localhost run, not a benchmark. The Godot 4.7.2 single-threaded Web export of the Cabinet boots with the CRT and mouse input. wasm 39.5 MB (10.1 MB gzip-9), pck 1.7 MB, 9 files, about 41.5 MB raw, first paint about 5.4 s on localhost. Unverified: audio audibility, keyboard play, Safari and Firefox. Recommendation: use Godot's Web export, not a three.js port. The full report is `research/threejs_port_feasibility.md` (local, git-ignored).
+
+**Owner items still open** (rows in TECH-001 §11.1, checked 2026-11-18; Q-T31 is closed and omitted):
+- Q-T29: detonation shard count (3-5 vs 4-6).
+- Q-T30: Act 0 Acolyte engagement range value.
+- Q-T32, Q-T33: marquee strip/logo size; spawn distance, scanner and other Act 0 values.
+- Q-T34: attract pages hidden at 200 % text until they move to the bezel.
+- Q-T35..Q-T43: audio and doc-consistency questions raised by PR #8.
 
 ### M2 — Vertical slice (target 2027-04 ✱)
 | | |
@@ -235,11 +264,11 @@ Never cut: Act 0 and the floor-drop, the Waking race, Steady Ledger and the acce
 
 | Doc | Debt | Needed by |
 |---|---|---|
-| TECH-001 | §4.3, §4.4, §4.9, §5.1–§5.4, §6.3, §8.1–§8.4 subsections (authoring in progress 2026-11-17) | M1–M3 |
-| NARR-001 | §2–§14 (authoring in progress 2026-11-17) | M2 for §7 eat lines; M5 for the rest |
-| LOOP-001 | §8–§14 (authoring in progress 2026-11-17) | M5 |
-| ASSET-003 | pipeline doc (authoring in progress 2026-11-17) | M1 |
-| ART-001 | typography and UI-state sections (authoring in progress 2026-11-17) | M2 |
+| TECH-001 | §4.3, §4.4, §4.9, §5.1–§5.4, §6.3, §8.1–§8.4 subsections: headings and content exist (checked 2026-11-18); §5.x is designed, not built; §8 measurements still owed | M1–M3 |
+| NARR-001 | §2–§14: headings exist (checked 2026-11-18; content depth not reviewed) | M2 for §7 eat lines; M5 for the rest |
+| LOOP-001 | §8–§14: headings exist (checked 2026-11-18; content depth not reviewed) | M5 |
+| ASSET-003 | pipeline doc exists (`docs/02-art/ASSET_PIPELINE.md`; retired raster pipeline per D-13, TECH-001 §6) | M1 |
+| ART-001 | typography (§11) and UI-state (§12) sections exist (checked 2026-11-18) | M2 |
 | SYS-001 | `ds_` key column per table (ruling R-03), new §9 cap rows (R-14) | as each table is touched |
 | UI-001 | HUD section (DiegeticHud), rebinding and audio-options screens | M2 |
 | AUDIO-001 | ten open questions (§10) | M2–M4 |

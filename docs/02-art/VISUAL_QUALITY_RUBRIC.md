@@ -18,7 +18,7 @@ Decisions behind it: TECH-001 §11.2 D-A (resolution), D-B (bezel), D-C (UI), D-
 
 | Layer | Resolution | Palette law | Scored for |
 |---|---|---|---|
-| **L0 Cabinet screen** (Act 0 play, attract, credits, THE PRETENCE start) | 640×360 pixel grid, integer scale, nearest | Neon Cabinet (ART-001 §15.2), role laws hold | arcade authenticity *as our own look*, readability |
+| **L0 Cabinet screen** (Act 0 play, attract, credits, THE PRETENCE start) | 256×304 portrait pixel grid (4 bpp; TECH-001 §1.1), integer scale, nearest, inside a native-resolution bezel with no bars | Neon Cabinet (ART-001 §15.2), role laws hold | arcade authenticity *as our own look*, readability |
 | **L0b Bezel** (Act 0 only) | native | printed-ink palette, outside screen role laws (ART-001 §12.7) | print-art quality, and staying out of the way of play |
 | **L1 Aether** (T1–T5 sectors, Ruins) | native, 640×360 logical | base + derived (ART-001 §15–16) | depth, light, life, horror-by-subtraction, readability under density |
 | **UI** (menus, HUD, overlays, both eras) | L0 screen text: pixel; everything else native | ART-001 §11–12 | game-UI quality (§6) |
@@ -335,7 +335,7 @@ Read the 6.3 as: a solid arcade screen with a readable HUD, still without its ho
 6. Bullet-pattern language for the Choir in L1: colour-split shot types and patterns as composition (Saros lesson). (cat. 5)
 
 **Needs a professional artist or specialist**
-1. **The hook** (§7.1): ✅ the printed bezel art is built (2026-11-18, ART-001 §12.7a, TECH-001 §2.10; at 640×360 logical size, not yet re-scored, not evaluated in motion); still open: native-resolution rendering and its staged peel / crack / decay / warp during the zoom: procedural fracture, shader decay, camera choreography, audio lock. The single biggest lever on the overall score.
+1. **The hook** (§7.1): ✅ the printed bezel art is built (2026-11-18, ART-001 §12.7a, TECH-001 §2.10; authored in the 640×360 logical space; it has drawn at native resolution since PR A, TECH-001 §1.2; not yet re-scored, not evaluated in motion); still open: its staged peel / crack / decay / warp during the zoom: procedural fracture, shader decay, camera choreography, audio lock. The single biggest lever on the overall score.
 2. The L1 Aether look itself (fog layers, crystal spheres, lantern lighting at native resolution) to the Saros lighting bar.
 3. Live-motion review of Act 0 and the hook from video, with a second reviewer (§9).
 
@@ -358,7 +358,7 @@ Read the 6.3 as: a solid arcade screen with a readable HUD, still without its ho
 
 ## 9. Review process
 
-1. Capture: Act 0 with the capture switches (TECH-001 §2.10), always `--no-save`; same frames at each supported resolution once native rendering exists (D-A).
+1. Capture: Act 0 with the capture switches (TECH-001 §2.10), always `--no-save`; same frames at each supported resolution (native rendering exists since PR A; test sizes in TECH-001 §1.3) (D-A).
 2. Score with two reviewers independently; disagreements > 2 points are discussed with the frames side by side.
 3. Record facts, interpretation, score and smallest fix in §8; the weakest critical state goes first in the report.
 4. Re-score after each art milestone; keep earlier sheets for trend.

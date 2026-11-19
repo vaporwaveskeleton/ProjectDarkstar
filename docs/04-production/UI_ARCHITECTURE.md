@@ -13,7 +13,7 @@
 | Pause: Resume, Settings, Abandon Run | GDD §4.1, WARP-001 §4.4 W4-07 | built — `scenes/sector/pause_screen.tscn` |
 | Confirmation (two-choice, safe default) | brief | built — `scenes/common/confirm_screen.tscn` |
 | Loading / transition curtain | brief | built (fade) — `scenes/boot/boot.tscn` |
-| Act 0 cabinet HUD: 4:3 bezel, 1UP/score, Vigils, glass-lamp Charge pips, Ledger Compass mini-map; READY card, banners, captions, credits, the entity's big type | WARP-001 W0-01/W0-02/W0-04, ART-001 §11.5 | built — `features/cabinet/` (TECH-001 §2.10) |
+| Act 0 cabinet HUD: printed bezel around the 256×304 portrait screen, 1UP/score, Vigils (readouts on the screen's 40 px HUD strip, TECH-001 §2.10), glass-lamp Charge pips, Ledger Compass mini-map; READY card, banners, captions, credits, the entity's big type | WARP-001 W0-01/W0-02/W0-04, ART-001 §11.5 | built — `features/cabinet/` (TECH-001 §2.10) |
 | HUD (diegetic, may lie) | WARP-001 §4 | Act 1+: stub (one honest hull label) |
 | Rebinding, mouse sensitivity, aim assist, colourblind variants, subtitles, audio options | GDD §10, AUDIO-001 §8.4 | planned |
 | Death / cause-of-death screen | GDD §6.3, §8.9; AUDIO-001 §4.10 | planned |
@@ -63,7 +63,7 @@ Route scene (e.g. AttractMode : Screen)        one per SceneRouter route
 | Input-method changes | `InputModeTracker` emits `input_mode_changed`. Glyph widgets are planned |
 | Text scaling | `SettingsService.text_scale` 1.0 / 2.0 → `UiTheme.apply_text_scale` resizes the project Theme |
 | Safe area at 200 % text | all controls stay inside the 640×360 logical rect (SYS-001 §9; stays valid in logical units after Act 0); tested for attract and settings |
-| Resolution / aspect | `viewport` stretch, `keep` aspect, integer scale (TECH-001 §1.2–§1.3) is the current code. Owner, 2026-11-18: after Act 0 the UI renders at native resolution (decided, not yet implemented; TECH-001 §1.1, Q-T23). Layouts use anchors/containers only. Post-Act 0 UI is modern game-UI structure and UX (hierarchy, primary vs secondary actions, focus, input glyphs, list/preview/detail) with chalk-and-brass as the skin (D-C) |
+| Resolution / aspect | Root is `canvas_items` stretch, `expand` aspect, `fractional` scale (built, PR A, 2026-11-18): the whole app renders at native resolution, 640×360 is the logical space, and the bezel fills the window with no bars. Integer scaling binds only the Act 0 arcade screen (`ScreenFit`, TECH-001 §1.2–§1.3; screen grid 256×304, §1.1). Pause/settings overlays cover the whole cabinet at native res (root `Overlays`, §2.10). Post-Act 0 UI text engine still open (TECH-001 Q-T23). Layouts use anchors/containers only. Post-Act 0 UI is modern game-UI structure and UX (hierarchy, primary vs secondary actions, focus, input glyphs, list/preview/detail) with chalk-and-brass as the skin (D-C) |
 | Touch-safe targets | Windows-only, mouse targets ≥ ~22 logical px tall (✱ content margins). No touch support planned |
 | Steady Ledger / Esc always pauses | the `pause` action opens the real pause screen whenever the overlay stack is empty (WARP-001 §4.4) |
 | Accessibility rows never lie or hide | settings read live from `SettingsService` (WARP-001 §4.7) |

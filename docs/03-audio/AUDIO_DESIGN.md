@@ -1087,7 +1087,7 @@ It is one voice that degrades, never a different actor. The 1.2 s silence before
 The litany (§5.1) is nine vowel targets. Each unit class gets a register and a detune spread (§5.2). A procession is N formant voices, each slightly late, panned to its unit (§5.3). The missing ninth node (NARR-001 §1.5) is a voice that starts each cycle and is cut off.
 
 ### 11.5 Budgets and determinism
-- Generated at load, cached as `AudioStreamWAV`; long beds and stems render progressively on a worker thread. Boot-time generation stays ≤ 1.5 s ✱ on minimum spec; everything else is lazy.
+- Runtime synthesis (`SfxSynth`) is now only the lazy fallback for a cue that has no chirp render (C1, §12.7; zero synth cues are built when all renders exist). Where runtime generation applies: generated at load, cached as `AudioStreamWAV`; long beds and stems render progressively on a worker thread. Boot-time generation stays ≤ 1.5 s ✱ on minimum spec; everything else is lazy.
 - Continuous textures that must react every frame use `AudioStreamGenerator` voices, within §7.5's voice budget.
 - Every generator is seeded and deterministic, so the same run sounds the same in a replay (TECH-001 §4.9).
 - Accessibility (§8) is unchanged. Captions and visual chant indicators describe the sound, not the file.
