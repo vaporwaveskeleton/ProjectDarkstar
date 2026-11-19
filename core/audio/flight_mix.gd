@@ -1,6 +1,6 @@
 class_name FlightMix
 extends RefCounted
-## Pure mapping from the Aether Vigil's motion to its four flight layers (AUDIO-001 §12.18, C11–C14).
+## Pure mapping from the Aether Vigil's motion to its four flight layers (AUDIO-001 §12.19, C11–C14).
 ## Inputs are fractions the game computes from its own SYS-001 values: speed / max_speed, thrust (the
 ## stick's push, 0 while braking), turn rate / snap_turn. Output: per layer id, Vector2(volume_db,
 ## pitch_scale). AudioService smooths and applies it; tests call it directly.

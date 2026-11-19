@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="RuinsOnboardingStats" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://features/interactions/ruins_onboarding_stats.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+ds_namespace = "ds_ruins.onboarding"
+source_section = "LOOP-001 §10.5 (✱ engineering pacing only; no SYS-001 rows)"
+chalk_start_s = 4.0
+chalk_chars_per_s = 16.0
+chalk_line_rest_s = 1.1
+ticket_flight_s = 1.6
+ticket_stagger_s = 0.05
+tickets_drawn_max = 40
+lamp_speed_px_s = 150.0
+lamp_reach_px = 24.0
+lamp_start_x = 232.0
+lamp_min_x = 104.0
+lamp_max_x = 600.0
+dark_threshold_x = 476.0
+launch_x = 520.0
+dark_reveal_s = 1.5

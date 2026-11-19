@@ -1,6 +1,6 @@
 extends GdUnitTestSuite
 ## The AUDIO-001 §7.2 ducking chain (a sidechain per bus, 60 ms attack, 400 ms release) and §7.3's
-## never-ducked rules, plus the ambience threat stems (§12.18): layers, not level.
+## never-ducked rules, plus the ambience threat stems (§12.19): layers, not level.
 
 const AudioServiceScript := preload("res://autoload/audio_service.gd")
 const DT := 1.0 / 60.0

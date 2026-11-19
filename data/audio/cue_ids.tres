@@ -712,7 +712,7 @@ doc_id = "C11"
 act0_only = false
 has_synth_fallback = false
 is_loop = true
-note = "render only, Aether Vigil engine layer, swept at runtime (AUDIO-001 12.18)"
+note = "render only, Aether Vigil engine layer, swept at runtime (AUDIO-001 12.19)"
 
 [sub_resource type="Resource" id="e79"]
 script = ExtResource("2")
@@ -721,7 +721,7 @@ doc_id = "C12"
 act0_only = false
 has_synth_fallback = false
 is_loop = true
-note = "render only, Aether Vigil boiler layer (thrust), runtime sweep (AUDIO-001 12.18)"
+note = "render only, Aether Vigil boiler layer (thrust), runtime sweep (AUDIO-001 12.19)"
 
 [sub_resource type="Resource" id="e80"]
 script = ExtResource("2")
@@ -730,7 +730,7 @@ doc_id = "C13"
 act0_only = false
 has_synth_fallback = false
 is_loop = true
-note = "render only, Aether Vigil rigging layer (drift, turn), runtime sweep (AUDIO-001 12.18)"
+note = "render only, Aether Vigil rigging layer (drift, turn), runtime sweep (AUDIO-001 12.19)"
 
 [sub_resource type="Resource" id="e81"]
 script = ExtResource("2")
@@ -739,7 +739,7 @@ doc_id = "C14"
 act0_only = false
 has_synth_fallback = false
 is_loop = true
-note = "render only, Aether Vigil lantern hiss layer, runtime sweep (AUDIO-001 12.18)"
+note = "render only, Aether Vigil lantern hiss layer, runtime sweep (AUDIO-001 12.19)"
 
 [sub_resource type="Resource" id="e82"]
 script = ExtResource("2")
@@ -748,7 +748,7 @@ doc_id = "C15"
 act0_only = false
 has_synth_fallback = false
 is_loop = false
-note = "render only, rigging creak on a hard turn (AUDIO-001 12.18)"
+note = "render only, rigging creak on a hard turn (AUDIO-001 12.19)"
 
 [sub_resource type="Resource" id="e83"]
 script = ExtResource("2")
@@ -757,7 +757,7 @@ doc_id = "C16"
 act0_only = false
 has_synth_fallback = false
 is_loop = false
-note = "render only, ballast shift on the brake (AUDIO-001 12.18)"
+note = "render only, ballast shift on the brake (AUDIO-001 12.19)"
 
 [sub_resource type="Resource" id="e84"]
 script = ExtResource("2")
@@ -766,7 +766,7 @@ doc_id = "W5-U1"
 act0_only = false
 has_synth_fallback = false
 is_loop = false
-note = "render only, the first Unmaking: the last lamp starves before the protected black (AUDIO-001 12.18)"
+note = "render only, the first Unmaking: the last lamp starves before the protected black (AUDIO-001 12.19)"
 
 [sub_resource type="Resource" id="e85"]
 script = ExtResource("2")
@@ -775,7 +775,7 @@ doc_id = "R-B"
 act0_only = false
 has_synth_fallback = false
 is_loop = true
-note = "render only, Ruins room tone with the clock, later visits (AUDIO-001 2.2 layer B, 12.18)"
+note = "render only, Ruins room tone with the clock, later visits (AUDIO-001 2.2 layer B, 12.19)"
 
 [sub_resource type="Resource" id="e86"]
 script = ExtResource("2")
@@ -784,7 +784,7 @@ doc_id = "R-B1"
 act0_only = false
 has_synth_fallback = false
 is_loop = true
-note = "render only, Ruins first-visit ambience, no clock yet (AUDIO-001 12.18)"
+note = "render only, Ruins first-visit ambience, no clock yet (AUDIO-001 12.19)"
 
 [sub_resource type="Resource" id="e87"]
 script = ExtResource("2")
@@ -793,7 +793,7 @@ doc_id = "S-T1"
 act0_only = false
 has_synth_fallback = false
 is_loop = true
-note = "render only, PM-01 threat stem 1 (Deep), locked to aether_bed_t1 (AUDIO-001 12.18)"
+note = "render only, PM-01 threat stem 1 (Deep), locked to aether_bed_t1 (AUDIO-001 12.19)"
 
 [sub_resource type="Resource" id="e88"]
 script = ExtResource("2")
@@ -802,7 +802,7 @@ doc_id = "S-T2"
 act0_only = false
 has_synth_fallback = false
 is_loop = true
-note = "render only, PM-01 threat stem 2 (Wrong), locked to aether_bed_t1 (AUDIO-001 12.18)"
+note = "render only, PM-01 threat stem 2 (Wrong), locked to aether_bed_t1 (AUDIO-001 12.19)"
 
 [resource]
 script = ExtResource("1")

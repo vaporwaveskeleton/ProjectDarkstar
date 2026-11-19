@@ -49,7 +49,7 @@ const MEASURE_WARMUP := 420   ## ✱ > FrostPresence.FLEE_S at 60 fps, so a held
 const MEASURE_FRAMES := 120   ## ✱
 const BED_CUE := &"aether_bed_t1"
 const FLEE_CUE := &"presence_flee"
-## The last lamp starving (AUDIO-001 §12.18): starts as the front reaches the lamp and ends in a 0.3 s
+## The last lamp starving (AUDIO-001 §12.19): starts as the front reaches the lamp and ends in a 0.3 s
 ## fade at the black, so the protected silence that follows is the beat (no sting, §1.1).
 const LAMP_OUT_CUE := &"unmaking_lamp_out"
 

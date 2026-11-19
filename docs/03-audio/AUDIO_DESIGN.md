@@ -136,6 +136,8 @@ Four stems per biome 🔒 (GDD-001 §12), plus shared state overlays that are bi
 | D Decomposed | silent | — | — | −∞ |
 | extra | cabinet hum (50 Hz ✱ mains buzz), a coin-drop thunk, 1UP chime | attract idle | on start | −26 dB |
 
+**The Decay (owner direction 2026-11-19; PROPOSED until TECH-001 Q-T180–Q-T185 are ruled).** After A0-5's credits the shell restarts as if for attract and then dies: it sags flat, loses its voices and stops, and the hum sags and fails (§12.18; GDD-001 §6.1). Built today: neither the shell loop nor the hum exists as a sound; the cabinet plays one-shots only (§12.18).
+
 **Trigger:** title screen, and the credits roll at the end of A0-1 and again at A0-3 (GDD-001 §6.1). **Loop:** 8 bars at 120 BPM ✱ (≈16 s). **Transition:** input starts New Vigil → one 4-bar outro ✱, then the A0-1 bed. **The A0-2 rule 🔒:** from the second authored level the first chant line is heard *under* the music (GDD-001 §6.1) — one voice of C enters at −22 dB rel. master ✱, at the diegetic radius of SYS-001 §3.1, so a player with music up still hears it as coming from around a corner. **Params:** `silence_spent = 0`, `warp_tier = 0`, `clock_pressure = 0`.
 
 ### 2.2 Ruins (hub)
@@ -335,6 +337,8 @@ This is the deferral GDD-001 §8.4 makes to this doc: phase 4's Awakening line "
 | Act 0 Awakening (A0-3) 🔒 | **"IT WAKES."** | 2 | the thesis line, kept verbatim (GDD-001 §8.4); the only entity line in Act 0 |
 
 Act 0 has no other entity line. The whole act is a costume (GDD-001 §6.1, §11), and a costume does not speak. The line arrives after the protected 1.2 s silence (GDD-001 §12) at a near-whispered level (§2.10), in full-screen big type (§4.2), and it is never withheld even if the Awakening is staggered (GDD-001 §8.4). Everything the entity says in Acts 1–4 is the costume coming off.
+
+**No line in the reveal (PROPOSED 2026-11-19, TECH-001 Q-T182).** The built reveal (`PretenceReveal`) shows "ONE SKY LESS." in big type inside the Cabinet. That breaks this section's one-line rule (it is §4.5's Act 1 Hollow-sector line), and the Decay that replaces the title card is wordless (NARR-001 §4.5), so the reveal drops it. The line stays in §4.5 for Act 1.
 
 ### 4.2 Display rule 🔒 (GDD-001 §10)
 
@@ -770,7 +774,7 @@ IDs are stable for TECH-001's audio tables (TECH-001 §6). Levels are relative t
 | A08 | Over-fire detonation | SYS-001 §1.3 (player-owned cause, §1.4) | a glass chord struck from inside, then a 0.4 s ✱ vacuum decay. Built as `overfire_burst` | −9 dB |
 | A09 | Dry fire | empty magazine | one dull chalk tick | −18 dB |
 | A10 | Lance vent | the SYS-001 §1.3 cooldown rows | a brass sigh, downward | −19 dB |
-| A11 | **RESOLVED 2026-11-19 (PM under owner autonomy grant): built as the flight voice, §12.18; TECH-001 Q-T42.** Does the Vigil's thrust, brake and drift get a sound? §6.2 had no cue for it | the 340 px/s inertia feel (GDD-001 §4.2) is the M1 feel target and is silent today | One soft thrust bed morphed at runtime from speed (`BUS-FLY`, one voice, below the §7.1 floor for identity) plus a brake cue; or keep the ship silent and say so in §1.2. Decide before M1 closes | AUDIO-001 + M1 chat | M1 exit |
+| A11 | **RESOLVED 2026-11-19 (PM under owner autonomy grant): built as the flight voice, §12.19; TECH-001 Q-T42.** Does the Vigil's thrust, brake and drift get a sound? §6.2 had no cue for it | the 340 px/s inertia feel (GDD-001 §4.2) is the M1 feel target and is silent today | One soft thrust bed morphed at runtime from speed (`BUS-FLY`, one voice, below the §7.1 floor for identity) plus a brake cue; or keep the ship silent and say so in §1.2. Decide before M1 closes | AUDIO-001 + M1 chat | M1 exit |
 | A12 | What format do the long music stems ship in? | 41 stems and ≈ 78 looped minutes (§9.1) are about 0.8 GB as PCM WAV in LFS (arithmetic, §12.6) | Spike three options at M2 and record size, boot time and CPU: `chirp --ogg`, imported WAV, and load-time worker-thread rendering (§11.5) | AUDIO-001 + TECH-001 | M2 |
 | A13 | Magnet latch (`magnet_latch`) | a shard enters the magnet radius | tiny rising tick, quiet, many per second | −22 dB |
 | A14 | Lance on the Sepulchre or entity (`lance_dull`, built 2026-11-18, §12.11) | the Arc-Lance hits a target that does not bite | a chalk tick, "does not bite"; lower and flatter than A03 | −18 dB |
@@ -796,12 +800,12 @@ IDs are stable for TECH-001's audio tables (TECH-001 §6). Levels are relative t
 | C08 | Hull lost | SYS-001 §1.2; §2.13 here | the filter sweep, not an impact | bed level |
 | C09 | Second Vigil revive | LOOP-001 HULL-6 | the sweep played backwards, one bell | −13 dB |
 | C10 | Ship foley beats | GDD-001 §12 | brass creak, guttering flame, chalk dust, the clock — placed at the seams of a run | −24 dB |
-| C11 | Engine (`flight_engine`, built 2026-11-19, UNAUDITIONED, §12.18) | the Aether Vigil's flight voice, driven by speed and thrust | the heavy brass ship's engine loop, level and pitch swept at runtime | runtime, §12.18 |
-| C12 | Boiler (`flight_boiler`, built, UNAUDITIONED, §12.18) | the same flight voice, driven by thrust | the boiler's pressure, fading in with thrust and lifting in pitch | runtime, §12.18 |
-| C13 | Rigging (`flight_rigging`, built, UNAUDITIONED, §12.18) | the same flight voice, driven by drift and turn | wind through rigging; drift and turning bring it up | runtime, §12.18 |
-| C14 | Lantern hiss (`flight_lantern`, built, UNAUDITIONED, §12.18) | the same flight voice | the Vigil's lantern, steady; a little brighter at speed | runtime, §12.18 |
-| C15 | Rigging creak (`flight_creak`, built, UNAUDITIONED, §12.18) | a hard turn crosses the turn-on threshold | one brass-and-timber creak, pitch jittered | ≤ −13 dBFS render, runtime |
-| C16 | Ballast (`flight_ballast`, built, UNAUDITIONED, §12.18) | the brake engages at speed | the ship's ballast shifting as it slows | ≤ −12 dBFS render, runtime |
+| C11 | Engine (`flight_engine`, built 2026-11-19, UNAUDITIONED, §12.19) | the Aether Vigil's flight voice, driven by speed and thrust | the heavy brass ship's engine loop, level and pitch swept at runtime | runtime, §12.19 |
+| C12 | Boiler (`flight_boiler`, built, UNAUDITIONED, §12.19) | the same flight voice, driven by thrust | the boiler's pressure, fading in with thrust and lifting in pitch | runtime, §12.19 |
+| C13 | Rigging (`flight_rigging`, built, UNAUDITIONED, §12.19) | the same flight voice, driven by drift and turn | wind through rigging; drift and turning bring it up | runtime, §12.19 |
+| C14 | Lantern hiss (`flight_lantern`, built, UNAUDITIONED, §12.19) | the same flight voice | the Vigil's lantern, steady; a little brighter at speed | runtime, §12.19 |
+| C15 | Rigging creak (`flight_creak`, built, UNAUDITIONED, §12.19) | a hard turn crosses the turn-on threshold | one brass-and-timber creak, pitch jittered | ≤ −13 dBFS render, runtime |
+| C16 | Ballast (`flight_ballast`, built, UNAUDITIONED, §12.19) | the brake engages at speed | the ship's ballast shifting as it slows | ≤ −12 dBFS render, runtime |
 | D01 | Entity hit reaction | SYS-001 §2.1 | a low wooden knock, pitch by module; the count of knocks is the damage tell | −13 dB |
 | D02 | Module knocked off | SYS-001 §2.1 | a chain letting go | −12 dB |
 | D03 | Module destroyed | SYS-001 §2.1 | the chain, then glass | −11 dB |
@@ -971,7 +975,7 @@ LOOP-001 §3.4: the first purchase of a capstone opens a Codex entry and the ent
 
 Ducking is a sidechain on the bus, not per-voice, with a 60 ms ✱ attack and a 400 ms ✱ release, so the field breathes instead of stuttering. P3 ducking never silences a tell below the whisper floor of §7.1, which is the mechanical form of L3.
 
-**Built 2026-11-19 (§12.18):** per-bus sidechain in `AudioService`, by the priorities of the sounding cues. P5 has no amount in the table; −2 dB ✱ is proposed (`ds_audio.mix.duck_db_p5`). The §7.3 exemption rule applies: `BUS-CHO` and `BUS-ENT` are never ducked, and a bus carrying a sounding P0/P1 cue is never ducked.
+**Built 2026-11-19 (§12.19):** per-bus sidechain in `AudioService`, by the priorities of the sounding cues. P5 has no amount in the table; −2 dB ✱ is proposed (`ds_audio.mix.duck_db_p5`). The §7.3 exemption rule applies: `BUS-CHO` and `BUS-ENT` are never ducked, and a bus carrying a sounding P0/P1 cue is never ducked.
 
 ### 7.3 Never ducked, never hidden
 
@@ -1287,7 +1291,7 @@ Findings marked *analytical* come from reading the code and were not reproduced 
 | **G Sepulchre** (G01–G06) | `segment_deposit` (≈ G01), `segment_knocked` (≈ D02) | G02 halted, G03 Quickening onset, G05–G06 (G04 is `silence()`) | G01 free of the bar grid, ≤ 3 voices ✱ | Act 0: G02, G03 |
 | **H Meta and economy** (H01–H10) | H10 `extra_life`; `quota` (the Act 0 jingle, no id); `coin` | H01–H09 | BUS-UI | Deferred, except what the attract and credits flow needs |
 | **I UI and score** (I01–I08) | I06 `menu_accept`, I07 `menu_move` (hover); attract: `power_on`, `tape_peel`, `coin`; Sizzle `tally_blip` (credits stat line, §12.11) | I01–I05, I08 | BUS-UI; hover limited to one voice | I08 with the settings screen (M2) |
-| **Movement** (thrust, brake, drift) | **built 2026-11-19 (§12.18)**; was: none | **§6.2 has no cue for the Vigil's thrust, brake or drift.** The 340 px/s, 2600 px/s² feel (GDD-001 §4.2) is silent | proposal: one soft thrust bed morphed at runtime from speed (`BUS-FLY`, 1 voice) and a brake cue. Owner decision **Q-A11**; M1-relevant | Decide before M1 closes |
+| **Movement** (thrust, brake, drift) | **built 2026-11-19 (§12.19)**; was: none | **§6.2 has no cue for the Vigil's thrust, brake or drift.** The 340 px/s, 2600 px/s² feel (GDD-001 §4.2) is silent | proposal: one soft thrust bed morphed at runtime from speed (`BUS-FLY`, 1 voice) and a brake cue. Owner decision **Q-A11**; M1-relevant | Decide before M1 closes |
 | **Locomotion by surface, swimming, climbing, vehicles, weather, crowds, crafting, containers, doors** | n/a | n/a | **Not applicable.** Closest analogues: seam chime (W3-01), ship foley (C10), ambience beds (§3) | Do not add |
 
 **Redundant and safe to reuse.** (1) `grub_die` and `acolyte_die` share one idiom (square fall plus noise); derive variants by parameter, not by new files. (2) A02, A03 and A04 can be one recipe family with per-hit parameters. (3) B06, `shard_chime`, `coin` and `extra_life` are all short bright pitched tones. B06 must stay the *only* pure, bright 1.2 kHz chime (§6.4), so check by ear at M1 that the others stay clearly different. **Silence is the stronger choice** for: the moment after B06 (no music under the chime, §7.2 P1); the 1.2 s Awakening (§2.10); dry fire at low priority; and menu hover while the pointer sweeps (rate-limit instead of stacking).
@@ -1351,7 +1355,7 @@ Status column: **done** means implemented and covered by the 174-case suite (0 f
 | C7 | **done** (matches the original §12.2 exactly on the pre-mono backup) | `tools/audio_report.js` prints the §12.2 table from the LFS store | `tools/` | output matches §12.2 |
 | C8 | **done** (this update) | Docs: TECH-001 §2.7, §2.8, §8, §9, §11.1, §11.2; README | docs | match the code |
 
-Deferred to M2 (not in this set): ducking sidechains (§7.2), volume sliders (`SettingsService` keys plus the UI-001 settings screen), the music system, the entity speech chip, the thrust bed (Q-A11). (Update 2026-11-19: the thrust bed and the ducking sidechains are built, §12.18.)
+Deferred to M2 (not in this set): ducking sidechains (§7.2), volume sliders (`SettingsService` keys plus the UI-001 settings screen), the music system, the entity speech chip, the thrust bed (Q-A11). (Update 2026-11-19: the thrust bed and the ducking sidechains are built, §12.19.)
 
 ### 12.8 Baseline measurements and how to reproduce them
 
@@ -1455,7 +1459,7 @@ Both new cues are chirp renders (mono, from `audio/src/cabinet.cx.js`, `assets/a
 
 **Engineering.** `AudioService.set_ambience(id, level)`: one ambience slot, two players on `BUS-AMB`, crossfade `AMBIENCE_FADE_S` 2.0 s ✱, cap `AMBIENCE_MAX_DB` −12 ✱. `silence()` stops the slot and it returns with the fade (at least 0.6 s, §1.4). `aether_swell` and `aether_wrong`: `BUS-AMB`, P5, 1 voice, 2000 ms retrigger gate ✱ (two policy entries in `cue_policy.tres`; no individual `ds_` keys yet). **Hook:** the Aether art chat's `aether_gallery` scene calls `set_ambience` per exhibit (T1 to T5; `aether_bed_t4` and `aether_bed_t5` added 2026-11-18, cue ids AMB-06 and AMB-07) and, for the entity-presence exhibit, plays `aether_swell` as life flees and then calls `set_ambience(&"")` so the black arrives as silence (the entity has no sound). Cue table ids `AMB-01`..`AMB-05` (beds t1..t3, swell, wrong) are local ids for this section, not §6.2 ids.
 
-**Deferred:** a sphere-glint cue (soft, low, inharmonic, must never resemble B06); the W0-08 crossfade; `BUS-AMB` sidechain ducking (now built, §12.18); positional audio.
+**Deferred:** a sphere-glint cue (soft, low, inharmonic, must never resemble B06); the W0-08 crossfade; `BUS-AMB` sidechain ducking (now built, §12.19); positional audio.
 
 **Owner items** (TECH-001 Q-T51 to Q-T53; Q-T51 decided: beds to Ogg, blocked until ffmpeg is installed; Q-T52 decided: T4/T5 beds in a follow-up PR; Q-T53 open): bed format and size (three stereo WAV beds are about 8.5 MB, against Ogg, see Q-T43); T4 and T5 beds now or with Act 3 and 4 content; GDD §19 glossary lacks "Aether" and "Pretence".
 
@@ -1584,7 +1588,23 @@ The reinforcement timings behind `censer_bell` are the Arcade layer's PROPOSED n
 
 **Counts (counted in the data files):** cue ids 74 + 4 = 78 and policy entries 68 + 4 = 72.
 
-### 12.18 The Aether heard: flight, places, ducking (PM-directed 2026-11-19, under the owner autonomy grant)
+### 12.18 The Decay (Act 0 reveal) — owner direction 2026-11-19; PROPOSED until TECH-001 Q-T180–Q-T185 are ruled
+
+**Status: design only, nothing built, nothing rendered.** The Decay replaces the title card (GDD-001 §6.1; WARP-001 W0-07; ART-001 §12.7b). Its sound is the Cabinet's own sound **failing**, not a new sound arriving: no sting, no riser, no hit (§1.4 startle budget; D-15 zero startle). Every number is SYS-001 `ds_cabinet.decay.*` (PROPOSED).
+
+| Beat | What is heard | How it is made |
+|---|---|---|
+| D1 Back to attract | the attract shell starts clean, bar 1, with the cabinet hum under it | the shell (§2.1 layer A) and the hum must first exist: both **runtime `SfxSynth`** voices, because they must morph continuously (CLAUDE.md: anything that morphs stays runtime), never a render |
+| D2 Tired phosphor | the shell sags flat toward `shell_detune_cents_end`, like a tired supply; the hum sags toward `hum_hz_end` and starts to beat against itself | parameter ramps on the two runtime voices: pitch offset in cents, hum frequency, a second hum partial a few tenths of a hertz off ✱ |
+| D3 The skin fails | the shell loses voices: melody first, then harmony; the bass keeps a bar that never resolves; each dying bulb is a tiny filament tick ✱; the hum stops at the end of D3 | voice mutes on the runtime shell; `decay_bulb_tick` one-shot (a 30 ms ✱ dry tick, ≤ −30 dBFS ✱, rendered from `audio/src/cabinet.cx.js` or runtime) |
+| D4 Collapse | the picture's collapse has the soft falling whine of a CRT switching off, then `collapse_silence_s` of total silence while the dot holds | `decay_crt_off` one-shot (a falling sine whine from ~15.7 kHz ✱ down, quiet, no thump), then `AudioService.silence` |
+| The tear | as built: the first Unmaking sting inside the silence budget, then the Aether (§12.12) | unchanged |
+
+Ending 5: Theodora's screens and the held line (NARR-001 §9.5) play over the hum only (no shell), then D1 starts. The Decay draws nothing from the Awakening silence budget (GDD-001 §12): Act 0 is not a run.
+
+Proposed new cue ids: `decay_bulb_tick`, `decay_crt_off` (one-shots) and the runtime voices `cabinet_hum` and `attract_shell`. They get §6.2 rows and policy entries when the owner approves (PROD-001 §4.2); the counts above are unchanged until then.
+
+### 12.19 The Aether heard: flight, places, ducking (PM-directed 2026-11-19, under the owner autonomy grant)
 
 **Status: built; renders in `audio/src/aether_flight.cx.js` (built with `--mono`) and `audio/src/aether_places.cx.js` (stereo); all UNAUDITIONED; levels are dBFS from the chirp build, LUFS not measured; nothing has been heard by ear.** The owner auditions `research/aether_sound_audition.html` (main checkout, git-ignored; renders copied to `research/aether_sound_audition/`), which has a live flight mixer (speed, thrust, turn, brake, a scripted 14 s flight) and a threat slider for the PM-01 bed. All numbers are audio engineering values ✱; their keys are `ds_audio.mix` (TECH-001 §2.7; SYS-001 lists them as proposed). Resolves Q-A11 (§6.2) and TECH-001 Q-T42.
 

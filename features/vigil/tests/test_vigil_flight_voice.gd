@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## VigilFlightVoice (AUDIO-001 §12.18, TECH-001 Q-T42): pushes the Vigil's motion as fractions of its own
+## VigilFlightVoice (AUDIO-001 §12.19, TECH-001 Q-T42): pushes the Vigil's motion as fractions of its own
 ## VigilMoveStats, only on change, and stops the ship's sound on hull loss and exit.
 
 const SCENE := preload("res://features/vigil/vigil.tscn")

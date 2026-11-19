@@ -1,4 +1,4 @@
-// DARKSTAR — the golden path's places after the tear, as code (GDD-001 D-14, AUDIO-001 §2.2, §12.18).
+// DARKSTAR — the golden path's places after the tear, as code (GDD-001 D-14, AUDIO-001 §2.2, §12.19).
 // Build:  node .claude/skills/chirp-game-audio/bin/chirp.js build audio/src/aether_places.cx.js --out assets/audio/generated
 // Stereo loops for BUS-AMB, played through AudioService.set_ambience (and the PM-01 threat stems
 // through set_ambience_threat, locked to the bed's playhead, so they share the bed's 16 s length).

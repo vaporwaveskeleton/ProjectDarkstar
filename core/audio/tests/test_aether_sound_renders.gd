@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## The AUDIO-001 §12.18 cues: listed, rendered, the right shape (loop / one-shot, mono / stereo), and a
+## The AUDIO-001 §12.19 cues: listed, rendered, the right shape (loop / one-shot, mono / stereo), and a
 ## level check of every render read straight from the WAV (peak at or under -12 dBFS: headroom, after
 ## the earlier audition flagged two near-full-scale peaks). Also the golden-path wiring ids.
 
@@ -7,7 +7,7 @@ const AudioServiceScript := preload("res://autoload/audio_service.gd")
 const MONO_LOOPS: Array[StringName] = [&"flight_engine", &"flight_boiler", &"flight_rigging", &"flight_lantern"]
 const MONO_SHOTS: Array[StringName] = [&"flight_creak", &"flight_ballast", &"unmaking_lamp_out"]
 const STEREO_LOOPS: Array[StringName] = [&"ruins_room", &"ruins_first_visit", &"pm01_threat_1", &"pm01_threat_2"]
-const PEAK_CEILING_DBFS := -12.0   ## ✱ AUDIO-001 §12.18 level check
+const PEAK_CEILING_DBFS := -12.0   ## ✱ AUDIO-001 §12.19 level check
 
 
 func _all() -> Array[StringName]:
@@ -52,7 +52,7 @@ func test_every_new_render_keeps_headroom() -> void:
 
 
 func test_ruins_room_tone_ids() -> void:
-	var ruins: GDScript = load("res://scenes/ruins/ruins_stub.gd")
+	var ruins: GDScript = load("res://scenes/ruins/ruins.gd")
 	assert_str(ruins.call(&"room_tone_id", true)).is_equal("ruins_first_visit")
 	assert_str(ruins.call(&"room_tone_id", false)).is_equal("ruins_room")
 

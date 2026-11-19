@@ -1,4 +1,4 @@
-// DARKSTAR — the Aether Vigil in flight, as code (GDD-001 D-14, AUDIO-001 §11, §12.18).
+// DARKSTAR — the Aether Vigil in flight, as code (GDD-001 D-14, AUDIO-001 §11, §12.19).
 // Build (mono: the ship is head-centred, never panned):
 //   node .claude/skills/chirp-game-audio/bin/chirp.js build audio/src/aether_flight.cx.js --out assets/audio/generated --mono
 // The Aether Vigil is a heavy Victorian brass ship: a two-cylinder steam engine, a boiler, rigging

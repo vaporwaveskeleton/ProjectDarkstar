@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## The Aether Vigil's sound of flying (AUDIO-001 §12.18, C11–C16; TECH-001 Q-T42): the pure FlightMix
+## The Aether Vigil's sound of flying (AUDIO-001 §12.19, C11–C16; TECH-001 Q-T42): the pure FlightMix
 ## mapping, and the AudioService flight layers driven through set_flight / stop_flight / silence.
 
 const AudioServiceScript := preload("res://autoload/audio_service.gd")
@@ -82,7 +82,7 @@ func test_inputs_are_clamped() -> void:
 
 
 func test_no_flight_layer_runs_hot() -> void:
-	# every layer at every corner stays at or under 0 dB of render gain (headroom, AUDIO-001 §12.18)
+	# every layer at every corner stays at or under 0 dB of render gain (headroom, AUDIO-001 §12.19)
 	for sp in [0.0, 1.0]:
 		for th in [0.0, 1.0]:
 			for tu in [0.0, 1.0]:

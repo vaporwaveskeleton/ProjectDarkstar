@@ -17,6 +17,9 @@ var torus: Torus
 ## Where the deadzone is centred (the follow anchor, before lookahead).
 var focus: Vector2 = Vector2.ZERO
 var follow_velocity: Vector2 = Vector2.ZERO
+## Extra framing lean (world px) added to the follow goal: the RaceFramer leans the camera toward the
+## race (Charge, Grub, Sepulchre) without zoom (Q-T25 Z1). Zero = plain follow. Set every tick.
+var frame_offset: Vector2 = Vector2.ZERO
 
 var _shake_amp: float = 0.0     # peak amplitude of the current shake (px), already capped
 var _shake_dur: float = 0.0     # its full duration (s), already capped
@@ -57,7 +60,7 @@ func step(delta: float) -> void:
 			rebase_to(goal)
 			goal = focus + torus.delta(focus, goal)
 		focus = apply_deadzone(focus, goal, stats.deadzone_px)
-	var desired := focus + _current_lookahead()
+	var desired := focus + _current_lookahead() + frame_offset
 	if torus != null:
 		desired = global_position + torus.delta(global_position, desired)
 	var r := spring_step(global_position, follow_velocity, desired, omega_for(stats.follow_time_s), delta)

@@ -47,7 +47,7 @@ const MAX_THREAT_STEMS := 2
 
 var cue_ids: CueIds
 var policy: CuePolicy
-## Ducking, flight-layer and threat-stem tunables (AUDIO-001 §7.2, §12.18).
+## Ducking, flight-layer and threat-stem tunables (AUDIO-001 §7.2, §12.19).
 var mix: AudioMixStats
 ## Cues built by the runtime SfxSynth fallback at boot (0 when every render exists).
 var synth_cue_count := 0
@@ -340,7 +340,7 @@ func ambience_id() -> StringName:
 	return _amb_id
 
 
-## Threat 0..1 for the ambience stems (AUDIO-001 §12.18): each stem owns an equal slice of the range
+## Threat 0..1 for the ambience stems (AUDIO-001 §12.19): each stem owns an equal slice of the range
 ## and the bed gives way by `mix.threat_bed_dip_db` at full threat, so threat adds layers, not level
 ## (§1.1). Reached over `mix.threat_rise_s` going up and `threat_fall_s` going down.
 func set_threat(level: float) -> void:
@@ -396,7 +396,7 @@ func _step_stems(delta: float) -> void:
 			+ linear_to_db(maxf(g * bed_gain, 0.0001))
 
 
-# --- flight: the Aether Vigil's engine, boiler, rigging and lantern (AUDIO-001 §12.18) ----------------
+# --- flight: the Aether Vigil's engine, boiler, rigging and lantern (AUDIO-001 §12.19) ----------------
 
 ## The ship's motion as fractions of its own SYS-001 values (VigilFlightVoice computes them): speed /
 ## max_speed, thrust 0..1 (0 while braking), turn rate / snap_turn, and whether the brake is held.

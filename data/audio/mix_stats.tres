@@ -5,4 +5,4 @@
 [resource]
 script = ExtResource("1")
 ds_namespace = "ds_audio.mix"
-source_section = "AUDIO-001 7.2, 12.18 (engineering values, proposed; not SYS-001 gameplay numbers)"
+source_section = "AUDIO-001 7.2, 12.19 (engineering values, proposed; not SYS-001 gameplay numbers)"

@@ -1,6 +1,6 @@
 class_name VigilFlightVoice
 extends Node
-## The Aether Vigil's sound of flying (AUDIO-001 §12.18, C11–C16; resolves TECH-001 Q-T42). Reads the
+## The Aether Vigil's sound of flying (AUDIO-001 §12.19, C11–C16; resolves TECH-001 Q-T42). Reads the
 ## Vigil's motion each physics tick and pushes it to AudioService.set_flight as fractions of the
 ## Vigil's own SYS-001 values (speed / max_speed, turn rate / snap_turn), so the ship-handling numbers
 ## can change without touching the sound. Never sets a level: AudioService and FlightMix own the mix.

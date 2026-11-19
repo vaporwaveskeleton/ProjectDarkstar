@@ -1,6 +1,6 @@
 class_name SectorSoundscape
 extends Node
-## The sector's bed (AUDIO-001 §2.3, §12.18): on entry, the biome bed with its threat stems; every
+## The sector's bed (AUDIO-001 §2.3, §12.19): on entry, the biome bed with its threat stems; every
 ## `mix.threat_poll_s` the threat (FlightMix.sector_threat: the Composure band, Grubs carrying glass,
 ## the Sepulchre's completion) is pushed to AudioService.set_threat, so the bed escalates by adding
 ## layers (Deep, then Wrong), never level (§1.1). On exit the slot fades out, unless another scene has

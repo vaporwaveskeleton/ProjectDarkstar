@@ -1,7 +1,7 @@
 class_name AudioMixStats
 extends TunableResource
 ## Mix tunables for the ducking chain, the Aether Vigil's flight layers and the ambience threat stems
-## (AUDIO-001 §7.2, §12.18; TECH-001 §2.7). Every value is an audio engineering ✱ value, mirrored in
+## (AUDIO-001 §7.2, §12.19; TECH-001 §2.7). Every value is an audio engineering ✱ value, mirrored in
 ## TECH-001 §2.7 and listed as proposed in SYS-001 §10 (ds_audio.mix.*). None is a gameplay number:
 ## the game supplies speed, thrust, turn and threat as 0..1 fractions of its own SYS-001 values.
 
