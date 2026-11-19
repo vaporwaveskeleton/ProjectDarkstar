@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="LanternTreeStock" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://features/lantern_tree/lantern_tree_stock.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+ds_namespace = "ds_lantern_tree.stock"
+source_section = "SYS-001 §7.7 (Lantern Tree node price, tier 1); LOOP-001 §3.8"
+node_ids = PackedStringArray("LANTERN-1", "HULL-1", "HULL-3")
+price_tier1 = 40

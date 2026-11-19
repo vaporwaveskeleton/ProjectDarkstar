@@ -71,7 +71,8 @@ func test_a_bank_alone_marks_the_first_visit() -> void:
 
 func test_a_later_visit_lets_the_clock_run() -> void:
 	var core := RunSessionCore.new(STATS, saver)
-	core.arrive_at_ruins({})
+	core.arrive_at_ruins({"act0_vigil_index": 1200})
+	core.buy_tree_node(preload("res://data/lantern_tree/tier1_stock.tres"))   # the first visit's lamp (Q-T191)
 	var ruins := await _ruins(core, RouterSpy.new(), {})
 	assert_bool(bool(ruins.get("first_visit"))).is_false()
 	assert_bool(bool(ruins.get("clock_held"))).is_false()
@@ -146,3 +147,30 @@ func test_closing_the_pause_resumes() -> void:
 	await get_tree().process_frame
 	assert_bool(get_tree().paused).is_false()
 	assert_bool(core.is_clock_paused()).is_false()
+
+
+func test_the_tree_station_buys_the_next_node_with_each_use() -> void:
+	var core := RunSessionCore.new(STATS, saver)
+	var ruins := await _ruins(core, RouterSpy.new(), {"act0_vigil_index": 20_000, "first_visit": true})   # 100 Ember
+	var ob: RuinsOnboarding = ruins.get("onboarding")
+	_drive(ruins, 0.0, func() -> bool: return ob.tickets_landed)
+	ob.walk_to(TREE_X)
+	_drive(ruins, 0.0, func() -> bool: return is_nan(ob.walk_target))
+	ruins.call("_react", ob.use())
+	assert_bool(bool(ruins.get("gate_open"))).is_true()
+	assert_int(core.profile().ember_banked).is_equal(60)
+	assert_array(core.profile().tree_nodes).is_equal([&"LANTERN-1"])
+	ruins.call("_react", ob.use())   # the station stays usable: the next node
+	assert_array(core.profile().tree_nodes).is_equal([&"LANTERN-1", &"HULL-1"])
+	assert_int(core.profile().ember_banked).is_equal(20)
+	ruins.call("_react", ob.use())   # 20 Ember: nothing bought, the gate stays open
+	assert_int(core.profile().tree_nodes.size()).is_equal(2)
+	assert_bool(bool(ruins.get("gate_open"))).is_true()
+
+
+func test_a_later_visit_lights_the_tree_from_the_bought_nodes() -> void:
+	var core := RunSessionCore.new(STATS, saver)
+	core.arrive_at_ruins({"act0_vigil_index": 20_000})
+	core.buy_tree_node(preload("res://data/lantern_tree/tier1_stock.tres"))
+	var ruins := await _ruins(core, RouterSpy.new(), {})
+	assert_bool(bool(ruins.get("gate_open"))).is_true()
