@@ -574,6 +574,18 @@ Pal entry to register (`pal_map`): VOID-0, VOID-1, CHOIR-0, PHOS-0, GAS-0, NULL 
 | T4 | AETHER-2 violet, with AETHER-4 behind the cracks | CHOIR-1 far-band incense only |
 | T5 | VOID, cold | the last AETHER-4 pearl, being erased |
 
+**Per-tier set pieces (pass 3, 2026-11-19).** Far set pieces in `features/aether/far_set_pieces.gd` (runtime vector), one per tier, flagged by `AetherLook` (TECH-001 §3.4).
+
+| Tier | Set piece | Look flag |
+|---|---|---|
+| T1 | orrery armillary | `set_orrery_rings` |
+| T2 | greenhouse vault with spore fuzz | `set_greenhouse` |
+| T3 | dome and telescope | `set_dome` |
+| T4 | lamp-interior ribs (`OrreryRibs`; the GAS-0/1 tarnish exception, §4) | `orrery` (the `OrreryRibs` layer; T4 sets no `set_*` flag) |
+| T5 | ring fragments drifting apart | `set_ring_fragments` |
+
+`set_lattice` is unused. T2's deep field is darker (`value_deep` 0.32 → 0.2 ✱) so the three value bands stay apart under the greener murk.
+
 **Three-value structure.** Every tier's frame holds three value bands: the play band top, the fog mid, the deep background (`value_deep`) lowest. A tier that collapses two bands fails the greyscale read (§16.3).
 
 **Budget and fallback (CH-7).** Each technique is one toggleable layer with a measured frame time. The Steam Deck / iGPU `low` preset drops detail, never information (fewer fbm octaves, half-res fog bands, static god-rays, fewer particles) and keeps the sphere curve, the entity's black and the play-band fog cap. Quality ladder and cost status: TECH-001 §8, §11.1 Q-T62 (ladder built in pass 2; §16.6 lists what no rung drops).
@@ -644,6 +656,24 @@ Built in `features/aether/` (TECH-001 §2.9), shaders in `shaders/aether/`, look
 
 **Sphere and set pieces.** The sphere is an orrery: a brass meridian band with graduation ticks, meridians, and up to 2 nested shells with their own parallax. Far set pieces (`features/aether/far_set_pieces.gd`, runtime vector): orrery rings (T1, T4), lattice (T2, T3), dome with telescope (T3). Brass is BONE and VOID mixes, no GAS, except the T4 lamp-interior exception (§4). Jellies have core, rim, halo and filaments; vast far jellies at T2 and T3; glints. T4 cracks are straight segments foreshortened along the sphere, hairlines at most 0.45 alpha, fog displaced per shard, with AETHER-2 / AETHER-4 behind the Aether showing its own stars and a reversed seam. T1 has a still VOID-2 vertical smudge, a stronger warm lantern pool and far-band engraving hatch. T3 shafts are BONE-3, not GAS.
 
-**Quality ladder: never dropped at any rung** (`ds_aether.quality.*`, TECH-001 §3.4; tested in `features/aether/tests/test_aether_quality.gd`): the sphere curve, the entity's exact black, the play-band fog cap. Low drops detail only: 2 fbm octaves, warp 2, single-sample advection, half-res fog in at most 3 bands, particles ×0.4, static shafts at 0.25 resolution, no sphere refraction, no nested shells, entity edge at 2 octaves. The medium rung is not yet captured; low cost is not reliably measured (TECH-001 Q-T90).
+**Quality ladder: never dropped at any rung** (`ds_aether.quality.*`, TECH-001 §3.4; tested in `features/aether/tests/test_aether_quality.gd`): the sphere curve, the entity's exact black, the play-band fog cap. Low drops detail only: 2 fbm octaves, warp 2, single-sample advection, half-res fog in at most 3 bands, particles ×0.4, static shafts at 0.25 resolution, no sphere refraction, no nested shells, entity edge at 2 octaves. The medium rung is not yet captured; low cost: clean desktop numbers are in TECH-001 §8.5 (Deck / iGPU still open, Q-T90); mid fog is also reduced at low (§16.6b).
+
+### 16.6b Pass 3 rules (2026-11-19)
+Supersede the matching pass 2 lines above where they differ.
+
+**Entity: no face.** Pass 2's contour read as a human profile (The Reviewer, 2026-11-18); the entity never has a face (N4, NARR-001 §3.4).
+- The contour has only a gentle large-scale warp; the character comes from creased mid and fine noise and 8 angular sheared bites. Tendrils are straight with one kink and an occasional one-sided branch, never curved pairs.
+- **Stepped subtraction:** three crisp nested edges, slightly offset. Outer (about 0.4 to 0.5 r out): near and mid fog, the sphere seam, the leviathan and the rays stop. Middle (about 0.19 r): stars, life and far detail gone; the far band is flat cold VOID (`mix(void_lo, void_hi, 0.22)`), never black. Inner: true black (only the entity writes 0,0,0). The straight cut is terraced.
+- Face and pareidolia are checked by eye on captures at full size and at 25%. There is no automated guard.
+
+**Leviathan anatomy.** Long tapering head and back running off the top of the frame; the belly a long curve over the lantern that never encloses it; smooth back with a few raised broken plates; one swept pectoral vane with a V-notched trailing edge, running off-frame. Backscatter rim strongest along the belly (T3 `leviathan_rim` = AETHER_3). Flank lights follow the belly in two loose rows with staggered size, spacing and phase at about 0.35 Hz.
+
+**Brass.** The meridian band is two-tone: brass body BONE_2, highlight edge BONE_4, engraving VOID_3. Minor and major graduations have separate weights. Major graduations carry engraved mark groups (dots and slanted strokes): decoration, never text glyphs, no `tr()`. Some groups loosely suggest Roman numerals (TECH-001 Q-T92). Armillary rings are two-tone and fogged by depth, interleaved with the sphere through a back copy drawn below the sphere layer. Brass stays BONE and VOID mixes except the T4 lamp-interior exception (§4).
+
+**T4 cracks.** Two impacts with wide gaps (10 and 8 px ✱; a third, 3.4 px ✱) showing the Aether behind with counter-parallax, its own denser and faster stars, and a reversed seam.
+
+**Lantern in-scatter.** Gold-amber: GAS_3 at the rim to the lantern colour at the heart. The fog term takes 70% from fog brightness, so every tier's pools are warmer.
+
+**Quality (CH-7).** Mid fog resolution is a ladder field (`mid_fog_resolution_scale` ✱: 1.0, 0.5, 0.25 at high, medium, low). Clean desktop low cost is at most 0.75 ms at 720p (TECH-001 §8.5; Deck / iGPU still unmeasured, Q-T90). Open: T5 chalk fog blobs near the lantern can read as a ghost or skull (Q-T93).
 
 Dev-route gating tests: `tests/test_dev_routes_gate.gd`. Backdrop and gallery load tests: `features/aether/tests/test_aether_backdrop.gd`, `scenes/dev/aether_gallery/tests/test_aether_gallery_loads.gd`.
