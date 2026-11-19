@@ -297,3 +297,25 @@ func test_stage_record_start_is_taken_at_each_stage_start() -> void:
 	assert_array(game.stage_record_start).is_equal([4, 2, 0, 0])
 	game.new_game(3)
 	assert_array(game.stage_record_start).is_equal([0, 0, 0, 0])
+
+
+# --- the golden path: THE PRETENCE → the first Unmaking → the Ruins (TECH-001 §2.1, §2.10) ----------
+
+func test_the_reveal_hands_off_to_the_unmaking_without_a_curtain() -> void:
+	game.on_route_entered({})
+	game.start_stage(4)
+	game.score.add(300)
+	var to_aether: Dictionary = game.unmaking_params()
+	assert_str(String(game.UNMAKING_ROUTE)).is_equal("aether")
+	assert_bool(SceneRouter.skips_curtain(to_aether)).is_true()
+	assert_bool(to_aether.get("can_skip")).is_false()   # first time: unskippable (GDD §6.1)
+	# the Unmaking forwards exactly the Ruins keys, plus first_visit (AetherArrival.ruins_params)
+	var Arrival := load("res://features/aether/aether_arrival.gd")
+	var to_ruins: Dictionary = Arrival.ruins_params(to_aether)
+	assert_dict(to_ruins).is_equal({"shift_total": 300, "act0_vigil_index": 300, "first_visit": true})
+
+
+func test_the_unmaking_is_skippable_once_the_pretence_was_seen() -> void:
+	game.on_route_entered({})
+	game._reveal_seen_before = true
+	assert_bool(game.unmaking_params().get("can_skip")).is_true()

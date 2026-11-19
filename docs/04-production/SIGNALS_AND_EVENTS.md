@@ -49,7 +49,7 @@ Rules: signal names are past tense (`hull_breached`, `save_failed`), payloads ar
 | `ArcadeWorld` | `slowmo_changed` | `scale: float` (the new `sim_scale`; emitted on every change, including exactly 1.0 at the end; Reduced Motion never emits below 1.0) | `CabinetGame` → `AudioService.set_bed_pitch_scale(scale)` (audio chat's chant-bed pitch, AUDIO-001 §12.11); `CabinetGame` also resets it to 1.0 on exit and stage start | built |
 | `CabinetMessages` | `credits_stat_shown` | `index: int` (the stat line's index in the roll; emitted once per stat line as it scrolls into view) | `CabinetGame` (plays AudioService cue `tally_blip`) | built |
 | `ScoreKeeper` | `score_changed`, `lives_changed`, `extra_life_awarded` | `int` / `int` / — | `CabinetGame` → HUD | built |
-| `PretenceReveal` | `finished` | — | `CabinetGame` (save flags, route to the Ruins) | built |
+| `PretenceReveal` | `finished` | — | `CabinetGame` (save flags, route to the first Unmaking (`&"aether"`), which routes to the Ruins) | built |
 | `CoinSlot` | `tape_peeled` | — | `AttractMode` (saves `cabinet_tape_peeled`, reason `cabinet_tape`) | built |
 | `CoinSlot` | `credit_inserted` | — | `AttractMode` (enables New Vigil, marquee text, CREDIT counter) | built |
 | `PowerOnTest` | `finished` | — | `AttractMode` (reveals the attract screen) | built |

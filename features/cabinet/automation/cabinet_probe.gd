@@ -52,6 +52,11 @@ var _links: Array = []   ## [Signal, Callable] pairs to undo
 var _last_acolyte_id: int = -1   ## id of the Acolyte the latest `spawn acolyte` made
 
 
+## The route root and its world still exist (the probe can outlive them across a route change).
+func _alive() -> bool:
+	return is_instance_valid(_world) and is_instance_valid(_root)
+
+
 func setup(route_root: Node) -> void:
 	_root = route_root
 	_world = route_root.get("world") as ArcadeWorld if route_root != null else null
@@ -75,7 +80,7 @@ func has(id: String) -> bool:
 
 ## {"ok": bool, "value": Variant, "error": String}
 func read(id: String, prop: String) -> Dictionary:
-	if _world == null:
+	if not _alive():
 		return _err("the cabinet is not ready")
 	var props: Dictionary = _props_of(id)
 	if props.is_empty():
@@ -87,7 +92,7 @@ func read(id: String, prop: String) -> Dictionary:
 
 func snapshot() -> Dictionary:
 	var out := {"route": ROUTE}
-	if _world == null:
+	if not _alive():
 		return out
 	for id: Variant in SINGLETONS.keys():
 		out[str(id).get_slice("/", 1)] = _props_of(str(id))
@@ -126,7 +131,7 @@ func _is_entity_id(id: String) -> bool:
 
 ## All allow-listed props for an id, or {} when the id is unknown or the entity is gone.
 func _props_of(id: String) -> Dictionary:
-	if _world == null or _root == null:
+	if not _alive():
 		return {}
 	match id:
 		"cabinet/game":
@@ -260,7 +265,7 @@ func event_names() -> PackedStringArray:
 ## `sink` is called as sink(event_id: String, args: Array); args are scalars only.
 func connect_events(sink: Callable) -> void:
 	disconnect_events()
-	if _world == null:
+	if not _alive():
 		return
 	_sink = sink
 	_link(_world.vigil_destroyed, func() -> void: _emit("vigil_destroyed", []))
@@ -278,6 +283,10 @@ func disconnect_events() -> void:
 	for pair: Array in _links:
 		var sig: Signal = pair[0]
 		var cb: Callable = pair[1]
+		# After a route change the cabinet is already freed and its connections went with it;
+		# asking a freed object's signal logs an error (fail_on_errors scenarios across routes).
+		if not is_instance_valid(sig.get_object()):
+			continue
 		if sig.is_connected(cb):
 			sig.disconnect(cb)
 	_links.clear()
@@ -298,7 +307,7 @@ func _emit(event_id: String, args: Array) -> void:
 
 ## "" on success, else a plain failure message.
 func dev_op(op: String, args: Dictionary) -> String:
-	if _world == null or _root == null or _world.stage == null:
+	if not _alive() or _world.stage == null:
 		return "the cabinet is not ready"
 	match op:
 		"set_stage":

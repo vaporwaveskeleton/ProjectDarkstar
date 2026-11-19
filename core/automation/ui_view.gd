@@ -13,6 +13,7 @@ const UI_PROPS: Array[String] = ["visible", "enabled", "focused", "focusable"]
 const STATE_IDS := {
 	"sector/vigil": {"route": "sector", "member": "", "props": ["vigil_x", "vigil_y", "vigil_speed", "hull_max_hp", "camera_x", "compass_markers", "camera_gap", "facing_deg", "aim_x", "aim_y", "composure", "composure_band"]},
 	"sector/field": {"route": "sector", "member": "", "props": ["geodes_alive", "geodes_detonated", "shards_free", "shards_live", "charges", "score", "charges_in_flight", "charges_lost", "charges_hit", "charges_guttered", "dry_fires"]},
+	"sector/run": {"route": "sector", "member": "", "props": ["seam_index", "run_session", "far_look"]},
 	"sector/choir": {"route": "sector", "member": "", "props": ["grubs_alive", "grubs_carrying", "segments", "deposited_shards", "sepulchre_complete"]},
 	# Route-independent: read from the RunSession autoload (TECH-001 §4.2a), on any route.
 	"run/session": {"route": "*", "autoload": "RunSession", "props": ["ember", "act0_banked", "hourglass_left", "skies_dark", "seam_index", "clock_paused"]},
