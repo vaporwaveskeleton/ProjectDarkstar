@@ -5,8 +5,13 @@ extends GdUnitTestSuite
 
 const SURFACE := "res://data/cabinet/cabinet_surface.tres"
 const KEYS := [
-	"label_paper_color", "paint_color", "chrome_color", "bare_steel_color", "brass_color", "lens_color", "rust_color",
-	"wear", "grime", "smudge", "lamp_idle", "noise_seed", "light_direction",
+	"paint_color", "zinc_color", "lip_color", "bare_steel_color", "brass_color", "lens_color", "sticker_paper_color",
+	"wear", "grime", "smudge", "dust", "finger_halo", "thumb_wear", "micro_texture", "lamp_idle", "lamp_spill", "lamp_spill_radius",
+	"noise_seed", "light_direction", "warm_color", "fill_color", "warm_gain", "warm_radius", "fill_gain", "top_gain", "bottom_gain",
+	"contact_shadow", "contact_blur",
+	"print_misregister", "print_fade", "print_mottle", "print_halftone", "print_halftone_cell", "print_scuff", "print_flake", "backer_color",
+	"glass_reflection", "glass_edge_tint", "glass_edge_color", "glass_dust", "glass_smudge", "glass_scratch",
+	"sticker_fade", "sticker_curl", "vent_dust",
 ]
 
 
@@ -27,7 +32,7 @@ func test_surface_loads_with_namespace_and_every_key() -> void:
 
 func test_surface_values_are_sane() -> void:
 	var s := load(SURFACE) as CabinetSurface
-	for v in [s.wear, s.grime, s.smudge, s.lamp_idle]:
+	for v in [s.wear, s.grime, s.smudge, s.lamp_idle, s.dust, s.print_fade, s.contact_shadow]:
 		assert_float(v).is_between(0.0, 1.0)
 	assert_float(s.light_direction.x).is_less(0.0)   # from the left
 	assert_float(s.light_direction.y).is_less(0.0)   # from above (y down)
@@ -60,7 +65,7 @@ func test_slit_is_inside_the_plate_and_is_the_drawn_slot() -> void:
 	assert_bool(plate.encloses(slit)).is_true()
 	var slot := Rect2(CabinetBezel.SLOT_C - CabinetBezel.SLOT_HALF, CabinetBezel.SLOT_HALF * 2.0)
 	assert_object(slit).is_equal(slot)
-	# the price button sits below the slot and inside the plate
+	# the lit plate sits below the slot and inside the plate
 	var btn := CabinetBezel.price_button(plate)
 	assert_bool(plate.encloses(btn)).is_true()
 	assert_float(btn.position.y).is_greater(slit.end.y)
@@ -81,30 +86,53 @@ func test_coin_slot_owns_a_door_face_that_follows_the_glow() -> void:
 	assert_float(face.glow).is_equal(1.0)
 
 
-func test_price_text_sits_fully_on_the_label_inside_the_inner_panel() -> void:
+func test_price_text_sits_fully_on_the_lit_plate_inside_the_inner_panel() -> void:
 	var plate := Rect2(Vector2.ZERO, CabinetBezel.coin_plate().size)
-	var label := CabinetBezel.price_label(plate)
+	var lit := CabinetBezel.price_button(plate)
 	var text := TranslationServer.translate("CAB_COIN_PRICE")
 	var w := float(PixelText.width(text, 1))
 	assert_bool(CabinetBezel.fits_price()).is_true()
-	var x := label.get_center().x - w * 0.5
-	assert_float(x).is_greater_equal(label.position.x)
-	assert_float(x + w).is_less_equal(label.end.x)
+	var x := lit.get_center().x - w * 0.5
+	assert_float(x).is_greater_equal(lit.position.x)
+	assert_float(x + w).is_less_equal(lit.end.x)
 	assert_float(x - floorf(x)).is_equal(0.0)          # starts on a whole unit
-	assert_float(label.size.y).is_greater_equal(float(PixelText.H))
-	# the strip sits inside the door's inner panel (door 55.2 wide, rim 3.2)
-	assert_float(label.position.x).is_greater_equal(0.4 + 3.2)
-	assert_float(label.end.x).is_less_equal(plate.size.x - 0.4 - 3.2)
-	assert_bool(plate.encloses(label)).is_true()
+	assert_float(lit.size.y).is_greater_equal(float(PixelText.H))
+	# the plate sits inside the door's inner panel (door 55.2 wide, rim 3.2)
+	assert_float(lit.position.x).is_greater_equal(0.4 + 3.2)
+	assert_float(lit.end.x).is_less_equal(plate.size.x - 0.4 - 3.2)
+	assert_bool(plate.encloses(lit)).is_true()
 
 
-func test_the_lit_button_is_small_unlettered_and_clear_of_the_label() -> void:
+func test_the_lit_plate_is_the_one_reject_and_price_plate_below_the_slot() -> void:
 	var plate := Rect2(Vector2.ZERO, CabinetBezel.coin_plate().size)
-	var btn := CabinetBezel.price_button(plate)
-	var label := CabinetBezel.price_label(plate)
-	assert_float(btn.size.x).is_less_equal(16.0)
-	assert_float(btn.size.y).is_less_equal(10.0)
-	assert_bool(plate.encloses(btn)).is_true()
-	assert_bool(btn.intersects(label)).is_false()
-	assert_float(btn.position.y).is_greater(CabinetBezel.slit(plate).end.y)
-	assert_object(CabinetBezel.button_center()).is_equal(btn.get_center())
+	var lit := CabinetBezel.price_button(plate)
+	assert_object(CabinetBezel.button_center()).is_equal(lit.get_center())
+	assert_object(CabinetBezel.button_half()).is_equal(lit.size * 0.5)
+	assert_float(lit.position.y).is_greater(CabinetBezel.slit(plate).end.y)
+	# it clears the coin-return pocket (centre y 67, half 5) that sits below it
+	assert_float(lit.end.y).is_less(62.0)
+
+
+func test_face_carries_a_contact_shadow_behind_it_that_follows_the_light() -> void:
+	var host := auto_free(Control.new()) as Control
+	add_child(host)
+	var face := CoinDoorFace.new()
+	host.add_child(face)
+	face.fit_to(CabinetBezel.coin_plate())
+	var sh := face.contact_shadow()
+	assert_object(sh).is_not_null()
+	assert_bool(sh.show_behind_parent).is_true()
+	assert_bool(sh.get_rect().encloses(Rect2(Vector2.ZERO, face.size))).is_true()
+	var mat := sh.material as ShaderMaterial
+	assert_object(mat.get_shader_parameter(&"cab_hole")).is_not_null()
+	assert_float(float(mat.get_shader_parameter(&"strength"))).is_equal((load(SURFACE) as CabinetSurface).contact_shadow)
+
+
+func test_lighting_is_pushed_from_the_hole_and_the_surface() -> void:
+	var s := load(SURFACE) as CabinetSurface
+	var m := ShaderMaterial.new()
+	CabinetLighting.apply(m, s)
+	var h := CabinetBezel.hole()
+	assert_object(m.get_shader_parameter(&"cab_hole")).is_equal(Vector4(h.position.x, h.position.y, h.size.x, h.size.y))
+	assert_float(float(m.get_shader_parameter(&"cab_warm_gain"))).is_equal(s.warm_gain)
+	assert_float(s.bottom_gain).is_less(s.top_gain)    # the cabinet falls into shadow toward the bottom

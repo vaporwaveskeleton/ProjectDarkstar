@@ -72,9 +72,7 @@ static func build_left() -> Array[BezelPiece]:
 	_background(a, covered)
 	_vigil_illustration(a, CabinetBezel.LEFT_ART)
 	_howto_card(a, CabinetBezel.LEFT_HOWTO)
-	_caps(a)
 	_lip(a, 78.0)
-	_glare(a, false)
 	return sorted(a.items)
 
 
@@ -83,11 +81,8 @@ static func build_right() -> Array[BezelPiece]:
 	var covered: Array[Rect2] = [CabinetBezel.RIGHT_ART, CabinetBezel.RIGHT_STICKER, Rect2(6, 249, 68, 100)]
 	_background(a, covered)
 	_sepulchre_illustration(a, CabinetBezel.RIGHT_ART)
-	_sticker(a, CabinetBezel.RIGHT_STICKER)
 	_coin_door_backing(a)
-	_caps(a)
 	_lip(a, 0.0)
-	_glare(a, true)
 	return sorted(a.items)
 
 
@@ -203,27 +198,9 @@ static func _background(a: _Acc, covered: Array[Rect2]) -> void:
 		a.fill(StringName("sparkle_%d" % i), star_pts(Vector2(40, burst_y[i]), 2.5, 0.6, 4), &"yellow", Z_STARS + 1)
 
 
-static func _caps(a: _Acc) -> void:
-	a.rect(&"cap_top_light", Rect2(0, 0, 80, 7), &"chrome_light", Z_CAP)
-	a.rect(&"cap_top_dark", Rect2(0, 7, 80, 2), &"chrome_dark", Z_CAP)
-	a.rect(&"cap_top_line", Rect2(0, 9, 80, 1), &"key_black", Z_CAP)
-	a.rect(&"cap_bottom_line", Rect2(0, 350, 80, 1), &"key_black", Z_CAP)
-	a.rect(&"cap_bottom_light", Rect2(0, 351, 80, 4), &"chrome_light", Z_CAP)
-	a.rect(&"cap_bottom_dark", Rect2(0, 355, 80, 5), &"chrome_dark", Z_CAP)
-	a.pixels(&"cap_rivets", PackedVector2Array([Vector2(7, 3), Vector2(40, 3), Vector2(72, 3), Vector2(7, 356), Vector2(40, 356), Vector2(72, 356)]), &"brass", Z_CAP + 1, 2.0)
-
-
 ## The key-black screen lip: the 2 px strip nearest the field.
 static func _lip(a: _Acc, x: float) -> void:
 	a.rect(&"lip", Rect2(x, 0, 2, 360), &"key_black", Z_LIP)
-
-
-## A faint diagonal reflection of the plexi over the print.
-static func _glare(a: _Acc, mirrored: bool) -> void:
-	var pts := PackedVector2Array([Vector2(80, 40), Vector2(80, 84), Vector2(0, 318), Vector2(0, 274)])
-	if mirrored:
-		pts = PackedVector2Array([Vector2(0, 40), Vector2(0, 84), Vector2(80, 318), Vector2(80, 274)])
-	a.fill(&"glare", pts, &"plexi_glare", Z_GLARE)
 
 
 ## A 1 px framed panel for an illustration: background and frame.
@@ -398,29 +375,8 @@ static func _sepulchre_illustration(a: _Acc, r: Rect2) -> void:
 	_monk(a, &"door_monk", Vector2(16, 252), -1, &"cyan", Z_WINDOW + 5)
 
 
-static func _sticker(a: _Acc, r: Rect2) -> void:
-	var z := Z_ART
-	var c := r.get_center()
-	var rx := r.size.x * 0.5 - 1.0
-	var burst := star_pts(c, rx, rx - 7.0, 11, 0.0, (r.size.y * 0.5) / rx)
-	a.fill(&"sticker_shadow", xf(burst, Vector2(1, 1), 0.0), &"key_black", z)
-	a.fill(&"sticker", burst, &"orange", z + 1)
-	a.outline(&"sticker_line", burst, &"key_black", z + 2)
-	var rin := rx - 7.0
-	a.fill(&"sticker_inner", star_pts(c, rin, rin - 4.0, 11, 0.0, (r.size.y * 0.5 - 3.0) / rin), &"yellow", z + 3)
-	a.text(&"sticker_slogan", "CAB_BEZEL_SLOGAN", Vector2(c.x, c.y - 3.0), &"key_black", z + 4)
-
 
 static func _coin_door_backing(a: _Acc) -> void:
 	var z := Z_ART
 	a.rect(&"door_frame", Rect2(6, 249, 68, 87), &"key_black", z)
-	a.rect(&"door_frame_face", Rect2(7, 250, 66, 85), &"chrome_dark", z + 1)
-	a.rect(&"door_hinge_a", Rect2(7, 264, 4, 10), &"brass", z + 2)
-	a.rect(&"door_hinge_b", Rect2(7, 312, 4, 10), &"brass", z + 2)
-	a.rect(&"door_hinge_c", Rect2(69, 264, 4, 10), &"brass", z + 2)
-	a.rect(&"door_hinge_d", Rect2(69, 312, 4, 10), &"brass", z + 2)
-	# the chrome apron and its vent slats
-	a.rect(&"apron", Rect2(6, 338, 68, 10), &"chrome_light", z)
-	a.rect(&"apron_line", Rect2(6, 337, 68, 1), &"key_black", z + 1)
-	for i in 4:
-		a.rect(StringName("apron_slat_%d" % i), Rect2(12, 340 + i * 2, 56, 1), &"chrome_dark", z + 2)
+	a.rect(&"door_frame_face", Rect2(7, 250, 66, 85), &"key_black", z + 1)

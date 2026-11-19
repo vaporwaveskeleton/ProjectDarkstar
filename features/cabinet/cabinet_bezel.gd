@@ -47,43 +47,31 @@ static func to_screen(column: StringName, r: Rect2) -> Rect2:
 
 # --- The coin door ---------------------------------------------------------------------------------
 # Features are plate-local (0..56 × 0..80); CoinDoorFace (shaders/cabinet/coin_door.gdshader) draws them.
-
 const SLOT_C := Vector2(28, 20)           ## the coin slot's centre
 const SLOT_HALF := Vector2(1.6, 9.0)      ## half size of the drawn slot opening
-const BUTTON_C := Vector2(28, 40)         ## the small lit reject button's centre
-const BUTTON_HALF := Vector2(7, 4)        ## 14 × 8, unlettered
-const LABEL_Y := 52.0                     ## the printed price label's centre y
-const LABEL_MARGIN := 0.3                 ## clear paper each side of the text, plate units
-const LABEL_MAX_HALF_X := 23.8            ## widest strip inside the door's inner panel (door 27.6 - rim 3.2 - 0.6)
-const LABEL_HALF_Y := 5.5                 ## 7 px text + 2 units of paper above and below (rivets sit in the margin)
+const PLATE_Y := 46.0                     ## the lit reject / price plate's centre y
+const PLATE_MARGIN := 0.3                 ## clear plate each side of the text, plate units
+const PLATE_MAX_HALF_X := 23.8            ## widest plate inside the door's inner panel
+const PLATE_HALF_Y := 5.5                 ## 7 px text + 2 units above and below
 
 
-## Half size of the lit reject button.
-static func button_half() -> Vector2:
-	return BUTTON_HALF
-
-
-## The button's centre.
+## The plate's centre: the text starts on a whole unit, so an odd-width text puts the plate half a unit
+## right of the door centre.
 static func button_center() -> Vector2:
-	return BUTTON_C
-
-
-## The label's centre: the text starts on a whole unit, so an odd-width text puts the strip half a unit right of the door centre.
-static func label_center() -> Vector2:
 	var w := PixelText.width(TranslationServer.translate("CAB_COIN_PRICE"), 1)
-	return Vector2(28.0 + (0.5 if w % 2 == 1 else 0.0), LABEL_Y)
+	return Vector2(28.0 + (0.5 if w % 2 == 1 else 0.0), PLATE_Y)
 
 
-## Half size of the printed price label: the translated price's width at scale 1 plus a margin, clamped to
-## the door's inner panel. `fits_price()` says whether the text really fits at scale 1.
-static func label_half() -> Vector2:
+## Half size of the lit reject / price plate: the translated price's width at scale 1 plus a margin,
+## clamped to the door's inner panel. `fits_price()` says whether the text really fits at scale 1.
+static func button_half() -> Vector2:
 	var w := float(PixelText.width(TranslationServer.translate("CAB_COIN_PRICE"), 1))
-	return Vector2(minf(w * 0.5 + LABEL_MARGIN, LABEL_MAX_HALF_X), LABEL_HALF_Y)
+	return Vector2(minf(w * 0.5 + PLATE_MARGIN, PLATE_MAX_HALF_X), PLATE_HALF_Y)
 
 
-## True while the price text (scale 1) fits on the label with no clipping.
+## True while the price text (scale 1) fits on the plate with no clipping.
 static func fits_price() -> bool:
-	return float(PixelText.width(TranslationServer.translate("CAB_COIN_PRICE"), 1)) * 0.5 + LABEL_MARGIN <= LABEL_MAX_HALF_X + 0.0001
+	return float(PixelText.width(TranslationServer.translate("CAB_COIN_PRICE"), 1)) * 0.5 + PLATE_MARGIN <= PLATE_MAX_HALF_X + 0.0001
 
 
 ## The coin slit inside a plate drawn at `plate`: exactly the drawn slot opening.
@@ -91,20 +79,15 @@ static func slit(plate: Rect2) -> Rect2:
 	return Rect2(plate.position + SLOT_C - SLOT_HALF, SLOT_HALF * 2.0)
 
 
-## The lit reject button's rect inside a plate drawn at `plate`.
+## The lit reject / price plate's rect inside a door drawn at `plate`. It carries the price text.
 static func price_button(plate: Rect2) -> Rect2:
-	return Rect2(plate.position + BUTTON_C - BUTTON_HALF, BUTTON_HALF * 2.0)
+	var h := button_half()
+	return Rect2(plate.position + button_center() - h, h * 2.0)
 
 
-## The printed price label's rect inside a plate drawn at `plate`.
-static func price_label(plate: Rect2) -> Rect2:
-	var h := label_half()
-	return Rect2(plate.position + label_center() - h, h * 2.0)
-
-
-## The price printed in dark ink on the label (placeholder until VectorText, PR C).
+## The price printed in dark ink on the lit plate (placeholder until VectorText, PR C).
 static func draw_price(ci: CanvasItem, plate: Rect2, price: String, inks: BezelInks = null) -> void:
 	var ink := inks if inks != null else (BezelInks.default() as BezelInks)
-	var b := price_label(plate)
+	var b := price_button(plate)
 	var x := b.get_center().x - PixelText.width(price) * 0.5
 	PixelText.draw(ci, Vector2(x, roundf(b.get_center().y - PixelText.H * 0.5)), price, ink.key_black)

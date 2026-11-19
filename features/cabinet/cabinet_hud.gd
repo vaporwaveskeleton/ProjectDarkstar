@@ -52,6 +52,8 @@ var peel := 0.0:
 		if _left != null:
 			_left.peel = v
 			_right.peel = v
+		if _glass != null:
+			_glass.peel = v
 		if field != null:
 			field.peel = v
 		if screen_hud != null:
@@ -65,6 +67,7 @@ var crack := 0.0:
 var _left: BezelPrint
 var _right: BezelPrint
 var _door: CoinDoorFace
+var _glass: BezelGlass
 
 
 func _ready() -> void:
@@ -75,6 +78,10 @@ func _ready() -> void:
 	_door = CoinDoorFace.new()
 	add_child(_door)
 	_door.fit_to(_door_plate())
+	_glass = BezelGlass.new()
+	_glass.rig = get_parent() as ScreenRig
+	add_child(_glass)
+	_glass.peel = peel
 	_left.peel = peel
 	_right.peel = peel
 	_left.crack = crack
