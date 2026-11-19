@@ -704,6 +704,22 @@ Community rule: Sable is the only character who speaks outside the game (Discord
 | ending 2 eulogy | attract loop to an empty hall; no text |
 | ending 5 | Theodora Lune's message (§9.5) |
 
+**The Cabinet credits roll** (Act 0 stage clear; Cabinet register; prefix `NARR_CAB_`; the code keys are the existing `CAB_CREDITS_*` in `locale/en.po`, not renamed). Wording approved by the owner 2026-11-18. The stage-1 short roll is the first three lines (`CAB_CREDITS_1`..`3`). The stage-2 full roll (after the entity is unmade) inserts the four stat lines after line 3. Stat lines are **true counts** of what the player did this run (never saved; state counts only, §11.10) and appear only in the stage-2 roll.
+
+| Order | Key (`tr()`) | Text |
+|---|---|---|
+| 1 | `CAB_CREDITS_1` | "CONGRATULATIONS, VIGIL" |
+| 2 | `CAB_CREDITS_2` | "THE LIGHT IS SAFE" |
+| 3 | `CAB_CREDITS_3` | "YOUR QUOTA IS MET" |
+| stat (stage 2 only) | `CAB_CREDITS_STAT_GRUBS` | "GRUBS DESTROYED: %d" |
+| stat (stage 2 only) | `CAB_CREDITS_STAT_MINED` | "GLASS MINED: %d" |
+| stat (stage 2 only) | `CAB_CREDITS_STAT_CHARGES` | "CHARGES THROWN: %d" |
+| stat (stage 2 only) | `CAB_CREDITS_STAT_CARRIED` | "GLASS CARRIED: %d" |
+| 4 | `CAB_CREDITS_4` | "DARKSTAR" |
+| 5 | `CAB_CREDITS_5` | "A LANTERN OFFICE PRODUCTION" |
+| 6 | `CAB_CREDITS_6` | "KEEP THE VIGIL" |
+| 7 | `CAB_CREDITS_7` | "THANK YOU FOR YOUR SERVICE" |
+
 
 ### 7.6 Office text (environmental)
 
@@ -721,7 +737,7 @@ Posters and stencils in Act 0 and in Pale Marches / Ossuary Belt ruins. Office r
 | Ilse Marrow | 13 | `NARR_ILSE_` | authored |
 | Brother Wick | 15 | `NARR_WICK_` | authored |
 | the Lampkeeper | 2 | `NARR_KEEPER_` | authored |
-| Cabinet | 16 | `NARR_CAB_` | authored |
+| Cabinet | 27 (16 marquee/attract + 11 credits) | `NARR_CAB_` | authored |
 | Hard Unmaking beat lines | 8 scenes | (in the cast sets above) | authored (§5.6) |
 | Office environmental | 6 | `NARR_OFFICE_` | authored |
 | Theodora Lune's message | 10 screens | `NARR_LUNE_` | authored (§9.5) |

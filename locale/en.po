@@ -156,19 +156,19 @@ msgstr "THE LIGHT IS SAFE"
 msgid "CAB_CREDITS_3"
 msgstr "YOUR QUOTA IS MET"
 
-#. S7 service record. WORDING PROPOSED, NARR-001 owner approval pending; counts are true.
+#. S7 service record. Wording approved by the owner 2026-11-18, NARR-001 §7.5; counts are true.
 msgid "CAB_CREDITS_STAT_GRUBS"
 msgstr "GRUBS DESTROYED: %d"
 
-#. S7 service record. WORDING PROPOSED, NARR-001 owner approval pending; counts are true.
+#. S7 service record. Wording approved by the owner 2026-11-18, NARR-001 §7.5; counts are true.
 msgid "CAB_CREDITS_STAT_MINED"
 msgstr "GLASS MINED: %d"
 
-#. S7 service record. WORDING PROPOSED, NARR-001 owner approval pending; counts are true.
+#. S7 service record. Wording approved by the owner 2026-11-18, NARR-001 §7.5; counts are true.
 msgid "CAB_CREDITS_STAT_CHARGES"
 msgstr "CHARGES THROWN: %d"
 
-#. S7 service record. WORDING PROPOSED, NARR-001 owner approval pending; counts are true.
+#. S7 service record. Wording approved by the owner 2026-11-18, NARR-001 §7.5; counts are true.
 msgid "CAB_CREDITS_STAT_CARRIED"
 msgstr "GLASS CARRIED: %d"
 
