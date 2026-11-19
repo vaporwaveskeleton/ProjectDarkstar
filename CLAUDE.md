@@ -50,9 +50,10 @@ assets/  docs/           (docs/, tools/, research/ carry a .gdignore)
 - Autoloads only for global-lifetime services. Built: `SettingsService`, `SaveService`, `SceneRouter`, `AudioService` (plus editor tooling `_mcp_game_helper`, stripped from exports); approved, not built: `RunSession` (TECH-001 §2.8). Adding one needs a §2.8 row first. No UI manager, game manager or event bus autoloads.
 - UI: screens extend `Screen`, overlays go on the scene's `ScreenStack`, rows inside `FitScrollContainer`; one default focus, explicit focus neighbours, `ui_cancel` works (UI-001).
 - Saves: `SaveService.save_slot(slot, payload, reason)` with an allowed reason; never mid-run; payloads hold ids and numbers only (TECH-001 §7).
+- Tests are isolated from the player's real `user://` files (TECH-001 §7, §9); needing real file IO in a test → use `user://_test/` or your own folder.
 - Warnings are errors here: give a variable an explicit type when its value comes from a `Dictionary`/`Array`/`Variant`.
 - **Generated assets only (D-13, D-14, both amended):** never add hand-made or recorded files. Visuals = runtime vector/shader with `Pal` colours (ART-001 §14), or pxl renders: `art/src/*.px.js` (start with a palette include, no `image()`) built into `assets/art/generated/` (ART-001 §14.8) — anything that must morph continuously stays runtime. **Fidelity ladder (ART-001 §15):** Act 0 is minimal neon on black (cabinet colours go through `Look.c()`); after the Pretence space is the **Aether** — retro-future Victorian, full of fog, colour, life and crystal spheres, never a black vacuum; the only true black is the entity (ART-001 §16); lighting, fog, bloom and complex particles grow with the tier; role laws (faction hues, phosphor = truth, SIGNAL ≤ 3) hold at every tier; text = `PixelText` (post-Act 0 scaling open: TECH-001 Q-T23); sound = code: chirp sources `audio/src/*.cx.js` rendered to `assets/audio/generated/` (never hand-edit renders; never `sample()`), or runtime `SfxSynth` (AUDIO-001 §11, §11.7). PNGs under `assets/sprites/` are local-only reference: not in git, Godot-ignored, never shipped — never re-add them. `tests/test_generated_assets_only.gd` enforces this.
-- Automation hooks (`core/automation`, dev/QA only): no `class_name`, no autoload, never referenced from game code except Boot's guarded loader; ids, not display text (TECH-001 §9.1).
+- Automation hooks (`core/automation`, dev/QA only): no `class_name`, no autoload, never referenced from game code except Boot's guarded loader; export presets exclude it (guard test); ids, not display text (TECH-001 §9.1).
 - Gameplay collision is separate from sprites and animation; animation fires events, it never owns hit truth.
 - Every player-visible string goes through `tr()` with a stable key. No raw errors, IDs, enum names or paths on screen. (Diegetic HUD "lies" are authored content per WARP-001 §4.2, not debug output; Steady Ledger must always be honest.)
 
@@ -69,8 +70,11 @@ node .claude/skills/pxl/bin/pxl.js build art/src/<file>.px.js --out assets/art/g
 ```
 node tools/automation/darkstar_auto.js validate             # check all scenarios
 node tools/automation/darkstar_auto.js run a0_first_contact # headless; add --windowed for screenshots
+%GODOT% --headless --path . --export-pack "Windows Desktop" build/audit/r.pck; node tools/automation/pack_audit.js build/audit/r.pck --profile release   # export check (QA: preset "Windows QA", --profile qa); exe: --export-release "<preset>" <exe>
+%GODOT% --path . --fixed-fps 60 -- --record=<id> --no-save  # recorder, dev only: writes <id>.scenario.json
 ```
 Scenarios live in `tests/scenarios/`; `tests/test_scenarios.gd` runs them in the suite (TECH-001 §9.1).
+CI (`.github/workflows/ci.yml`) runs import, suite, smoke and the scenarios on every PR; the same commands as above (TECH-001 §9.2).
 Expected `ERROR`/`WARNING` lines in the test log come only from negative-path tests (corrupt save, unknown route); the smoke log must have none.
 Act 0 (the Cabinet, TECH-001 §2.10) takes capture switches after `--`: `--autopilot --stage=N --segments=N --hits=N --smoke-frames=N --no-save`; dev builds also take `--route=sector` to start on the M1 sector (TECH-001 §9.1). Always pass `--no-save` when capturing, so the player's saves are never written.
 Prefer the `godot-ai` MCP (`test_run`, `logs_read`, `project_run`, `scene_*`) when the editor is open (addon vendored in `addons/godot_ai`, v4.4.1; never press its dock's Configure; update only via the dock, keeping the server at the same version). Fall back to the console exe.

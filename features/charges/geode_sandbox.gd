@@ -5,6 +5,9 @@ extends Node2D
 ## `loot` stream, shapes from `vfx` (TECH-001 §4.9). All positions are torus positions (the sector
 ## injects the Torus); each tick a geode node is moved to the image of its home nearest the
 ## reference (the Vigil), so it draws and collides on the Vigil's side of the wrap seam.
+## Geodes are NOT under the sector's %Actors, so SectorWrap never moves them: this re-imaging is the
+## one mechanism. The sector gives this node process_physics_priority 1, so it runs after SectorWrap
+## has wrapped the Vigil in the same tick.
 
 const GEODE_SCENE := preload("res://features/charges/sector_geode.tscn")
 const COMPASS_KIND := &"geode"

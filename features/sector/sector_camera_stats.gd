@@ -4,14 +4,13 @@ extends TunableResource
 ## Never edit numbers here; edit the .tres (and SYS-001 first).
 
 ## SYS-001 §9 "Camera follow 0.12 s critically damped" (s). Read as the smoothing time T of a
-## critically damped spring with omega = 2 / T (SmoothDamp convention). Interpretation: needs a ruling.
+## critically damped spring with omega = 2 / T (SmoothDamp convention). Accepted reading (Q-T56).
 @export var follow_time_s: float = 0.0
-## SYS-001 §9 "24 px deadzone" (px). Read as a circle radius around the camera focus.
-## Interpretation: needs a ruling (radius vs. half-box vs. full box width).
+## SYS-001 §9 "24 px deadzone" (px). A circle radius around the camera focus (accepted reading Q-T57).
 @export var deadzone_px: float = 0.0
 ## SYS-001 §9 "1.5% aim lookahead" as a fraction (0.015) of the visible viewport size, applied per
 ## axis along the aim direction (at 640×360: up to 9.6 px horizontally, 5.4 px vertically).
-## Interpretation: needs a ruling.
+## Accepted reading (Q-T55).
 @export var aim_lookahead_frac: float = 0.0
 ## SYS-001 §9 "Screen shake ≤ 4 px" (px). Hard ceiling; warp shake (≤ 2 px) stacks inside it.
 @export var shake_max_px: float = 0.0

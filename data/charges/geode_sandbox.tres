@@ -7,6 +7,6 @@ script = ExtResource("1")
 ds_namespace = "ds_charges.sandbox"
 source_section = "M1 slice 3 PR 3 (PM: 10 geodes, seeded); seed, clear radius and attempts ✱"
 geode_count = 10
-run_seed = 8
+run_seed = 146
 spawn_clear_radius_px = 160.0
 placement_attempts = 32

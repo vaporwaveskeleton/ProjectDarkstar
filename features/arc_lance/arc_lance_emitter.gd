@@ -15,6 +15,8 @@ signal lance_fired(direction: Vector2)
 @export var projectile_parent: Node
 
 var enabled: bool = true
+## The shot spawned by the most recent `lance_fired` (read by ArcLanceFx in its handler).
+var last_shot: LanceProjectile
 var _cooldown_s: float = 0.0
 
 
@@ -43,5 +45,6 @@ func _spawn() -> LanceProjectile:
 	parent.add_child(shot)
 	var owner_node := get_parent()
 	shot.launch(stats, origin, dir, owner_node.get_instance_id() if owner_node else 0)
+	last_shot = shot
 	lance_fired.emit(dir)
 	return shot

@@ -9,6 +9,10 @@ extends Camera2D
 @export var stats: SectorCameraStats
 ## What to follow. If it has `get_aim_dir() -> Vector2` the camera leans toward that direction.
 @export var target: Node2D
+## The wrapping sector (Q-T58), injected by the sector host. Null = a plain plane. With a torus the
+## camera follows the target's nearest image (Torus.delta) and, when the target wraps, rebases its
+## focus and position by the same whole-field shift, so the view never jumps at the seam.
+var torus: Torus
 
 ## Where the deadzone is centred (the follow anchor, before lookahead).
 var focus: Vector2 = Vector2.ZERO
@@ -48,12 +52,30 @@ func step(delta: float) -> void:
 	if stats == null:
 		return
 	if is_instance_valid(target):
-		focus = apply_deadzone(focus, target.global_position, stats.deadzone_px)
+		var goal := target.global_position
+		if torus != null:
+			rebase_to(goal)
+			goal = focus + torus.delta(focus, goal)
+		focus = apply_deadzone(focus, goal, stats.deadzone_px)
 	var desired := focus + _current_lookahead()
+	if torus != null:
+		desired = global_position + torus.delta(global_position, desired)
 	var r := spring_step(global_position, follow_velocity, desired, omega_for(stats.follow_time_s), delta)
 	global_position = r[0]
 	follow_velocity = r[1]
 	offset = _step_shake(delta)
+
+
+## Move focus and position by the whole-field shift that puts the focus on the image of the torus
+## nearest `world_pos`. Velocity is unchanged. Returns the shift (zero when nothing moved).
+func rebase_to(world_pos: Vector2) -> Vector2:
+	if torus == null:
+		return Vector2.ZERO
+	var shift := (world_pos + torus.delta(world_pos, focus)) - focus
+	if shift != Vector2.ZERO:
+		focus += shift
+		global_position += shift
+	return shift
 
 
 ## Request a shake. Amplitude and duration are clamped to the SYS-001 §9 ceiling; overlapping
@@ -109,7 +131,8 @@ func visible_size() -> Vector2:
 
 # --- pure helpers --------------------------------------------------------------------------------
 
-## Move `focus` only as far as needed to keep `goal` within `radius` of it (circular deadzone).
+## Move `focus` only as far as needed to keep `goal` within `radius` of it (circular deadzone,
+## accepted reading Q-T57). On a torus the caller passes the goal's nearest image (Torus.delta).
 static func apply_deadzone(focus_pos: Vector2, goal: Vector2, radius: float) -> Vector2:
 	var d := goal - focus_pos
 	var dist := d.length()
@@ -118,7 +141,7 @@ static func apply_deadzone(focus_pos: Vector2, goal: Vector2, radius: float) -> 
 	return goal - d / dist * radius
 
 
-## "1.5 % aim lookahead" (SYS-001 §9). INTERPRETATION, pending a ruling: a fraction of the visible
+## "1.5 % aim lookahead" (SYS-001 §9). Accepted reading (Q-T55, resolved): a fraction of the visible
 ## viewport size, per axis, along the normalised aim direction. At 640×360 and frac 0.015 that is
 ## at most 9.6 px horizontally and 5.4 px vertically. No other number is invented here.
 static func lookahead(aim: Vector2, view_size: Vector2, frac: float) -> Vector2:
@@ -129,7 +152,7 @@ static func lookahead(aim: Vector2, view_size: Vector2, frac: float) -> Vector2:
 
 
 ## Spring stiffness for a smoothing time T (SmoothDamp convention, omega = 2 / T).
-## INTERPRETATION of "0.12 s critically damped", pending a ruling.
+## Accepted reading of "0.12 s critically damped" (Q-T56, resolved).
 static func omega_for(follow_time: float) -> float:
 	return 2.0 / follow_time if follow_time > 0.0 else INF
 

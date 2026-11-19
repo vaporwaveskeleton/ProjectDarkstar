@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource type="Script" path="res://features/vigil/vigil.gd" id="1"]
 [ext_resource type="Script" path="res://features/vigil/vigil_input.gd" id="2"]
@@ -10,6 +10,9 @@
 
 [ext_resource type="Script" path="res://features/arc_lance/arc_lance_emitter.gd" id="8"]
 [ext_resource type="Resource" path="res://data/arc_lance/arc_lance.tres" id="9"]
+[ext_resource type="Script" path="res://features/arc_lance/arc_lance_fx.gd" id="10"]
+[ext_resource type="Script" path="res://features/arc_lance/lance_recoil.gd" id="11"]
+[ext_resource type="Resource" path="res://data/arc_lance/arc_lance_fx.tres" id="12"]
 
 [sub_resource type="CircleShape2D" id="body_shape"]
 resource_local_to_scene = true
@@ -30,11 +33,14 @@ shape = SubResource("body_shape")
 [node name="Facing" type="Node2D" parent="."]
 unique_name_in_owner = true
 
-[node name="Placeholder" type="Polygon2D" parent="Facing"]
+[node name="Visual" type="Node2D" parent="Facing"]
+unique_name_in_owner = true
+
+[node name="Placeholder" type="Polygon2D" parent="Facing/Visual"]
 color = Color(0.85098, 0.603922, 0.180392, 1)
 polygon = PackedVector2Array(10, 0, -7, -7, -4, 0, -7, 7)
 
-[node name="Core" type="Polygon2D" parent="Facing"]
+[node name="Core" type="Polygon2D" parent="Facing/Visual"]
 color = Color(1, 0.937255, 0.752941, 1)
 polygon = PackedVector2Array(3, 0, -2, -2, -2, 2)
 
@@ -57,6 +63,20 @@ script = ExtResource("8")
 stats = ExtResource("9")
 input = NodePath("../VigilInput")
 facing_node = NodePath("../Facing")
+
+[node name="ArcLanceFx" type="Node2D" parent="." node_paths=PackedStringArray("emitter")]
+unique_name_in_owner = true
+top_level = true
+script = ExtResource("10")
+emitter = NodePath("../ArcLanceEmitter")
+stats = ExtResource("12")
+
+[node name="LanceRecoil" type="Node" parent="." node_paths=PackedStringArray("emitter", "visual")]
+unique_name_in_owner = true
+script = ExtResource("11")
+emitter = NodePath("../ArcLanceEmitter")
+stats = ExtResource("12")
+visual = NodePath("../Facing/Visual")
 
 [node name="HealthComponent" parent="." instance=ExtResource("5")]
 unique_name_in_owner = true

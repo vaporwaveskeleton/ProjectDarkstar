@@ -17,6 +17,10 @@ const SLOTS: Array[String] = ["profile", "iteration", "run"]
 const NAME_RE := "^[a-z0-9_]+$"
 const MOUSE_BUTTONS: Array[String] = ["left", "right", "middle"]
 const TARGETS: Array[String] = ["arcade", "window"]
+## Profiles: a scenario may declare `profile` "qa" or "dev" and can only ask for LESS than the build
+## offers. A "qa" scenario run on a dev build is held to the qa rules (dev steps and unapproved
+## fixtures are refused); a "dev" scenario on a qa build is refused. Omitted = the build's profile.
+const PROFILES: Array[String] = ["qa", "dev"]
 
 static var _catalog: Dictionary = {}
 
@@ -27,6 +31,26 @@ static func catalog() -> Dictionary:
 		if typeof(parsed) == TYPE_DICTIONARY:
 			_catalog = parsed
 	return _catalog
+
+
+## True when the catalog marks the step dev-only (single source: step_catalog.json "dev": true).
+static func is_dev_step(step_name: String) -> bool:
+	var def: Variant = (catalog().get("steps", {}) as Dictionary).get(step_name)
+	return typeof(def) == TYPE_DICTIONARY and bool((def as Dictionary).get("dev", false))
+
+
+## Names of the dev-only steps a scenario uses (unique, in order of first use).
+static func dev_steps_used(scenario: Dictionary) -> Array[String]:
+	var out: Array[String] = []
+	var steps: Variant = scenario.get("steps")
+	if typeof(steps) != TYPE_ARRAY:
+		return out
+	for s: Variant in steps as Array:
+		if typeof(s) == TYPE_DICTIONARY:
+			var n := str((s as Dictionary).get("do", ""))
+			if is_dev_step(n) and not out.has(n):
+				out.append(n)
+	return out
 
 
 static func is_name(s: String) -> bool:
@@ -56,8 +80,8 @@ static func validate(scenario: Dictionary, for_suite: bool) -> Array[String]:
 		errs.append("suite scenarios must have args == []")
 	if scenario.has("fixtures"):
 		errs.append_array(_check_fixtures(scenario.get("fixtures")))
-	if scenario.has("profile") and typeof(scenario.get("profile")) != TYPE_STRING:
-		errs.append("profile must be a string")
+	if scenario.has("profile") and (typeof(scenario.get("profile")) != TYPE_STRING or not PROFILES.has(str(scenario.get("profile")))):
+		errs.append("profile must be 'qa' or 'dev'")
 	var timeout: Variant = scenario.get("timeout_frames")
 	if not _is_int(timeout) or int(timeout) < 1 or int(timeout) > MAX_TIMEOUT_FRAMES:
 		errs.append("timeout_frames must be an int in 1..%d" % MAX_TIMEOUT_FRAMES)
@@ -150,6 +174,9 @@ static func _check_step(i: int, step: Dictionary, defs: Dictionary) -> Array[Str
 		"checkpoint":
 			if not is_name(str(step.name)):
 				errs.append("step %d (checkpoint): name must match %s" % [i, NAME_RE])
+		"set_setting":
+			if str(step.key).is_empty():
+				errs.append("step %d (set_setting): key must not be empty" % i)
 	for k in ["frames", "within"]:
 		if step.has(k) and (int(step[k]) < 1 or int(step[k]) > MAX_WAIT):
 			errs.append("step %d (%s): %s must be in 1..%d" % [i, name, k, MAX_WAIT])

@@ -21,6 +21,10 @@ const BED_PITCH_MIN := 0.25            ## ✱ safety clamp (engine minimum is 0.
 const CUE_IDS_PATH := "res://data/audio/cue_ids.tres"
 const CUE_POLICY_PATH := "res://data/audio/cue_policy.tres"
 const UNSTEALABLE_BELOW := 2           ## P0 and P1 are never stolen (AUDIO-001 §12.6)
+const SUBTRACTION_OPEN_HZ := 20000.0   ## ✱ low-pass cutoff at subtraction 0 (the Passing / Waking lanes, AUDIO-001 §12.14)
+const SUBTRACTION_CLOSED_HZ := 500.0   ## ✱ low-pass cutoff at subtraction 1
+const SUBTRACTION_CUT_DB := -18.0      ## ✱ BUS-AMB / BUS-MUS volume offset at subtraction 1
+const SUBTRACTION_BUSES: Array[StringName] = [&"BUS-AMB", &"BUS-MUS"]   ## the only buses sound is removed from (L3)
 
 var cue_ids: CueIds
 var policy: CuePolicy
@@ -51,6 +55,13 @@ var _amb_level_cur := 1.0
 var _silence := 0.0
 var _bed_pitch_target := 1.0
 var muted_for_tests := false
+var _sub_cur := 0.0
+var _sub_from := 0.0
+var _sub_target := 0.0
+var _sub_ramp_s := 0.0
+var _sub_t := 0.0
+var _sub_fx: Dictionary = {}           # StringName bus -> AudioEffectLowPassFilter index on that bus
+var _sub_base_db: Dictionary = {}      # StringName bus -> volume_db before any subtraction
 
 
 func _ready() -> void:
@@ -65,6 +76,7 @@ func _ready() -> void:
 		if policy == null:
 			policy = CuePolicy.new()
 	_load_cues()
+	_setup_subtraction()
 	for i in VOICES:
 		var p := AudioStreamPlayer.new()
 		p.bus = &"BUS-FLY"
@@ -291,6 +303,7 @@ func _stop_voices() -> void:
 
 ## Release every stream at shutdown so no playback outlives the engine (no leaks at exit).
 func _exit_tree() -> void:
+	_apply_subtraction(0.0)   # never leave the shared buses filtered or cut
 	for p in _voices:
 		p.stop()
 		p.stream = null
@@ -303,6 +316,7 @@ func _exit_tree() -> void:
 
 
 func stop_all() -> void:
+	set_subtraction(0.0)
 	_stop_voices()
 	_stop_ambience_players()
 	_amb_id = &""
@@ -335,6 +349,7 @@ func _step_bed_pitch(delta: float) -> void:
 
 
 func _process(delta: float) -> void:
+	_step_subtraction(delta)
 	_step_bed_pitch(delta)
 	_silence = maxf(0.0, _silence - delta)
 	_step_ambience(delta)
@@ -344,3 +359,67 @@ func _process(delta: float) -> void:
 	_chant.volume_db = lerpf(_chant.volume_db, target, clampf(delta * 4.0, 0.0, 1.0))
 	if _chant.volume_db < -79.0 and _chant.playing and _chant_level <= 0.0:
 		_chant.stop()
+
+
+# --- subtraction: the entity has no sound, it is heard as sound removed (AUDIO-001 §12.14) ---------
+
+## Removes sound from the ambience and music buses only: `amount` 0..1 (clamped) is reached linearly
+## over `ramp_s` seconds (the caller passes the lead; nothing here knows the Passing's timing).
+## At 0 the low-pass is bypassed and the buses are back at their own volume. BUS-ENT, BUS-CHO,
+## BUS-FLY and BUS-UI are never touched: information cues are never removed (L3).
+func set_subtraction(amount: float, ramp_s: float = 0.0) -> void:
+	_sub_target = clampf(amount, 0.0, 1.0)
+	_sub_from = _sub_cur
+	_sub_ramp_s = maxf(ramp_s, 0.0)
+	_sub_t = 0.0
+	if _sub_ramp_s <= 0.0:
+		_apply_subtraction(_sub_target)
+
+
+## Current subtraction amount 0..1 (tests, diagnostics).
+func subtraction() -> float:
+	return _sub_cur
+
+
+func _step_subtraction(delta: float) -> void:
+	if _sub_cur == _sub_target:
+		return
+	_sub_t += delta
+	if _sub_t >= _sub_ramp_s:
+		_apply_subtraction(_sub_target)
+	else:
+		_apply_subtraction(lerpf(_sub_from, _sub_target, _sub_t / _sub_ramp_s))
+
+
+## Runtime effects (not in the bus layout): the layout stays a plain list of buses, and the filter
+## only exists while this service does. Reused when a previous service already added it.
+func _setup_subtraction() -> void:
+	for bus in SUBTRACTION_BUSES:
+		var b := AudioServer.get_bus_index(bus)
+		if b < 0:
+			continue
+		var fx := -1
+		for i in AudioServer.get_bus_effect_count(b):
+			if AudioServer.get_bus_effect(b, i) is AudioEffectLowPassFilter:
+				fx = i
+				break
+		if fx < 0:
+			var lp := AudioEffectLowPassFilter.new()
+			lp.cutoff_hz = SUBTRACTION_OPEN_HZ
+			AudioServer.add_bus_effect(b, lp)
+			fx = AudioServer.get_bus_effect_count(b) - 1
+		_sub_fx[bus] = fx
+		_sub_base_db[bus] = AudioServer.get_bus_volume_db(b)
+	_apply_subtraction(0.0)
+
+
+func _apply_subtraction(amount: float) -> void:
+	_sub_cur = amount
+	for bus: StringName in _sub_fx:
+		var b := AudioServer.get_bus_index(bus)
+		var fx: int = _sub_fx[bus]
+		var lp := AudioServer.get_bus_effect(b, fx) as AudioEffectLowPassFilter
+		if lp != null:
+			lp.cutoff_hz = SUBTRACTION_OPEN_HZ * pow(SUBTRACTION_CLOSED_HZ / SUBTRACTION_OPEN_HZ, amount)
+		AudioServer.set_bus_effect_enabled(b, fx, amount > 0.0)
+		AudioServer.set_bus_volume_db(b, float(_sub_base_db[bus]) + SUBTRACTION_CUT_DB * amount)

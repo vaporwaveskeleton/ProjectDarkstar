@@ -375,7 +375,8 @@ Hunger raises the entity only. It never reduces player currency (GDD P4: progres
 | Warp shake (sub-row under the row above) | ≤ 2 px, 0.20 s max ✱ | A warp effect never owns the biggest shake in the frame: warp motion reads as wrongness, not as impact (WARP-001 §8 R-02). Warp shake stacks *within* this ceiling, not on top of the 4 px row |
 | UI safe area at 200 % text | Every HUD element keeps its anchor rectangle inside the safe area at 200 % text scale at 640×360 logical; warp may hide an element, never displace one | Accessibility floor (GDD-001 §10); the anchor set is WARP-001 §4.1 (its §8 R-03). `TEST-ACC-04` is the pass condition |
 | Screen shake under Reduced Motion | off ✱ | Reduced Motion disables screen shake (the Cabinet behaviour). PM-approved 2026-11-18 |
-| Camera follow | 0.12 s critically damped, 24 px deadzone, 1.5% aim lookahead | GDD §4.2. How each phrase is read in code is open (TECH-001 §11.1) |
+| Camera follow | 0.12 s critically damped, 24 px deadzone, 1.5% aim lookahead | GDD §4.2. Accepted readings (PM under owner autonomy grant 2026-11-18, TECH-001 §11.1a): 1.5% lookahead = a fraction of the visible viewport **per axis** along the aim (Q-T55); 0.12 s = the smoothing time T of the critically damped spring, omega = 2/T (Q-T56); 24 px = the radius of a **circular** deadzone (Q-T57) |
+| M1 sandbox arena | wrapping torus 1920×720 ✱ | Same source as the Cabinet's torus field (`CabinetStage.field_size`), so M1 matches Act 0; no clear colour shows (a repeating floor covers the view). Real kit bounds come from ZONES-001 later. TECH-001 Q-T58, PM under owner autonomy grant 2026-11-18 |
 | Zoom | 1.0 (T0) → 1.06 (T3) → breathing ±2% over 11 s (T5) | GDD §4.2. Zoom 1.0 = the 640×360 logical frame, the fixed post-Act 0 camera scale (TECH-001 Q-T25 resolved Z1, PM under owner autonomy grant 2026-11-18) |
 | Shroud (hazard terrain) | blocks movement, 1 Ward-slice / 1 Surgelight burn to clear, HP 3 | ✱ T2+ terrain |
 | Hitbox policy | player hitbox = a circle of **12 px diameter** (6 px radius; smaller than the sprite); every enemy hitbox = sprite alpha ∩ 1 px inset, **except the entity**, whose contact hitbox is §2.1's 16 px inset from the composite silhouette | fairness over realism. Diameter reading and entity exception: owner-delegated rulings R-04, R-10 (2026-11-17) |
@@ -400,15 +401,15 @@ Hunger raises the entity only. It never reduces player currency (GDD P4: progres
 | Slow-mo ramp in (`ds_cabinet.fx.slowmo_ramp_in_s`) | 0.15 s ⚙ | real time, 1.0 to the slow-mo scale; owner-approved 2026-11-18 |
 | Slow-mo ramp out (`ds_cabinet.fx.slowmo_ramp_out_s`) | 0.2 s ⚙ | real time, back to 1.0 when the lethal condition clears; owner-approved 2026-11-18 |
 | Slow-mo failsafe (`ds_cabinet.fx.slowmo_max_real_s`) | 2.5 s ⚙ | real-time cap per episode; owner-approved 2026-11-18 |
-| Lance bite, muzzle star size (`ds_cabinet.fx.muzzle_star_px`) | 3 px ⚙ | arm length of the muzzle plus; a few-pixel vector star is not a luminance flash (AUDIO-001 §8.3 ruling); owner-approved 2026-11-18 (TECH-001 Q-T50) |
-| Lance bite, muzzle star duration (`ds_cabinet.fx.muzzle_star_frames`) | 1 drawn frame ⚙ | owner-approved 2026-11-18 |
-| Lance bite, recoil (`ds_cabinet.fx.recoil_px`) | 1 px ⚙ | visual-only draw nudge opposite the aim; never moves position or velocity, so §1.3 "no recoil" holds; owner-approved 2026-11-18 |
-| Lance bite, recoil duration (`ds_cabinet.fx.recoil_frames`) | 2 drawn frames ⚙ | owner-approved 2026-11-18 |
-| Lance bite, impact fleck speed (`ds_cabinet.fx.fleck_speed_px_s`) | 60 px/s ⚙ | flecks leave perpendicular to the shot; owner-approved 2026-11-18 |
-| Lance bite, impact fleck life (`ds_cabinet.fx.fleck_life_s`) | 0.12 s ⚙ | owner-approved 2026-11-18 |
-| Lance bite, chalk tick length (`ds_cabinet.fx.tick_len_px`) | 3 px ⚙ | the tick where the lance cannot bite (Sepulchre, entity); owner-approved 2026-11-18 |
-| Lance bite, chalk tick life (`ds_cabinet.fx.tick_life_s`) | 0.15 s ⚙ | owner-approved 2026-11-18 |
-| Lance bite, `lance_dull` cue volume (`ds_cabinet.fx.lance_dull_db`) | 0.0 dB ⚙ | offset on the cue's own level (AUDIO-001 §12.11); owner-approved 2026-11-18 |
+| Lance bite, muzzle star size (`ds_cabinet.fx.muzzle_star_px`; M1 `ds_arc_lance.fx.muzzle_star_px`) | 3 px ⚙ | arm length of the muzzle plus; a few-pixel vector star is not a luminance flash (AUDIO-001 §8.3 ruling); owner-approved 2026-11-18 (TECH-001 Q-T50) |
+| Lance bite, muzzle star duration (`ds_cabinet.fx.muzzle_star_frames`; M1 `ds_arc_lance.fx.muzzle_star_frames`) | 1 drawn frame ⚙ | owner-approved 2026-11-18 |
+| Lance bite, recoil (`ds_cabinet.fx.recoil_px`; M1 `ds_arc_lance.fx.recoil_px`) | 1 px ⚙ | visual-only draw nudge opposite the aim; never moves position or velocity, so §1.3 "no recoil" holds; owner-approved 2026-11-18 |
+| Lance bite, recoil duration (`ds_cabinet.fx.recoil_frames`; M1 `ds_arc_lance.fx.recoil_frames`) | 2 drawn frames ⚙ | owner-approved 2026-11-18 |
+| Lance bite, impact fleck speed (`ds_cabinet.fx.fleck_speed_px_s`; M1 `ds_arc_lance.fx.fleck_speed_px_s`) | 60 px/s ⚙ | flecks leave perpendicular to the shot; owner-approved 2026-11-18 |
+| Lance bite, impact fleck life (`ds_cabinet.fx.fleck_life_s`; M1 `ds_arc_lance.fx.fleck_life_s`) | 0.12 s ⚙ | owner-approved 2026-11-18 |
+| Lance bite, chalk tick length (`ds_cabinet.fx.tick_len_px`; M1 `ds_arc_lance.fx.tick_len_px`) | 3 px ⚙ | the tick where the lance cannot bite (Sepulchre, entity; in M1 any hurtbox with `bites` off); owner-approved 2026-11-18 |
+| Lance bite, chalk tick life (`ds_cabinet.fx.tick_life_s`; M1 `ds_arc_lance.fx.tick_life_s`) | 0.15 s ⚙ | owner-approved 2026-11-18 |
+| Lance bite, `lance_dull` cue volume (`ds_cabinet.fx.lance_dull_db`; M1 `ds_arc_lance.fx.lance_dull_db`) | 0.0 dB ⚙ | offset on the cue's own level (AUDIO-001 §12.11); owner-approved 2026-11-18 |
 
 Hit-stop does **not** count toward the 1.5 s "Player agency loss" budget above: it is a presentation freeze with input buffered, not a warp effect. The last-Charge slow-mo is likewise not a warp effect and is not counted in that budget: it slows the sim only and the player keeps control (the Vigil runs at real speed).
 

@@ -1,11 +1,15 @@
 extends Node2D
 ## SectorHost stub — owns one sector's lifetime (TECH-001 §2.1): spawn, run, tear down.
-## Bootstrap scope: one empty arena, the Vigil, a hull readout and the pause flow.
+## Bootstrap scope: one empty wrapping arena, the Vigil, a hull readout and the pause flow.
 ## No kit assembly yet (SeamAssembler is future work).
+## Q-T58: the M1 sandbox is a torus the size of the Cabinet's field. The size has ONE source, the
+## Cabinet stage's `field_size` (`arena_source`); real kit bounds come from ZONES-001 later.
 
 const PAUSE_SCENE := preload("res://scenes/sector/pause_screen.tscn")
 
 @export var vigil_scene: PackedScene
+## Where the arena size comes from: the Cabinet stage resource (its `field_size`, 1920×720 ✱).
+@export var arena_source: CabinetStage
 
 @onready var _spawn: Marker2D = %VigilSpawn
 @onready var _actors: Node2D = %Actors
@@ -13,13 +17,14 @@ const PAUSE_SCENE := preload("res://scenes/sector/pause_screen.tscn")
 @onready var _overlays: ScreenStack = %Overlays
 @onready var _camera: SectorCamera = %SectorCamera
 @onready var _compass: LedgerCompass = %LedgerCompass
+@onready var _wrap: SectorWrap = %SectorWrap
 @onready var _geodes: GeodeSandbox = %GeodeSandbox
 @onready var _shards: ShardField = %ShardField
 @onready var _magazine: ChargeMagazine = %ChargeMagazine
 
 var vigil: Vigil
-## The sector's wrap space, injected into the glass economy (TECH-001 §4.3). Until the shared world
-## size lands (Q-T57) it is the compass's world rect, the one size this stub already has.
+## The sector's wrap-around space. Features that need positions or distances on this sector take it
+## from here (injected; never built twice): SectorWrap, SectorCamera, ShardField, GeodeSandbox.
 var torus: Torus
 
 ## Read-only scalars for the automation id `sector/vigil` (core/automation/ui_view.gd). Dev/QA reads.
@@ -35,6 +40,10 @@ var camera_x: float:
 	get: return _camera.global_position.x if _camera else 0.0
 var compass_markers: int:
 	get: return _compass.marker_points.size() if _compass else 0
+## Shortest (torus) distance from the camera to the Vigil; stays small through the seam.
+var camera_gap: float:
+	get: return torus.distance(_camera.global_position, vigil.global_position) \
+		if torus and _camera and is_instance_valid(vigil) else 0.0
 
 ## Read-only scalars for the automation id `sector/field` (glass economy). Dev/QA reads.
 var geodes_alive: int:
@@ -48,14 +57,18 @@ var score: int:
 
 
 func _ready() -> void:
+	torus = Torus.new(arena_source.field_size)
+	_compass.world_rect = Rect2(Vector2.ZERO, torus.size)
 	vigil = vigil_scene.instantiate() as Vigil
 	vigil.position = _spawn.position
 	_actors.add_child(vigil)
 	# Shots belong to this sector, so they are torn down with it (not parked on Boot/current_scene).
 	vigil.emitter.projectile_parent = _actors
+	_wrap.torus = torus
+	_wrap.anchor = vigil
+	_camera.torus = torus
 	_camera.target = vigil
 	_camera.snap_to_target()
-	torus = Torus.new(_compass.world_rect.size)
 	_shards.setup(torus)
 	_shards.collector = vigil
 	_shards.collector_radius_px = vigil.motor.stats.hitbox_circle_px * 0.5

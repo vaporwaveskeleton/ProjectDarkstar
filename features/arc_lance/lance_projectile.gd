@@ -57,11 +57,17 @@ func advance(delta: float) -> bool:
 	return true
 
 
-## Apply one hit to `target`. Hurtboxes take damage; walls just absorb the shot.
+## True when the lance can hurt `target`: any hurtbox unless it sets `bites = false`.
+static func can_bite(target: Node) -> bool:
+	return not (target is HurtboxComponent) or (target as HurtboxComponent).bites
+
+
+## Apply one hit to `target`. Biting hurtboxes take damage; non-biting hurtboxes (Sepulchre,
+## entity) and walls just absorb the shot.
 func register_hit(target: Node) -> bool:
 	if _spent:
 		return false
-	if target is HurtboxComponent:
+	if target is HurtboxComponent and can_bite(target):
 		(target as HurtboxComponent).receive_hit(HitInfo.make(stats.damage, source_id, get_instance_id(), &"arc_lance"))
 	hits_left -= 1
 	lance_hit.emit(target)

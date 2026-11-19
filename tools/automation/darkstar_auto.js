@@ -2,6 +2,7 @@
 // DARKSTAR scenario CLI (in-process scenario runner, D-09: no sockets). No dependencies.
 //   node tools/automation/darkstar_auto.js validate <file|id>
 //   node tools/automation/darkstar_auto.js run <id> [--windowed] [--keep] [--godot=<exe>] [--timeout=<s>] [--out=<dir>]
+// Steps marked "dev": true in the catalog are valid here; the game refuses them in the QA profile.
 // Step names and argument shapes come from core/automation/step_catalog.json (shared with the
 // GDScript validator). Exit codes: game's own (0 pass, 1 fail/timeout, 2 invalid, 3 refused),
 // 4 watchdog, 5 no result.json (crash).
@@ -60,6 +61,7 @@ function validate(sc) {
   if (sc.format !== "darkstar.scenario") errs.push("format must be 'darkstar.scenario'");
   if (sc.version !== 1) errs.push("version must be 1");
   if (typeof sc.id !== "string" || !NAME_RE.test(sc.id)) errs.push("id must match ^[a-z0-9_]+$");
+  if (sc.profile !== undefined && !["qa", "dev"].includes(sc.profile)) errs.push("profile must be 'qa' or 'dev'");
   if (sc.args !== undefined && !typeOk(sc.args, "string_array")) errs.push("args must be an array of strings");
   if (sc.fixtures !== undefined && (typeof sc.fixtures !== "object" || sc.fixtures === null || Array.isArray(sc.fixtures))) errs.push("fixtures must be an object");
   if (!Number.isInteger(sc.timeout_frames) || sc.timeout_frames < 1 || sc.timeout_frames > MAX_TIMEOUT_FRAMES) errs.push(`timeout_frames must be an int in 1..${MAX_TIMEOUT_FRAMES}`);

@@ -2,11 +2,12 @@ class_name FileSaveBackend
 extends SaveBackend
 ## Writes JSON files under user://saves/. Atomic: write .tmp, keep the old file as .bak, rename.
 
-var root: String = "user://saves"
+var root: String = ""
 
 
-func _init(p_root: String = "user://saves") -> void:
-	root = p_root
+## Empty root = the default saves folder (redirected under user://_test in test mode).
+func _init(p_root: String = "") -> void:
+	root = p_root if p_root != "" else TestMode.saves_root()
 
 
 func _path(key: String) -> String:
@@ -14,6 +15,8 @@ func _path(key: String) -> String:
 
 
 func write_text(key: String, text: String) -> Error:
+	if not TestMode.allow_write(_path(key)):
+		return ERR_UNAUTHORIZED
 	var err := DirAccess.make_dir_recursive_absolute(root)
 	if err != OK:
 		return err
@@ -49,6 +52,8 @@ func exists(key: String) -> bool:
 
 func remove(key: String) -> Error:
 	var path := _path(key)
+	if not TestMode.allow_write(path):
+		return ERR_UNAUTHORIZED
 	for p in [path, path + ".bak", path + ".tmp"]:
 		if FileAccess.file_exists(p):
 			DirAccess.remove_absolute(p)
