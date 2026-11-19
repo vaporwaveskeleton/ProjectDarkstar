@@ -45,6 +45,7 @@ Rules: signal names are past tense (`hull_breached`, `save_failed`), payloads ar
 | `ArcadeWorld` | `segments_changed`, `phase_changed` | `count: int` / `phase: int` | tests; future music escalation | built |
 | `ArcadeWorld` | `entity_line`, `caption` | `key: String` (an `en.po` key, never text) | `CabinetGame` → `CabinetMessages` | built |
 | `ArcadeWorld` | `entity_unmade`, `sepulchre_cleared` | — | `CabinetGame` (stage flow) | built |
+| `ArcadeWorld` | `hitstop_started` | `beat: StringName` (`charge_hits_entity`, `entity_unmade`, `vigil_death`, `it_wakes`, `modules_knocked`); emitted when a freeze starts or extends | `AudioService` cues (audio chat); no other listeners | built |
 | `ScoreKeeper` | `score_changed`, `lives_changed`, `extra_life_awarded` | `int` / `int` / — | `CabinetGame` → HUD | built |
 | `PretenceReveal` | `finished` | — | `CabinetGame` (save flags, route to the Ruins) | built |
 | `CoinSlot` | `tape_peeled` | — | `AttractMode` (saves `cabinet_tape_peeled`, reason `cabinet_tape`) | built |

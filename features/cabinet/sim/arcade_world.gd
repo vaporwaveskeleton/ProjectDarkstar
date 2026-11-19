@@ -17,6 +17,7 @@ signal entity_line(key: String)
 signal entity_unmade
 signal sepulchre_cleared
 signal caption(key: String)
+signal hitstop_started(beat: StringName)   ## a hit-stop freeze began or was extended (beat id of the cause)
 
 @export var screen_spec: CabinetScreenSpec   ## the arcade grid and HUD strip (data/cabinet/cabinet_screen.tres)
 @export var tuning: CabinetTuning
@@ -122,14 +123,17 @@ func shake(amp: float, dur: float) -> void:
 ## Freeze the sim for `frames` physics ticks (hit-stop, ✱ PROPOSED values in CabinetFxTuning).
 ## Reduced Motion scales it; stacking keeps the longer one; capped at hitstop_max_frames.
 ## Never touches Engine.time_scale or the tree pause: audio, CRT, input and state timers run on.
-func hitstop(frames: int) -> void:
+func hitstop(frames: int, beat: StringName = &"") -> void:
 	if frames <= 0 or fx_tuning == null:
 		return
 	if SettingsService.get_value(&"reduced_motion"):
 		frames = roundi(frames * fx_tuning.hitstop_reduced_motion_scale)
 		if frames <= 0:
 			return
-	hitstop_left = mini(maxi(hitstop_left, frames), fx_tuning.hitstop_max_frames)
+	var new_left := mini(maxi(hitstop_left, frames), fx_tuning.hitstop_max_frames)
+	if new_left > hitstop_left:
+		hitstop_left = new_left
+		hitstop_started.emit(beat)
 
 
 func shake_offset() -> Vector2:

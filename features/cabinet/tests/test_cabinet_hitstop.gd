@@ -129,3 +129,42 @@ func test_the_crt_clock_keeps_running_through_the_freeze() -> void:
 	var s0 := world.shader_time
 	world.step(DT)
 	assert_float(world.shader_time).is_greater(s0)
+
+
+func _collect_beats() -> Array:
+	var beats: Array = []
+	world.hitstop_started.connect(func(b: StringName) -> void: beats.append(b))
+	return beats
+
+
+func test_signal_fires_with_the_beat_on_a_real_freeze() -> void:
+	var beats := _collect_beats()
+	world.hitstop(3, &"vigil_death")
+	assert_array(beats).is_equal([&"vigil_death"])
+
+
+func test_signal_fires_on_extension_but_not_when_a_larger_freeze_runs() -> void:
+	var beats := _collect_beats()
+	world.hitstop(5, &"a")
+	world.hitstop(3, &"b")
+	world.hitstop(5, &"c")
+	world.hitstop(7, &"d")
+	assert_array(beats).is_equal([&"a", &"d"])
+
+
+func test_signal_silent_for_zero_frames_and_reduced_scale_zero() -> void:
+	var beats := _collect_beats()
+	world.hitstop(0, &"x")
+	SettingsService.set_value(&"reduced_motion", true)
+	var dup := fx.duplicate() as CabinetFxTuning
+	dup.hitstop_reduced_motion_scale = 0.0
+	world.fx_tuning = dup
+	world.hitstop(8, &"y")
+	assert_array(beats).is_empty()
+
+
+func test_real_beats_pass_their_ids() -> void:
+	var beats := _collect_beats()
+	world.vigil.shield = 0.0
+	world.vigil.kill()
+	assert_array(beats).is_equal([&"vigil_death"])
