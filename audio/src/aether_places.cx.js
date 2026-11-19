@@ -31,7 +31,7 @@ const clock = (vol) => Array.from({ length: 12 }, (_, i) => at(i * 1.25,
   noise({ color: "white", dur: 0.006, env: [0.001, 0.01, 0, 0.03], filter: { type: "bp", cutoff: i % 2 ? 2900 : 3300, q: 4 }, vol }),
   tone({ wave: "fm", fm: { ratio: 2.76, index: 1.2, decay: 0.05 }, freq: i % 2 ? 622 : 698, dur: 0.02, env: [0.001, 0.05, 0, 0.12], vol: vol * 0.25 })))
 
-sfx("ruins_room", { loop: true, dur: RL, vol: 0.5, fx: HALL },
+sfx("ruins_hall", { loop: true, dur: RL, vol: 0.5, fx: HALL },
   roomAir(0.3),
   drone(0.08),
   clock(0.1))

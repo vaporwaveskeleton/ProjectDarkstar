@@ -770,7 +770,7 @@ note = "render only, the first Unmaking: the last lamp starves before the protec
 
 [sub_resource type="Resource" id="e85"]
 script = ExtResource("2")
-id = &"ruins_room"
+id = &"ruins_hall"
 doc_id = "R-B"
 act0_only = false
 has_synth_fallback = false

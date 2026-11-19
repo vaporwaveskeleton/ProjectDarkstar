@@ -158,7 +158,7 @@ func test_a_new_bed_replaces_stems_and_unknown_stems_are_dropped() -> void:
 	svc.set_ambience(BED, 1.0, asked)
 	assert_int(svc.ambience_stems().size()).is_equal(1)
 	assert_str(svc.ambience_stems()[0]).is_equal("pm01_threat_1")
-	svc.set_ambience(&"ruins_room")
+	svc.set_ambience(&"ruins_hall")
 	assert_array(svc.ambience_stems()).is_empty()
 
 

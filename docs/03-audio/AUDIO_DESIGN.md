@@ -1621,7 +1621,7 @@ Proposed new cue ids: `decay_bulb_tick`, `decay_crt_off` (one-shots) and the run
 
 Creak: `BUS-FLY`, P4, 1 voice, 1200 ms gate, ±60 cents. Ballast: `BUS-FLY`, P4, 1 voice, 600 ms gate. The pure mapping is `FlightMix.targets(speed01, thrust01, turn01, stats)`; it is fractions of the Vigil's move stats, so a speed change needs no audio work. Smoothing is 0.08 s attack and 0.35 s release ✱.
 
-**Ruins room tone.** `ruins_room` (R-B, 15 s stereo loop, −17.93 / −30.38) carries a 48 BPM clock (12 ticks); `ruins_first_visit` (R-B1, −17.94 / −30.7) is the same room without the clock, because on the first visit time has not started. **No Choir chant in the hub:** the chant means a procession is near (L3), and the Ruins is where it is not; the old `set_chant(0.08)` call is removed. The §2.2 layer C liturgy stays the Lantern-Tree-gated layer and is not built.
+**Ruins room tone.** `ruins_hall` (R-B, 15 s stereo loop, −18.05 / −30.35) carries a 48 BPM clock (12 ticks); `ruins_first_visit` (R-B1, −17.94 / −30.7) is the same room without the clock, because on the first visit time has not started. **No Choir chant in the hub:** the chant means a procession is near (L3), and the Ruins is where it is not; the old `set_chant(0.08)` call is removed. The §2.2 layer C liturgy stays the Lantern-Tree-gated layer and is not built.
 
 **PM-01 bed and threat.** The sector bed `aether_bed_t1` (16 s) carries two threat stems, `pm01_threat_1` (S-T1, −16.95 / −29.42) and `pm01_threat_2` (S-T2, −21.3 / −36.61), 16 s stereo loops locked to the bed's playhead (`set_ambience(id, level, stems)`; a new bed replaces them). Threat escalates by layers, not level: the bed dips 3 dB ✱ while stems enter, each stem taking an equal slice of the threat range. `sector_threat(band, carriers, sepulchre01)` is the maximum of three sources: the Composure band (Frayed 0.35, Unmoored 0.7, Hollowed 1.0), 0.2 per carrier capped at 0.6, and 0.9 x the Sepulchre's progress. `SectorSoundscape` pushes it every 0.25 s; rise 4 s, fall 8 s.
 
@@ -1651,7 +1651,7 @@ A cue never ducks its own bus. A bus carrying a sounding P0 or P1 cue is never d
 | `flight_creak` | 1.22 s | −13.15 / −30.19 |
 | `flight_ballast` | 1.88 s | −12.04 / −26.11 |
 | `unmaking_lamp_out` | 5.97 s | −19.59 / −35.29 |
-| `ruins_room` | 15 s | −17.93 / −30.38 |
+| `ruins_hall` | 15 s | −18.05 / −30.35 |
 | `ruins_first_visit` | 15 s | −17.94 / −30.7 |
 | `pm01_threat_1` | 16 s | −16.95 / −29.42 |
 | `pm01_threat_2` | 16 s | −21.3 / −36.61 |

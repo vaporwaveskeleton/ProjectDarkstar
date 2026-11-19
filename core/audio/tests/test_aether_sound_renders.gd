@@ -6,7 +6,7 @@ extends GdUnitTestSuite
 const AudioServiceScript := preload("res://autoload/audio_service.gd")
 const MONO_LOOPS: Array[StringName] = [&"flight_engine", &"flight_boiler", &"flight_rigging", &"flight_lantern"]
 const MONO_SHOTS: Array[StringName] = [&"flight_creak", &"flight_ballast", &"unmaking_lamp_out"]
-const STEREO_LOOPS: Array[StringName] = [&"ruins_room", &"ruins_first_visit", &"pm01_threat_1", &"pm01_threat_2"]
+const STEREO_LOOPS: Array[StringName] = [&"ruins_hall", &"ruins_first_visit", &"pm01_threat_1", &"pm01_threat_2"]
 const PEAK_CEILING_DBFS := -12.0   ## ✱ AUDIO-001 §12.19 level check
 
 
@@ -51,10 +51,10 @@ func test_every_new_render_keeps_headroom() -> void:
 		assert_float(peak).override_failure_message("%s is silent" % id).is_greater(-60.0)
 
 
-func test_ruins_room_tone_ids() -> void:
+func test_ruins_hall_tone_ids() -> void:
 	var ruins: GDScript = load("res://scenes/ruins/ruins.gd")
 	assert_str(ruins.call(&"room_tone_id", true)).is_equal("ruins_first_visit")
-	assert_str(ruins.call(&"room_tone_id", false)).is_equal("ruins_room")
+	assert_str(ruins.call(&"room_tone_id", false)).is_equal("ruins_hall")
 
 
 func test_lamp_out_ends_at_the_black() -> void:
