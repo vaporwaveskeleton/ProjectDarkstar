@@ -70,18 +70,22 @@ func _resolve(s: Shot) -> bool:
 			v.kill()
 			return true
 		return false
+	var dir := s.vel.normalized()
 	var g := world.geodes.hit_test(s.pos, 1.0)
 	if g != null:
 		s.alive = false
 		world.geodes.lance_hit(g)
+		world.fx.fleck(s.pos, dir)
 		return true
 	if world.grubs.lance_test(s.pos):
 		s.alive = false
+		world.fx.fleck(s.pos, dir)
 		return true
 	if world.acolytes.lance_test(s.pos):
 		s.alive = false
+		world.fx.fleck(s.pos, dir)
 		return true
-	if world.ritual.lance_test(s.pos):
+	if world.ritual.lance_test(s.pos, dir):
 		s.alive = false
 		return true
 	return false

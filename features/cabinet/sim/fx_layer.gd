@@ -25,6 +25,19 @@ class FloatText:
 	var text: String
 	var life: float
 
+class Fleck:
+	var pos: Vector2
+	var vel: Vector2
+	var life: float
+	var max_life: float
+
+class ChalkTick:
+	var pos: Vector2
+	var dir: Vector2      ## unit, perpendicular to the lance
+	var life: float
+
+var flecks: Array[Fleck] = []
+var chalk_ticks: Array[ChalkTick] = []
 var sparks: Array[Spark] = []
 var rings: Array[Ring] = []
 var texts: Array[FloatText] = []
@@ -32,6 +45,8 @@ var texts: Array[FloatText] = []
 
 func reset() -> void:
 	sparks.clear()
+	flecks.clear()
+	chalk_ticks.clear()
 	rings.clear()
 	texts.clear()
 
@@ -47,6 +62,31 @@ func burst(at: Vector2, color: Color, count: int, speed: float) -> void:
 		s.life = s.max_life
 		s.color = color
 		sparks.append(s)
+
+
+## Two 1 px specks leaving perpendicular to the shot (fixed geometry: never touches world.rng).
+func fleck(at: Vector2, dir: Vector2) -> void:
+	var side := dir.normalized().orthogonal()
+	for sgn in [-1.0, 1.0]:
+		if flecks.size() >= MAX_PARTICLES:
+			flecks.remove_at(0)
+		var f := Fleck.new()
+		f.pos = at
+		f.vel = side * world.fx_tuning.fleck_speed_px_s * float(sgn)
+		f.max_life = world.fx_tuning.fleck_life_s
+		f.life = f.max_life
+		flecks.append(f)
+
+
+## A dim dash across the lance's line: the lance cannot hurt this (no rng, no sparks).
+func chalk_tick(at: Vector2, dir: Vector2) -> void:
+	if chalk_ticks.size() >= MAX_TEXTS:
+		chalk_ticks.remove_at(0)
+	var t := ChalkTick.new()
+	t.pos = at
+	t.dir = dir.normalized().orthogonal()
+	t.life = world.fx_tuning.tick_life_s
+	chalk_ticks.append(t)
 
 
 func ring(at: Vector2, color: Color, radius: float) -> void:
@@ -75,6 +115,13 @@ func tick(delta: float) -> void:
 		s.vel *= exp(-2.5 * delta)
 		s.pos = world.torus.wrap(s.pos + s.vel * delta)
 	sparks.assign(sparks.filter(func(s: Spark) -> bool: return s.life > 0.0))
+	for f in flecks:
+		f.life -= delta
+		f.pos = world.torus.wrap(f.pos + f.vel * delta)
+	flecks.assign(flecks.filter(func(f: Fleck) -> bool: return f.life > 0.0))
+	for k in chalk_ticks:
+		k.life -= delta
+	chalk_ticks.assign(chalk_ticks.filter(func(k: ChalkTick) -> bool: return k.life > 0.0))
 	for r in rings:
 		r.life -= delta
 	rings.assign(rings.filter(func(r: Ring) -> bool: return r.life > 0.0))
@@ -92,6 +139,17 @@ func _draw() -> void:
 			continue
 		var c := s.color if s.life > s.max_life * 0.35 else Look.c(Pal.BONE_1)
 		draw_rect(Rect2(world.to_screen(s.pos).round(), Vector2.ONE), c)
+	for f in flecks:
+		if not visible_at(f.pos, 4.0):
+			continue
+		var fc := Look.c(Pal.BONE_4) if f.life > f.max_life * 0.35 else Look.c(Pal.BONE_1)
+		draw_rect(Rect2(world.to_screen(f.pos).round(), Vector2.ONE), fc)
+	for k in chalk_ticks:
+		if not visible_at(k.pos, 8.0):
+			continue
+		var half := world.fx_tuning.tick_len_px * 0.5
+		var kc := world.to_screen(k.pos).round()
+		draw_line((kc - k.dir * half).round(), (kc + k.dir * half).round(), Look.c(Pal.BONE_2), 1.0)
 	for r in rings:
 		if not visible_at(r.pos, r.radius):
 			continue

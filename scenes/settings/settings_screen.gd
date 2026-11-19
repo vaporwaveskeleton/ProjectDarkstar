@@ -6,6 +6,7 @@ extends Screen
 @onready var _reduced_motion: CheckButton = %ReducedMotion
 @onready var _photosensitivity: CheckButton = %Photosensitivity
 @onready var _steady_ledger: CheckButton = %SteadyLedger
+@onready var _muzzle_flash: CheckButton = %MuzzleFlash
 @onready var _back: Button = %Back
 
 var _toggles: Dictionary = {}   # CheckButton -> setting key
@@ -17,6 +18,7 @@ func _ready() -> void:
 		_reduced_motion: &"reduced_motion",
 		_photosensitivity: &"photosensitivity",
 		_steady_ledger: &"steady_ledger",
+		_muzzle_flash: &"muzzle_flash",
 	}
 	refresh()
 	for cb: CheckButton in _toggles:

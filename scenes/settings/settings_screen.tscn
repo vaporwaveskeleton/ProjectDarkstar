@@ -73,12 +73,20 @@ text = "SETTINGS_PHOTOSENSITIVITY"
 unique_name_in_owner = true
 layout_mode = 2
 focus_neighbor_top = NodePath("../Photosensitivity")
-focus_neighbor_bottom = NodePath("../Back")
+focus_neighbor_bottom = NodePath("../MuzzleFlash")
 text = "SETTINGS_STEADY_LEDGER"
+
+[node name="MuzzleFlash" type="CheckButton" parent="Center/Panel/Scroll/Rows"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_neighbor_top = NodePath("../SteadyLedger")
+focus_neighbor_bottom = NodePath("../Back")
+tooltip_text = "SETTINGS_MUZZLE_FLASH_DESC"
+text = "SETTINGS_MUZZLE_FLASH"
 
 [node name="Back" type="Button" parent="Center/Panel/Scroll/Rows"]
 unique_name_in_owner = true
 layout_mode = 2
-focus_neighbor_top = NodePath("../SteadyLedger")
+focus_neighbor_top = NodePath("../MuzzleFlash")
 focus_neighbor_bottom = NodePath("../LargeText")
 text = "MENU_BACK"

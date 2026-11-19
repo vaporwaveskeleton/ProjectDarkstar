@@ -373,7 +373,7 @@ Code: `features/cabinet/bezel_art.gd`, `bezel_piece.gd`, `bezel_print.gd`, `cabi
 | Charge pip shatter | 3 frames | 1 frame (final state) | 3 frames, no bright flash |
 | Glyph corruption | per WARP-001 | per WARP-001 | static, never flickers |
 
-Hard rule shared with GDD-001 §10: **no variant removes information.** Every replaced effect keeps its meaning through a steady visual. No UI element may flash more than 3 times in any one second in any mode.
+Hard rule shared with GDD-001 §10: **no variant removes information.** Every replaced effect keeps its meaning through a steady visual. No UI element may flash more than 3 times in any one second in any mode. (Owner ruling 2026-11-18: the few-pixel muzzle star is not a luminance flash under this rule; see AUDIO-001 §8.3.)
 
 ### 12.10 UI art definition of done
 1. 9-slice sources on the 4 px sub-grid, all §12.2 states drawn, every colour a palette entry from this section.

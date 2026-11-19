@@ -69,6 +69,14 @@ msgstr "Photosensitivity Mode"
 msgid "SETTINGS_STEADY_LEDGER"
 msgstr "Steady Ledger"
 
+#. Toggle: the brief spark at the gun when you fire. On by default; also off whenever Photosensitivity Mode is on.
+msgid "SETTINGS_MUZZLE_FLASH"
+msgstr "Weapon Muzzle Flash"
+
+#. Tooltip for the muzzle flash toggle.
+msgid "SETTINGS_MUZZLE_FLASH_DESC"
+msgstr "Shows a brief spark at the gun each time you fire. Turn it off if flashes bother you."
+
 #. HUD readout of the Vigil's remaining hull. {count} is a number.
 msgid "HUD_HULL_COUNT"
 msgid_plural "HUD_HULL_COUNT_PLURAL"
