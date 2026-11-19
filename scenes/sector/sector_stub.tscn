@@ -1,4 +1,4 @@
-[gd_scene load_steps=27 format=3]
+[gd_scene load_steps=31 format=3]
 
 [ext_resource type="Script" path="res://scenes/sector/sector_stub.gd" id="1"]
 [ext_resource type="PackedScene" path="res://features/vigil/vigil.tscn" id="2"]
@@ -24,6 +24,10 @@
 [ext_resource type="Resource" path="res://data/sepulchre/sepulchre.tres" id="22"]
 [ext_resource type="Script" path="res://features/choir/grub_procession.gd" id="23"]
 [ext_resource type="Resource" path="res://data/choir/grub.tres" id="24"]
+[ext_resource type="Script" path="res://features/composure/composure.gd" id="25"]
+[ext_resource type="Resource" path="res://data/composure/composure.tres" id="26"]
+[ext_resource type="Script" path="res://features/hud/composure_wick.gd" id="27"]
+[ext_resource type="Resource" path="res://data/hud/composure_wick.tres" id="28"]
 
 [node name="SectorStub" type="Node2D"]
 script = ExtResource("1")
@@ -61,6 +65,11 @@ unique_name_in_owner = true
 script = ExtResource("18")
 stats = ExtResource("19")
 magazine = NodePath("../ChargeMagazine")
+
+[node name="Composure" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("25")
+stats = ExtResource("26")
 
 [node name="GrubProcession" type="Node" parent="." node_paths=PackedStringArray("shard_field")]
 unique_name_in_owner = true
@@ -114,6 +123,24 @@ grow_horizontal = 2
 mouse_filter = 2
 script = ExtResource("6")
 stats = ExtResource("7")
+
+[node name="ComposureWick" type="Control" parent="Hud"]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -68.0
+offset_top = -20.0
+offset_right = -4.0
+offset_bottom = -4.0
+grow_horizontal = 0
+grow_vertical = 0
+mouse_filter = 2
+script = ExtResource("27")
+stats = ExtResource("28")
 
 [node name="Overlays" type="CanvasLayer" parent="."]
 unique_name_in_owner = true
