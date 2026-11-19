@@ -51,12 +51,15 @@ const PROP_USED := &"used"
 const PROP_STATES: Array[StringName] = [PROP_IDLE, PROP_FOCUSED, PROP_USED]
 
 @export var data: RuinsLookData = preload("res://data/aether/ruins/ruins_look.tres")
-## Gallery-only stand-ins for the objects M1 owns (desk, Cabinet, Codex desk, Hourglass, Tree).
+## The Ruins objects (Q-T193: `RuinsObjects`, the Chalk Desk, Cabinet, Codex desk, Hourglass and the
+## hangar gate as lamp-lit vector art) and the stand-in Tree (until the Tree feature lands). Off in the
+## bare look; the Ruins scene and the gallery switch them on.
 @export var show_placeholders: bool = false:
 	set(v):
 		show_placeholders = v
 		if is_node_ready():
 			_placeholders.visible = v
+			_objects.visible = v
 @export var hangar_mouth_rect := Rect2(484.0, 116.0, 132.0, 186.0):
 	set(v):
 		hangar_mouth_rect = v
@@ -118,6 +121,7 @@ class Prop:
 @onready var _set: RuinsSet = %Set
 @onready var _foreground: RuinsForeground = %Foreground
 @onready var _placeholders: RuinsPlaceholders = %Placeholders
+@onready var _objects: RuinsObjects = %Objects
 @onready var _lamp_root: Node2D = %Lamps
 @onready var _haze: ColorRect = %Haze
 @onready var _mouth_light: PointLight2D = %MouthLight
@@ -141,6 +145,8 @@ func _ready() -> void:
 	_foreground.configure(data)
 	_placeholders.configure(data)
 	_placeholders.visible = show_placeholders
+	_objects.configure(data)
+	_objects.visible = show_placeholders
 	_surface_params()
 	if data.outside_look != null:
 		view.apply_glow(data.outside_look)
@@ -310,11 +316,16 @@ func _apply_prop(p: Prop) -> void:
 	p.node.modulate = Color(p.base.r * p.tint.r, p.base.g * p.tint.g, p.base.b * p.tint.b, p.base.a)
 
 
-## The stand-in Hourglass's sand above the neck (0…1) and whether it is falling (the Ruins scene
-## mirrors RunSession here; the look owns no clock).
+## The Hourglass's sand above the neck (0…1) and whether it is falling (the Ruins scene mirrors
+## RunSession here; the look owns no clock).
 func set_sand(fraction: float, falling: bool) -> void:
-	_placeholders.sand = fraction
-	_placeholders.sand_falling = falling
+	_objects.sand = fraction
+	_objects.sand_falling = falling
+
+
+## The Ruins objects layer (Q-T193; tests and gallery).
+func objects() -> RuinsObjects:
+	return _objects
 
 
 ## Where the placeholder Tree hangs its lamps (gallery use).
@@ -343,6 +354,7 @@ func step(delta: float) -> void:
 	for l in _lamps:
 		l.step(delta)
 	_step_props(delta)
+	_objects.set_time(time_s)
 	_sync()
 
 
@@ -361,6 +373,7 @@ func _layout() -> void:
 	_set.set_layout(hangar_mouth_rect, floor_y, HOLE_C, HOLE_R)
 	_set.orrery_at = Vector2(lerpf(hall_lantern_pos.x, hangar_mouth_rect.position.x, 0.5), 92.0)
 	_placeholders.set_markers(chalk_desk_pos, cabinet_pos, codex_desk_pos, hourglass_pos, placeholder_tree_pos)
+	_objects.set_markers(chalk_desk_pos, cabinet_pos, codex_desk_pos, hourglass_pos, hangar_mouth_rect, floor_y)
 	_mouth_light.position = Vector2(hangar_mouth_rect.get_center().x, floor_y - 14.0)
 	_hourglass_light.position = hourglass_pos + Vector2(0.0, -18.0)
 	_cabinet_light.position = cabinet_pos + Vector2(0.0, -10.0)
