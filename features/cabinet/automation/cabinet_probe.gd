@@ -7,7 +7,8 @@ extends RefCounted
 ##   cabinet/score     score, lives
 ##   cabinet/record    grubs_destroyed, glass_mined, charges_thrown, glass_carried
 ##   cabinet/vigil     alive, shield, pos_x, pos_y, use_scripted, killer_kind ("none"|"entity"|"shot", from the LATEST
-##                     S6 death mark), killer_dx, killer_dy (torus delta death spot -> mark killer_pos), killer_on_screen, death_marks
+##                     S6 death mark), killer_dx, killer_dy (torus delta death spot -> mark killer_pos), killer_on_screen, death_marks,
+##                     death_outline, death_arrow (0..1 chalk draw progress of the latest mark; 0 with no mark)
 ##   cabinet/world     acolytes, grubs, geodes, shots, hostile_shots, charges, paused_sim, sim_scale, hitstop_left, time,
 ##                     death_marks, entity_awake, entity_dx, entity_dy (torus delta Vigil -> entity; 0 unless awake)
 ##   cabinet/acolyte/<id>    alive, hp, pos_x, pos_y, on_screen, dx, dy (torus delta from the Vigil)
@@ -27,7 +28,8 @@ const SINGLETONS: Dictionary = {
 	"cabinet/game": ["state", "stage_index", "demo"],
 	"cabinet/score": ["score", "lives"],
 	"cabinet/record": ["grubs_destroyed", "glass_mined", "charges_thrown", "glass_carried"],
-	"cabinet/vigil": ["alive", "shield", "pos_x", "pos_y", "use_scripted", "killer_kind", "killer_dx", "killer_dy", "killer_on_screen", "death_marks"],
+	"cabinet/vigil": ["alive", "shield", "pos_x", "pos_y", "use_scripted", "killer_kind", "killer_dx", "killer_dy", "killer_on_screen", "death_marks",
+		"death_outline", "death_arrow"],
 	"cabinet/world": ["acolytes", "grubs", "geodes", "shots", "hostile_shots", "charges", "paused_sim", "sim_scale", "hitstop_left", "time",
 		"death_marks", "entity_awake", "entity_dx", "entity_dy"],
 }
@@ -191,7 +193,8 @@ func _world_props() -> Dictionary:
 ## drawn radius is over the death_big_killer_px tuning value (FxLayer.death_is_big, the same cutoff).
 func _killer_props() -> Dictionary:
 	var marks: Array[FxLayer.DeathMark] = _world.fx.death_marks
-	var out := {"killer_kind": "none", "killer_dx": 0.0, "killer_dy": 0.0, "killer_on_screen": false, "death_marks": marks.size()}
+	var out := {"killer_kind": "none", "killer_dx": 0.0, "killer_dy": 0.0, "killer_on_screen": false, "death_marks": marks.size(),
+		"death_outline": 0.0, "death_arrow": 0.0}
 	if marks.is_empty():
 		return out
 	var m: FxLayer.DeathMark = marks.back()
@@ -200,6 +203,8 @@ func _killer_props() -> Dictionary:
 	out["killer_dx"] = d.x
 	out["killer_dy"] = d.y
 	out["killer_on_screen"] = _world.on_screen(m.killer_pos, 0.0)
+	out["death_outline"] = _world.fx.death_outline_frac(m)   # 0..1 chalk draw progress; 1 at once after the delay under Reduced Motion
+	out["death_arrow"] = _world.fx.death_arrow_frac(m)
 	return out
 
 
