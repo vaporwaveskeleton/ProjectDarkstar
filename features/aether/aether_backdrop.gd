@@ -23,7 +23,7 @@ const ENTITY_ANCHOR := Vector2(585.0, 30.0)
 const ENTITY_MAX_RADIUS := 215.0
 ## ✱ T5: pieces of torn edges entering from the frame borders (layer position, radius).
 const HOLES: Array[Vector3] = [Vector3(-40.0, 150.0, 120.0), Vector3(700.0, 345.0, 150.0), Vector3(285.0, -78.0, 96.0)]
-## ✱ tendril growth of the T5 edges (the main entity's grows with drain).
+## ✱ edge-fracture growth of the T5 edges (the main entity's grows with drain).
 const HOLE_GROWTH := 0.55
 ## ✱ seconds per full turn of the shared life current (the field turns as one).
 const CURRENT_TURN_S := 40.0
@@ -155,10 +155,12 @@ func apply_look(new_look: AetherLook) -> void:
 	_sphere.set_param(&"shells", q.nested_shells)
 	_sphere.set_param(&"wrong_strength", look.wrong_seam_strength)
 	_sphere.set_param(&"crack_amount", look.sphere_crack)
+	_sphere.set_param(&"numerals", 1 if look.meridian_numerals else 0)
 	_cracks.set_param(&"edge_col", look.crack_edge)
 	_cracks.set_param(&"seam_col", Pal.PHOS_5)
 	_cracks.set_param(&"behind_a", look.behind_a)
 	_cracks.set_param(&"behind_b", look.behind_b)
+	_cracks.set_param(&"behind_star", Pal.BONE_4)
 	_cracks.set_param(&"floor_col", Pal.VOID_0)
 	_cracks.set_param(&"amount", look.crack_amount)
 	_cracks.set_param(&"sphere_c", _sphere.sphere_centre - COVER.position)
@@ -193,7 +195,7 @@ func set_tier(new_tier: int) -> void:
 		m.set_shader_parameter(&"tier", tier)
 
 
-## 0 = the world untouched … 1 = the entity has drunk it. Grows the main entity and its filaments,
+## 0 = the world untouched … 1 = the entity has drunk it. Grows the main entity and its fractures,
 ## gives the world its cold cast, stops life. Never drains below VOID_0.
 func set_drain(amount: float) -> void:
 	drain = clampf(amount, 0.0, 1.0)

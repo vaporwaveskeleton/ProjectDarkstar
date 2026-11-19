@@ -78,6 +78,9 @@ extends TunableResource
 @export var set_ring_fragments: bool = false
 ## Holes of true black in the far field (T5).
 @export var black_holes: bool = false
+## Crisp engraved Roman numerals I–XII on the brass meridian band (pass 4, Q-T92; decorative
+## engraving, not UI text). Off = graduations only. Pending PM approval.
+@export var meridian_numerals: bool = true
 
 @export_group("Design (owner to set)")
 ## owner to set (design number; placeholder for the dev gallery only). Fog density multiplier in the central play area, 0–1.
