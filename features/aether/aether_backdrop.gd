@@ -65,6 +65,8 @@ var photosensitive := false
 var _enabled: Dictionary = {}
 var _reveal_life_on := false
 var _mats: Array[ShaderMaterial] = []
+## The cinematic erasure (AetherArrival) drives the main entity directly; set_drain then leaves it.
+var _erasure := false
 
 @onready var _far_layer: Parallax2D = %FarLayer
 @onready var _sky_layer: Parallax2D = %SkyLayer
@@ -232,8 +234,9 @@ func set_drain(amount: float) -> void:
 		return
 	var base := look.base_drain if look != null else 0.0
 	var growth := clampf((drain - base) / maxf(1.0 - base, 0.001), 0.0, 1.0)
-	_entity.radius = ENTITY_MAX_RADIUS * smoothstep(0.0, 1.0, growth)
-	_entity.set_growth(smoothstep(0.1, 1.0, growth))
+	if not _erasure:
+		_entity.radius = ENTITY_MAX_RADIUS * smoothstep(0.0, 1.0, growth)
+		_entity.set_growth(smoothstep(0.1, 1.0, growth))
 	for i in _holes.size():
 		_holes[i].radius = HOLES[i].z if (look != null and look.black_holes) else 0.0
 		_holes[i].set_growth(HOLE_GROWTH)
@@ -241,6 +244,47 @@ func set_drain(amount: float) -> void:
 	if drain - base > PRESENCE_FLEE_DRAIN or _entity.radius > 0.5:
 		_presence.presence_flee()
 	_refresh_visibility()
+
+
+## The first Unmaking's erasure front (AetherArrival, beats 5–6): the main entity is placed at
+## `screen_centre` (logical px on this backdrop's screen, converted into its parallax layer) with
+## `radius` px and edge-fracture `growth` 0..1, instead of being sized by drain. `reach` (px) sizes
+## its quad (the largest radius the caller will ask for); `outline_seed` (optional) turns its outline.
+## Inside it is the only true black (ART-001 §16.1); the loss stages around it stop the stars, the
+## fog's scatter and the sphere seam. clear_erasure() hands the entity back to drain.
+func set_erasure(screen_centre: Vector2, radius: float, growth: float, reach: float = 0.0, outline_seed: float = NAN) -> void:
+	_erasure = true
+	if reach > _entity.max_radius:
+		_entity.max_radius = reach
+	if not is_nan(outline_seed) and outline_seed != _entity.seed:
+		_entity.seed = outline_seed
+		_entity.set_param(&"seed", outline_seed)
+	var layer := _entity.get_parent() as CanvasItem
+	var local := screen_centre
+	if layer != null and layer.is_inside_tree():
+		local = layer.get_global_transform_with_canvas().affine_inverse() * screen_centre
+	_entity.centre = local
+	_entity.radius = radius
+	_entity.set_growth(growth)
+	if _entity.radius > 0.5:
+		_presence.presence_flee()
+	_refresh_visibility()
+
+
+func clear_erasure() -> void:
+	_erasure = false
+	_entity.max_radius = ENTITY_MAX_RADIUS
+	_entity.centre = ENTITY_ANCHOR
+	set_drain(drain)
+
+
+func is_erasing() -> bool:
+	return _erasure
+
+
+## The main entity's current screen mask: xy centre (logical px), z radius, w 1 when showing.
+func entity_mask() -> Vector4:
+	return _entity.screen_mask()
 
 
 ## The Presence turns and leaves (ZONES-001 §2.3). Also happens on its own when the entity drains.
