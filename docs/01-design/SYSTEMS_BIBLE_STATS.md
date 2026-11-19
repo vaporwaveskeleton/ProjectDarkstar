@@ -385,15 +385,15 @@ Hunger raises the entity only. It never reduces player currency (GDD P4: progres
 | Slow-mo ramp in (`ds_cabinet.fx.slowmo_ramp_in_s`) | 0.15 s ⚙ | real time, 1.0 to the slow-mo scale; owner-approved 2026-11-18 |
 | Slow-mo ramp out (`ds_cabinet.fx.slowmo_ramp_out_s`) | 0.2 s ⚙ | real time, back to 1.0 when the lethal condition clears; owner-approved 2026-11-18 |
 | Slow-mo failsafe (`ds_cabinet.fx.slowmo_max_real_s`) | 2.5 s ⚙ | real-time cap per episode; owner-approved 2026-11-18 |
-| Lance bite, muzzle star size (`ds_cabinet.fx.muzzle_star_px`) | 3 px ⚙ | arm length of the muzzle plus; a few-pixel vector star is not a luminance flash (AUDIO-001 §8.3 ruling); owner-approved 2026-11-18 (TECH-001 Q-T50) |
-| Lance bite, muzzle star duration (`ds_cabinet.fx.muzzle_star_frames`) | 1 drawn frame ⚙ | owner-approved 2026-11-18 |
-| Lance bite, recoil (`ds_cabinet.fx.recoil_px`) | 1 px ⚙ | visual-only draw nudge opposite the aim; never moves position or velocity, so §1.3 "no recoil" holds; owner-approved 2026-11-18 |
-| Lance bite, recoil duration (`ds_cabinet.fx.recoil_frames`) | 2 drawn frames ⚙ | owner-approved 2026-11-18 |
-| Lance bite, impact fleck speed (`ds_cabinet.fx.fleck_speed_px_s`) | 60 px/s ⚙ | flecks leave perpendicular to the shot; owner-approved 2026-11-18 |
-| Lance bite, impact fleck life (`ds_cabinet.fx.fleck_life_s`) | 0.12 s ⚙ | owner-approved 2026-11-18 |
-| Lance bite, chalk tick length (`ds_cabinet.fx.tick_len_px`) | 3 px ⚙ | the tick where the lance cannot bite (Sepulchre, entity); owner-approved 2026-11-18 |
-| Lance bite, chalk tick life (`ds_cabinet.fx.tick_life_s`) | 0.15 s ⚙ | owner-approved 2026-11-18 |
-| Lance bite, `lance_dull` cue volume (`ds_cabinet.fx.lance_dull_db`) | 0.0 dB ⚙ | offset on the cue's own level (AUDIO-001 §12.11); owner-approved 2026-11-18 |
+| Lance bite, muzzle star size (`ds_cabinet.fx.muzzle_star_px`; M1 `ds_arc_lance.fx.muzzle_star_px`) | 3 px ⚙ | arm length of the muzzle plus; a few-pixel vector star is not a luminance flash (AUDIO-001 §8.3 ruling); owner-approved 2026-11-18 (TECH-001 Q-T50) |
+| Lance bite, muzzle star duration (`ds_cabinet.fx.muzzle_star_frames`; M1 `ds_arc_lance.fx.muzzle_star_frames`) | 1 drawn frame ⚙ | owner-approved 2026-11-18 |
+| Lance bite, recoil (`ds_cabinet.fx.recoil_px`; M1 `ds_arc_lance.fx.recoil_px`) | 1 px ⚙ | visual-only draw nudge opposite the aim; never moves position or velocity, so §1.3 "no recoil" holds; owner-approved 2026-11-18 |
+| Lance bite, recoil duration (`ds_cabinet.fx.recoil_frames`; M1 `ds_arc_lance.fx.recoil_frames`) | 2 drawn frames ⚙ | owner-approved 2026-11-18 |
+| Lance bite, impact fleck speed (`ds_cabinet.fx.fleck_speed_px_s`; M1 `ds_arc_lance.fx.fleck_speed_px_s`) | 60 px/s ⚙ | flecks leave perpendicular to the shot; owner-approved 2026-11-18 |
+| Lance bite, impact fleck life (`ds_cabinet.fx.fleck_life_s`; M1 `ds_arc_lance.fx.fleck_life_s`) | 0.12 s ⚙ | owner-approved 2026-11-18 |
+| Lance bite, chalk tick length (`ds_cabinet.fx.tick_len_px`; M1 `ds_arc_lance.fx.tick_len_px`) | 3 px ⚙ | the tick where the lance cannot bite (Sepulchre, entity; in M1 any hurtbox with `bites` off); owner-approved 2026-11-18 |
+| Lance bite, chalk tick life (`ds_cabinet.fx.tick_life_s`; M1 `ds_arc_lance.fx.tick_life_s`) | 0.15 s ⚙ | owner-approved 2026-11-18 |
+| Lance bite, `lance_dull` cue volume (`ds_cabinet.fx.lance_dull_db`; M1 `ds_arc_lance.fx.lance_dull_db`) | 0.0 dB ⚙ | offset on the cue's own level (AUDIO-001 §12.11); owner-approved 2026-11-18 |
 
 Hit-stop does **not** count toward the 1.5 s "Player agency loss" budget above: it is a presentation freeze with input buffered, not a warp effect. The last-Charge slow-mo is likewise not a warp effect and is not counted in that budget: it slows the sim only and the player keeps control (the Vigil runs at real speed).
 
