@@ -1,6 +1,8 @@
 # DARKSTAR — Zones & Encounters
 
-**Doc ID:** ZONES-001 · **Version:** 1.0 · **Date:** 2026-11-14 · **Owner:** Design (levels) · **Upstream:** `GDD_DARKSTAR_v0.2.md` (GDD-001), `SYSTEMS_BIBLE_STATS.md` (SYS-001), `ART_BIBLE.md` (ART-001) · **Downstream:** `TECH_ARCHITECTURE.md` (kit scene tree, generator), `ASSET_PIPELINE.md` / `SPRITE_MANIFEST.csv` (kit art asks), `PRODUCTION_PLAN_MILESTONES.md` (kit build order)
+**Doc ID:** ZONES-001 · **Version:** 1.1 · **Date:** 2026-11-18 · **Owner:** Design (levels) · **Upstream:** `GDD_DARKSTAR_v0.2.md` (GDD-001), `SYSTEMS_BIBLE_STATS.md` (SYS-001), `ART_BIBLE.md` (ART-001) · **Downstream:** `TECH_ARCHITECTURE.md` (kit scene tree, generator), `ASSET_PIPELINE.md` / `SPRITE_MANIFEST.csv` (kit art asks), `PRODUCTION_PLAN_MILESTONES.md` (kit build order)
+
+**Rev 1.1 (2026-11-18):** cosmic horror design rev 3 applied, per PM ruling 2026-11-18 (owner grant), cosmic horror design rev 3 (decisions CHD-02, -03, -07, -09, -10, -11, -12, -13, -16): Presences and biome grief stories (§2.3, §2.4); the uncharted reserve (§3.8, reserve marks in §3); the Passing budget note (§4.2); §4.4 rule 3 and rule 7 exemptions; death-site Penitents (§4.5); kit memory (§4.8); the Procession (§6.6); Your Own Vigil route mimicry (§7.1); Herald rumours (§8.3); the deferred Twist-deck row (§10 Q-06). **Same-day reconciliation (2026-11-18):** rekindled Penitents share the per-sector Penitent cap, precedence Coma → rekindled → other death-site (§4.5); §4.8 quotes the corrected kit-memory sim (five gate kits; DO-02 is not one).
 
 ---
 
@@ -164,6 +166,41 @@ Six biomes (GDD §8.8), rotated by iteration. Palette references are ART-001 §4
 
 Act 0's three levels are hand-authored and are **not** kits (GDD §6.1); no kit here is reused as an Act 0 level, so the arcade costume can be torn away without touching the real level layer (ART-001 §7).
 
+### 2.3 Presences (one per biome)
+
+PM ruling 2026-11-18 (owner grant), cosmic horror design rev 3, CHD-03. Each biome has one **Presence**: a vast, slow, glowing silhouette in the far fog, bigger than the playfield, alive and indifferent to the player. "Presence" is a doc term (GDD §19), never shown on screen; the labels below are working labels for docs, not glossary nouns.
+
+| Biome | Presence (working label) | What it is doing |
+|---|---|---|
+| **Pale Marches** | a frost-drifting thing like a migrating ice shelf, with a slow heartbeat of light | migrating |
+| **Ossuary Belt** | something grazing on the dead god's far vertebrae | grazing |
+| **The Litany** | a vast bell-shape that swings once a Seam; the Choir time their Litany to it | tolling |
+| **Green Rot** | a reef that is breathing | breathing |
+| **The Drowned Observatory** | a lens-like, eyeless disc that turns when gravity inverts (§5.2) | turning |
+| **The Black** | **none.** Its absence is the Presence: the only biome where nothing lives and nothing flees | gone |
+
+Level-side rules:
+- **Never a hitbox.** A Presence lives in the far layer (`Art/LayerBack`, §1.7) only. It has no collision, blocks no sightline, counts against no foreground budget (§1.7 `Fore`) and is invisible to the lint (§1.5).
+- **No extra light in the play layer.** A Presence never lights a geode, a unit, a light pocket or an unlit corridor; the ART-001 §16.3 readability rules hold.
+- **It flees the entity.** A Presence leaving is the **first tell of the Passing** (§4.2; WARP-001 §2 owns the event). In The Black, which has no Presence, the Passing's tells start at the leading edge.
+- **Lantern-down reveal:** with the Lantern up, the Presence is a vague mass in the fog; with it down, far-layer life and the Presence's full lit pattern show, and at T3+ so do the places where the Aether is already gone. The reveal changes nothing in the play layer, so it neither helps nor hinders aiming; it pays out through the existing dark-flight Composure gain (SYS-001 §1.5).
+- The Aether art chat's "leviathan" is the **T3 Presence silhouette**. The look, the far-layer art and the T0–T5 progression are ART-001's (§16, handed to the Aether art chat); this doc owns only the rules above.
+
+### 2.4 Biome grief stories (placement)
+
+PM ruling 2026-11-18 (owner grant), cosmic horror design rev 3, CHD-16. Each biome tells one environmental story in art only, confirmed afterwards by a Codex entry. NARR-001 §8 owns the Codex text; the ids below are listed here so the stories can be placed.
+
+| Biome | The story in the fog | Codex id (stamped after) |
+|---|---|---|
+| **Pale Marches** | an Office recruitment sign, KEEP THE VIGIL, frosted over and still lit | `cx_place_marches_sign` |
+| **Ossuary Belt** | survey stakes in the vertebrae, numbered past the last one anyone mined | `cx_place_belt_stakes` |
+| **The Litany** | one pew in the cathedral is lit; the others are dark (the Lampkeeper's place, kept) | `cx_place_litany_pew` |
+| **Green Rot** | a Vigil hull overgrown into the reef, its lamp still lit (the same idea as death-site Penitents, §4.5) | `cx_place_rot_hull` |
+| **The Drowned Observatory** | a lantern floating upward through the inverted hall, never arriving | `cx_place_observatory_lantern` |
+| **The Black** | the brass ring of a Lampkeeper, unlit, turning slowly | `cx_vigil_unlit_ring` |
+
+Placement rules: a grief story is **art only** (no collision, no hitbox, no light cast into the play layer, no lint effect), and sits in the biome's own geometry set or far layer. Any words on a prop (the Pale Marches sign) are player-visible text and go through a `tr()` key (L10N-001). Which kits of each biome carry the story, and how often it is drawn, is not yet decided (owed to Design (levels) with the Aether art chat).
+
 ---
 
 ## 3. The 32 Encounter Kits
@@ -182,7 +219,7 @@ Threat points are authored **at T0–T1** and must sit inside the Seam band for 
 | PM-02 | Dark Throat | Pale Marches | 1, 2 | 11 | A lit geode shelf above a 96 px unlit corridor that runs the full seam edge; one light pocket | 8 geodes / 24 | 7 Grub (route), 1 Acolyte at the throat | Active | **You can walk the deposit path with your lantern down and strip shards out of a Grub procession** — detection −60% (SYS-001 §1.2) — because the only thing glowing in that corridor is the shard overhead in the Grub's claws. | dark pack is a no-op (already dark); ring on; Acolyte count ×2 | authored, **L** |
 | PM-03 | Twin Drift | Pale Marches | 1, 2 | 9 | Two geode clusters straddling the left/right wrap pair, mirrored across the throat; shards drift toward the edge | 9 geodes / 27 | 5 Grub, 1 Grub pair on the return leg | **Cold** | **The two clusters are the same cluster, wrapped:** every shard you knock off the left face arrives, still drifting, on the right — and a Grub picks it up there. | mirror policy `horizontal` enforced; wrap pair → roulette pair | authored |
 | PM-04 | Censer Shelf | Pale Marches | 2 | 14 | One lit shelf on a bone spur, one unlit lane below, one shrine anchor at the spur foot | 9 geodes / 27 | 1 Acolyte (turret on the spur), 5 Grub | Active | **The geodes are ore for both sides:** the Acolyte mines at 50% rate (SYS-001 §3), so every face you leave standing is a segment the Choir gets for free, and the kill order is ore-then-knight, not the reverse. | dark pack; second Acolyte; unlit lane widened | authored |
-| PM-05 | Sacred Ground | Pale Marches | 2 | 15 | One geode cluster, one seeded Shrine at the cluster's edge, one light pocket, one choke | 8 geodes / 24 | 1 Grave-Tide Deceiver, 6 Grub | Active | **The Shrine is your only cover, and it is also the trap:** Choir units hold fire within 120 px of it (SYS-001 §3.1), but if you fire while standing there, the nearest geode converts to a second Shrine and Corruption ticks (GDD §8.5, SYS-001 §6). | dark pack; Deceiver count 2; a third Shrine anchor seeds at T4 | authored, **S** |
+| PM-05 | Sacred Ground | Pale Marches | 2 | 15 | One geode cluster, one seeded Shrine at the cluster's edge, one light pocket, one choke | 8 geodes / 24 | 1 Grave-Tide Deceiver, 6 Grub | Active | **The Shrine is your only cover, and it is also the trap:** Choir units hold fire within 120 px of it (SYS-001 §3.1), but if you fire while standing there, the nearest geode converts to a second Shrine and Corruption ticks (GDD §8.5, SYS-001 §6). | dark pack; Deceiver count 2; a third Shrine anchor seeds at T4 | authored, **S** — **reserve** (§3.8) |
 | PM-06 | Procession Cut | Pale Marches | 2, 3 | 18 | Two procession routes crossing in an X above the entry anchor; one elbow reachable only across the ice band; one Listener | 9 geodes / 27 | 8 Grub on two routes, 1 Listener | Active | **You can cut the procession's route:** the elbow is a 40 px ✱ hop across the ice band, and the 2–3 shards a route drops into the Sepulchre per lap (SYS-001 §3 carry 1, §2 shard 3 = 1 segment) are the difference between a build and a build you arrive late to. | ring on; route waypoints +1 ✱; Listener swaps to Deacon at Seam 4 | authored |
 
 ### 3.2 Ossuary Belt — 6 kits
@@ -190,7 +227,7 @@ Threat points are authored **at T0–T1** and must sit inside the Seam band for 
 | Kit ID | Name | Biome | Seam slots | Threat pts | Geometry (what is on screen) | Geodes / shards on offer | Choir mix | Sepulchre? | Twist | Warp re-key (T3+) | Status |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | OB-01 | Over-Fire Gallery | Ossuary Belt | 1 | 11 | Dead-end gallery, 3 geodes stacked in a pit, a ceiling overhang, one 96 px unlit lane, Grub nest at the pit foot | 10 geodes / 30 | 7 Grub | **Cold** | **Detonating in the pit feeds the gallery:** the 140 px scatter (SYS-001 §1.3) drops the shards into the Grub nest below and the keening starts before you have turned around. | dark pack; pit becomes a light pocket at T4 (the only light is your lantern) | authored |
-| OB-02 | Censer Walk | Ossuary Belt | 2 | 15 | Two bone towers on opposite galleries, a crossfire corridor between them, one unlit lane hugging the floor | 9 geodes / 27 | 2 Acolyte (one per tower), 5 Grub | **Cold** | **The towers cover each other's base:** the 0.25 s turret lag (SYS-001 §3) is the only door through the crossfire, and leading the body beats the censer — the corridor is walkable the instant you read the swing. | dark pack; 3rd Acolyte on the ceiling gallery; crossfire cone widens at T4+ (gaze cone rule, SYS-001 §2.1) | authored |
+| OB-02 | Censer Walk | Ossuary Belt | 2 | 15 | Two bone towers on opposite galleries, a crossfire corridor between them, one unlit lane hugging the floor | 9 geodes / 27 | 2 Acolyte (one per tower), 5 Grub | **Cold** | **The towers cover each other's base:** the 0.25 s turret lag (SYS-001 §3) is the only door through the crossfire, and leading the body beats the censer — the corridor is walkable the instant you read the swing. | dark pack; 3rd Acolyte on the ceiling gallery; crossfire cone widens at T4+ (gaze cone rule, SYS-001 §2.1) | authored — **reserve** (§3.8) |
 | OB-03 | Stacked Reliquary | Ossuary Belt | 2, 3 | 16 | Two-storey geode stack over a pit whose floor is the deposit path; one light pocket at the stack top | 11 geodes / 33 | 6 Grub (pit floor), 1 Acolyte (upper gallery) | Active | **Mining the stack feeds the pit:** shards fall out of your reach and land on the deposit path, where the Grubs below do not have to compete with you; the honest play is to mine the lower faces first. | gravity anchors arm (quadrant 4), pit floor becomes a ceiling at T3+; ring on | authored |
 | OB-04 | Buried Lantern | Ossuary Belt | 1, 2 | 12 | A buried hollow, no ambient light, one geode cluster inside, one procession route crossing the mouth | 8 geodes / 24 | 8 Grub on the route | Active | **With the lantern up, the hollow is a lighthouse and the whole sector sees you; with it down, the only light in the frame is the shard each Grub carries overhead** — so the procession is your torch and your target at once (SYS-001 §1.2, ART-001 §3). | dark pack is a no-op; route doubles to two; Grub panic radius −40% applies (SYS-001 §3.1) | authored, **L** |
 | OB-05 | Silent Procession | Ossuary Belt | 2, 3, **5 (gate)** | 18 | Three parallel galleries, one unlit, one seeded Shrine at the mid gallery's mouth, gate anchor in the far gallery | 10 geodes / 30 | 9 Grub across three routes, 1 Deacon of Lies, 1 Matron **only when hosted as a gate** (§4.5) | Active | **A real procession chants and a phantom one does not:** the Deacon's Phantoms are harmless and silent while the true route carries the chant through geometry up to 420 px (SYS-001 §3.1, §9) — so the audio alone separates ore from lie. | dark pack; phantoms persist until Warded (E9, SYS-001 §4); ring on | authored, **L S** |
@@ -203,7 +240,7 @@ Threat points are authored **at T0–T1** and must sit inside the Seam band for 
 | LT-01 | Prayer Bell | The Litany | 2, 3, 4 | 20 | A nave; a procession route with a Shrine at the elbow; the Sepulchre on axis at the far end; one 96 px side aisle (unlit) | 10 geodes / 30 | 8 Grub on one route, 8-ring nodes on the Sepulchre, 1 Deacon (Seam 4) | Active | **The procession stops to pray:** every lap the route holds at the Shrine for 6 s ✱ — the chant cuts, the Choir holds fire within 120 px of it, and that silence is your only window to take the shards they are carrying; firing during the prayer converts a geode to a Shrine. | ring on; prayer pause −1 s ✱ per T above 2; doors multiply (roulette) | authored, **C S** |
 | LT-02 | Nave of Ash | The Litany | 3, **5 (gate)** | 22 | Full-dark nave, three geode clusters in the pews, two unlit aisles, one light pocket at the transept, gate anchor in the apse | 9 geodes / 27 | 8 Grub, 1 Acolyte, ring nodes at T2+ | Active | **The Sepulchre is located by sound, not light:** chant is audible through geometry up to 420 px (SYS-001 §9), so you navigate by the Choir's own volume — and lantern up costs you +180% detection (SYS-001 §1.2) for a map you can already hear. | dark pack is a no-op; `ui_eat_slot` arms at T4; apse opens a second throat | authored, **L C** — hosts the **Matron of the Drowned Chorus** (§7) |
 | LT-03 | The Doorway Birth | The Litany | 3 | 24 | Low-ceiling nave, shallow upper gallery, one 96 px unlit aisle, gate anchor under the loft | 9 geodes / 27 | 8 Grub, 2 Acolyte, ring nodes, 1 Matron-eligible | Active | **The Matron's Grubs birth from her doorway, not her body (ART-001 §3):** Ward silences her for 3 s (SYS-001 §5.1) and the doorway stays shut, so a silenced Matron is a sector with no new Grubs in it — visible in one 15-second shot. | ring on; doorway width −1 tile ✱; loft collapses to a second route at T4 | authored, **L C** — Seam-3 Matron gate host (§4.5) |
-| LT-04 | Nine Altars | The Litany | 3, 4 | 26 | Nave with four seeded Shrines lining the aisles, one unlit crypt corridor, geodes behind the shrine row | 12 geodes / 36 (4 already converted to Shrines, so 8 live / 24 reachable) | 8 Grub, 2 Acolyte, ring nodes | Active | **The level has already lost ground:** the seeded Shrines are Choir ground (4 = a sector bruise, SYS-001 §6), and purging them is the capture-point layer — +1 Composure, −1 Corruption, Ink on the first purge of the biome (SYS-001 §6) — while each geode you shoot near them adds to the bruise. | ring on; seeded Shrines 4 → 6 ✱ at T4; crypt floods with Shroud at T4 | authored, **S** |
+| LT-04 | Nine Altars | The Litany | 3, 4 | 26 | Nave with four seeded Shrines lining the aisles, one unlit crypt corridor, geodes behind the shrine row | 12 geodes / 36 (4 already converted to Shrines, so 8 live / 24 reachable) | 8 Grub, 2 Acolyte, ring nodes | Active | **The level has already lost ground:** the seeded Shrines are Choir ground (4 = a sector bruise, SYS-001 §6), and purging them is the capture-point layer — +1 Composure, −1 Corruption, Ember on the first purge of the biome (SYS-001 §6; Unwritten Ink retired, CHD-15) — while each geode you shoot near them adds to the bruise. | ring on; seeded Shrines 4 → 6 ✱ at T4; crypt floods with Shroud at T4 | authored, **S** — **reserve** (§3.8) |
 | LT-05 | Bright Nave | The Litany | 4 | 26 | A fully lit nave: braziers every 120 px ✱, no dark volume at all, one geode cluster per bay | 12 geodes / 36 | 8 Acolyte (ring discipline), 1 Deacon | Active | **In a room already full of the Choir's light, the lantern buys you nothing and costs you everything:** you must fight the ring *dark* in a lit room, and the ring's own braziers are the only read you get on the censer swing. | dark pack forces the braziers out — at T3 this kit becomes dark by re-key, and the ring's light becomes the only light | authored, **L** — hosts **The Unnumbered** (§7) |
 | LT-06 | Chant Road | The Litany | 3, 4 | 28 | Two escape vectors: one runs the chant route, one runs a Shroud-choked crypt; the Sepulchre sits between them; one light pocket | 11 geodes / 33 | 10 Grub on the chant route, 8-ring nodes, 1 Deacon, 1 Acolyte | Active | **Both exits cost Composure:** the safe route is the Choir's route, where the chant drains 0.5/s (SYS-001 §1.5), and the clean route needs Surgelight burns that cost 1 each at T ≥ 2 (SYS-001 §1.5) — you leave by paying, and the only question is in which currency. | ring on; Shroud lane regrows behind the player (§5.1); second Deacon at T4 | authored, **C L** |
 
@@ -213,7 +250,7 @@ Threat points are authored **at T0–T1** and must sit inside the Seam band for 
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | GR-01 | Reef Throat | Green Rot | 2 | 17 | Three Shroud lanes cut into a coral shelf, three geodes on the shelf, one unlit underlane, one light pocket | 10 geodes / 30 | 6 Grub, 1 Acolyte | Active | **The Shroud closes behind you:** a cleared lane regrows after 25 s ✱ (SYS-001 §9 clears it, nothing in SYS says it stays cleared), so the route you came in on stops counting as an escape vector, and the lint's two vectors become a timer you can watch. | dark pack; second regrowth lane; lanes start closed ✱ at T4 | authored, **L** |
 | GR-02 | Undertide | Green Rot | 3, **5 (gate)** | 24 (gate kit: the rite's budget replaces it, §7) | Reef floor overgrown with Shroud, geodes under the growth, a wide water-plan arena, one unlit channel | 13 geodes / 39, mostly under Shroud | 8 Grub, 2 Acolyte, 2 Deceiver (the gate's wave contents come from SYS-001 §5.1, not from this column) | Active | **The only light in the sector is the Shroud's own rim (ART-001 §5):** every Ward slice or Surgelight burn you spend clearing a sightline also removes a light source and the Choir's cover — clearing your view blinds you. | dark pack + Shroud bloom on entry ✱; `ui_eat_slot` arms at T4 | authored, **L** — hosts **Grave Tide** (§7) |
-| GR-03 | Deceiver's Pew | Green Rot | 2, 3 | 19 | One island, one bridge, one geode cluster on the island, one light pocket under the bridge, Shroud at the bridge foot | 8 geodes / 24 | 6 Grub, 1 Grave-Tide Deceiver | Active | **The Deceiver steals your Charge and walks it home along your own bridge:** each successful bait is 1 Charge (SYS-001 §3) that becomes 2 segments of the entity, and killing it drops the stolen charges back into the world — in the water, where they sink toward the Sepulchre. | dark pack; 2nd Deceiver; bridge foot grows Shroud at T4 | authored, **S** |
+| GR-03 | Deceiver's Pew | Green Rot | 2, 3 | 19 | One island, one bridge, one geode cluster on the island, one light pocket under the bridge, Shroud at the bridge foot | 8 geodes / 24 | 6 Grub, 1 Grave-Tide Deceiver | Active | **The Deceiver steals your Charge and walks it home along your own bridge:** each successful bait is 1 Charge (SYS-001 §3) that becomes 2 segments of the entity, and killing it drops the stolen charges back into the world — in the water, where they sink toward the Sepulchre. | dark pack; 2nd Deceiver; bridge foot grows Shroud at T4 | authored, **S** — **reserve** (§3.8) |
 | GR-04 | Shroud Bloom | Green Rot | 3 | 26 | A hollow: half-built Sepulchre, Litany Ring on the hollow lip, Shroud walls all round, one unlit burrow, one light pocket, Matron at the lip | 9 geodes / 27 | 1 Matron, 8 Grub, ring nodes | Active | **The Matron can be silenced or killed, and the sector remembers which:** killing her stops the chant and *rains* the sector (SYS-001 §3: Shroud bloom, +1 Corruption), so a killed Matron fills your arena with terrain while a silenced one leaves it open — the same 12 seconds, two different rooms. | ring on; bloom radius +1 ring ✱ per T above 2; burrow becomes the only route at T4 | authored, **C** — Seam-3 Matron gate host (§4.5) |
 | GR-05 | Green Silence | Green Rot | 4 | 30 | A dense Shroud maze, geodes in its pockets, one unlit burrow, no light pockets outside the maze | 12 geodes / 36 | 1 Listener, 1 Deacon, 8 Grub **inside** Shroud (not visible until their silhouette breaks the rim) | Active | **The Shroud occludes sound as well as sight:** a procession walking inside it carries no audible chant (SYS-001 §9 audio occlusion is a *through-geometry* budget), so the deposit you should have interrupted arrives finished, and the only tell is a shape moving inside a glow. | dark pack; rim tell 70 px ✱; 2nd Listener; Shroud maze grows one ring ✱ per sector held | authored, **L C** |
 
@@ -253,12 +290,20 @@ Threat check per slot (T0–T1 bands, SYS-001 §4; a kit's number plus ≥ 2 sat
 | Seam | Band (T0–T1) | Kits available | Headroom check |
 |---|---|---|---|
 | 1 | 8–12 | PM-01(10) PM-02(11) PM-03(9) OB-01(11) OB-04(12) | max kit 12 + 2 satellites ⇒ lint forces the satellites to supply geodes without adding threat markers, or the sector draws 1 satellite. **Reconciled in §4.3.** |
-| 2 | 12–18 | PM-02(11) PM-03(9) PM-04(14) PM-05(15) PM-06(18) OB-02(15) OB-03(16) OB-04(12) OB-05(18) OB-06(20)* GR-01(17) GR-03(19)* DO-01(20)* | * = Seam-2-eligible at T2+ only (threat above the T0–T1 band); the generator may not place them at Seam 1–2 below T2. |
-| 3 | 16–22 | PM-06(18) OB-03(16) OB-05(18) LT-01(20) LT-02(22) GR-03(19) DO-01(20) DO-02(22) BK-01(22) BK-04(24)* | BK-04 at Seam 3 requires T ≥ 2. |
-| 4 | 20–28 | OB-06(20) LT-01(20) LT-04(26) LT-05(26) LT-06(28) GR-04(26) GR-05(30)* DO-03(26) DO-04(28) BK-02(30)* BK-03(34)* | GR-05/BK-02/BK-03 at Seam 4 require T ≥ 3 (their authored threat exceeds the T0–T1 band because their contents are tier-gated: Listener-maze, prebuilt ring, Herald duel). |
+| 2 | 12–18 | PM-02(11) PM-03(9) PM-04(14) PM-05(15)† PM-06(18) OB-02(15)† OB-03(16) OB-04(12) OB-05(18) OB-06(20)* GR-01(17) GR-03(19)*† DO-01(20)* | * = Seam-2-eligible at T2+ only (threat above the T0–T1 band); the generator may not place them at Seam 1–2 below T2. † = reserve kit, not drawn before Act 2 entry (§3.8). |
+| 3 | 16–22 | PM-06(18) OB-03(16) OB-05(18) LT-01(20) LT-02(22) GR-03(19)† DO-01(20) DO-02(22) BK-01(22) BK-04(24)* | BK-04 at Seam 3 requires T ≥ 2. † = reserve (§3.8). |
+| 4 | 20–28 | OB-06(20) LT-01(20) LT-04(26)† LT-05(26) LT-06(28) GR-04(26) GR-05(30)* DO-03(26) DO-04(28) BK-02(30)* BK-03(34)* | GR-05/BK-02/BK-03 at Seam 4 require T ≥ 3 (their authored threat exceeds the T0–T1 band because their contents are tier-gated: Listener-maze, prebuilt ring, Herald duel). |
 | 5 | Rite gate | OB-05, LT-02, GR-02, DO-05, BK-01 | gate kits replace their authored threat with the rite's budget (SYS-001 §4 "budget is the boss"). |
 
 Every kit's threat sits inside a band it is slot-eligible for, with one deliberate exception set: kits whose *contents* are tier-gated (GR-05, BK-02, BK-03) carry threat above the T0–T1 band and are gated to T ≥ 3 by the `min_warp` parameter ✱. That is the only place where a kit's threat and a band disagree, and it is resolved by refusing the placement rather than by breaking the band.
+
+### 3.8 The uncharted reserve (4 kits held back until Act 2)
+
+PM ruling 2026-11-18 (owner grant), cosmic horror design rev 3, CHD-11. Four of the 32 kits are held back from the draw pool until **Act 2 entry**: **PM-05 Sacred Ground, OB-02 Censer Walk, LT-04 Nine Altars, GR-03 Deceiver's Pew** (count and unlock point: SYS-001 reserve-kit rows). They are part of the existing 32, so they add no scope; they are marked **reserve** in the §3 Status column and † in the §3.7 slot table.
+
+- **Before Act 2 entry** a reserve kit is not drawn as a primary kit by the assembler (§4.4), including by the Coma re-roll (§4.5).
+- **They arrive as rumours.** A reserve kit is announced as a Codex entry in a **title-only state**, chalked up by Sable Vane at the Chalk Desk; the entry's body is written when the player finds the place. A rumour is an unfinished Codex entry, not a new noun. The rumour state, the titles and the bodies are NARR-001 §8's.
+- **Why these four:** the kit-memory sim (`tools/design_sims/kit_memory_sim.js --reserve`; research `cosmic_horror_design.md` §3.2, §10.1) shows this set leaves every Seam slot fillable. An earlier pick that held back OB-06, the only Seam-4 kit among the Iteration-1 biomes, broke Act 1 assembly; the reserve must never contain the only kit for a slot in any Iteration.
 
 ---
 
@@ -270,6 +315,14 @@ A run = 5 Seams 🔒 (SYS-001 §6, GDD §6.3). Seam 1–4 present one primary ki
 ### 4.2 Sector composition
 One Seam = one sector = the primary kit plus **2–6 satellite clusters** ✱ drawn from that kit's own `spawn_markers` and `geode_clusters` slots, giving the 3–7 figure SYS-001 §6 uses for a sector's contents. Satellites reuse the primary kit's geometry set and never add new props, which is what keeps GDD §8.8's performance promise true: one screen cluster per kit, one tileset per biome, and the warp effect budget per sector is 3 ✱ (GDD R-02).
 
+**Budget note: the Passing** (PM ruling 2026-11-18 (owner grant), cosmic horror design rev 3, CHD-02). The Passing (W3-11, lethal to the lit, T3+) and its far-parallax echo (W2-11 Distant Passing, T2, never lethal) are WARP-001 §2 registry entries; WARP-001 owns the tells and rules. Level-side, a Passing:
+- **spends warp budget the first time it occurs in a sector** (SYS-001 §2.3 `Passing warp budget cost (first per sector)`); that cost counts against the sector's warp effect budget above;
+- occurs **at most once per sector** (SYS-001 Passing max-per-sector row), **never in Seam 5** (so a gate kit never hosts one, §4.5, §7), **never during a Rite**, and never while a HUD lie is live (WARP-001 §4);
+- crosses the sector from one wrap edge to the other over a swath set by the SYS-001 Passing swath-width row; it adds no geometry and moves no slot, so the assembled sector's lint (§4.6) is unchanged;
+- leaves a **chalk outline** where each subtracted object stood, for the rest of the sector (WARP-001 owns the look);
+- **never subtracts an unshot geode.** An unbroken geode is unlit rock, and only loose shards, Shrines, units and the Vigil can be lit. So the §1.5 shard floor that the assembly lint proved still holds in play. Shards the player knocks loose during a Passing can be lost, and that's the player's choice.
+- **Sectors the entity has crossed** (GDD Act 3, CHD-07: they load partly subtracted) re-run the §4.6 lint on the subtracted state before play, the same way Hollow sectors do (§6.5).
+
 ### 4.3 Threat arithmetic
 `sector_threat = primary_kit.threat + Σ satellites.threat`, and that sum is validated against the Seam band for the current tier (SYS-001 §4). Rules:
 - A kit is placed at a Seam only if its authored `threat_pts` ≤ the band ceiling minus a satellite floor of **2 threat** ✱ for the satellites' minimum contribution. Where a kit cannot satisfy that (the five Seam-1 kits at 11–12), the sector is drawn with **one satellite**, and the lint's shard floor is met by satellite *geodes* (which carry no unit threat) — this is why PM/OB Seam-1 kits are geode-heavy and Grub-light by design.
@@ -280,17 +333,21 @@ One Seam = one sector = the primary kit plus **2–6 satellite clusters** ✱ dr
 Per run, enforced by the assembler:
 1. **No repeated Twist** — automatic: each of the 32 kits has exactly one Twist, so `no kit repeats in a run` is the enforced form of the rule.
 2. **No repeated primary kit**, and **no kit family (same kit re-keyed) twice**.
-3. **Biome spread:** at most 2 Seams share a biome; Act 1 runs use exactly 2 biomes (GDD §17 vertical slice); Act 2+ runs use 3–4.
+3. **Biome spread:** at most 2 Seams share a biome; Act 1 runs use exactly 2 biomes (GDD §17 vertical slice); Act 2+ runs use 3–4. **The Seam-5 gate kit is exempt:** it counts neither toward the 2-Seams-per-biome cap nor toward the run's biome count (PM ruling 2026-11-18 (owner grant), cosmic horror design rev 3, CHD-13). Without the exemption the rule cannot fill 5 Seams in Act 1, since 2 biomes × 2 Seams = 4 (sim finding F1, `tools/design_sims/kit_memory_sim.js`; research `cosmic_horror_design.md` §10.1).
 4. **≥ 1 dark kit per run past Act 1** — 12 dark kits exist (§3.7), and the T3 re-key pack can turn any kit dark, so the rule never constrains the pool.
 5. **≥ 1 kit per run whose Twist interacts with the lantern, the chant or Shrines** (22 kits qualify).
 6. **≥ 1 unlit corridor per sector** and **≥ 1 light pocket per sector** (kit parameters; lint-checked).
-7. The **same kit never appears in the same Seam ordinal across two consecutive runs** — the run seed carries the previous run's ordinal history; this is what makes the Coma mercy (§4.5) legible as *the same room again*, and why its re-roll is felt.
+7. The **same kit never appears in the same Seam ordinal across two consecutive runs** — the run seed carries the previous run's ordinal history; this is what makes the Coma mercy (§4.5) legible as *the same room again*, and why its re-roll is felt. **Waived in Iteration 1 only** (PM ruling 2026-11-18 (owner grant), cosmic horror design rev 3, CHD-13): among the Iteration-1 biomes only OB-06 fits Seam 4 and only OB-05 fits Seam 5, so the rule would break on most Act 1 runs (sim finding F2, `tools/design_sims/kit_memory_sim.js`; research `cosmic_horror_design.md` §10.1). From Iteration 2 the rule applies in full.
 
 ### 4.5 Seam 3, Seam 5 and the 3-run Coma
 - **Seam 3:** one Matron is present (`OB-05`, `LT-03`, `GR-04`, `DO-02` are Matron-eligible). She is **silenced, not killed** (SYS-001 §3), and the gate plays inside the kit's authored geometry with its gate anchor at the far side of the screen.
 - **Seam 5:** the gate kit hosts the run's named **Rite** (§7). The **Waking** lifecycle continues underneath it: the end encounter at Seam 5 is the Waking of Nhael'Gharoth (GDD §6.3), staged in the gate kit's outer field so the Rite and the countdown are two clocks in one screen (§6.1). The entity never appears at sector start (SYS-001 §2).
 - **Coma re-roll (GDD §8.9, SYS-001 §8):** on the third death in the same Seam ordinal of the same run, the assembler replaces the primary kit with another kit eligible for that Seam, from the same biome where one exists, **never** one whose Twist the run has already used, and attaches a **Penitent** to the new kit's `PenitentAnchor`. It is invisible: no menu, no message. It is reproducible — see §4.7. `BK-04` is the kit where the assist is on screen (its Twist), so when the re-roll lands on BK-04 the mercy reads as a fact of the level.
 - A re-roll **does not** reset the Waking state, the Corruption state or the Hollow flag of the sector; the entity keeps its segments. Failure moves the loop forward; it does not rewind the countdown.
+- **Death-site Penitents (your dead stay lit)** (PM ruling 2026-11-18 (owner grant), cosmic horror design rev 3, CHD-09). Per Chronicle, every death records the kit it happened in and the position within that kit. On a **later visit to that kit**, a **Penitent** spawns at the recorded death site. It uses the existing Penitent behaviour (GDD §8.5; no new unit, no new power). The lore is NARR-001's: the Penitents you meet are you (NARR-001 §5.5).
+  - **Shared cap:** death-site Penitents and the Coma Penitent above share one per-sector Penitent cap (SYS-001 death-site Penitent cap row: 1 per sector, shared with the Coma Penitent). **Rekindled Penitents** (LOOP-001 §9.6) are death-site Penitents that persist, so they share the same cap. When more than one qualifies in the same sector, precedence is: **the Coma Penitent, then a rekindled Penitent, then any other death-site Penitent.** The Coma Penitent comes first because the mercy must be reliable; a rekindled Penitent comes next because the player paid to keep it lit. A Penitent that loses the slot waits for the next visit. (Cosmic horror design call within CHD-09/CHD-15; flagged for the PM in the Phase 2 PR.)
+  - **Persistence:** the death-site list is **Anchored state** and survives Hard Unmaking (LOOP-001 §2).
+  - **Position:** the site is stored in kit-local coordinates and follows the kit's mirror (§1.5), so it marks the same place in the room on every visit.
 
 ### 4.6 The lint as a hard gate
 No sector enters play without passing all four SYS-001 §4 lint items, evaluated on the **assembled sector** (primary kit + satellites, after re-key, after mirror). Rejection is not a warning: the assembler draws the next kit permutation. Draws are capped at 64 ✱ attempts per Seam; on cap the generator falls back to the last sector that passed and logs it — a shipped build never contains an unlinted sector, and a logged fallback is a level-design bug filed against the kit, not against the generator. `placeholder` kits are excluded from the draw pool until their geometry ships, so the pool at vertical slice is 31.
@@ -300,6 +357,26 @@ No sector enters play without passing all four SYS-001 §4 lint items, evaluated
 - **Per-kit sub-streams**, drawn deterministically from the run seed: `sub_seed_mirror` (mirror axis), `sub_seed_fill` (which spawn markers are filled), `sub_seed_satellites` (2–6 clusters and their units), `sub_seed_wrap` (roulette targets at T3+), `sub_seed_coma` (which kit the mercy re-rolls to).
 - Because `sub_seed_coma` is derived from the run seed rather than from wall-clock or input, two players on the same seed who die three times in the same Seam get the **same** replacement kit and the same Penitent route. Daily challenges and clip reproducibility survive the mercy rule.
 - Telemetry key `seam_deaths` (SYS-001 §8) is the input the mercy reads; `hollow_sectors` and `warp_max` feed the entity's death lines.
+
+### 4.8 Kit memory (kits remember you)
+
+PM ruling 2026-11-18 (owner grant), cosmic horror design rev 3, CHD-11. Each kit keeps a **per-Chronicle visit count**. A visit is the kit being entered as a Seam's primary kit. The counts are **Anchored state** and survive Hard Unmaking (LOOP-001 §2).
+
+| Memory state | Reached at (SYS-001 kit-memory rows) | Dressing layer (what the player sees) |
+|---|---|---|
+| **Known** | 3 visits | the Choir have marked it: votive lamps at the player's common entry points |
+| **Worn** | 6 visits | Shroud grows along the player's most-flown lanes |
+| **Remembered** | 10 visits | the entity has read it: the room reads as studied, and the player's own history in it (death-site Penitents, §4.5; route mimicry, §7.1) is at its densest |
+
+Rules:
+- **Dressing, not a rebuild.** Each layer is drawn over the kit's existing geometry and placed procedurally on existing slots (entry anchors, `UnlitCorridor`, `EscapeVector`, `PenitentAnchor`; §1.7). Geometry never moves (§1.3).
+- **Parametric per biome, not per kit:** 6 biomes × 3 layers = **18 dressing sets**, each placed by rule on any kit of its biome. No per-kit bespoke dressing is authored.
+- **The lint is untouched.** Dressing adds no collision, removes no escape vector and puts no light source inside a `LightPocket` or `UnlitCorridor` (§6.2 condition 4, lint item 3). Worn-layer Shroud is therefore dressing (visual growth only) unless a later ruling makes it terrain, in which case it must pass the §4.6 lint like any other Shroud.
+- **Never named on screen.** Known, Worn and Remembered are doc terms. The player only sees a familiar place getting stranger.
+- **Deterministic:** placement draws from the run seed (§4.7) and the visit count, so two players with the same seed and the same history see the same dressing.
+- **Dressing priority: the five gate kits first.** Every run that reaches Seam 5 visits a gate kit, so OB-05, LT-02, GR-02, DO-05 and BK-01 (the §3.7 Seam-5 row) are visited most and reach each state first (sim finding F3). Their dressing is built before any other kit's: the Waking arena becomes the most haunted place in the game.
+- **Thresholds checked by simulation:** `tools/design_sims/kit_memory_sim.js --reserve` (deterministic, seeded; research `cosmic_horror_design.md` §10.1) has the first kit reaching Known, Worn and Remembered at about runs 4, 11 and 25, and by run 30 about 19 kits Known, 9 Worn and 2 Remembered (corrected run, 2026-11-18: five gate kits, DO-02 is not one). Those are model outputs, not playtest measurements; the thresholds are retuned at playtest in SYS-001.
+- **Inputs owed:** "common entry points" and "most-flown lanes" need per-Chronicle, per-kit route telemetry, the same data Your Own Vigil reads (§7.1). No SYS-001 §8 key exists for it yet (value owed: SYS-001 row requested). The look of the 18 sets is ART-001's (handed to the Aether art chat).
 
 ---
 
@@ -370,6 +447,17 @@ Losing the Waking encounter takes the sector **Hollow** (GDD §8.4, SYS-001 §2.
 - The Ledger Compass drops the sector from its list (GDD §8.4), and the `Ledger Compass` lie rule (SYS-001 §6) does not apply to a sector it no longer shows — the absence is the honest signal, and the Steady Ledger toggle shows it as a hole, not a lie.
 - Hollow sectors are tracked as `hollow_sectors` (SYS-001 §8) and shown in the run summary as a stat, not a warning.
 
+### 6.6 The Procession (Act 2 funeral column)
+
+PM ruling 2026-11-18 (owner grant), cosmic horror design rev 3, CHD-10. **The Procession** is an Act 2 Choir encounter placed in one **satellite cluster** of a sector (§4.2). It is not the Waking's phase-1 Grub laps (§6.1, §6.4), which keep their name; this doc writes "the Procession" (capital P) for the funeral column only.
+
+- **Units (existing only, §3 intro):** four Grubs bearing one Mourning Glass body between them, led by Deacons singing (the Comforters; Deacon count: value owed, SYS-001 row requested). **No Matron:** the run's one Matron stays at Seam 3 (§4.5, §7), so a Procession never adds a second one. The column walks one of the host kit's `procession_routes` toward its Sepulchre.
+- **Break it:** the body drops as shards (SYS-001 Procession shards-when-broken row) and every Choir unit in the sector goes to **full detection**.
+- **Let it pass, Lantern down:** Composure rises (SYS-001 §1.5 Procession let-pass row), the column **consecrates the Sepulchre** (+1 segment, SYS-001 Procession Sepulchre-segments row), and the Codex entry `cx_choir_procession` is stamped (NARR-001 §8). Restraint helps the player's nerve and costs them in the race.
+- **No prompt, no moral-choice HUD** (NARR-001 §11.3). The choice is made by play only; nothing on screen names it.
+- **Level-side requirements:** the host kit needs a `sepulchre_anchor` and a procession route the column can walk; the route should cross an unlit corridor so letting it pass with the Lantern down is a real option (§6.2). The column's units count toward the sector threat sum and the sector passes the §4.6 lint with them in it (§4.3).
+- **Not yet decided:** how often the Procession is drawn, which Seams may host it, and the exact "let it pass" test (owed: Design (levels) with SYS-001). The Matron conflict with §7 ("at most one Matron") is resolved by leaving the Matron out of the column (see Units).
+
 ---
 
 ## 7. Rite bosses (Seam 3 / Seam 5 gates)
@@ -388,6 +476,7 @@ Stats are SYS-001 §5.1's — cited, not restated. This section is only the stag
 - **Composition:** the mirror is built from the player's own run state, not from a table — same `max_speed`, same lance stats, 3 of your current Run Sigils, 1 fewer Charge (SYS-001 §5.1). Sigils are drawn from the run's actual pick history; the entity already reads your telemetry (SYS-001 §8 keys `glass_hunted`, `charges_thrown`, `charges_lost`), which is why this is the emotional and mechanical showcase the GDD §9.2 promises: the fight is a mirror of your habits.
 - **Weakness is your own tell:** the mirror exploits your tells the way you exploit the Acolyte's — surgelight spam is punished by a 1.2 s counter-window (SYS-001 §5.1). The kit therefore forbids foreground: no trick shots, no cover, no reading the room instead of reading yourself.
 - **Staging:** it enters through the wrap edge you used most this run (drawn from `sub_seed_wrap`), which is legible as an accusation rather than explained as a rule.
+- **It flies your routes** (PM ruling 2026-11-18 (owner grant), cosmic horror design rev 3, CHD-07; the Act 3 "your habits are its vocabulary" beat, GDD §9.1): besides your build, the mirror flies the routes you have flown most **in BK-01**, read from per-Chronicle telemetry. It is a boss made of your muscle memory; the counter-play is to fly the way you never do. The route telemetry is the same per-kit data kit memory reads (§4.8); its SYS-001 §8 key is owed (value owed: SYS-001 row requested). The rule adds no geometry and needs no new slot: BK-01's bare field (§7) already leaves every route open to the mirror.
 - **No gore, no jumpscares:** the mirror is your own silhouette, lit correctly, doing the things you do (ART-001 §2, "the ordinary that is not ordinary"). The dread is recognition.
 
 ### 7.2 Rite gate geometry budget
@@ -406,7 +495,7 @@ Heralds are Entropy-gated elites with hard counters to the tool you use most (GD
 | 4–5 | 1 | Drawn from the 5 non-flagship variants; the flagship **Herald of the Ninth Sky** is not in this pool. |
 | 6–7 | 2 | All six except **Herald of the Ninth Reckoning** (SYS-001 §5.2: E10 only). |
 | 8–9 | 2, and a 3rd may appear in a Hollow sector of The Black or The Litany | Two per **sector** maximum — a screen with three Heralds needs more than 3 SIGNAL tells, which breaks ART-001 palette law 3. |
-| 10 | 3, one of which may be the **Ninth Reckoning** | The flex clip; SYS-001 §7.3 pays for it at ×2.30 Ember / ×2.00 Ink. |
+| 10 | 3, one of which may be the **Ninth Reckoning** | The flex clip; SYS-001 §7.3 pays for it at ×2.30 Ember (Unwritten Ink retired, CHD-15). |
 
 Selection order: the entity's counter-behaviour picks the Herald whose counter targets your top telemetry key (SYS-001 §8), then the generator rejects any Herald that would duplicate an already-deployed counter in the same run. A Herald's counter never stacks with the same counter from the E-table (SYS-001 §4) twice in one sector — if E6 (HUD reliability) and **Herald of the Quiet Pew** would both mute your chant-cues, the Herald is re-drawn.
 
@@ -418,6 +507,12 @@ Selection order: the entity's counter-behaviour picks the Herald whose counter t
 - A Herald's tell (24 f, SYS-001 §3) must be visible from the entry anchor, and the kit authors a **visible counterplay cue** — the Broken Censer's 220 px intercept radius is drawn as a chalk ring, not hidden as a stat. If a counter cannot be shown, it is the wrong counter for that kit.
 - Heralds contribute their threat to the sector sum and never displace Waking anchors; killing one is optional and never gates the Seam.
 - Entropy reward multipliers are SYS-001 §7.3's; a run's Herald count is a KPI we track (`Choir elites / Heralds` yields, SYS-001 §7.2).
+
+### 8.3 Herald rumours
+
+PM ruling 2026-11-18 (owner grant), cosmic horror design rev 3, CHD-11. A Herald drawn for Seam 2 or Seam 4 is **rumoured at Seam 1's exit**: its Codex entry appears in the title-only rumour state (the same state as the reserve kits, §3.8; NARR-001 §8 owns it), so the player can pick Sigils against its counter. It is information, not a nerf: the Herald, its counter and its placement rules (§8.1, §8.2) are unchanged.
+- Consequence for the assembler: the run's Herald draw for Seams 2 and 4 (§8.1 selection order) must be fixed by Seam 1's exit, so the rumour is never wrong.
+- No Herald is drawn, so none is rumoured, at Entropy 0–3 (§8.1).
 
 ---
 
@@ -469,3 +564,4 @@ No GDD claim about zones, biomes or encounter kits is left unaddressed by this d
 | Q-03 | **Can the Seam-3 Matron gate and the Seam-5 named Rite be the same encounter?** GDD §6.3 puts a mini-boss gate at Seam 3; SYS §5.1 heads rites as "Seam-3/5 gates". | Keep them **separate**: Matron at Seam 3, named Rite at Seam 5 (this doc, §4.5). A single gate would put the run's two countdowns — the Rite and the Waking — in one screen twice, and it costs the run its only two beats of rest. |
 | Q-04 | **How many geometry variants per kit before the mirror policy stops reading as authored?** Mirror × unlit re-key × gravity quadrant already gives 8+ layouts per kit. | Cap at **6 permutations per kit** ✱ and hand-author which ones are legal (`mirror_policy` + `min_warp` already do most of this). Past 6, the kit's own Twist stops being visible, which is the whole asset the kit exists to protect. |
 | Q-05 | **Does Act 1 (iteration 1) get The Litany at all?** §2.2 starts it at iteration 2, which keeps iteration 1 to two biomes and protects the slice. | Keep **iteration 1 = Pale Marches + one of Ossuary Belt / Drowned Observatory**, and let iteration 2 introduce The Litany with its own first-run guarantee (one `LT-04`, the shrine-purge kit) so the corruption war is taught before it is punished. |
+| Q-06 (deferred, M5) | **Should Twists split from kits into a Twist deck with compatibility tags?** (cosmic horror design rev 3 §3.2.1: the 32 Twists de-duplicated into a smaller reusable pool, dealt to kits at assembly.) PM ruling 2026-11-18 (owner grant), CHD-12: **deferred** to an M5 decision; no rework of §3 or §4.4 now. | Decide at M5. If adopted, it is gated by the lint, not by hand QA: each kit keeps its authored **signature Twist on its first visit** in a Chronicle, and the assembler offers only kit×Twist pairs whose tags match, with the §4.6 lint as the hard gate. Until then, one Twist per kit and §4.4 rule 1 stand. Mirrored in TECH-001 §11.1. |

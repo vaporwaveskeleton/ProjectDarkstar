@@ -1,9 +1,10 @@
 # DARKSTAR — Systems Bible (Numbers)
 
-**Doc ID:** SYS-001 · **Version:** 1.2 · **Status:** Authoritative for all numbers · **Last updated:** 2026-11-17
+**Doc ID:** SYS-001 · **Version:** 1.3 · **Status:** Authoritative for all numbers · **Last updated:** 2026-11-18
 **Owner:** Design (systems) · **Upstream:** `GDD_DARKSTAR_v0.2.md` (GDD-001) · **Downstream:** every other doc in this set
 **Data target:** `docs/04-production/TECH_ARCHITECTURE.md` §6 (data-driven tables) — every table below maps 1:1 to a `.tres`/JSON resource.
 **Rev 1.1 (2026-11-17):** the Anchor field rows in §1.1 (owner decision D-11 of GDD-001 §18); **rev 1.2 (2026-11-17, owner-delegated rulings R-01, R-04, R-10, R-11, R-14):** §1.2 post-hit grace, §9 resolution closed to 640×360, hitbox diameter and entity exception, on-screen caps; §2.2 ninth-sky Hunger as one +2 row, §6 Hourglass budget/death cost/refund, §7.2 Codex stamp note, §7.5 Fragments and Threads (LOOP-001 LR-09…LR-13); the warp-owned numbers WARP-001 asked for in its §8 R-01 to R-05, added to §6, §9 and §10; and the §2.2 eaten-rule pointer corrected from WARP-001 §6 to §3. **No pre-existing number in this doc was changed by that revision.**
+**Rev 1.3 (2026-11-18, cosmic horror design rev 3; PM ruling 2026-11-18 (owner grant), GDD-001 §18 D-15, CHD-17):** first-pass rows for the Passing, the Glimpse, gaze and the entity's on-screen silhouette (new §2.3); gaze drain and the Procession let-pass gain (§1.5); hull Charge lamps (§1.4); kit memory, reserve kits, the Procession and the death-site Penitent cap (new §4.1); the Hourglass in-run show threshold (§6); the lie-law rows and the tear silence (§9); Codex gating, the respec row and the post-tree Ember sink (new §7.6). **Retired (CHD-15, Unwritten Ink):** the §7.2 `Codex firsts` Ink row, the §7.3 Ink multiplier column, the §6 Shrine purge Ink payout and the §7.5 20 : 1 overflow valve. Every new game-visible row is marked **PM-approved 2026-11-18 under owner grant; retune at playtest** (not `✱`). Rows with no ruled value say "value owed" and are listed in TECH-001 §11.1 (Q-T66).
 
 ---
 
@@ -25,7 +26,7 @@ Conventions used everywhere:
 | `H` | Hunger (entity-side, unbounded, §10) |
 | `I` | Iteration number (1–9) |
 
-**Tunability marks.** `🔒` = locked by the GDD, do not change without changing the GDD. `⚙` = expected to move in playtest. `✱` = new here, my judgement call, first-pass value — verify in the slice.
+**Tunability marks.** `🔒` = locked by the GDD, do not change without changing the GDD. `⚙` = expected to move in playtest. `✱` = new here, my judgement call, first-pass value — verify in the slice. **PM-approved 2026-11-18 under owner grant; retune at playtest** = a first-pass game-visible value ruled by the PM under the owner's grant (cosmic horror design rev 3); treat it as `⚙`. "Value owed" = the row exists, the number does not yet; never fill it without a ruling.
 
 ---
 
@@ -105,12 +106,14 @@ Conventions used everywhere:
 | Charge → entity | 1 **Unravel hit** | — | 🔒 |
 | Entity hits to unmake (complete) | 13 🔒 | — | fewer while incomplete: `hits_needed = 13 - 3 + ceil(segments/7)` ✱ → 3 at 0 segments, 13 at 20 |
 | Charge loss feedback | glass chime + Choir half-note | — | 🔒 GDD; audio doc owns the sound |
+| Hull Charge lamps max | 5 lamps | — | Charges above 5 fill one phosphor ring around the hull instead (up to the `Charge magazine` ceiling). The hull's honest Charge read, WARP-001 §4.2 L10. PM-approved 2026-11-18 under owner grant; retune at playtest |
 
 ### 1.5 Composure (0–10) — a lever, not a death clock
 
 | Event | Δ Composure | Source |
 |---|---|---|
 | In the entity's gaze cone | −1.0 /s | 🔒 GDD §8.6 |
+| Gaze Composure drain (aim cursor resting inside the entity's silhouette, T3+) | −0.5 /s | GDD-001 §8.4 (the Waking rebuilt, CHD-06); timing rows in §2.3. PM-approved 2026-11-18 under owner grant; retune at playtest |
 | Inside a chant radius | −0.5 /s | 🔒 |
 | Warp Tier passive | −0.1 /s × T | 🔒 |
 | Charge lost to an interceptor | −0.5 | 🔒 |
@@ -119,6 +122,7 @@ Conventions used everywhere:
 | Surgelight use at T ≥ 2 | −1 per use (max −2/s) | ✱ prevents boost-spam |
 | Destroy a Shrine | +1 | 🔒 |
 | Kill a Matron (silence) | +2 | 🔒 |
+| Procession let pass (Lantern down) | +2 | ZONES-001 §6.6 (CHD-10); the other let-pass and break rows are §4.1. PM-approved 2026-11-18 under owner grant; retune at playtest |
 | 5 s in darkness, no firing | +0.5 /s, cap +2 | 🔒 ("flying in darkness for 5 s") |
 | Read a Codex entry in the Ruins | full restore | 🔒 |
 | *Clear Eyed* (MADNESS-5) | sets T-effect-off for 20 s, −1 | 🔒 GDD §7.2 |
@@ -173,6 +177,25 @@ Formal name **Nhael'Gharoth, the Waking Dark**; Choir names "the Hollow King", "
 | +1 per sector eaten | |
 | **Eaten rule** every 2 Hunger 🔒 | one rule removed/mutated; WARP-001 **§3** owns the list and order (pointer corrected 2026-11-17 — this line used to say §6, which is WARP-001's decisions section) |
 | Counter-behaviour table (H ≥ 4) | H4: Grubs intercept charges on a line; H6: Acolyte turret lead-in +15%; H8: Deacon mimics your last Sigil; H10: Listener hunts your *lantern*, not your gun |
+
+### 2.3 The entity by subtraction: the Passing, the Glimpse and gaze (CHD-01, CHD-02, CHD-06)
+
+Cosmic horror design rev 3 (PM ruling 2026-11-18 (owner grant); GDD-001 §18 D-15). The rules are WARP-001 §2.7 (the Passing, W2-11 / W3-11), GDD-001 §8.4 (the Waking rebuilt) and NARR-001 §3.4 (the N-rules); this table holds only their numbers. §2 and §2.1 are unchanged (20 segments, 13 Unravel hits). Every row: **PM-approved 2026-11-18 under owner grant; retune at playtest.**
+
+| Field | Value | Status | Notes |
+|---|---|---|---|
+| Passing min tier | T3 (lethal W3-11); W2-11 Distant Passing echo at T2, far parallax only, never lethal | PM-approved 2026-11-18 under owner grant; retune at playtest | The first lethal Passing of a Chronicle needs a prior witnessed echo: TECH-001 engineering flag `first_lethal_requires_echo` (`✱`) |
+| Passing max per sector | 1 | PM-approved 2026-11-18 under owner grant; retune at playtest | the W2-11 echo and the live W3-11 count together (WARP-001 §2.7). Never in Seam 5, never during a Rite, never while a HUD lie is live (rules, not numbers: WARP-001 §2.7, ZONES-001 §4.2) |
+| Passing telegraph (leading edge) | 3.0 s | PM-approved 2026-11-18 under owner grant; retune at playtest | the colour drain plus the greyscale-safe luminance and shape cue, after the biome's Presence has fled |
+| Passing duration | 9.0 s | PM-approved 2026-11-18 under owner grant; retune at playtest | lethal to the lit at T3+ (W3-11) |
+| Passing swath width | 0.35 of the playfield | PM-approved 2026-11-18 under owner grant; retune at playtest | fraction of the sector's playfield the swath covers as it crosses |
+| Passing "lit" window after firing | 1.0 s | PM-approved 2026-11-18 under owner grant; retune at playtest | the Vigil counts as lit for this long after the Arc-Lance or a Charge fires (WARP-001 §1.1 `Lit`); Lantern up is always lit |
+| Passing warp budget cost (first per sector) | 1.0 unit | PM-approved 2026-11-18 under owner grant; retune at playtest | spent the first time a Passing occurs in a sector, against the sector's warp effect budget (GDD-001 §16 R-02; enforced as TECH-001 §5.1's novelty cap). SYS-001 holds no row for that budget itself |
+| Entity max on-screen silhouette | 40% | PM-approved 2026-11-18 under owner grant; retune at playtest | of the entity's silhouette visible on screen at once (NARR-001 §3.4 N1); the full body is shown only in the first Unmaking cinematic (N8) |
+| Gaze reveal time | 1.0 s | PM-approved 2026-11-18 under owner grant; retune at playtest | T3+: Unravel points show only after the aim cursor rests inside the silhouette this long. The drain while gazing is §1.5 `Gaze Composure drain` |
+| Gaze mark hold | 2.0 s | PM-approved 2026-11-18 under owner grant; retune at playtest | revealed points stay marked this long after the cursor leaves |
+| Glimpse duration max | 0.3 s | PM-approved 2026-11-18 under owner grant; retune at playtest | a Charge hit rim-lights the entity's edge; soft, silent, eased, inside the WARP-001 §4.5 flicker cap |
+| Glimpse radius | 180 px | PM-approved 2026-11-18 under owner grant; retune at playtest | radius of edge the Glimpse rim-lights around the hit |
 
 ---
 
@@ -240,6 +263,22 @@ Runs are 5 Seams assembled from authored **Encounter Kits** (GDD §8.8, 32 kits 
 | 9 | Deacon phantoms persist until Warded |
 | 10 | the entity starts each sector at 6 segments ✱ |
 
+### 4.1 Level memory and set pieces (CHD-09, CHD-10, CHD-11)
+
+Cosmic horror design rev 3 (PM ruling 2026-11-18 (owner grant)). The rules are ZONES-001 §3.8 (reserve kits), §4.5 (death-site Penitents), §4.8 (kit memory) and §6.6 (the Procession); persistence is LOOP-001 §2. Rows with a value: **PM-approved 2026-11-18 under owner grant; retune at playtest.**
+
+| Field | Value | Notes |
+|---|---|---|
+| Kit memory: Known | 3 visits | per-Chronicle visit count of one kit. Thresholds simulated with `tools/design_sims/kit_memory_sim.js` (model output, not a playtest measurement; ZONES-001 §4.8). PM-approved 2026-11-18 under owner grant; retune at playtest |
+| Kit memory: Worn | 6 visits | PM-approved 2026-11-18 under owner grant; retune at playtest |
+| Kit memory: Remembered | 10 visits | PM-approved 2026-11-18 under owner grant; retune at playtest |
+| Reserve kits: count | 4 | part of the existing 32 kits; the ids are ZONES-001 §3.8's. PM-approved 2026-11-18 under owner grant; retune at playtest |
+| Reserve kits: unlock | Act 2 entry | held out of the draw pool until then; they arrive as Codex rumours (NARR-001 §8). PM-approved 2026-11-18 under owner grant; retune at playtest |
+| Death-site Penitent cap | 1 per sector, shared with the Coma Penitent | one Penitent slot per sector for the Coma Penitent, rekindled Penitents (§7.6) and other death-site Penitents; precedence is ZONES-001 §4.5's. PM-approved 2026-11-18 under owner grant; retune at playtest |
+| Procession: shards when broken | 12 | the Mourning Glass body drops this many shards; the sector's Choir go to full detection. PM-approved 2026-11-18 under owner grant; retune at playtest |
+| Procession: Sepulchre segments when let pass | +1 segment | the column consecrates the Sepulchre (Lantern down). The Composure gain is §1.5 `Procession let pass (Lantern down)`. PM-approved 2026-11-18 under owner grant; retune at playtest |
+| Procession: Deacon count | **value owed** | Deacons leading the column (ZONES-001 §6.6); with its draw frequency, host Seams and let-pass test in TECH-001 §11.1 Q-T70 |
+
 ---
 
 ## 5. Bosses and elites
@@ -273,6 +312,7 @@ Runs are 5 Seams assembled from authored **Encounter Kits** (GDD §8.8, 32 kits 
 |---|---|
 | Seams per run | 5 🔒 |
 | Hourglass Clock budget | 120 loop-minutes per **Iteration** at Entropy 0 🔒 (GDD §6.2); a sky darkens each time one ninth is spent (13⅓ loop-min, derived); only the ninth ends the run (LOOP-001 §6.5) |
+| Hourglass in-run show threshold | ≤ 15 loop-minutes remaining in the Iteration's budget. The default HUD drops the constant Hourglass; in-run it shows as the sand vignette from this point (it also shows at Seam boundaries, on death and in the Ruins). In Act 4 it shows constantly; with Steady Ledger on it is always an honest number (WARP-001 §4.1, §4.4). PM-approved 2026-11-18 under owner grant; retune at playtest |
 | Death clock cost | `10 + 2 × (Seam index − 1)` loop-minutes ✱ (Seam 1 = 10, Seam 5 = 18; GDD §6.2 range) |
 | Run-won refund | +15 loop-minutes ✱, never above the 120 budget (LOOP-001 LR-09) |
 | Run length target | 25–35 min 🔒 |
@@ -283,7 +323,7 @@ Runs are 5 Seams assembled from authored **Encounter Kits** (GDD §8.8, 32 kits 
 | Corruption: geode → Shrine | 90 s of unattended Choir activity within 200 px ✱ |
 | Corruption: Shrine → sector bruise | 4 Shrines ✱ |
 | Corruption: sector → Hollow | 10 Shrines or a lost entity encounter |
-| Shrine purge reward | +1 Composure, −1 Corruption, Ink 15 (first purge of a biome per iteration) |
+| Shrine purge reward | +1 Composure, −1 Corruption, ~~Ink 15~~ (first purge of a biome per iteration). **Ink payout retired 2026-11-18, CHD-15:** it pays Ember instead, amount **value owed** (TECH-001 §11.1 Q-T66) |
 | Ledger Compass | sector list + entity marker; **lies** at T ≥ 3 or Composure ≤ 3 (one lie per sector; the lie is always *legible* — WARP-001 §4) |
 
 ---
@@ -314,20 +354,23 @@ Score is **Ember's primary input**: `Ember = floor(score / 200)` plus milestone 
 | Score 40k–90k → Ember | 200–450 |
 | Seam clears (4 × 40) | 160 |
 | Choir elites / Heralds | 60–200 |
-| Codex firsts (2–5 × 20 Ink) | 40–100 Ink — 20 Ink is per Codex **stamp** (first read of an entry); Ilse Marrow’s marginalia and `cx_vigil_` entries pay 0 (LOOP-001 §8, LR-13) |
+| ~~Codex firsts (2–5 × 20 Ink)~~ | ~~40–100 Ink — 20 Ink is per Codex **stamp** (first read of an entry); Ilse Marrow’s marginalia and `cx_vigil_` entries pay 0 (LOOP-001 §8, LR-13)~~ **Retired 2026-11-18, CHD-15:** a Codex stamp pays no currency; it gates a Lantern Tree node (§7.6; LOOP-001 §3.7) |
 | Run-Sigil picks | 3 (choose-1-of-3, 1 paid reroll each) |
-| **Run total** | **~450–800 Ember, 40–100 Ink** |
+| Former-Ink Ember (SIG-S-04, SIG-S-08, SIG-S-18, SIG-W-20; Shrine purge, §6) | **value owed**: the rows are in §7.6 (TECH-001 §11.1 Q-T66) |
+| **Run total** | **~450–800 Ember**, plus the former-Ink Ember above once valued. ~~40–100 Ink~~ (retired 2026-11-18, CHD-15). The LOOP-001 §9.5 economy model is to be re-run without Ink (LR-14); no new totals until then |
 
 ### 7.3 Entropy rewards
 
-| E | Ember × | Ink × | Notes |
+| E | Ember × | ~~Ink ×~~ (retired 2026-11-18, CHD-15) | Notes |
 |---|---|---|---|
-| 0 | 1.00 | 1.00 | |
-| 2 | 1.15 | 1.10 | |
-| 4 | 1.35 | 1.25 | |
-| 6 | 1.60 | 1.45 | |
-| 8 | 1.90 | 1.70 | |
-| 10 | 2.30 | 2.00 | plus one exclusive Codex entry per E-tier |
+| 0 | 1.00 | ~~1.00~~ | |
+| 2 | 1.15 | ~~1.10~~ | |
+| 4 | 1.35 | ~~1.25~~ | |
+| 6 | 1.60 | ~~1.45~~ | |
+| 8 | 1.90 | ~~1.70~~ | |
+| 10 | 2.30 | ~~2.00~~ | plus one exclusive Codex entry per E-tier |
+
+The Ink column is kept struck through as the record of the old model; Unwritten Ink no longer exists (CHD-15, LOOP-001 LR-13). The Ember column is unchanged.
 
 ### 7.4 Hunger effects on the player's side of the ledger
 
@@ -352,7 +395,33 @@ Hunger raises the entity only. It never reduces player currency (GDD P4: progres
 | IV | 10 ✱ | 4 |
 | V | 12 ✱ | 5 — Act 4 opens when Thread V is bought |
 
-**Ember overflow valve:** once every Ember node of the Lantern Tree is owned, banked Ember converts to Unwritten Ink at 20 : 1 ✱ (LOOP-001 LR-11), so Ember never becomes a dead currency.
+~~**Ember overflow valve:** once every Ember node of the Lantern Tree is owned, banked Ember converts to Unwritten Ink at 20 : 1 ✱ (LOOP-001 LR-11), so Ember never becomes a dead currency.~~ **Retired 2026-11-18, CHD-15:** Unwritten Ink no longer exists. The post-tree Ember sink in §7.6 (LOOP-001 §9.6) replaces the valve.
+
+### 7.6 Codex gating, respec and the post-tree Ember sink (CHD-15)
+
+Cosmic horror design rev 3 (PM ruling 2026-11-18 (owner grant)). Unwritten Ink retires. The 27 Lantern Tree nodes formerly priced in Ink are each unlocked by knowing one Codex entry; the gating map, the backstop order (within a tier, table order) and the pity rule are LOOP-001 §3.7; the sink is LOOP-001 §9.6. Rows with a value: **PM-approved 2026-11-18 under owner grant; retune at playtest.**
+
+| Field | Value | Notes |
+|---|---|---|
+| Ink-node Ember price | 0 Ember | the node is still bought at the Lantern Tree; it needs its gating entry stamped. PM-approved 2026-11-18 under owner grant; retune at playtest |
+| Gating backstop: tier-1 entries | stamped after run 3 of the Chronicle | backstop (a), tier floor for tier 1. PM-approved 2026-11-18 under owner grant; retune at playtest |
+| Gating backstop: tier-t entries | stamped at the start of Iteration t | backstop (a), tier floor. PM-approved 2026-11-18 under owner grant; retune at playtest |
+| Gating backstop: per death | 1 entry: the oldest pending gating entry, lowest tier first | backstop (b), "death teaches". PM-approved 2026-11-18 under owner grant; retune at playtest |
+| Gating discovery: dark flight seconds (LANTERN-4) | 5 s | first sustained dark flight (Lantern down, no fire) this long stamps `cx_rule_lantern_dark`. PM-approved 2026-11-18 under owner grant; retune at playtest |
+| Gating discovery: Acolytes struck (ORDNANCE-5) | 25 Acolytes | a counter of Acolytes struck down. PM-approved 2026-11-18 under owner grant; retune at playtest |
+| Gating discovery: full-magazine hold seconds (ORDNANCE-9) | 10 s | first full magazine held this long. PM-approved 2026-11-18 under owner grant; retune at playtest |
+| Gating discovery: Glimpses witnessed (MADNESS-18) | 13 Glimpses | counted across the Chronicle (Glimpse: §2.3). PM-approved 2026-11-18 under owner grant; retune at playtest |
+| Respec cost | 10% of banked Ember | replaces "10% of banked Ink" (GDD-001 §7.3 as amended). One free respec per Iteration and the free respec after a Hard Unmaking are unchanged (LOOP-001 §3.5). PM-approved 2026-11-18 under owner grant; retune at playtest |
+| Former-Ink Ember: SIG-S-04 *Salver* (first kill of each Choir variant) | **value owed** | LOOP-001 §4.2 |
+| Former-Ink Ember: SIG-S-08 *Nine Coins* (per Charge left at run's end) | **value owed** | LOOP-001 §4.2 |
+| Former-Ink Ember: SIG-S-18 *Archive Seal* (per eaten rule read) | **value owed** | LOOP-001 §4.2 |
+| Former-Ink Ember: SIG-W-20 *Heresy* (per Ward cast, and the per-run cap) | **value owed** | LOOP-001 §4.2 |
+| Former-Ink Ember: Shrine purge | **value owed** | §6 `Shrine purge reward` |
+| Ember sink A: Ruins relight prices | **value owed** | a fixed authored list of Ruins lamps and windows, each lit by one spend at a rising price (LOOP-001 §9.6) |
+| Ember sink B: rekindle price | **value owed** | rekindles one chosen death-site Penitent (LOOP-001 §9.6) |
+| Rekindled Penitents | at most 1 per kit | a rekindled Penitent stays lit through Hard Unmakings; same Penitent behaviour, no power. It takes the shared per-sector slot (§4.1 `Death-site Penitent cap`). PM-approved 2026-11-18 under owner grant; retune at playtest |
+
+All owed values, and the LOOP-001 §9.5 economy re-run without Ink (LR-14), are one open question: TECH-001 §11.1 Q-T66. Both sinks are cosmetic plus memory and never buy power (GDD-001 §3).
 
 ---
 
@@ -361,10 +430,13 @@ Hunger raises the entity only. It never reduces player currency (GDD P4: progres
 | Invariant | Rule |
 |---|---|
 | Banked currency, Lantern Tree, Codex, iteration count | persist through death **and** Hard Unmaking |
-| Run power (Sigils, Charges, relics) | lost on death, always |
+| Run power (Sigils, Charges, rare Sigils — the former Relics, CHD-14) | lost on death, always |
+| Chronicle memory (CHD-09, CHD-11, CHD-15) | the death-site list (kit plus position per death), per-kit visit counts, rekindled sites and Ruins relights persist through death **and** Hard Unmaking (Anchored state, LOOP-001 §2) |
 | Soft-lock | impossible: after 3 deaths in the same Seam, that kit is re-rolled and a Penitent is attached (invisible mercy, GDD §8.9) |
 | Telemetry keys (entity dialogue inputs) | `glass_hunted`, `charges_thrown`, `charges_lost`, `shrine_purged`, `hollow_sectors`, `penitent_shot`, `seam_deaths`, `iterations`, `hunger`, `warp_max` |
+| Per-kit route telemetry key (CHD-07, CHD-11) | **value owed**: per-Chronicle, per-kit route data (entry points, most-flown lanes) read by kit-memory dressing (ZONES-001 §4.8) and Your Own Vigil's route mimicry (ZONES-001 §7.1). Key name and shape owed (TECH-001 §11.1 Q-T71) |
 | Death line generation | composed from the top 2 keys (AUDIO-001 §4.10 clauses; NARR-001 §7.2 printout) — "YOU HUNTED GLASS. YOU HUNTED GLASS AND DIED." |
+| STILL ON DUTY trigger death | **value owed**: which death in a Chronicle plays the entity's borrowed Cabinet line "STILL ON DUTY." (NARR-001 §3.2 samples; TECH-001 §11.1 Q-T66) |
 | Save cadence | on Ruins entry, on Tree purchase, on iteration end. Never mid-run (no save-scumming of the entity's state) |
 
 ---
@@ -384,6 +456,12 @@ Hunger raises the entity only. It never reduces player currency (GDD P4: progres
 | Camera follow | 0.12 s critically damped, 24 px deadzone, 1.5% aim lookahead | GDD §4.2. Accepted readings (PM under owner autonomy grant 2026-11-18, TECH-001 §11.1a): 1.5% lookahead = a fraction of the visible viewport **per axis** along the aim (Q-T55); 0.12 s = the smoothing time T of the critically damped spring, omega = 2/T (Q-T56); 24 px = the radius of a **circular** deadzone (Q-T57) |
 | M1 sandbox arena | wrapping torus 1920×720 ✱ | Same source as the Cabinet's torus field (`CabinetStage.field_size`), so M1 matches Act 0; no clear colour shows (a repeating floor covers the view). Real kit bounds come from ZONES-001 later. TECH-001 Q-T58, PM under owner autonomy grant 2026-11-18 |
 | Zoom | 1.0 (T0) → 1.06 (T3) → breathing ±2% over 11 s (T5) | GDD §4.2. Zoom 1.0 = the 640×360 logical frame, the fixed post-Act 0 camera scale (TECH-001 Q-T25 resolved Z1, PM under owner autonomy grant 2026-11-18) |
+| Lie spend window (L6) | 3 s | a HUD lie never concerns the count of a resource the player can spend within this window (WARP-001 §4.2 L6, widened). PM-approved 2026-11-18 under owner grant; retune at playtest |
+| Lie lull radius | 220 px | L9: a lie may start only with no hostile hitbox (any Choir body, contact hazard or the entity) this close to the Vigil; a Deacon phantom never spawns inside it while a HUD lie is live (WARP-001 §4.2). PM-approved 2026-11-18 under owner grant; retune at playtest |
+| Lie lull intercept window | 1.5 s | L9: a lie may start only with no hostile projectile on course to intercept the Vigil within this time. PM-approved 2026-11-18 under owner grant; retune at playtest |
+| Lie audio tell length | 0.25 s | L11: each lie onset cue, one per tell family (AUDIO-001 owns the cues). PM-approved 2026-11-18 under owner grant; retune at playtest |
+| Lie death-attribution window | 2.0 s | L12: a lie live this close before the Vigil's death is named on the death screen (WARP-001 §4.2; wording NARR-001). PM-approved 2026-11-18 under owner grant; retune at playtest |
+| Tear silence (no text) | 20 s | after THAT WAS A PRETENCE, no text of any kind for this long at the opening of the Aether (NARR-001 §4.5). PM-approved 2026-11-18 under owner grant; retune at playtest |
 | Shroud (hazard terrain) | blocks movement, 1 Ward-slice / 1 Surgelight burn to clear, HP 3 | ✱ T2+ terrain |
 | Hitbox policy | player hitbox = a circle of **12 px diameter** (6 px radius; smaller than the sprite); every enemy hitbox = sprite alpha ∩ 1 px inset, **except the entity**, whose contact hitbox is §2.1's 16 px inset from the composite silhouette | fairness over realism. Diameter reading and entity exception: owner-delegated rulings R-04, R-10 (2026-11-17) |
 | On-screen Choir units | ≤ 32 ✱ | spawn budgets (§4) may never schedule past it; excess spawns queue off-screen. `ContactBudget` and pooling size from here (TECH-001 §8.2). Ruling R-14 |
@@ -449,6 +527,7 @@ Hit-stop does **not** count toward the 1.5 s "Player agency loss" budget above: 
 | `seam_close_after` = 20 s (§6) | if `TEST-H2-01` shows players treating the closed seam as an unfair wall rather than a consequence — the fix is the number, not the rule (WARP-001 §8 R-01) | design |
 | Hourglass Clock rate | 🔒 **not warp-writable.** Hiding the clock is legal (WARP-001 §4.3); stopping, slowing, reversing or spending it is not. The only open question is whether it runs during exploration at all, which is an A/B flag (`clock_runs_during_exploration`), not a warp permission (WARP-001 §6.1 D-01, its §8 R-04) | design + engineering |
 | Warp state seed contract | 🔒 the warp state must be derivable from the seed alone: world tier, Hunger preset and the WARP-001 §3.2 registry state are deterministic per seed ✱. No daily or weekly challenge mode exists without this row (WARP-001 §6.1 D-06, its §8 R-05) | engineering |
+| Cosmic horror first-pass rows (§1.4 hull lamps, §1.5 gaze and Procession, §2.3, §4.1, §6 Hourglass threshold, §7.6, §9 lie and tear rows) | PM-approved 2026-11-18 under owner grant; retune at playtest. Move one if `TEST-PASS-01` or `TEST-LIE-02` (WARP-001) shows a Passing or a lie reading as unfair, or if kit memory stages arrive far from the simulated runs 4 / 11 / 25 for the first kit (ZONES-001 §4.8) | design |
 
 ---
 
@@ -469,5 +548,9 @@ Hit-stop does **not** count toward the 1.5 s "Player agency loss" budget above: 
 | 8.9 | death and mercy | §8 |
 | 9.3 | five endings | LOOP-001 §9 |
 | 7.4 | Entropy / Hunger | §4, §7.3, §2.2 |
+| 7.1, 7.3 | Unwritten Ink retired; Codex-gated nodes; respec in Ember (D-15) | §7.2, §7.3, §7.5 (retired rows), §7.6 |
+| 8.4 | the Waking rebuilt: gaze, Glimpse, silhouette cap | §2.3, §1.5 |
+| 8.7, 9.1 | the Passing (W2-11, W3-11) | §2.3 |
+| 10 | HUD lie laws, hull lamps, Hourglass show threshold | §9, §1.4, §6 |
 
-No GDD number is contradicted here. New numbers are marked `✱` and are all `⚙`.
+No GDD number is contradicted here. New numbers are marked `✱` and are all `⚙`. The rev 1.3 rows (cosmic horror design rev 3) are marked "PM-approved 2026-11-18 under owner grant; retune at playtest" instead, and are `⚙` too.
