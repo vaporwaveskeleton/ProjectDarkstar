@@ -30,11 +30,12 @@
 		"set_lives": {"dev": true, "probe_op": true, "route": "cabinet", "args": {"lives": "int"}, "comment": "Cabinet: set lives 0..9 (emits lives_changed). Dev only."},
 		"teleport": {"dev": true, "probe_op": true, "route": "cabinet", "args": {"x": "number", "y": "number"}, "comment": "Cabinet: put the Vigil at (x, y) wrapped onto the torus, velocity zero. |x|,|y| <= 4000. Dev only."},
 		"spawn": {"dev": true, "probe_op": true, "route": "cabinet", "args": {"kind": "string", "dx": "number", "dy": "number"}, "comment": "Cabinet: spawn kind acolyte|geode|shard at Vigil + (dx, dy), wrapped. |dx|,|dy| <= 4000. Dev only."},
-		"shoot_vigil": {"dev": true, "probe_op": true, "route": "cabinet", "args": {"dx": "number", "dy": "number"}, "comment": "Cabinet: fire one hostile censer shot from Vigil + (dx, dy) straight at the Vigil. (0,0) is rejected. Dev only."},
+		"shoot_vigil": {"dev": true, "probe_op": true, "route": "cabinet", "args": {"dx": "number", "dy": "number"}, "optional": {"acolyte_id": "scalar"}, "comment": "Cabinet: fire one hostile censer shot from Vigil + (dx, dy) straight at the Vigil. (0,0) is rejected. Optional acolyte_id (int >= 0, or \"last\" = the Acolyte the latest spawn made) is the shot's shooter id; a dead or missing id is accepted (stages shooter gone). Omitted = no shooter. Dev only."},
 		"kill_all": {"dev": true, "probe_op": true, "route": "cabinet", "args": {}, "comment": "Cabinet: remove Acolytes, Grubs and hostile shots (not the ritual, not geodes). Dev only."},
 		"pause_sim": {"dev": true, "probe_op": true, "route": "cabinet", "args": {"on": "bool"}, "comment": "Cabinet: set ArcadeWorld.paused_sim. Dev only."},
 		"step_sim": {"dev": true, "probe_op": true, "route": "cabinet", "args": {"frames": "int"}, "comment": "Cabinet: advance ArcadeWorld.step(1/60) N times (1..3600); needs paused_sim. Does not advance the CabinetGame state machine. Dev only."},
 		"wake_entity": {"dev": true, "probe_op": true, "route": "cabinet", "args": {}, "comment": "Cabinet: start the Awakening now (the entity is awake after ~4.2 s of sim time; wait for cabinet/world entity_awake). Fails on a Cold Sepulchre. Dev only."},
-		"place_entity": {"dev": true, "probe_op": true, "route": "cabinet", "args": {"dx": "number", "dy": "number"}, "comment": "Cabinet: put the awake Sepulchre entity at Vigil + (dx, dy), wrapped. |dx|,|dy| <= 4000. Fails unless the entity is awake. Dev only."}
+		"place_entity": {"dev": true, "probe_op": true, "route": "cabinet", "args": {"dx": "number", "dy": "number"}, "comment": "Cabinet: put the awake Sepulchre entity at Vigil + (dx, dy), wrapped. |dx|,|dy| <= 4000. Fails unless the entity is awake. Dev only."},
+		"kill_acolyte": {"dev": true, "probe_op": true, "route": "cabinet", "args": {"acolyte_id": "scalar"}, "comment": "Cabinet: kill exactly one live Acolyte (int id >= 0, or \"last\") through the game's own death path; shots are untouched. Fails when there is no such live Acolyte. Dev only."}
 	}
 }

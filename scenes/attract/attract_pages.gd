@@ -15,6 +15,7 @@ const BOX := Vector2(232, 96)     # fits the 256 px screen with 12 px clear each
 @export var scores: CabinetTuning
 
 var gamepad := false
+var continue_stage := -1          ## 0-based stage on offer after GAME OVER (Q-T104); -1 = no offer. Pins the CONTINUE page.
 var page: int = Page.PITCH
 var _page_t := 0.0
 var _t := 0.0
@@ -41,6 +42,9 @@ func _process(delta: float) -> void:
 
 func _draw() -> void:
 	_draw_chase_lights()
+	if continue_stage >= 0:
+		_draw_continue()
+		return
 	match page:
 		Page.PITCH:
 			_draw_pitch()
@@ -73,6 +77,16 @@ func _draw_chase_lights() -> void:
 
 func _header(key: String) -> void:
 	PixelText.draw_centered(self, size.x * 0.5, 9.0, tr(key), Look.c(Pal.VOID_5))
+
+
+## The CONTINUE offer (Q-T104): stage shown 1-based, in the pitch page's hot yellow, steady under reduced motion.
+func _draw_continue() -> void:
+	var still: bool = SettingsService.get_value(&"reduced_motion") or SettingsService.get_value(&"photosensitivity")
+	var lit := still or int(_t * 2.0) % 2 == 0
+	var y := size.y * 0.5 - 12.0
+	for line in PixelText.wrap(tr("CAB_CONTINUE").format({"stage": continue_stage + 1}), 1, size.x - 24.0):
+		PixelText.draw_centered(self, size.x * 0.5, y, line, Look.c(Pal.GAS_4) if lit else Look.c(Pal.GAS_2))
+		y += 12.0
 
 
 func _draw_pitch() -> void:

@@ -376,6 +376,95 @@ func test_the_latest_mark_decides_and_the_size_cutoff_reads_the_tuning() -> void
 	assert_float(_val("cabinet/vigil", "killer_dx")).is_equal_approx(50.0, 0.01)
 
 
+# --- shooter ids (acolyte_id arg, shooter_* props, kill_acolyte) -------------------------------
+
+func test_spawn_records_the_last_acolyte_id() -> void:
+	assert_int(_val("cabinet/world", "last_spawned_acolyte_id")).is_equal(-1)
+	probe.dev_op("spawn", {"kind": "acolyte", "dx": 0, "dy": -90})
+	var a: AcolyteSquad.Acolyte = world.acolytes.items[0]
+	assert_int(_val("cabinet/world", "last_spawned_acolyte_id")).is_equal(a.id)
+	probe.dev_op("spawn", {"kind": "geode", "dx": 60, "dy": 0})   # other kinds leave it alone
+	assert_int(_val("cabinet/world", "last_spawned_acolyte_id")).is_equal(a.id)
+
+
+func test_shoot_vigil_passes_the_shooter_id_through_to_the_mark() -> void:
+	world.vigil.shield = 0.0
+	probe.dev_op("spawn", {"kind": "acolyte", "dx": 0, "dy": -90})
+	var a: AcolyteSquad.Acolyte = world.acolytes.items[0]
+	assert_str(probe.dev_op("shoot_vigil", {"dx": 0, "dy": -90, "acolyte_id": "last"})).is_empty()
+	assert_int(world.shots.shots[0].shooter_id).is_equal(a.id)
+	for i in 40:
+		world.step(DT)
+	assert_str(_val("cabinet/vigil", "killer_kind")).is_equal("shot")
+	assert_int(_val("cabinet/vigil", "shooter_id")).is_equal(world.fx.death_marks.back().shooter_id)
+	assert_int(_val("cabinet/vigil", "shooter_id")).is_equal(a.id)
+	assert_bool(_val("cabinet/vigil", "shooter_alive")).is_true()
+	assert_bool(_val("cabinet/vigil", "shooter_on_screen")).is_true()
+
+
+func test_shoot_vigil_without_acolyte_id_has_no_shooter() -> void:
+	world.vigil.shield = 0.0
+	probe.dev_op("shoot_vigil", {"dx": 0, "dy": -90})
+	assert_int(world.shots.shots[0].shooter_id).is_equal(-1)
+	for i in 40:
+		world.step(DT)
+	assert_int(_val("cabinet/vigil", "shooter_id")).is_equal(-1)
+	assert_bool(_val("cabinet/vigil", "shooter_alive")).is_false()
+	assert_bool(_val("cabinet/vigil", "shooter_on_screen")).is_false()
+
+
+func test_shoot_vigil_accepts_an_explicit_id_even_if_nothing_has_it() -> void:
+	assert_str(probe.dev_op("shoot_vigil", {"dx": 0, "dy": -90, "acolyte_id": 9999})).is_empty()
+	assert_int(world.shots.shots[0].shooter_id).is_equal(9999)
+
+
+func test_last_with_nothing_spawned_and_bad_ids_fail_plainly() -> void:
+	assert_str(probe.dev_op("shoot_vigil", {"dx": 0, "dy": -90, "acolyte_id": "last"})).contains("acolyte_id")
+	assert_str(probe.dev_op("shoot_vigil", {"dx": 0, "dy": -90, "acolyte_id": -3})).contains("acolyte_id")
+	assert_str(probe.dev_op("shoot_vigil", {"dx": 0, "dy": -90, "acolyte_id": "first"})).contains("acolyte_id")
+	assert_int(world.shots.shots.size()).is_equal(0)
+	assert_str(probe.dev_op("kill_acolyte", {"acolyte_id": "last"})).contains("acolyte_id")
+
+
+func test_an_off_view_shooter_is_alive_and_not_on_screen() -> void:
+	world.vigil.shield = 0.0
+	probe.dev_op("spawn", {"kind": "acolyte", "dx": 0, "dy": -450})
+	probe.dev_op("shoot_vigil", {"dx": 0, "dy": -450, "acolyte_id": "last"})
+	world.fx.death_mark(world.vigil.pos + Vector2(0, -200), 3.0, Vector2.UP, world.vigil.pos, INF, world.acolytes.items[0].id)
+	assert_bool(_val("cabinet/vigil", "shooter_alive")).is_true()
+	assert_bool(_val("cabinet/vigil", "shooter_on_screen")).is_false()
+
+
+func test_kill_acolyte_leaves_shots_and_marks_the_shooter_gone() -> void:
+	world.vigil.shield = 0.0
+	probe.dev_op("spawn", {"kind": "acolyte", "dx": 0, "dy": -90})
+	probe.dev_op("spawn", {"kind": "acolyte", "dx": 80, "dy": 0})
+	var first: int = world.acolytes.items[0].id
+	assert_str(probe.dev_op("shoot_vigil", {"dx": 0, "dy": -90, "acolyte_id": first})).is_empty()
+	assert_str(probe.dev_op("kill_acolyte", {"acolyte_id": first})).is_empty()
+	assert_int(_val("cabinet/world", "hostile_shots")).is_equal(1)
+	assert_bool(world.acolytes.find_by_id(first) == null).is_true()
+	assert_int(_val("cabinet/world", "acolytes")).is_equal(1)   # exactly one died
+	assert_str(probe.dev_op("kill_acolyte", {"acolyte_id": first})).contains("no live Acolyte")
+	for i in 40:
+		world.step(DT)
+	assert_str(_val("cabinet/vigil", "killer_kind")).is_equal("shot")
+	assert_int(_val("cabinet/vigil", "shooter_id")).is_equal(first)
+	assert_bool(_val("cabinet/vigil", "shooter_alive")).is_false()
+	assert_bool(_val("cabinet/vigil", "shooter_on_screen")).is_false()
+
+
+func test_shooter_props_are_in_describe_and_snapshot() -> void:
+	var d: Dictionary = probe.describe()
+	for p in ["shooter_id", "shooter_alive", "shooter_on_screen"]:
+		assert_array(d.props["cabinet/vigil"]).contains([p])
+	assert_array(d.props["cabinet/world"]).contains(["last_spawned_acolyte_id"])
+	assert_array(d.dev_ops).contains(["kill_acolyte"])
+	var s: Dictionary = probe.snapshot()
+	assert_int(s.vigil.shooter_id).is_equal(-1)
+	assert_int(s.world.last_spawned_acolyte_id).is_equal(-1)
+
+
 func _wake_and_wait() -> void:
 	assert_str(probe.dev_op("wake_entity", {})).is_empty()
 	for i in 400:

@@ -210,12 +210,25 @@ static func _check_step(i: int, step: Dictionary, defs: Dictionary) -> Array[Str
 			errs.append_array(_offsets(i, name, step, ["dx", "dy"]))
 			if is_zero_approx(float(step.dx)) and is_zero_approx(float(step.dy)):
 				errs.append("step %d (shoot_vigil): dx and dy cannot both be 0" % i)
+			if step.has("acolyte_id"):
+				errs.append_array(_acolyte_id(i, name, step.acolyte_id))
+		"kill_acolyte":
+			errs.append_array(_acolyte_id(i, name, step.acolyte_id))
 		"step_sim":
 			if int(step.frames) > MAX_STEP_SIM:
 				errs.append("step %d (step_sim): frames must be in 1..%d" % [i, MAX_STEP_SIM])
 	for k in ["frames", "within"]:
 		if step.has(k) and (int(step[k]) < 1 or int(step[k]) > MAX_WAIT):
 			errs.append("step %d (%s): %s must be in 1..%d" % [i, name, k, MAX_WAIT])
+	return errs
+
+
+static func _acolyte_id(i: int, name: String, v: Variant) -> Array[String]:
+	var errs: Array[String] = []
+	var is_last := typeof(v) == TYPE_STRING and str(v) == "last"
+	var is_id := typeof(v) in [TYPE_INT, TYPE_FLOAT] and _is_int(v) and float(v) >= 0.0
+	if not is_last and not is_id:
+		errs.append("step %d (%s): acolyte_id must be an int >= 0 or \"last\"" % [i, name])
 	return errs
 
 

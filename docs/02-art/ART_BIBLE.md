@@ -385,9 +385,17 @@ Code: `features/cabinet/bezel_art.gd`, `bezel_piece.gd`, `bezel_print.gd`, `cabi
 - **Backlit marquee (Q-T32 (a) built):** the top 28 units; lettering ink height about 21 units including stroke.
 - **The coin door stays black** (warmth only in its highlights). **Die-cut sticker** for the NEW! slogan. **All bezel text is `VectorText`.**
 - **New print strings** (the bezel tagline): `CAB_BEZEL_TAG_1` "ONE COIN." and `CAB_BEZEL_TAG_2` "ONE VIGIL."
-- **Not built (pass 2b):** control-panel buttons with the attract menu on the bezel (TECH-001 Q-T34).
+- **Built (pass 2b):** the control panel under the screen (TECH-001 Q-T34, resolved; §2.10): three pushbuttons, NEW VIGIL a big lit start button, SETTINGS and QUIT smoked service caps; decorative in game.
 
-**Approved re-composition (owner, 2026-11-18; PR C; built in part by pass 2, above, except the control panel): Sinistar-style portrait cabinet.** The screen is a **256×304 portrait** tube (PR B, built; TECH-001 §1.3) with 28 units of thick black tube mask above and below and 192-unit side panels on the 640×360 reference; the bezel fills the whole window at any aspect (no bars). Composition: a **large emblem illustration in each side panel**, an **instruction card beside the screen**, a **thin backlit marquee** in the top 28 reference units above the screen (lettering ink height about 21 units including stroke, centred above the screen; the big logo lives in the side-panel art; it must read as a real backlit translucent sign: uneven backlight, a dead tube band, dust on the top edge; ruled 2026-11-18, TECH-001 Q-T32; built in pass 2), a **thick tube mask**, **restrained inks** (a smaller share of the ink set than the interim bezel), and a **control panel** carrying `CoinSlot` plus the NEW VIGIL / SETTINGS / QUIT buttons (one focus domain with the coin slot). **All live readouts (score, Vigils, HI, magazine, Sepulchre progress, credits) move onto the screen**, in an on-screen HUD strip; the bezel carries printed art and the coin door only. Bezel text is `VectorText` (code-generated stroke alphabet, tessellated to polygons; no font files; D-13), drawn natively, sharp at any scale, with MSAA for edges. This borrows Sinistar's layout, not its face: the §12.7a motif rule (no mouth, no two eyes, no skull) stands. The HUD strip is 40 px (Q-T31, resolved); the marquee height is resolved (Q-T32, above). **Until PR C, the printed bezel described above is the interim design.**
+**Built (pass 2b polish, 2026-11-19; commit 520d874; values in `data/cabinet/cabinet_surface.tres`).** After The Reviewer's notes on pass 2.
+- **Glass reads through light:** the glass band lowers contrast where it crosses the print, and the thumb smear sits in the screen glow's path and hazes with the live screen light (`cab_screen_light`).
+- **UV fade:** reds and magentas fade in the sun-facing print; an unfaded edge band survives under the T-molding.
+- **Causal grime, scuffs and flakes** are visible at 1:1, not only when zoomed.
+- **Marquee:** a hot tube band, backlit lettering; the dark patch is a cold shadow under the plastic (blocked backlight), and warm light spills onto the bezel below.
+- **Coin door:** the label is flat faded paper; the slot lip is dimmed so the lit price plate wins.
+- **The room** takes a faint screen-coloured spill.
+
+**Approved re-composition (owner, 2026-11-18; PR C; built in part by pass 2, above, and pass 2b, above): Sinistar-style portrait cabinet.** The screen is a **256×304 portrait** tube (PR B, built; TECH-001 §1.3) with 28 units of thick black tube mask above and below and 192-unit side panels on the 640×360 reference; the bezel fills the whole window at any aspect (no bars). Composition: a **large emblem illustration in each side panel**, an **instruction card beside the screen**, a **thin backlit marquee** in the top 28 reference units above the screen (lettering ink height about 21 units including stroke, centred above the screen; the big logo lives in the side-panel art; it must read as a real backlit translucent sign: uneven backlight, a dead tube band, dust on the top edge; ruled 2026-11-18, TECH-001 Q-T32; built in pass 2), a **thick tube mask**, **restrained inks** (a smaller share of the ink set than the interim bezel), and a **control panel** carrying `CoinSlot` plus the NEW VIGIL / SETTINGS / QUIT buttons (one focus domain with the coin slot). **All live readouts (score, Vigils, HI, magazine, Sepulchre progress, credits) move onto the screen**, in an on-screen HUD strip; the bezel carries printed art and the coin door only. Bezel text is `VectorText` (code-generated stroke alphabet, tessellated to polygons; no font files; D-13), drawn natively, sharp at any scale, with MSAA for edges. This borrows Sinistar's layout, not its face: the §12.7a motif rule (no mouth, no two eyes, no skull) stands. The HUD strip is 40 px (Q-T31, resolved); the marquee height is resolved (Q-T32, above). **Until PR C, the printed bezel described above is the interim design.**
 
 ### 12.8 Steady Ledger, visually (WARP-001 §4.4)
 - While Steady Ledger is on, a 8 × 8 **open-eye-over-a-rule** icon (BONE-3) sits at the inner corner of the HUD's top strip. The player can always see that the honest HUD is active (WARP-001 §4.7: accessibility state never lies).
@@ -672,18 +680,37 @@ Built in `features/aether/` (TECH-001 §2.9), shaders in `shaders/aether/`, look
 Supersede the matching pass 2 lines above where they differ.
 
 **Entity: no face.** Pass 2's contour read as a human profile (The Reviewer, 2026-11-18); the entity never has a face (N4, NARR-001 §3.4).
-- The contour has only a gentle large-scale warp; the character comes from creased mid and fine noise and 8 angular sheared bites. Tendrils are straight with one kink and an occasional one-sided branch, never curved pairs.
+- The contour has only a gentle large-scale warp; the character comes from creased mid and fine noise and 8 angular sheared bites. (Pass 3 had straight tendrils; pass 4 removes all hanging tendrils, §16.6c.)
 - **Stepped subtraction:** three crisp nested edges, slightly offset. Outer (about 0.4 to 0.5 r out): near and mid fog, the sphere seam, the leviathan and the rays stop. Middle (about 0.19 r): stars, life and far detail gone; the far band is flat cold VOID (`mix(void_lo, void_hi, 0.22)`), never black. Inner: true black (only the entity writes 0,0,0). The straight cut is terraced.
-- Face and pareidolia are checked by eye on captures at full size and at 25%. There is no automated guard.
+- Face and pareidolia are checked by eye on captures at full size and at 25%. Pass 4 adds an automated guard for closed holes and hanging appendages (§16.6c); the face check stays by eye.
 
 **Leviathan anatomy.** Long tapering head and back running off the top of the frame; the belly a long curve over the lantern that never encloses it; smooth back with a few raised broken plates; one swept pectoral vane with a V-notched trailing edge, running off-frame. Backscatter rim strongest along the belly (T3 `leviathan_rim` = AETHER_3). Flank lights follow the belly in two loose rows with staggered size, spacing and phase at about 0.35 Hz.
 
-**Brass.** The meridian band is two-tone: brass body BONE_2, highlight edge BONE_4, engraving VOID_3. Minor and major graduations have separate weights. Major graduations carry engraved mark groups (dots and slanted strokes): decoration, never text glyphs, no `tr()`. Some groups loosely suggest Roman numerals (TECH-001 Q-T92). Armillary rings are two-tone and fogged by depth, interleaved with the sphere through a back copy drawn below the sphere layer. Brass stays BONE and VOID mixes except the T4 lamp-interior exception (§4).
+**Brass.** The meridian band is two-tone: brass body BONE_2, highlight edge BONE_4, engraving VOID_3. Minor and major graduations have separate weights. Major graduations carry engraved mark groups (dots and slanted strokes): decoration, never text glyphs, no `tr()`. Pass 4 replaces them with crisp numerals (§16.6c). Armillary rings are two-tone and fogged by depth, interleaved with the sphere through a back copy drawn below the sphere layer. Brass stays BONE and VOID mixes except the T4 lamp-interior exception (§4).
 
 **T4 cracks.** Two impacts with wide gaps (10 and 8 px ✱; a third, 3.4 px ✱) showing the Aether behind with counter-parallax, its own denser and faster stars, and a reversed seam.
 
 **Lantern in-scatter.** Gold-amber: GAS_3 at the rim to the lantern colour at the heart. The fog term takes 70% from fog brightness, so every tier's pools are warmer.
 
-**Quality (CH-7).** Mid fog resolution is a ladder field (`mid_fog_resolution_scale` ✱: 1.0, 0.5, 0.25 at high, medium, low). Clean desktop low cost is at most 0.75 ms at 720p (TECH-001 §8.5; Deck / iGPU still unmeasured, Q-T90). Open: T5 chalk fog blobs near the lantern can read as a ghost or skull (Q-T93).
+**Quality (CH-7).** Mid fog resolution is a ladder field (`mid_fog_resolution_scale` ✱: 1.0, 0.5, 0.25 at high, medium, low). Clean desktop low cost is at most 0.75 ms at 720p (TECH-001 §8.5; Deck / iGPU still unmeasured, Q-T90). The T5 ghost / skull read (Q-T93) is resolved by the §16.6c rule.
+
+### 16.6c Pass 4 rules (2026-11-19)
+Supersede the matching pass 3 lines where they differ.
+
+**Pareidolia rule (adopted, proposed by The Reviewer; PM under owner autonomy grant):** no closed holes in organic shapes near the play centre, and no thin appendages hanging from the entity. This is the organic-shape companion to the entity face rule (N4, §16.6b; the limb rule N7 is NARR-001 §3.4). Enforcement: `features/aether/tests/test_aether_pass4.gd`: a CPU flood-fill of the fog and chalk strand maths over 3 drift directions × 2 seeds × 2 times × 4 thresholds on a 110×110 grid, with a control proving the old ring construction is caught; entity cracks bounded inside a band just outside the mass (`A_ENT_CRACK_BAND` 0.24 × grow, checked for every radius and growth the backdrop produces). Honest limits: no headless shader render (CPU mirror, double precision); the blend ring between play core and free fog, the opaque far band and colour terms are not covered.
+
+**Entity.** Hanging tendrils removed; crazed-glaze cracks inside the band instead (thin 0.9 px to a 0.35 px hairline, never free-ending). Bites are acute (32 to 66°) or obtuse (115 to 132°) wedges, never square. Terrace risers slant.
+
+**Play-centre fog (every tier).** Built from drift-aligned strands combined with `min`, so there are no holes.
+
+**T4.** Irregular fracture cells; open cells show a sea-green other world (behind_a PHOS_2, behind_b AETHER_5) with counter-drifting fog, sparse large warm stars (BONE_4) and a vast dim body.
+
+**T3 vane.** A translucent membrane on four bony spines with a lit leading edge.
+
+**Text exemption (Q-T92, resolved).** Crisp engraved Roman numerals I to XII on the meridian majors are diegetic decorative art (period engraving), exempt from `tr()` because they are art, not player text. Narrow: numerals only, never words. Behind `AetherLook.meridian_numerals` (default true). Tested: the numerals decode to exactly I to XII, and only I, V and X have stroke branches.
+
+**Known weaknesses.** T5 far band reads as pale draped satin sheets around the lantern (not a law breach; pass 5) and is brighter than pass 3; crazing can look twiggy at mid drain; the T4 behind-world is still fairly flat; the vane spines are subtle at 25%.
+
+**Cost.** High, 1080p, RTX 4070: 4.38 ms on the entity exhibit (TECH-001 §8.5, Q-T94: trim before M3). ✱ params are listed in TECH-001 §9.1.
 
 Dev-route gating tests: `tests/test_dev_routes_gate.gd`. Backdrop and gallery load tests: `features/aether/tests/test_aether_backdrop.gd`, `scenes/dev/aether_gallery/tests/test_aether_gallery_loads.gd`.

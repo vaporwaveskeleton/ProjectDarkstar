@@ -34,6 +34,12 @@ uniform vec2 camera_offset = vec2(0.0);       // camera drift, px
 uniform float time_s = 0.0;
 uniform float drain = 0.0;
 uniform float sky_tint = 0.07;
+uniform int numerals = 1;                     // 1 = engraved I..XII on the meridian band, 0 = none
+
+// ✱ numeral cap height and its row centre (|d| px inside the seam): the outer half of the band
+const float NUM_H = 5.0;
+const float NUM_ROW = 10.4;
+const float NUM_CLEAR = 9.0;                  // ✱ half-width of the numeral's tick-free cartouche
 
 varying vec2 v_px;
 
@@ -45,12 +51,63 @@ float thin_line(float x, float w, float fw) {
 	return 1.0 - smoothstep(w, w + fw * 1.5, abs(x));
 }
 
+// One engraved Roman numeral I..XII (pass 4, Q-T92: decorative engraving, not UI text — pending PM
+// approval, switchable by `numerals`). `g` = glyph-space px (x along the band, y toward the seam),
+// centred on the numeral; `h` = cap height px. Returns the distance (px) to the nearest stroke.
+// Strokes: I = a stem with foot and head serifs; V = two arms meeting at the foot; X = two
+// diagonals. Codes are read most-significant digit first: 1 = I, 2 = V, 3 = X.
+float roman_numeral(vec2 g, int n, float h) {
+	int codes[12] = int[12](1, 11, 111, 12, 2, 21, 211, 2111, 13, 3, 31, 311);
+	int code = codes[clamp(n, 1, 12) - 1];
+	float adv_i = 0.46 * h;
+	float adv_w = 0.9 * h;
+	float gap = 0.3 * h;
+	// total width (chars + gaps), then walk the digits from the last char leftward
+	float width = -gap;
+	int c = code;
+	for (int k = 0; k < 4; k++) {
+		if (c == 0) {
+			break;
+		}
+		width += (c % 10 == 1 ? adv_i : adv_w) + gap;
+		c /= 10;
+	}
+	float x = width * 0.5;
+	float best = 1e4;
+	float top = 0.5 * h;
+	float bot = -0.5 * h;
+	c = code;
+	for (int k = 0; k < 4; k++) {
+		if (c == 0) {
+			break;
+		}
+		int ch = c % 10;
+		float w = ch == 1 ? adv_i : adv_w;
+		float cx = x - w * 0.5;
+		if (ch == 1) {
+			best = min(best, a_seg(g, vec2(cx, bot), vec2(cx, top)));
+			best = min(best, a_seg(g, vec2(cx - 0.18 * h, top), vec2(cx + 0.18 * h, top)));
+			best = min(best, a_seg(g, vec2(cx - 0.18 * h, bot), vec2(cx + 0.18 * h, bot)));
+		} else if (ch == 2) {
+			best = min(best, a_seg(g, vec2(cx - 0.45 * h, top), vec2(cx, bot)));
+			best = min(best, a_seg(g, vec2(cx, bot), vec2(cx + 0.45 * h, top)));
+		} else {
+			best = min(best, a_seg(g, vec2(cx - 0.42 * h, top), vec2(cx + 0.42 * h, bot)));
+			best = min(best, a_seg(g, vec2(cx - 0.42 * h, bot), vec2(cx + 0.42 * h, top)));
+		}
+		x -= w + gap;
+		c /= 10;
+	}
+	return best;
+}
+
 // The engraved brass meridian band (pass 3: brass is BRASS) riding inside a seam at signed distance
 // d, arc length `arc`. Returns x = metal body, y = highlight edge (toward the seam), z = engraving
-// shadow (inner edge, graduations, marks). Two-tone metal: brass_col body, brass_hi edge,
+// shadow (inner edge, graduations, numerals). Two-tone metal: brass_col body, brass_hi edge,
 // brass_shadow engraving. Minor graduations every 9 px over the inner half of the band, majors
-// every 45 px across it, each with its own weight; at every major a little group of engraved
-// strokes below the band, numeral-like but never a readable glyph.
+// every 45 px across it, each with its own weight. Pass 4: halfway between majors, a crisp engraved
+// Roman numeral I..XII (a VOID_3 cut in a tick-free cartouche), upright toward the seam and read
+// along the curve; `numerals` = 0 leaves graduations only (the cartouche gets its ticks back).
 vec3 brass_band(float d, float arc, float fw) {
 	float aa = fw * 1.2;
 	float body = smoothstep(-15.0 - aa, -15.0 + aa, d) * (1.0 - smoothstep(-6.0 - aa, -6.0 + aa, d));
@@ -65,26 +122,18 @@ vec3 brass_band(float d, float arc, float fw) {
 	float w_major = 0.55 + 0.45 * a_hash(vec2(mj, 7.1));
 	float tw = mix(w_minor, w_major, is_major);
 	float tick = thin_line(tx, tw, fw) * step(-14.5, d) * step(d, mix(-10.5, -7.0, is_major));
-	// engraved marks under each major: a dot and two or three short strokes, each its own slant and
-	// height, so the group reads as an engraver's mark but never as a glyph (no I / II / III runs)
+	// engraved numerals between the majors (the hour ring): a clear cartouche (no minor ticks) with
+	// the numeral cut across the band
 	float marks = 0.0;
-	float md = d + 20.0;                                     // 0 at the middle of the marks row
-	if (abs(md) < 3.2 && abs(mx) < 7.0) {
-		float count = 2.0 + step(0.55, a_hash(vec2(mj, 3.3)));
-		for (int k = 0; k < 3; k++) {
-			if (float(k) >= count) {
-				break;
-			}
-			float hk = a_hash(vec2(mj * 1.7 + float(k), 5.9));
-			float slant = (hk - 0.5) * 1.8 * (float(k) - 0.8);
-			float tall = 0.9 + 1.9 * a_hash(vec2(float(k), mj + 2.2));
-			float lift = (hk - 0.5) * 1.6;
-			float stroke = thin_line(mx + 3.0 - 2.6 * float(k) - (md - lift) * slant, 0.3, fw);
-			marks = max(marks, stroke * step(abs(md - lift), tall));
+	float nj = floor(arc / 45.0);
+	vec2 g = vec2(arc - (nj + 0.5) * 45.0, d + NUM_ROW);
+	if (numerals == 1) {
+		tick *= step(NUM_CLEAR, abs(g.x));
+		if (abs(g.y) < NUM_H && abs(g.x) < NUM_CLEAR) {
+			marks = thin_line(roman_numeral(g, int(mod(nj, 12.0)) + 1, NUM_H), 0.3, fw);
 		}
-		marks = max(marks, 1.0 - smoothstep(0.45, 0.45 + fw, length(vec2(mx - 4.2, md + 1.8))));
 	}
-	return vec3(body, hi * body, max(lo * body, max(tick, marks)));
+	return vec3(body, hi * body, max(lo * body, max(tick, marks * body)));
 }
 
 void fragment() {

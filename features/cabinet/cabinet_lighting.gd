@@ -35,7 +35,7 @@ static func set_screen_light(c: Color) -> void:
 
 ## A material for ink drawn with canvas draw calls (columns, field, sticker text): screened tones, fade,
 ## mottle, causal wear and flakes, lit by the cabinet. `origin` is the item's top-left in rig units.
-static func print_material(s: CabinetSurface, origin: Vector2, mottled: bool) -> ShaderMaterial:
+static func print_material(s: CabinetSurface, origin: Vector2, mottled: bool, on_lens: bool = false) -> ShaderMaterial:
 	var m := ShaderMaterial.new()
 	m.shader = load("res://shaders/cabinet/bezel_print.gdshader")
 	apply(m, s)
@@ -48,4 +48,14 @@ static func print_material(s: CabinetSurface, origin: Vector2, mottled: bool) ->
 	m.set_shader_parameter(&"scuff", s.print_scuff)
 	m.set_shader_parameter(&"flake", s.print_flake)
 	m.set_shader_parameter(&"backer_color", Vector3(s.backer_color.r, s.backer_color.g, s.backer_color.b))
+	m.set_shader_parameter(&"grime_wear", s.print_grime)
+	if on_lens:
+		# the marquee lettering: printed on a backlit lens, so lit from behind, saturated, no UV fade
+		m.set_shader_parameter(&"backlit", 1.0)
+		return m
+	m.set_shader_parameter(&"uv_fade", s.print_uv_fade)
+	m.set_shader_parameter(&"uv_edge", s.print_uv_edge)
+	var mq := CabinetBezel.marquee()
+	m.set_shader_parameter(&"marquee_rect", Vector4(mq.position.x, mq.position.y, mq.size.x, mq.size.y))
+	m.set_shader_parameter(&"marquee_spill", s.marquee_spill)
 	return m
