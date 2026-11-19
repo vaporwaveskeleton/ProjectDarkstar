@@ -24,11 +24,13 @@ extends Control
 ## entry; AudioService ignores an id it has no bed for), and the one-shot cues in `CUES`, played only
 ## when the cue exists. Chalk has its own cue, never `lie_tell_chalk`.
 ##
-## Lantern Tree hook (Q-T191): the Tree station today lights its first lamp without a purchase.
-## The Lantern Tree feature replaces `_use_tree()` with a real node purchase (LOOP-001 §3) and
-## forwards every lit node to `look.light_lamp`; the gate rule (`RuinsOnboarding.gate_open`) stays.
+## Lantern Tree station (Q-T191, built for the tier-1 handling nodes): using the Tree buys the next
+## unbought node of `tree_stock` at the SYS-001 §7.7 tier-1 price (RunSessionCore.buy_tree_node, one
+## `tree_purchase` profile write) and lights that node's lamp (`look.light_lamp`). Nothing affordable
+## buys nothing and lights nothing. The gate rule (`RuinsOnboarding.gate_open`) stays: a lamp burns.
 
 const STATS := preload("res://data/interactions/ruins_onboarding.tres")
+const TREE_STOCK := preload("res://data/lantern_tree/tier1_stock.tres")
 const SECTOR_ROUTE := &"sector"
 const TITLE_ROUTE := &"attract"
 ## The Ruins room tone (AUDIO-001 §2.2 layer B, §12.19). No Choir chant in the hub: the chant means a
@@ -68,6 +70,8 @@ var launched := false
 ## The Ruins look (features/aether/ruins_look.tscn). Null = the dimmed-aether stand-in.
 @export var look_scene: PackedScene
 @export var stats: RuinsOnboardingStats = STATS
+## The nodes the Tree station sells, in order, and their price (data/lantern_tree/tier1_stock.tres).
+@export var tree_stock: LanternTreeStock = TREE_STOCK
 ## The instanced look, or null.
 var look: RuinsLook
 ## The rules of this visit (built on arrival).
@@ -172,8 +176,12 @@ func _arrive() -> void:
 		look.set_first_visit(first)
 	onboarding = RuinsOnboarding.new(stats)
 	onboarding.begin(first, paid, _lines(first, vi), _stations(), _mouth_x())
+	if session != null:
+		onboarding.tree_buyer = _buy_tree
+		onboarding.tree_lit = not session.profile().tree_nodes.is_empty()
 	if not first:
 		_hold_clock(false)
+	if onboarding.tree_lit:
 		_light_tree(true)
 	_tickets.from = _cabinet_pos() + Vector2(0, -8)
 	_tickets.to = _tree_pos() + Vector2(0, -56)
@@ -418,13 +426,23 @@ func _cue(id: StringName) -> void:
 		AudioService.play(id)
 
 
-## Light the Tree's first lamp (interim, Q-T191); `instant` on a later visit.
+## The Tree station's purchase (RuinsOnboarding.tree_buyer): the node bought, or &"".
+func _buy_tree() -> StringName:
+	return session.buy_tree_node(tree_stock) if session != null else &""
+
+
+## Lights the Tree's lamps: every owned node's lamp on arrival (`instant`), the new one on a purchase.
 func _light_tree(instant: bool) -> void:
 	if look == null:
 		return
 	var at := look.placeholder_lamp_positions()
+	var owned := session.profile().tree_nodes.size() if session != null else 1
+	owned = clampi(owned, 1, at.size())
 	if at.size() > 0:
-		look.light_lamp(at[0], instant)
+		for i in (owned if instant else 0):
+			look.light_lamp(at[i], true)
+		if not instant:
+			look.light_lamp(at[owned - 1], false)
 	if not instant:
 		_cue(&"ruins_tree_lamp")
 

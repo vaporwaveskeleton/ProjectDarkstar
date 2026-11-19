@@ -90,6 +90,7 @@ var _flight: Dictionary = {}           # StringName layer -> AudioStreamPlayer o
 var _flight_db: Dictionary = {}        # StringName layer -> smoothed volume_db
 var _flight_pitch: Dictionary = {}     # StringName layer -> smoothed pitch_scale
 var _flight_on := false
+var _flight_lantern_up := true          # the hiss is the lantern: cut while it is down (Q-T223)
 var _flight_in := Vector3.ZERO         # speed, thrust, turn (0..1)
 var _flight_return := 1.0              # 0..1 return ramp after a silence
 var _creak_armed := true
@@ -401,9 +402,11 @@ func _step_stems(delta: float) -> void:
 ## The ship's motion as fractions of its own SYS-001 values (VigilFlightVoice computes them): speed /
 ## max_speed, thrust 0..1 (0 while braking), turn rate / snap_turn, and whether the brake is held.
 ## Starts the flight layers; the rigging creak fires as a hard turn begins and the ballast as the brake
-## engages at speed. Gameplay never sets a level: FlightMix maps these through `mix`.
-func set_flight(speed01: float, thrust01: float, turn01: float, braking: bool) -> void:
+## engages at speed. `lantern_up` false (running dark) cuts the lantern hiss. Gameplay never sets a
+## level: FlightMix maps these through `mix`.
+func set_flight(speed01: float, thrust01: float, turn01: float, braking: bool, lantern_up: bool = true) -> void:
 	_flight_on = true
+	_flight_lantern_up = lantern_up
 	_flight_in = Vector3(clampf(speed01, 0.0, 1.0), clampf(thrust01, 0.0, 1.0), clampf(turn01, 0.0, 1.0))
 	if _flight_in.z >= mix.creak_turn_on and _creak_armed:
 		_creak_armed = false
@@ -440,7 +443,7 @@ func _step_flight(delta: float) -> void:
 		_flight_return = 0.0
 	else:
 		_flight_return = move_toward(_flight_return, 1.0, delta / maxf(mix.flight_return_s, 0.001))
-	var targets := FlightMix.targets(_flight_in.x, _flight_in.y, _flight_in.z, mix) if _flight_on else {}
+	var targets := FlightMix.targets(_flight_in.x, _flight_in.y, _flight_in.z, mix, _flight_lantern_up) if _flight_on else {}
 	for id: StringName in _flight:
 		var p: AudioStreamPlayer = _flight[id]
 		if quiet:

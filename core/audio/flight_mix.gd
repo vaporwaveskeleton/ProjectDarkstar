@@ -16,7 +16,8 @@ const LANTERN := &"flight_lantern"
 const LAYERS: Array[StringName] = [ENGINE, BOILER, RIGGING, LANTERN]
 
 
-static func targets(speed01: float, thrust01: float, turn01: float, s: AudioMixStats) -> Dictionary:
+static func targets(speed01: float, thrust01: float, turn01: float, s: AudioMixStats,
+		lantern_up: bool = true) -> Dictionary:
 	var sp := clampf(speed01, 0.0, 1.0)
 	var th := clampf(thrust01, 0.0, 1.0)
 	var tu := clampf(turn01, 0.0, 1.0)
@@ -28,7 +29,7 @@ static func targets(speed01: float, thrust01: float, turn01: float, s: AudioMixS
 			lerpf(s.engine_pitch_min, s.engine_pitch_max, sp) + 0.05 * th),
 		BOILER: Vector2(_fade(s.flight_floor_db, s.boiler_full_db, th), 1.0 + s.boiler_pitch_lift * th),
 		RIGGING: Vector2(_fade(s.flight_floor_db, s.rigging_full_db, rig), 0.9 + 0.2 * sp + 0.06 * tu),
-		LANTERN: Vector2(s.lantern_db + s.lantern_speed_db * sp, 1.0),
+		LANTERN: Vector2(s.lantern_db + s.lantern_speed_db * sp if lantern_up else s.flight_floor_db, 1.0),
 	}
 
 

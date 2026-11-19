@@ -118,6 +118,10 @@ msgstr "INDEX"
 msgid "HUD_PLATE_CHARGES"
 msgstr "CHARGES"
 
+#. Engraved caption on the brass Surgelight pip strip (Aether handling plate, right of the Seam plaque).
+msgid "HUD_PLATE_SURGE"
+msgstr "SURGE"
+
 #. Engraved caption on the brass Seam index plaque, Aether HUD bottom-centre.
 msgid "HUD_PLATE_SEAM"
 msgstr "SEAM"

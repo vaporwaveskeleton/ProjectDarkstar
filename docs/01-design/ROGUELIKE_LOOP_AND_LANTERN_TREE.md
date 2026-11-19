@@ -330,6 +330,8 @@ Per branch, the gated nodes sit at: LANTERN tiers 1, 3, 3, 5; HULL 2, 3, 4, 5; O
 ### 3.8 Handling nodes under the Aether profile (ruled, PM under owner autonomy grant, 2026-11-19)
 
 > **Status: ruled, PM under owner autonomy grant, 2026-11-19** (TECH-001 Q-T169; queued for the owner's later review). The Aether readings below add to the §3.3 rows; where they differ, this table wins for the Aether profile. The Aether profile itself is GDD-001 §4.2a and SYS-001 §1.1a.
+>
+> **Built 2026-11-19:** the readings exist as data (`HandlingNodeEffects`, `ds_lantern_tree.handling`; `HandlingTree.apply`). Stacking is ✱: drag, brake and surge-cooldown nodes multiply (LANTERN-7 then -16 = 1.2 s, floor 0.55 s); keel nodes add to base `hull_turn`; speed bonuses sum, capped +12%, with `accel` and `brake` scaling with `max_speed`; `thrust_lateral`, `surge_charges` and `lantern_down_thrust` raise to at least. **Not built:** node purchase and state (nodes come only from the `--tree=` capture arg); no save change. **Purchase built (Q-T191):** the Ruins Tree buys the tier-1 handling nodes (LANTERN-1, HULL-1, HULL-3, in that order, 40 Ember each, saved in the profile); the other nodes and tiers are not on sale yet.
 
 **Rule.** Handling node effects are stated as percentages or multipliers, so they apply to whichever profile is active (Cabinet in Act 0, Aether afterwards). The tree is bought in the Ruins, after Act 0, so in practice it modifies the Aether profile. The §3.3 speed budget (+12% total) applies per profile. LANTERN-10 and LANTERN-13 keep scaling `accel` and `brake` with `max_speed`, so the Aether full reversal (≈ 0.79 s, SYS-001 §1.1a) stays fixed the same way the Cabinet's 0.28 s does.
 

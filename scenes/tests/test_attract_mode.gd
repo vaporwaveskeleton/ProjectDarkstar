@@ -508,3 +508,21 @@ func test_power_off_length_is_tuning_data() -> void:
 	var t := load("res://data/cabinet/cabinet_boot_tuning.tres") as CabinetBootTuning
 	assert_float(t.power_off_seconds).is_greater(0.0)
 	assert_float(t.power_off_seconds).is_less_equal(1.0)
+
+
+## A powered-off attract screen never reaches its demo (the idle count stops at power_off; found
+## with the flaky null-autopilot route, PR #75).
+func test_a_powered_off_attract_never_routes_its_demo() -> void:
+	var h := _with_param_host()
+	var runner := scene_runner(SCENE)
+	await runner.simulate_frames(2)
+	_quit_counter(runner)
+	runner.scene().set("demo_enabled", true)
+	runner.scene().call("power_off")
+	runner.scene().set("idle", 29.9999)
+	await runner.simulate_frames(6)
+	assert_float(float(runner.scene().get("idle"))).is_equal(0.0)
+	assert_array(h.routes).is_empty()
+	SceneRouter.unregister_host(h)
+	SceneRouter.is_busy = false
+	host = FakeRouteHost.install(self)

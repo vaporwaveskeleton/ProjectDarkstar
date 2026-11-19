@@ -171,3 +171,10 @@ func test_fraction_is_clamped_and_safe() -> void:
 	assert_float(VigilFlightVoice.fraction(170.0, 340.0)).is_equal_approx(0.5, 0.0001)
 	assert_float(VigilFlightVoice.fraction(900.0, 340.0)).is_equal(1.0)
 	assert_float(VigilFlightVoice.fraction(10.0, 0.0)).is_equal(0.0)
+
+
+func test_running_dark_cuts_the_lantern_hiss_only() -> void:
+	var lit := FlightMix.targets(0.5, 0.5, 0.0, _s, true)
+	var dark := FlightMix.targets(0.5, 0.5, 0.0, _s, false)
+	assert_float(_db(dark, FlightMix.LANTERN)).is_equal(_s.flight_floor_db)
+	assert_float(_db(dark, FlightMix.ENGINE)).is_equal(_db(lit, FlightMix.ENGINE))

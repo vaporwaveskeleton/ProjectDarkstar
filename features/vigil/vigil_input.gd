@@ -17,6 +17,10 @@ var stick_aim: Vector2 = Vector2.ZERO
 var read_devices: bool = true
 ## Latched on a `deploy_charge` press; ChargeLauncher consumes it (one Charge per press).
 var deploy_requested: bool = false
+## Latched on a `surgelight` press (Aether profile); VigilMotor consumes it.
+var surge_requested: bool = false
+## Latched on a `lantern_toggle` press; VigilMotor consumes it.
+var lantern_toggle_requested: bool = false
 
 ## Last pointer position from a motion event, in this viewport's (stretched, logical) coordinates.
 var _pointer_pos: Vector2 = Vector2.ZERO
@@ -32,12 +36,30 @@ func _physics_process(_delta: float) -> void:
 	stick_aim = Input.get_vector(&"aim_left", &"aim_right", &"aim_up", &"aim_down")
 	if Input.is_action_just_pressed(&"deploy_charge"):
 		deploy_requested = true
+	if Input.is_action_just_pressed(&"surgelight"):
+		surge_requested = true
+	if Input.is_action_just_pressed(&"lantern_toggle"):
+		lantern_toggle_requested = true
 
 
 ## Returns and clears the latched Charge request.
 func consume_deploy() -> bool:
 	var r := deploy_requested
 	deploy_requested = false
+	return r
+
+
+## Returns and clears the latched Surgelight request.
+func consume_surge() -> bool:
+	var r := surge_requested
+	surge_requested = false
+	return r
+
+
+## Returns and clears the latched lantern toggle.
+func consume_lantern_toggle() -> bool:
+	var r := lantern_toggle_requested
+	lantern_toggle_requested = false
 	return r
 
 

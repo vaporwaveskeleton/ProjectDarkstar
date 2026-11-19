@@ -41,24 +41,35 @@ func _notification(what: int) -> void:
 func _physics_process(delta: float) -> void:
 	if _dead or vigil == null or not is_instance_valid(vigil) or vigil.motor == null or vigil.motor.stats == null:
 		return
-	var s := vigil.motor.stats
-	var facing := vigil.motor.facing_node.rotation if vigil.motor.facing_node != null else 0.0
+	var m := vigil.motor
+	var s := m.stats
+	# The Aether profile (keel steering, TECH-001 Q-T223): the hull's heading turns at hull_turn, the
+	# keel shapes the thrust (motor.thrust_amount), and its own max_speed applies. Otherwise (the M1
+	# sandbox profile) the facing node turns at snap_turn and the stick's push is the thrust.
+	var aether := m.aether_active
+	var a := m.aether_stats
+	var heading := m.hull_heading if aether else (m.facing_node.rotation if m.facing_node != null else 0.0)
 	var turn_rate := 0.0
 	if _has_facing and delta > 0.0:
-		turn_rate = absf(wrapf(facing - _last_facing, -PI, PI)) / delta
-	_last_facing = facing
+		turn_rate = absf(wrapf(heading - _last_facing, -PI, PI)) / delta
+	_last_facing = heading
 	_has_facing = true
-	var braking := vigil.input.braking if vigil.input != null else false
-	var thrust := 0.0 if braking or vigil.input == null else clampf(vigil.input.move_dir.length(), 0.0, 1.0)
+	var braking := m.braking if aether else (vigil.input.braking if vigil.input != null else false)
+	var thrust := 0.0
+	if aether:
+		thrust = m.thrust_amount
+	elif not braking and vigil.input != null:
+		thrust = clampf(vigil.input.move_dir.length(), 0.0, 1.0)
+	var lantern_up := vigil.lantern.is_up if vigil.lantern != null else true
 	var v := Vector4(
-		fraction(vigil.velocity.length(), s.max_speed),
+		fraction(vigil.velocity.length(), a.max_speed if aether else s.max_speed),
 		thrust,
-		fraction(turn_rate, deg_to_rad(s.snap_turn)),
-		1.0 if braking else 0.0)
+		fraction(turn_rate, deg_to_rad(a.hull_turn if aether else s.snap_turn)),
+		(1.0 if braking else 0.0) + (0.0 if lantern_up else 2.0))
 	if _changed(v):
 		_last = v
 		if sink != null and sink.has_method(&"set_flight"):
-			sink.call(&"set_flight", v.x, v.y, v.z, v.w > 0.5)
+			sink.call(&"set_flight", v.x, v.y, v.z, braking, lantern_up)
 
 
 ## value / full, clamped to 0..1 (0 when full is not positive).

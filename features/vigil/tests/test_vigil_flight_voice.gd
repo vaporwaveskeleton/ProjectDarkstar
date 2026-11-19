@@ -10,8 +10,8 @@ class Spy:
 	var pushes: Array = []
 	var stops := 0
 
-	func set_flight(speed01: float, thrust01: float, turn01: float, braking: bool) -> void:
-		pushes.append([speed01, thrust01, turn01, braking])
+	func set_flight(speed01: float, thrust01: float, turn01: float, braking: bool, lantern_up: bool = true) -> void:
+		pushes.append([speed01, thrust01, turn01, braking, lantern_up])
 
 	func stop_flight() -> void:
 		stops += 1
@@ -33,50 +33,61 @@ func _make() -> Array:
 	return [v, voice, spy]
 
 
-func test_pushes_speed_and_thrust_as_fractions() -> void:
+func test_aether_profile_pushes_keel_thrust_and_speed_fractions() -> void:
 	var made := _make()
 	var v: Vigil = made[0]
 	var voice: VigilFlightVoice = made[1]
 	var spy: Spy = made[2]
-	v.velocity = Vector2(v.motor.stats.max_speed * 0.5, 0.0)
-	v.input.move_dir = Vector2(1.0, 0.0)
-	v.input.braking = false
+	assert_bool(v.motor.aether_active).is_true()   # the Aether Vigil is the default profile
+	v.velocity = Vector2(v.motor.aether_stats.max_speed * 0.5, 0.0)
+	v.motor.thrust_amount = 0.7                     # the keel's share of the stick (VigilMotor)
+	v.motor.braking = false
 	voice._physics_process(1.0 / 60.0)
 	assert_int(spy.pushes.size()).is_equal(1)
 	var p: Array = spy.pushes[0]
 	assert_float(float(p[0])).is_equal_approx(0.5, 0.001)
-	assert_float(float(p[1])).is_equal(1.0)
+	assert_float(float(p[1])).is_equal_approx(0.7, 0.001)
 	assert_bool(bool(p[3])).is_false()
+	assert_bool(bool(p[4])).is_true()
 
 
-func test_braking_zeroes_thrust_and_no_change_means_no_push() -> void:
+func test_braking_and_no_change_means_no_push() -> void:
 	var made := _make()
 	var v: Vigil = made[0]
 	var voice: VigilFlightVoice = made[1]
 	var spy: Spy = made[2]
-	v.velocity = Vector2(0.0, v.motor.stats.max_speed)
-	v.input.move_dir = Vector2(0.0, 1.0)
-	v.input.braking = true
+	v.velocity = Vector2(0.0, v.motor.aether_stats.max_speed)
+	v.motor.thrust_amount = 0.0
+	v.motor.braking = true
 	voice._physics_process(1.0 / 60.0)
 	voice._physics_process(1.0 / 60.0)   # nothing moved: no second push
 	assert_int(spy.pushes.size()).is_equal(1)
-	var p: Array = spy.pushes[0]
-	assert_float(float(p[1])).is_equal(0.0)
-	assert_bool(bool(p[3])).is_true()
+	assert_bool(bool((spy.pushes[0] as Array)[3])).is_true()
 
 
-func test_turn_rate_is_a_fraction_of_snap_turn() -> void:
+func test_keel_turn_is_a_fraction_of_hull_turn() -> void:
 	var made := _make()
 	var v: Vigil = made[0]
 	var voice: VigilFlightVoice = made[1]
 	var spy: Spy = made[2]
 	var dt := 1.0 / 60.0
-	v.motor.facing_node.rotation = 0.0
+	v.motor.hull_heading = 0.0
 	voice._physics_process(dt)
-	v.motor.facing_node.rotation = deg_to_rad(v.motor.stats.snap_turn) * dt * 0.5   # half the max rate
+	v.motor.hull_heading = deg_to_rad(v.motor.aether_stats.hull_turn) * dt * 0.5   # half the keel's rate
 	voice._physics_process(dt)
 	var p: Array = spy.pushes[spy.pushes.size() - 1]
 	assert_float(float(p[2])).is_equal_approx(0.5, 0.01)
+
+
+func test_running_dark_is_pushed() -> void:
+	var made := _make()
+	var v: Vigil = made[0]
+	var voice: VigilFlightVoice = made[1]
+	var spy: Spy = made[2]
+	voice._physics_process(1.0 / 60.0)
+	v.lantern.is_up = false
+	voice._physics_process(1.0 / 60.0)
+	assert_bool(bool((spy.pushes[spy.pushes.size() - 1] as Array)[4])).is_false()
 
 
 func test_hull_loss_stops_the_ship_sound() -> void:

@@ -136,6 +136,27 @@ func test_a_bell_warns_then_an_acolyte_arrives_outside_the_view_at_the_entry() -
 	assert_float(sq.reinforcement_time_left()).is_equal(0.0)
 
 
+## Curve retune (PM under owner autonomy grant, 2026-11-19): a0_3's bells stop at the wake.
+func test_bells_fall_silent_at_the_wake_when_the_stage_says_so() -> void:
+	var s := _bell_stage(5.0, 4)
+	s.reinforce_after_wake = false
+	_start(s)
+	var sq := world.acolytes
+	assert_float(_until_bell(10.0)).is_greater(0.0)          # asleep: the bells ring as before
+	world.ritual.awake = true
+	world.step(DT)
+	assert_bool(sq.reinforcement_pending()).override_failure_message("the pending bell is called off at the wake").is_false()
+	var before := sq.items.size()
+	assert_float(_until_bell(30.0)).is_equal(-1.0)
+	assert_int(sq.items.size()).is_equal(before)
+
+
+func test_bells_keep_ringing_after_the_wake_by_default() -> void:
+	_start(_bell_stage(5.0, 4))
+	world.ritual.awake = true
+	assert_float(_until_bell(10.0)).is_between(5.0 - 2.0 * DT, 5.0 + 2.0 * DT)
+
+
 func test_reinforcements_never_exceed_the_cap_and_a_kill_makes_room() -> void:
 	_start(_bell_stage(5.0, 2))
 	var sq := world.acolytes
