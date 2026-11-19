@@ -64,7 +64,7 @@ Ids: `<route>/ui/<UniqueName>` for controls, plus `cabinet/game` (`state`, `stag
 `sector/field` (`geodes_alive`, `geodes_detonated`, `shards_free`, `charges`, `score`; M1 slice 3
 PR 4 adds `shards_live`, `charges_in_flight`, `charges_lost`, `charges_hit`, `charges_guttered`,
 `dry_fires`), `sector/choir` (PR 4: `grubs_alive`, `grubs_carrying`, `segments`, `deposited_shards`,
-`sepulchre_complete`); scenarios
+`sepulchre_complete`), `sector/run` (`seam_index`, `run_session`, `far_look`; scenario `a1_golden_path`); scenarios
 `m1_geode_mine` (feathered fire, calm mining; waits on `shards_live`, because Grubs may steal free
 glass), `m1_charge_fire` (dry fire at 0, mine and collect, fly down, fire a Charge: it hits the
 Sepulchre), `m1_charge_intercept` (collect, fire a Charge without flying down first, so
@@ -75,6 +75,12 @@ with `mouse_move`), `m1_mouse_aim` (`mouse_move`, then asserts `facing_deg`, `ai
 and injected input")). `mouse_move` coordinates are logical 640×360 (the catalog wording "window coordinates" is a known
 follow-up). Fixtures: `{"profile": "<name>"}` loads
 `tests/fixtures/saves/<name>.json` into the in-memory save.
+
+`a1_golden_path` is long (`timeout_frames` 150000, so outside the suite), profile `dev` (dev build only), `fail_on_errors`,
+args `--segments=20 --hits=1` and `set_lives 9` per stage so the demo autopilot can finish Act 0 (it cannot
+win a0_3 or a0_5 unaided): coin, Act 0, reveal, Unmaking, Ruins, sector. About 20600 frames. Listed in `LONG_SCENARIOS` in
+`core/automation/tests/test_scenario_schema.gd` (every other shipped scenario must be suite-valid). Run it with `run a1_golden_path`
+(`--windowed` for the seven stills).
 
 The same runner runs inside GdUnit: `tests/test_scenarios.gd` plays every scenario that is valid for
 the suite (`args == []`, `timeout_frames <= 1200`).

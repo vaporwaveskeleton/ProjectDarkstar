@@ -597,3 +597,17 @@ func test_set_stage_builds_each_stage_through_the_real_roster() -> void:
 		assert_bool(_val("cabinet/world", "entity_awake")).is_false()
 	assert_int(geodes[3]).is_equal(26)
 	assert_int(_val("cabinet/world", "geodes")).is_equal(game.stages[4].geodes)
+
+
+# --- route change: the probe outlives the cabinet -------------------------------------------------
+
+## After a route change the runner detaches the probe once the cabinet is already freed: detaching,
+## reading and snapshotting must be quiet no-ops (a fail_on_errors scenario crosses routes).
+func test_probe_survives_freed_cabinet() -> void:
+	probe.connect_events(func(_id: String, _args: Array) -> void: pass)
+	game.free()
+	probe.disconnect_events()
+	var r: Dictionary = probe.read("cabinet/game", "state")
+	assert_bool(r.ok).is_false()
+	assert_dict(probe.snapshot()).is_equal({"route": "cabinet"})
+	assert_bool(probe.has("cabinet/game")).is_false()

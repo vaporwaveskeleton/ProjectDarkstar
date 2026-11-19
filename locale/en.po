@@ -264,8 +264,9 @@ msgstr "THE RUINS OF THE NINTH SKY"
 msgid "RUINS_LINE_1"
 msgstr "Something in here is still lit."
 
-msgid "RUINS_CONTINUE"
-msgstr "TO BE CONTINUED  —  PRESS ANY KEY"
+#. Ruins stub launch prompt (golden path); replaced by the physical hangar-mouth launch (beat 11).
+msgid "RUINS_LAUNCH"
+msgstr "PRESS TO LAUNCH"
 
 #. Shown under the title once Act 0 has been finished. The arcade is no longer innocent.
 msgid "ATTRACT_FIRST_SKY_DARK"

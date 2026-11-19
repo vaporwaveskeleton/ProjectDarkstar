@@ -135,11 +135,18 @@ func test_catalog_and_validator_agree() -> void:
 		assert_array(errs).override_failure_message("%s: %s" % [name, errs]).is_empty()
 
 
+## Long end-to-end scenarios run only from the CLI (tests/test_scenarios.gd skips them): they must
+## still be valid scenarios, just not suite-eligible. Each entry is named here on purpose.
+## a1_golden_path: coin → Act 0 → reveal → the 94 s Unmaking → Ruins → PM-01 (~20600 frames, Act 0
+## capture switches as args; TECH-001 §9.1).
+const LONG_SCENARIOS: Array[String] = ["a1_golden_path.scenario.json"]
+
+
 func test_shipped_scenarios_are_valid_for_the_suite() -> void:
 	for f in DirAccess.get_files_at("res://tests/scenarios"):
 		if f.ends_with(".scenario.json"):
 			var d: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://tests/scenarios/" + f))
-			var errs := Schema.validate(d, true)
+			var errs := Schema.validate(d, not LONG_SCENARIOS.has(f))
 			assert_array(errs).override_failure_message("%s: %s" % [f, errs]).is_empty()
 
 

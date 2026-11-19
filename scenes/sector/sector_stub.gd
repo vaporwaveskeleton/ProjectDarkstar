@@ -29,6 +29,8 @@ const PAUSE_SCENE := preload("res://scenes/sector/pause_screen.tscn")
 ## Sector-scoped for M1 (Q-T118); moves to RunSession when that is built (TECH-001 §2.8).
 @onready var _composure: Composure = %Composure
 @onready var _wick: ComposureWick = %ComposureWick
+## The Aether behind the play layer (TECH-001 §2.9; look PM-01 Pale Marches T1, M2 slice beat 12).
+@onready var _far: AetherFarLayer = %AetherFarLayer
 
 var vigil: Vigil
 ## The sector's wrap-around space. Features that need positions or distances on this sector take it
@@ -43,6 +45,19 @@ var session: RunSessionCore
 var throwaway_session := true
 ## The clock-pause reason this sector holds on `session` while the pause menu is open.
 var _menu_paused := false
+## The camera centre with every torus rebase accumulated (Q-T127 option B): continuous across the seam.
+var far_centre := Vector2.ZERO
+var _far_last := Vector2.ZERO
+
+## Read-only scalars for the automation id `sector/run` (the golden path). Dev/QA reads.
+var seam_index: int:
+	get: return session.run().seam_index if session else 0
+## True when a run was handed in through the route (RunSession), false on the throwaway core.
+var run_session: bool:
+	get: return not throwaway_session
+## The far layer's look id (`ds_aether.<biome>_t<n>` namespace), "" without a far layer.
+var far_look: String:
+	get: return str(_far.look.ds_namespace) if _far and _far.look else ""
 
 ## Read-only scalars for the automation id `sector/vigil` (core/automation/ui_view.gd). Dev/QA reads.
 var vigil_x: float:
@@ -147,6 +162,7 @@ func _ready() -> void:
 	vigil.hull_breached.connect(_on_hull_breached)
 	_overlays.emptied.connect(_on_overlays_emptied)
 	_use_session(_throwaway_session(), true)
+	_start_far()
 	_refresh_hud()
 
 
@@ -156,6 +172,31 @@ func on_route_entered(params: Dictionary) -> void:
 		if params.has(key) and params[key] is RunSessionCore:
 			_use_session(params[key] as RunSessionCore, false)
 			return
+
+
+## New sector for the far layer: its field, then the camera's first centre becomes the origin.
+func _start_far() -> void:
+	_far_last = _camera.global_position
+	far_centre = _far_last
+	_far.set_field(torus.size)
+	_far.set_camera(far_centre, _camera.zoom.x)
+	# TODO(M1 lantern API, TECH-001 §2.9): call _far.set_lantern(vigil.lantern_world_pos(),
+	# vigil.lantern_radius, vigil.lantern_lit) each frame once the Vigil exposes them.
+
+
+func _process(_delta: float) -> void:
+	_step_far()
+
+
+## Accumulate the camera's travel through torus rebases (the shortest step each frame), so the far
+## layer sees one continuous centre (AetherFarLayer.set_camera).
+func _step_far() -> void:
+	if _far == null or torus == null:
+		return
+	var now := _camera.global_position
+	far_centre += torus.delta(_far_last, now)
+	_far_last = now
+	_far.set_camera(far_centre, _camera.zoom.x)
 
 
 func _throwaway_session() -> RunSessionCore:

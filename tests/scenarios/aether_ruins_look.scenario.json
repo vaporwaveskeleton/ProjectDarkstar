@@ -1,0 +1,30 @@
+{
+	"format": "darkstar.scenario",
+	"version": 1,
+	"id": "aether_ruins_look",
+	"profile": "qa",
+	"args": [],
+	"fixtures": {},
+	"timeout_frames": 1200,
+	"steps": [
+		{"do": "wait_route", "route": "attract", "within": 240},
+		{"do": "goto", "route": "ruins_gallery"},
+		{"do": "wait_route", "route": "ruins_gallery", "within": 240},
+		{"do": "wait_frames", "frames": 20},
+		{"do": "screenshot", "name": "ruins_0a_entry_dark", "target": "window"},
+		{"do": "wait_frames", "frames": 70},
+		{"do": "screenshot", "name": "ruins_0b_entry_catching", "target": "window"},
+		{"do": "wait_frames", "frames": 130},
+		{"do": "screenshot", "name": "ruins_0c_entry_caught", "target": "window"},
+		{"do": "hold", "action": "ui_right", "frames": 2},
+		{"do": "wait_frames", "frames": 90},
+		{"do": "screenshot", "name": "ruins_1_before_any_lamp", "target": "window"},
+		{"do": "hold", "action": "ui_right", "frames": 2},
+		{"do": "wait_frames", "frames": 260},
+		{"do": "screenshot", "name": "ruins_2_one_lamp", "target": "window"},
+		{"do": "hold", "action": "ui_right", "frames": 2},
+		{"do": "wait_frames", "frames": 300},
+		{"do": "screenshot", "name": "ruins_3_three_lamps", "target": "window"},
+		{"do": "quit"}
+	]
+}

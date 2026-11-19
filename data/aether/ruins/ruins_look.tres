@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="RuinsLookData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://features/aether/ruins_look_data.gd" id="1"]
+[ext_resource type="Resource" path="res://data/aether/pale_marches_t1.tres" id="2"]
+
+[resource]
+script = ExtResource("1")
+ds_namespace = "ds_aether.ruins_look"
+source_section = "M2 slice Ruins first-visit look (NARR-001 §5.7, ART-001 §16); every value is an engineering ✱ visual parameter, not a game number"
+outside_look = ExtResource("2")

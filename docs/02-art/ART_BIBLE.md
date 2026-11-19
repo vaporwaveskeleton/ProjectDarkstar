@@ -786,3 +786,30 @@ Route `&"aether"` (`AetherArrival`, TECH-001 §2.9) plays beats 4 to 6 of the fi
 - **FrostPresence art pass.** Faceted translucent ice plates, broken ridges, PHOS crevasse light and frost haze, replacing the contour-line ridges of slice part A (its weakness 1).
 
 **Known weaknesses (slice part B, by eye from the captures; needs an art pass).** (1) The Presence may read as crystal or rock shards rather than ice. (2) Its calving rim sits under the sphere band. (3) One sharp notch on the front's right flank at about t=50. (4) The black reaches the left frame edge about 6 s after it starts. (5) The erasure quad is very large (cost: TECH-001 §8.5, 1080p high 2.95 to 3.13 ms, low not measured). No score from The Reviewer exists for these captures.
+
+### 16.6g The Ruins first visit (M2 slice part C, 2026-11-19)
+The look of the Ruins of the Ninth Sky on the first visit (NARR-001 §5.7, GDD §6.4): a cramped, half-ruined cathedral-observatory hall, one warm lantern, deep VOID shadow, brass, glass and chalk, and the Aether felt outside. `RuinsLook` (`features/aether`) is the look only; the Ruins scene, its flow and its props belong to M1 (TECH-001 §2.9).
+
+**Layer stack, bottom to top.** `AetherBackdrop` seen outside (a T1 Aether, veiled, with its lantern parked off-frame because the lantern is indoors); then the hall in its own canvas layer: ambient (`CanvasModulate`, VOID_3), surfaces (wall, floor, openings), set (arches, pilasters, ribs, orrery), placeholders (gallery stand-ins only), `stage` (M1's lit props), lights (`PointLight2D`s), flames, foreground, haze (light in dusty air, cool spill through the openings).
+
+**Rules.**
+- One hall lantern is the key light and is always the brightest light. Tree lamps are always below it (lantern law, as §16.3 law 4).
+- The hangar mouth is lit only by Tree lamps: each lit lamp takes `mouth_share` of the darkness left (`1 − Π(1 − share × level)`), so the mouth only brightens as lamps catch.
+- The Aether is felt outside, through the hangar mouth and the torn vault, always veiled so it reads far. The hall never shows it at full strength.
+- No pure black anywhere (the only true black is the entity, §16). Ambient and shadow are VOID_3 and up.
+- Lamps catch slowly and breathe gently (0.18 Hz, 3% depth); never a flash. Output changes by at most 0.02 per 60 Hz frame (photosensitivity bound).
+- Brass is a BONE/VOID mix (§16.6a). GAS appears only in the flames, their glass and their light.
+- Colours are `Pal` entries; every value is an engineering ✱ parameter (TECH-001 §3.4, `ds_aether.ruins_look`).
+
+**Cost.** 1080p high, RTX 4070, not a clean run: about 2.9 ms GPU, mostly the full-quality Aether outside. Medium and low not measured (TECH-001 §8.5, Q-T157).
+
+**Known weaknesses (part C).**
+- The wall is a regular brick/ashlar pattern and reads more dungeon than cathedral; the cathedral read relies on the arches, pilasters and ribs.
+- No occlusion shadows (`shadow_enabled` is false on every light).
+- The torn vault shows mostly the navy far band of the Aether.
+- Before any Tree lamp the hangar mouth is near-black by default (`mouth_veil_dark` 1.0 ✱, NARR-001 §5.7 "dark"); `mouth_aether_hint` (0..1, default 0 ✱) lets the owner bring back a faint glimpse of the Aether without code (TECH-001 Q-T156, agreed with M1, pending the owner).
+- The left side is cluttered: the telescope crosses the chalk star chart.
+- The orrery can read as an atom symbol.
+- The flash and lantern-law tests are structural, not pixel-measured (TECH-001 §9.1, Q-T64).
+- Authored for 640×360; wider aspects not designed (TECH-001 Q-T159).
+
