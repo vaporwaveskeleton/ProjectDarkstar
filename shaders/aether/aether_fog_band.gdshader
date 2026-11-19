@@ -81,6 +81,8 @@ void fragment() {
 	if (tier == 4) {
 		t = -t;   // the Litany: the medium runs backwards
 	}
+	// strip coordinates (pass 4 guard) on the plain drifting domain, before the drain stretch
+	vec2 sw = a_strip_coords(p + drift_dir * t, drift_dir, seed);
 	// toward the entity the fog is stretched into radial streaks (water to a drain)
 	if (toward.z > 0.0) {
 		p -= toward.xy * dot(p, toward.xy) * 0.55 * toward.z;
@@ -113,10 +115,19 @@ void fragment() {
 	if (tier == 3) {
 		n += 0.08 * sin(time_s * 0.12 + p.y * 0.8);   // tidal swell
 	}
+	// pass 4 pareidolia guard (every tier): over the play core the translucent bands ARE a strip
+	// field (a_fog_streak: open strands drifting along their own length — the domain only
+	// translates, so the strips stay strips), blended back to the free fog across the play ring.
+	// The opaque far band keeps its own soft field (low contrast, under the lantern pool).
+	float r_scr = length((SCREEN_UV - 0.5) * vec2(screen_size.x / screen_size.y, 1.0));
+	float play = (1.0 - smoothstep(A_PLAY_CORE, A_PLAY_RING, r_scr)) * (1.0 - is_far);
+	if (play > 0.01) {
+		n = mix(n, a_fog_streak(sw, seed, max(octaves - 1, 2)), play);
+		n_up = mix(n_up, n, play);   // no silver-lining offset sample over the core
+	}
 	if (tier == 5) {
-		// fog peeling into chalk-stroke bands
-		float stroke = abs(fract(n * 5.0 + p.y * 0.15) - 0.5) * 2.0;
-		n = mix(n, n * smoothstep(0.35, 0.8, stroke), 0.75);
+		// fog peeling into chalk strands: a min with an across-flow stroke keeps the strip property
+		n = min(n, mix(1.0, a_chalk_strand(sw.x, seed), 0.7));
 	}
 	float dens = smoothstep(0.34, 0.78, n);
 	// value structure: luminous just inside the shell, deep beyond it and deep below
@@ -172,8 +183,7 @@ void fragment() {
 	if (is_far > 0.5) {
 		COLOR = vec4(col, 1.0);
 	} else {
-		float r = length((SCREEN_UV - 0.5) * vec2(screen_size.x / screen_size.y, 1.0));
-		float edge = mix(play_fog_ceiling, 1.25, smoothstep(0.2, 0.9, r));
+		float edge = mix(play_fog_ceiling, 1.25, smoothstep(0.2, 0.9, r_scr));
 		float stage = loss_stage > 1.5 ? loss.x : loss.y;
 		float a = dens * alpha_max * edge * min(0.6 + 0.4 * lumb + 0.25 * lp, 1.0);
 		a *= (1.0 - stage) * (1.0 - 0.45 * loss.w) * (1.0 - 0.8 * drain);
