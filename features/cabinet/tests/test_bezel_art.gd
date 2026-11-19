@@ -224,14 +224,16 @@ func test_bezel_draws_after_the_screen_and_the_crt_is_the_screens_material() -> 
 	assert_str(str(state.get_node_path(order["Messages"]))).contains("Rig/ArcadeScreen/ScreenViewport/")
 
 
-func test_attract_frame_and_coin_slot_draw_after_the_crt() -> void:
+func test_attract_frame_panel_and_coin_slot_draw_after_the_arcade_screen() -> void:
 	var state := (load(ATTRACT_SCENE) as PackedScene).get_state()
 	var order := {}
 	for i in state.get_node_count():
 		order[String(state.get_node_name(i))] = i
-	assert_int(order["Frame"]).is_greater(order["Crt"])
-	assert_int(order["CoinSlot"]).is_greater(order["Crt"])
-	assert_int(order["PowerOn"]).is_less(order["Crt"])
+	assert_bool(order.has("Crt")).override_failure_message("the attract CRT is the arcade screen's material now (Q-T80)").is_false()
+	assert_int(order["Frame"]).is_greater(order["ArcadeScreen"])
+	assert_int(order["ControlPanel"]).is_greater(order["Frame"])
+	assert_int(order["CoinSlot"]).is_greater(order["Frame"])
+	assert_int(order["PowerOn"]).is_less(order["Frame"])
 
 
 func test_the_hole_comes_from_the_spec_and_the_columns_sit_flush_against_it() -> void:

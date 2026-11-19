@@ -5,7 +5,8 @@ extends Node
 ## an empty magazine plays dry_fire (AUDIO-001 A09) and fires nothing.
 ## Spent Charges (hit, lost, guttered) are counted here and freed here (NullIronCharge leaves itself
 ## in the tree so its outcome can be read). No signals: the sector reads the counters (probes).
-## Composure loss on a lost Charge (SYS-001 §1.5) is NOT applied: Composure is not built yet.
+## Composure (SYS-001 §1.5): each Charge lost to an interceptor costs `charge_lost` (−0.5) and each
+## one detonated on target `charge_spent` (0), applied when the spent Charge is counted (prune).
 
 const CHARGE_SCENE := preload("res://features/charges/null_iron_charge.tscn")
 
@@ -19,6 +20,8 @@ var vigil: Vigil
 var target: HurtboxComponent
 ## Where Charges live (the sector's %Actors, so SectorWrap re-images them). Null = this node.
 var projectile_parent: Node
+## The sector's Composure. Null = outcomes cost nothing.
+var composure: Composure
 
 var flying: Array[NullIronCharge] = []
 var fired: int = 0
@@ -70,6 +73,7 @@ func prune() -> void:
 			keep.append(c)
 			continue
 		_done[c.outcome] = int(_done[c.outcome]) + 1
+		_apply_composure(c.outcome)
 		c.queue_free()
 	flying = keep
 
@@ -102,6 +106,16 @@ func lost() -> int:
 
 func guttered() -> int:
 	return count(NullIronCharge.Outcome.GUTTERED)
+
+
+func _apply_composure(o: NullIronCharge.Outcome) -> void:
+	if not is_instance_valid(composure):
+		return
+	match o:
+		NullIronCharge.Outcome.LOST:
+			composure.charge_lost()
+		NullIronCharge.Outcome.HIT:
+			composure.charge_spent()
 
 
 func _play(id: StringName) -> void:

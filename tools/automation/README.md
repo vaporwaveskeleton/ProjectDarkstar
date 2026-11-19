@@ -53,7 +53,8 @@ validator and this CLI). Comparators on `wait_until` / `assert`: exactly one of 
 Ids: `<route>/ui/<UniqueName>` for controls, plus `cabinet/game` (`state`, `stage_index`, `demo`),
 `cabinet/score` (`score`, `lives`), `cabinet/record` (`grubs_destroyed`, `glass_mined`,
 `charges_thrown`, `glass_carried`), `sector/vigil` (`vigil_x`, `vigil_y`, `vigil_speed`, `hull_max_hp`,
-`camera_x`, `compass_markers`, `camera_gap`, `facing_deg`, `aim_x`, `aim_y`; scenario `m1_sector_feel`),
+`camera_x`, `compass_markers`, `camera_gap`, `facing_deg`, `aim_x`, `aim_y`, `composure`,
+`composure_band`; scenario `m1_sector_feel`),
 `sector/field` (`geodes_alive`, `geodes_detonated`, `shards_free`, `charges`, `score`; M1 slice 3
 PR 4 adds `shards_live`, `charges_in_flight`, `charges_lost`, `charges_hit`, `charges_guttered`,
 `dry_fires`), `sector/choir` (PR 4: `grubs_alive`, `grubs_carrying`, `segments`, `deposited_shards`,
@@ -61,7 +62,7 @@ PR 4 adds `shards_live`, `charges_in_flight`, `charges_lost`, `charges_hit`, `ch
 `m1_geode_mine` (feathered fire, calm mining; waits on `shards_live`, because Grubs may steal free
 glass), `m1_charge_fire` (dry fire at 0, mine and collect, fly down, fire a Charge: it hits the
 Sepulchre), `m1_charge_intercept` (collect, fire a Charge without flying down first, so
-it is intercepted on the way (Grub or geode contact): `charges_lost` 1, no hit, no gutter), `m1_grub_procession` (mine glass, a Grub steals it and deposits
+it is intercepted on the way (Grub or geode contact): `charges_lost` 1, no hit, no gutter; Composure 10 → 9.5, still `clear`), `m1_grub_procession` (mine glass, a Grub steals it and deposits
 it at the Sepulchre; 4 Grubs alive), `m1_magnet_collect` (mine, then fly in and collect
 glass), `m1_overfire` (held fire detonates a 3-face geode; it lines up with `move_up` and aims
 with `mouse_move`), `m1_mouse_aim` (`mouse_move`, then asserts `facing_deg`, `aim_x`, `aim_y`; TECH-001 §9.1 "Mouse aim
@@ -84,17 +85,20 @@ node tools/automation/darkstar_auto.js run-all [--only=<substr>]  # every scenar
   comment block at the top of `core/automation/scenario_runner.gd`. The cabinet probe exposes
   `cabinet/game|score|record|vigil|world` and `cabinet/acolyte/<id>`, `cabinet/grub/<id>`,
   `cabinet/geode/<index>` (see `caps` for the allow-listed props; `cabinet/vigil` includes `killer_kind`, `killer_dx/dy`,
-  `killer_on_screen`, `death_marks`, `death_outline`, `death_arrow` (0..1 chalk progress); `cabinet/world` includes `death_marks`, `entity_awake`, `entity_dx/dy`). `assert {id, exists:false}` works for gone entities.
+  `killer_on_screen`, `shooter_id` (-1 none), `shooter_alive`, `shooter_on_screen`, `death_marks`, `death_outline`, `death_arrow` (0..1 chalk progress); `cabinet/world` includes `last_spawned_acolyte_id` (-1 none), `death_marks`, `entity_awake`, `entity_dx/dy`). `assert {id, exists:false}` works for gone entities.
 - **New steps.** `snapshot{name}` writes `<out>/snapshots/<name>.json` (max 50 per run); `wait_event{event, within, count?}`
   waits for a probe event (the failure names the events seen); `perf_sample{}` appends to `result.perf` (max 200).
   Cabinet dev steps (dev profile only, refused in QA before frame 0): `set_stage`, `set_lives`, `teleport`, `spawn`
-  (acolyte|geode|shard at Vigil + dx,dy), `shoot_vigil` (a hostile censer shot from Vigil + dx,dy aimed at the Vigil),
-  `kill_all` (Acolytes, Grubs, hostile shots), `place_entity` (dx,dy, |v| ≤ 4000; entity must be awake), `wake_entity`
+  (acolyte|geode|shard at Vigil + dx,dy), `shoot_vigil` (a hostile censer shot from Vigil + dx,dy aimed at the Vigil; optional `acolyte_id`, int ≥ 0 or "last" = the Acolyte last made by `spawn acolyte`, becomes the shot's shooter; omitted = no shooter; a dead or missing id is accepted, which stages "shooter gone"),
+  `kill_all` (Acolytes, Grubs, hostile shots), `kill_acolyte{acolyte_id}` (int or "last"; kills just that Acolyte, leaves shots alone; fails if no live Acolyte has that id), `place_entity` (dx,dy, |v| ≤ 4000; entity must be awake), `wake_entity`
   (needs a non-Cold Sepulchre, so `set_stage 1` first; awake after about 4.2 s: wait on `cabinet/world entity_awake`), `pause_sim`, `step_sim` (needs paused_sim; steps ArcadeWorld only, not
   the CabinetGame state machine, so the death timer and respawn do not advance).
 - **Death scenarios.** `a0_death_marks_clear` (marks held through DEAD, cleared on respawn, `killer_kind` "none")
   and `a0_death_reduced_motion` (uses `set_setting`; chalk completes at once with Reduced Motion). Dev steps, so
   not run in QA exes.
+- **Shooter scenarios.** `a0_acolyte_shot_death` (on-screen shooter), `a0_offview_killer` (shooter spawned off view; staged,
+  since Acolytes never fire off-screen) and `a0_shooter_gone` (shooter killed with `kill_acolyte` after the shot is in
+  flight). The spawned Acolyte wanders, so `shooter_on_screen` is asserted right after the Vigil dies.
 - **Errors.** Every run captures engine errors and warnings into `result.errors[]`, `error_count`, `warning_count`.
   Scenario field `"fail_on_errors": true` fails the run on any error-type entry, except messages containing a
   string from `"allow_errors": [...]`.

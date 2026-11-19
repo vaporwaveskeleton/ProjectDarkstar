@@ -208,6 +208,7 @@ void fragment() {
 		vec2 sl = rot2(p - STK_C, 0.14);
 		float tear_line = sl.y + 2.6 - 2.6 * sl.x / STK_H.x * 0.5 + (fbm(p + 3.0, 3.6, px) - 0.5) * 3.4 + 1.2 * sin(sl.x * 1.9) * (vnoise(p * 1.5) - 0.3);
 		float ds_ = max(rbox(sl, vec2(0.0), STK_H, 0.4), -tear_line);       // keep the part below the tear
+		ds_ = max(ds_, dot(sl - STK_H, vec2(0.7071, 0.7071)) + 2.6 + (fbm(p + 9.0, 6.0, px) - 0.5) * 0.9);   // the torn lower-right corner
 		ds_ += (fbm(p + 14.0, 5.0, px) - 0.5) * 0.35;
 		float m_stk = cov(ds_, px) * (1.0 - 0.35 * smoothstep(0.6, 0.85, fbm(p + 22.0, 2.7, px)));
 		float fibre = smoothstep(0.9, 0.0, abs(tear_line)) * m_stk;
@@ -215,10 +216,13 @@ void fragment() {
 		glue *= 1.0 - dark;
 		col = mix(col, vec3(0.045, 0.043, 0.04), glue * 0.55);
 		rough = mix(rough, 0.35, glue * 0.5);
-		vec3 paper = sticker_color.rgb * (0.62 + 0.25 * nz1);
-		paper = mix(paper, vec3(0.2, 0.17, 0.11), smoothstep(1.2, 0.0, -ds_) * 0.55);
-		paper = mix(paper, vec3(0.68, 0.64, 0.55), fibre * 0.8);
-		paper = mix(paper, vec3(0.5, 0.12, 0.09), cov(abs(sl.y - 3.6) - 0.8, px) * 0.45);
+		// flat, faded off-white paper: no layers, no stripe; ghosted print lines, a dark gummy rim
+		vec3 paper = sticker_color.rgb * (0.66 + 0.08 * nz1);
+		paper = mix(paper, vec3(0.2, 0.17, 0.11), smoothstep(1.0, 0.0, -ds_) * 0.35);
+		paper = mix(paper, vec3(0.78, 0.76, 0.7), fibre * 0.7);
+		float ghost = max(cov(abs(sl.y - 3.2) - 0.35, px) * step(abs(sl.x + 0.3), 3.1), cov(abs(sl.y - 1.5) - 0.3, px) * step(abs(sl.x - 0.6), 2.3));
+		ghost = max(ghost, cov(abs(sl.y - 4.9) - 0.3, px) * step(abs(sl.x + 0.8), 2.0));
+		paper = mix(paper, paper * vec3(0.5, 0.48, 0.46), ghost * 0.85 * (0.7 + 0.3 * nz2));
 		// the yellowed tape strip across the left corner
 		vec2 tp = rot2(p - (STK_C + vec2(-1.8, -3.0)), -0.55);
 		float tape_end = (vnoise(vec2(tp.y * 2.2, 5.0)) - 0.5) * 1.1;

@@ -8,9 +8,11 @@ extends RefCounted
 ##   cabinet/record    grubs_destroyed, glass_mined, charges_thrown, glass_carried
 ##   cabinet/vigil     alive, shield, pos_x, pos_y, use_scripted, killer_kind ("none"|"entity"|"shot", from the LATEST
 ##                     S6 death mark), killer_dx, killer_dy (torus delta death spot -> mark killer_pos), killer_on_screen, death_marks,
-##                     death_outline, death_arrow (0..1 chalk draw progress of the latest mark; 0 with no mark)
+##                     death_outline, death_arrow (0..1 chalk draw progress of the latest mark; 0 with no mark),
+##                     shooter_id (latest mark's shooter Acolyte id, -1 none), shooter_alive, shooter_on_screen (the LIVE shooter; false when none / gone)
 ##   cabinet/world     acolytes, grubs, geodes, shots, hostile_shots, charges, paused_sim, sim_scale, hitstop_left, time,
-##                     death_marks, entity_awake, entity_dx, entity_dy (torus delta Vigil -> entity; 0 unless awake)
+##                     death_marks, entity_awake, entity_dx, entity_dy (torus delta Vigil -> entity; 0 unless awake),
+##                     last_spawned_acolyte_id (id of the Acolyte the latest `spawn acolyte` made; -1 none)
 ##   cabinet/acolyte/<id>    alive, hp, pos_x, pos_y, on_screen, dx, dy (torus delta from the Vigil)
 ##   cabinet/grub/<id>       alive, carrying, hp, pos_x, pos_y
 ##   cabinet/geode/<index>   alive, faces_left
@@ -29,9 +31,9 @@ const SINGLETONS: Dictionary = {
 	"cabinet/score": ["score", "lives"],
 	"cabinet/record": ["grubs_destroyed", "glass_mined", "charges_thrown", "glass_carried"],
 	"cabinet/vigil": ["alive", "shield", "pos_x", "pos_y", "use_scripted", "killer_kind", "killer_dx", "killer_dy", "killer_on_screen", "death_marks",
-		"death_outline", "death_arrow"],
+		"death_outline", "death_arrow", "shooter_id", "shooter_alive", "shooter_on_screen"],
 	"cabinet/world": ["acolytes", "grubs", "geodes", "shots", "hostile_shots", "charges", "paused_sim", "sim_scale", "hitstop_left", "time",
-		"death_marks", "entity_awake", "entity_dx", "entity_dy"],
+		"death_marks", "entity_awake", "entity_dx", "entity_dy", "last_spawned_acolyte_id"],
 }
 const ENTITIES: Dictionary = {
 	"cabinet/acolyte/*": ["alive", "hp", "pos_x", "pos_y", "on_screen", "dx", "dy"],
@@ -41,12 +43,13 @@ const ENTITIES: Dictionary = {
 const EVENTS: Array[String] = ["vigil_destroyed", "score_awarded", "hitstop_started", "slowmo_changed",
 	"sepulchre_cleared", "entity_unmade", "phase_changed", "segments_changed", "charges_changed"]
 const DEV_OPS: Array[String] = ["set_stage", "set_lives", "teleport", "spawn", "shoot_vigil", "kill_all", "pause_sim", "step_sim",
-	"wake_entity", "place_entity"]
+	"wake_entity", "place_entity", "kill_acolyte"]
 
 var _root: Node
 var _world: ArcadeWorld
 var _sink: Callable = Callable()
 var _links: Array = []   ## [Signal, Callable] pairs to undo
+var _last_acolyte_id: int = -1   ## id of the Acolyte the latest `spawn acolyte` made
 
 
 func setup(route_root: Node) -> void:
@@ -181,7 +184,7 @@ func _world_props() -> Dictionary:
 		ent = _world.torus.delta(_world.vigil.pos, rit.entity_pos)
 	return {
 		"death_marks": _world.fx.death_marks.size(), "entity_awake": rit != null and rit.awake,
-		"entity_dx": ent.x, "entity_dy": ent.y,
+		"entity_dx": ent.x, "entity_dy": ent.y, "last_spawned_acolyte_id": _last_acolyte_id,
 		"acolytes": _alive_count(_world.acolytes.items), "grubs": _alive_count(_world.grubs.items),
 		"geodes": _alive_count(_world.geodes.items), "shots": shots, "hostile_shots": hostile,
 		"charges": _world.glass.charges, "paused_sim": _world.paused_sim, "sim_scale": _world.sim_scale,
@@ -194,7 +197,7 @@ func _world_props() -> Dictionary:
 func _killer_props() -> Dictionary:
 	var marks: Array[FxLayer.DeathMark] = _world.fx.death_marks
 	var out := {"killer_kind": "none", "killer_dx": 0.0, "killer_dy": 0.0, "killer_on_screen": false, "death_marks": marks.size(),
-		"death_outline": 0.0, "death_arrow": 0.0}
+		"death_outline": 0.0, "death_arrow": 0.0, "shooter_id": -1, "shooter_alive": false, "shooter_on_screen": false}
 	if marks.is_empty():
 		return out
 	var m: FxLayer.DeathMark = marks.back()
@@ -205,6 +208,10 @@ func _killer_props() -> Dictionary:
 	out["killer_on_screen"] = _world.on_screen(m.killer_pos, 0.0)
 	out["death_outline"] = _world.fx.death_outline_frac(m)   # 0..1 chalk draw progress; 1 at once after the delay under Reduced Motion
 	out["death_arrow"] = _world.fx.death_arrow_frac(m)
+	out["shooter_id"] = m.shooter_id
+	var sh := _world.acolytes.find_by_id(m.shooter_id)
+	out["shooter_alive"] = sh != null
+	out["shooter_on_screen"] = sh != null and _world.on_screen(sh.pos, 0.0)
 	return out
 
 
@@ -319,9 +326,23 @@ func dev_op(op: String, args: Dictionary) -> String:
 			var dir := _world.torus.delta(from, _world.vigil.pos).normalized()
 			if dir == Vector2.ZERO:
 				return "shoot_vigil: the origin is on the Vigil"
+			var shooter := -1
+			if args.has("acolyte_id"):
+				shooter = _resolve_acolyte_id(args["acolyte_id"])
+				if shooter < 0:
+					return "shoot_vigil: acolyte_id must be an int >= 0, or \"last\" after a spawn acolyte step"
 			var before := _world.shots.shots.size()
-			_world.shots.fire_censer(from, dir)
+			_world.shots.fire_censer(from, dir, shooter)
 			return "" if _world.shots.shots.size() > before else "shoot_vigil: the shot cap is reached"
+		"kill_acolyte":
+			var kid := _resolve_acolyte_id(args.get("acolyte_id", null))
+			if kid < 0:
+				return "kill_acolyte: acolyte_id must be an int >= 0, or \"last\" after a spawn acolyte step"
+			var victim := _world.acolytes.find_by_id(kid)
+			if victim == null:
+				return "kill_acolyte: no live Acolyte with id %d" % kid
+			_world.acolytes.kill(victim)   # the game's own death path; the squad purges it on its next tick
+			return ""
 		"kill_all":
 			_kill_all()
 			return ""
@@ -374,7 +395,7 @@ func _spawn(args: Dictionary) -> String:
 	var at := _world.torus.wrap(_world.vigil.pos + off)
 	match kind:
 		"acolyte":
-			_world.acolytes.spawn(at)
+			_last_acolyte_id = _world.acolytes.spawn(at).id
 		"geode":
 			_world.geodes.add_geode(at, 1)
 		"shard":
@@ -397,6 +418,16 @@ func _kill_all() -> void:
 		if s.hostile:
 			s.alive = false
 	_world.shots.shots.assign(_world.shots.shots.filter(func(s: ShotLayer.Shot) -> bool: return s.alive))
+
+
+## An `acolyte_id` arg to an id: an int >= 0 (any id, live or not), or "last" (the latest probe spawn).
+## -1 when the arg is malformed or "last" has nothing to resolve to.
+func _resolve_acolyte_id(v: Variant) -> int:
+	if typeof(v) == TYPE_STRING and str(v) == "last":
+		return _last_acolyte_id
+	if typeof(v) in [TYPE_INT, TYPE_FLOAT] and is_finite(float(v)) and floorf(float(v)) == float(v) and float(v) >= 0.0:
+		return int(v)
+	return -1
 
 
 static func _int_arg(args: Dictionary, key: String) -> int:

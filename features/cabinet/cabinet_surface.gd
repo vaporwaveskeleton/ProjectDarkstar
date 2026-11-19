@@ -9,11 +9,11 @@ extends TunableResource
 # --- Door materials (the coin door is satin-painted and zinc-plated steel; only the coin lip is bright) ---
 @export var paint_color: Color = Color8(0x0E, 0x0E, 0x10)         ## satin black-painted steel
 @export var zinc_color: Color = Color8(0x8A, 0x8C, 0x8E)          ## dull zinc-plated steel (entry plate, lock collar, screws, flap)
-@export var lip_color: Color = Color8(0xE6, 0xE8, 0xEC)           ## the coin slot's lip, polished by coins: the one bright metal
+@export var lip_color: Color = Color8(0xB4, 0xB6, 0xBA)           ## the coin slot's lip, polished by coins: bright metal, one step under the lit plate
 @export var bare_steel_color: Color = Color8(0x6E, 0x6A, 0x64)    ## steel showing through chipped paint
 @export var brass_color: Color = Color8(0xB4, 0x8E, 0x45)         ## cylinder lock face
 @export var lens_color: Color = Color8(0xE0, 0x3A, 0x12)          ## translucent red-orange lamp plate (the reject / price plate)
-@export var sticker_paper_color: Color = Color8(0xD2, 0xC7, 0xA3) ## pale paper remnant of a peeled sticker
+@export var sticker_paper_color: Color = Color8(0xDC, 0xD8, 0xCC) ## faded off-white paper remnant of a peeled label
 
 # --- Wear (0 new … 1 wrecked; PR D destroys, this only ages) ---
 @export_range(0.0, 1.0) var wear: float = 0.8                     ## chipped paint, scratches
@@ -46,8 +46,8 @@ extends TunableResource
 @export_range(0.0, 1.0) var print_mottle: float = 0.4             ## ink-density unevenness (slow blotches only)
 @export_range(0.0, 1.0) var print_halftone: float = 1.0           ## screened tones on (1) or flat (0)
 @export var print_halftone_cell: float = 1.25                     ## halftone dot pitch, rig units (about 1 to 1.5)
-@export_range(0.0, 1.0) var print_scuff: float = 0.3              ## rub fade along the worn edges
-@export_range(0.0, 1.0) var print_flake: float = 0.7             ## sharp-edged flakes of ink lost to the black backing (causal)
+@export_range(0.0, 1.0) var print_scuff: float = 0.5              ## rub fade along the worn edges
+@export_range(0.0, 1.0) var print_flake: float = 0.95            ## sharp-edged flakes of ink lost to the black backing (causal)
 @export var backer_color: Color = Color8(0xE4, 0xDF, 0xD2)        ## the white backer ink behind the colours
 @export_range(0.0, 1.0) var glass_reflection: float = 0.55        ## broad soft reflection on the glass
 @export_range(0.0, 1.0) var glass_edge_tint: float = 0.6          ## green-blue tint of the glass edge
@@ -90,6 +90,18 @@ extends TunableResource
 @export var price_tracking: float = 0.8
 @export_range(0.0, 1.0) var glass_band: float = 0.6               ## broad soft diagonal specular band on the bezel glass
 @export_range(0.0, 1.0) var glass_screen_reflection: float = 0.5  ## the screen's glow reflected in the glass
+
+# --- PR C pass 2 polish: glass reads through light, visible wear, UV fade, backlit marquee, room glow (all ✱) ---
+@export var glass_band_lift: float = 0.42                         ## peak alpha of the glass specular band (a pale veil: lowers contrast and saturation)
+@export var glass_smear_haze: float = 0.36                        ## peak alpha of the thumb-smear when the screen is bright
+@export_range(0.0, 1.0) var glass_smear_idle: float = 0.1         ## its share of that when the screen is dark
+@export_range(0.0, 1.0) var print_uv_fade: float = 0.8           ## reds and magentas fade toward pink / salmon where light fell (upper, outer art)
+@export var print_uv_edge: float = 9.0                            ## width of the unfaded band the T-molding shaded, rig units
+@export_range(0.0, 1.0) var print_grime: float = 0.6             ## dirt dulling the ink in the causal wear zones
+@export var marquee_hot: float = 1.0                              ## brightness of the hot band under each tube
+@export var marquee_shadow_depth: float = 0.6                     ## how much the shadow across the backlight darkens the lens and its lettering
+@export var marquee_spill: float = 0.55                           ## warm light the marquee throws on the bezel round it
+@export var room_glow: float = 0.6                                ## strength of the screen-coloured spill on the room round the cabinet
 
 const _DEFAULT_PATH := "res://data/cabinet/cabinet_surface.tres"
 

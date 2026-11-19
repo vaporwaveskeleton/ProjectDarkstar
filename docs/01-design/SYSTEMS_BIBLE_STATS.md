@@ -142,6 +142,10 @@ Conventions used everywhere:
 | **Unmoored** | 3–1 | Ledger Compass shows one lie per sector; one control axis inverts in 4 s bursts every 25 s; phantom geometry (non-blocking) |
 | **Hollowed** | 0 | +1 Warp Tier for the sector (forced, ends at sector end), 1 free death, Choir detection always full, **MADNESS branch effects ×2** |
 
+**Start 10 (Q-T118).** A run starts at 10 (Clear). There is no passive regeneration: Composure moves only through the event rows above, clamped to 0–10. Between whole numbers the bands read Clear ≥ 7, Frayed ≥ 4, Unmoored > 0, Hollowed = 0 (PM under owner autonomy grant 2026-11-19, TECH-001 §11.1a).
+
+**The wick steps by band (Q-T119).** The HUD Composure wick shows the band only: its flame takes one of four heights (✱ TECH-001 §3.4 `ds_hud.wick.*`), never a readable value.
+
 A `Hollowed` sector is a **build choice**, tracked in telemetry as `hollow_sectors` and shown in the run summary as a stat, not a warning.
 
 ### 1.6 Act 0 stage table (the shift)

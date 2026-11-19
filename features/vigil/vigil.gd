@@ -11,6 +11,8 @@ signal hull_breached
 @onready var health: HealthComponent = %HealthComponent
 @onready var hurtbox: HurtboxComponent = %Hurtbox
 @onready var emitter: ArcLanceEmitter = %ArcLanceEmitter
+## The hull's honest Composure read (WARP-001 §4.2 L10); the sector injects its Composure.
+@onready var cockpit_flame: CockpitFlame = %CockpitFlame
 
 
 func _ready() -> void:

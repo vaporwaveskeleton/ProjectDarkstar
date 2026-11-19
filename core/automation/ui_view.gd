@@ -11,7 +11,7 @@ const UI_PROPS: Array[String] = ["visible", "enabled", "focused", "focusable"]
 ## id -> {route, member, props}. `member` is "" for the route root, else a property of it that holds
 ## the object to read; `props` are the only readable names.
 const STATE_IDS := {
-	"sector/vigil": {"route": "sector", "member": "", "props": ["vigil_x", "vigil_y", "vigil_speed", "hull_max_hp", "camera_x", "compass_markers", "camera_gap", "facing_deg", "aim_x", "aim_y"]},
+	"sector/vigil": {"route": "sector", "member": "", "props": ["vigil_x", "vigil_y", "vigil_speed", "hull_max_hp", "camera_x", "compass_markers", "camera_gap", "facing_deg", "aim_x", "aim_y", "composure", "composure_band"]},
 	"sector/field": {"route": "sector", "member": "", "props": ["geodes_alive", "geodes_detonated", "shards_free", "shards_live", "charges", "score", "charges_in_flight", "charges_lost", "charges_hit", "charges_guttered", "dry_fires"]},
 	"sector/choir": {"route": "sector", "member": "", "props": ["grubs_alive", "grubs_carrying", "segments", "deposited_shards", "sepulchre_complete"]},
 }

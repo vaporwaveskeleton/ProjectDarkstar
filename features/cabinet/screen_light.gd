@@ -5,17 +5,14 @@ extends Node
 ## light (rgb = the colour at full strength, a = intensity from its luminance) and eases the cabinet's one
 ## live light toward it (`spill_smooth`), so the bezel, the glass, the sticker and the coin door all
 ## breathe with the picture. It only READS: it never writes into the screen or any viewport.
-## Source: `source` is the arcade screen's own SubViewport (the game: 256 × 304 texels, cheap), or null for
-## the attract screen, which draws straight into the window: then it reads the window image inside the
-## screen's footprint, inset so the tube-mask ring is never in the sample (the bezel's own spill is outside it,
-## so there is no feedback). The read is a GPU read-back, so it runs at the slow `spill_interval`, and not at all headless.
-## With `photosensitivity` on the light is held at a fixed steady value (no change at all).
+## Source: `source` is the arcade screen's own SubViewport (256 × 304 texels, cheap): the game and the attract screen alike.
+## The read is a GPU read-back of that small texture, so it runs at the slow `spill_interval`, and not at all headless
+## or with no source. With `photosensitivity` on the light is held at a fixed steady value (no change at all).
 
 const STRIDE := 6            ## sample every STRIDE-th texel each way
-const INSET := 0.06          ## fraction of the footprint ignored on every side (root-window source)
 
 @export var surface: CabinetSurface
-var source: SubViewport = null     ## null: sample the window inside the screen's footprint
+var source: SubViewport = null     ## the arcade screen's SubViewport; null: no sampling (the light stays steady)
 
 var light := Color(0, 0, 0, 0)     ## the current (eased) live light: rgb colour, a intensity
 var _target := Color(0, 0, 0, 0)
@@ -86,23 +83,13 @@ static func to_light(avg: Color, s: CabinetSurface) -> Color:
 
 
 func _sample() -> void:
-	if DisplayServer.get_name() == "headless":
+	if source == null or DisplayServer.get_name() == "headless":
 		return
-	var tex: Texture2D = null
-	var region := Rect2i()
-	if source != null:
-		tex = source.get_texture()
-	else:
-		var win := get_window()
-		tex = get_viewport().get_texture()
-		var grid := (load(CabinetBezel.SPEC) as CabinetScreenSpec).grid
-		var f := ScreenFit.screen_rect_physical(win.size, grid)
-		var inset := Vector2i(int(f.size.x * INSET), int(f.size.y * INSET))
-		region = Rect2i(f.position + inset, f.size - inset * 2)
+	var tex := source.get_texture()
 	if tex == null:
 		return
 	var img := tex.get_image()
 	if img == null or img.is_empty():
 		return
 	samples += 1
-	_target = to_light(average(img, region), surface)
+	_target = to_light(average(img), surface)

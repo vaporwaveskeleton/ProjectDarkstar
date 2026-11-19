@@ -9,6 +9,7 @@ Status: Ledger Compass built beyond the stub (2026-11-19; TECH-001 §5.4):
 - `ledger_compass_layout.gd` (`LedgerCompassLayout`): pure geometry on the 4 px sub-grid.
 - `hud_model.gd` (`HudModel`): the compass slice of the HUD model; the honesty seam (`presented()`, `lie_hook()`), honest under Steady Ledger and, since `HudLiar` is not built, always.
 - `ledger_compass_stats.gd` (`LedgerCompassStats`): data in `data/hud/ledger_compass.tres`, `ds_hud.compass.*`.
+- `composure_wick.gd` (`ComposureWick`): the Composure wick, 64 × 16, bottom-right of the sector `Hud`, always honest; the flame height steps by Composure band only, four heights (Q-T119). Data `composure_wick_stats.gd` (`ComposureWickStats`), `data/hud/composure_wick.tres`, `ds_hud.wick.*`.
 
 Stubs and gaps: the sector list is a **one-cell stub** (no doc specifies its fields yet). The entity marker frame is drawn and empty (no entity in M1). `HudLiar`, `HudView`, the corruption layer and H16 are not built.
 
