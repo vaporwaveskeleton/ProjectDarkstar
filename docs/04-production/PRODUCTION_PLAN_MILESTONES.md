@@ -356,14 +356,15 @@ Kits are built in the order the player meets them, so every finished kit is imme
 **Implementation outline.**
 - [x] Q-T164–Q-T172 ruled (PM under owner autonomy grant, 2026-11-19); rows are ✱ in SYS-001 §1.1a, LOOP-001 §3.8, ART-001 §16.7, ART-002 §4.1; TECH-001 §11.1a, §11.2. No D-row changes.
 - [ ] GDD-001 §4.1: reword "hull rotates 60% toward aim" for the Aether (Q-T166). The input map and `tests/test_input_map.gd` stay unchanged.
-- [ ] `features/vigil`: a second `VigilMoveStats` `.tres` (`ds_vigil.aether_move`); `VigilMotor` gains a pure `step_heading` and a thrust-by-angle factor; the sector `Vigil` loads the Aether stats when `enabled`; the Cabinet `VigilShip` is untouched (TECH-001 §2.5).
-- [ ] Lantern state multipliers (`lantern_down_thrust`, `lantern_down_drag`) and the Aether Surgelight rows.
-- [ ] Motor tests: top speed, reversal, coast and brake distances match SYS-001 §1.1a; the Cabinet tests are unchanged; `enabled = false` gives the Cabinet profile exactly.
-- [ ] `ds_sector.aether.projectile_speed_mul` applied to Choir shots in Aether sectors; telegraphs untouched.
-- [ ] Camera velocity lead (`ds_camera.aether.*`).
-- [ ] Tree: T1 Aether readings (HULL-1 `thrust_lateral`) as modifiers on the loaded stats.
-- [ ] Art: the Aether Vigil composite on the ART-002 §4.1 sockets (runtime vector, or pxl for engraved detail), the gimbal swing, the flue, Lantern Down state, plate shear; the five T1 modules.
-- [ ] Scenario: `a1_slice_first_ten` gains a first-flight capture (coast-out from the hangar, a 180° keel turn, a brake) for the Reviewer.
+- [x] `features/vigil`: `VigilAetherStats` `.tres` (`ds_vigil.aether_move`, `data/vigil/vigil_aether_move.tres`); `VigilMotor` Aether mode (`step_heading`, `thrust_factor`, `step_aether`); the sector `Vigil` loads it when `enabled`; the Cabinet `VigilShip` is untouched (built 2026-11-19).
+- [x] Lantern state multipliers (`lantern_down_thrust`, `lantern_down_drag`; `VigilLantern`) and the Aether Surgelight (charges, cooldown floor). Not built: Composure cost at Warp ≥ 2.
+- [ ] Motor tests: tests exist (`test_vigil_aether.gd`); this report did not state that top speed, reversal, coast and brake distances were checked against SYS-001 §1.1a, or that `enabled = false` equals the Cabinet profile exactly. Confirm before ticking.
+- [ ] `ds_sector.aether.projectile_speed_mul` applied to Choir shots in Aether sectors; telegraphs untouched. **Not built** (no Choir shots in the sector yet; key not in data).
+- [x] Camera velocity lead (`ds_camera.aether.*`, `SectorCameraAetherStats`).
+- [x] Tree: handling readings as data and `HandlingTree.apply` (node ids from `--tree=` only). Not built: Lantern Tree purchase UI and state.
+- [x] Art: `AetherVigilRig` (runtime vector): gimbal swing, flue, Lantern Down state, plate shear, T1 modules. Not built: lantern light radius and detection effects beyond handling.
+- [x] Scenario: `a1_golden_path` gained Aether first-flight stills 08 to 11 (keel turn, Surgelight, brake, Lantern Down). `m1_overfire` and `m1_sector_feel` holds retuned for the heavier ship. (The plan named `a1_slice_first_ten`; the stills went into `a1_golden_path`.) Reviewer scoring of the stills not done.
+- [ ] Not built, still open: HUD readout for Surgelight charges and lantern state; controller rumble (Q-T172, haptics pass).
 - [ ] First-flight playtest against the SYS-001 §10 trigger; retune the ✱ rows.
 - [ ] Suite and smoke counts in the PR body (CLAUDE.md §4).
 
