@@ -1,0 +1,35 @@
+shader_type canvas_item;
+// The room round the cabinet. The printed sheet (and the T-molding on its edges) occupies x0..x1; beyond it
+// the frame falls off into darkness: on a wide window (16:9 spare width, 21:9, 16:10) that is dark room with
+// a hint of the cabinet's side panel catching the screen's glow, never the print stretched out to the edge.
+#include "res://shaders/cabinet/cabinet_material.gdshaderinc"
+
+uniform vec2 rect_size = vec2(640.0, 360.0);
+uniform vec2 rig_origin = vec2(0.0);
+uniform vec2 sheet_x = vec2(112.0, 528.0);
+uniform float trim = 3.2;
+
+void fragment() {
+	vec2 rp = rig_origin + UV * rect_size;
+	float px = max(max(fwidth(rp.x), fwidth(rp.y)), 1e-4);
+	float ds = max(sheet_x.x - trim - rp.x, rp.x - (sheet_x.y + trim));      // > 0 outside the molding
+	if (ds <= 0.0) {
+		COLOR = vec4(0.0);
+	} else {
+		float yk = clamp(rp.y / cab_view_h, 0.0, 1.0);
+		// the cabinet's side panel seen almost edge-on: a dark charcoal strip that catches a little light
+		float side_w = 15.0;
+		float panel = 1.0 - smoothstep(side_w - 1.5, side_w, ds);
+		vec3 amb = cab_amb(rp);
+		vec3 panel_c = vec3(0.05, 0.05, 0.06) * (0.35 * amb + cab_key(rp) * 0.22);
+		panel_c *= 0.8 + 0.4 * vnoise(vec2(rp.x * 0.5, rp.y * 0.03));          // faint laminate grain
+		panel_c += vec3(0.5, 0.52, 0.56) * smoothstep(1.6, 0.0, ds) * 0.03 * (cab_amb(rp) + cab_key(rp));   // the crisp edge
+		// the dark room: nearly black, a faint bounce of the screen on the floor and the walls
+		float far = exp(-ds / 90.0);
+		vec3 room = vec3(0.004, 0.004, 0.009) + cab_spill(rp) * 0.05 * far * (0.4 + 0.6 * yk);
+		room += vec3(0.01, 0.009, 0.014) * far * (1.0 - yk);
+		room *= 0.85 + 0.3 * vnoise(rp * 0.03);
+		vec3 c = mix(room, panel_c, panel);
+		COLOR = vec4(c, 1.0);
+	}
+}

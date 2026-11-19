@@ -409,6 +409,14 @@ msgstr "UNMAKE THE"
 msgid "CAB_HOWTO_4"
 msgstr "SEPULCHRE"
 
-#. Printed on the bezel's starburst sticker.
+#. Printed on the bezel's die-cut sticker (VectorText).
 msgid "CAB_BEZEL_SLOGAN"
 msgstr "NEW!"
+
+#. Printed on the bezel's tagline burst, line 1 (VectorText, 1983 marketing print). Keep each line under 12 characters.
+msgid "CAB_BEZEL_TAG_1"
+msgstr "ONE COIN."
+
+#. Printed on the bezel's tagline burst, line 2.
+msgid "CAB_BEZEL_TAG_2"
+msgstr "ONE VIGIL."
