@@ -143,7 +143,7 @@ func test_shader_builds_the_play_core_from_strip_fields_only() -> void:
 		assert_bool(c.contains(line)).override_failure_message("common include lost: " + line).is_true()
 	var fog := _code(FOG)
 	# the core is the streak field outright (play = 1 there); T5 chalk only ever narrows it by a min
-	assert_bool(fog.contains("n = mix(n, a_fog_streak(sw, seed, max(octaves - 1, 2)), play);")).is_true()
+	assert_bool(fog.contains("n = mix(n, a_fog_streak(sw, seed, max(octaves - 2, 2)), play);")).is_true()
 	assert_bool(fog.contains("n = min(n, mix(1.0, a_chalk_strand(sw.x, seed), 0.7));")).is_true()
 	assert_bool(fog.contains("vec2 sw = a_strip_coords(p + drift_dir * t, drift_dir, seed);")).is_true()
 	# the old contour-ring chalk (closed loops with holes beside the lantern) is gone

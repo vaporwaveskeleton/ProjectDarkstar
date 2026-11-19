@@ -37,6 +37,13 @@ const float CELL_FRAC = 0.36;
 const float FORE = 0.45;
 // ✱ px the open part of a fallen cell sits inside its hairline rim
 const float OPEN_INSET = 1.6;
+// ✱ pass 5: share of closed patch cells drawn as dim panes; share of inner / fringe borders cracked
+const float A_DIM_PANES = 0.16;
+const float A_KEEP_INNER = 0.3;
+const float A_KEEP_FRINGE = 0.18;
+// ✱ how much of the other world a dim pane shows (alpha) and how dark it is
+const float A_DIM_ALPHA = 0.5;
+const float A_DIM_VALUE = 0.55;
 
 varying vec2 v_px;
 
@@ -60,8 +67,10 @@ float in_patch(vec2 id, vec2 cc, float sd) {
 }
 
 // One impact's fracture cells at local px `px`. x = border distance px (1e4 = none), y = open
-// coverage (0..1), zw = this cell's refraction offset px (0 outside the patch).
-vec4 fracture(vec2 px, vec4 im) {
+// coverage (0..1), zw = this cell's refraction offset px (0 outside the patch); `dim` = dim-pane
+// coverage (0..1).
+vec4 fracture(vec2 px, vec4 im, out float dim) {
+	dim = 0.0;
 	float reach = im.z * amount;
 	vec2 rel = px - im.xy;
 	if (reach < 1.0 || length(rel) > reach * 1.15) {
@@ -98,6 +107,8 @@ vec4 fracture(vec2 px, vec4 im) {
 	// a few cells have fallen open: more of them near the impact, none at the patch rim
 	float ho = a_hash(ida * 0.73 + im.w * 5.1);
 	float opened = pa * step(0.66 + 0.4 * length(cca), ho);
+	// pass 5: a few closed panes are DIM-filled — a deeper, darker look into the other world
+	float dimmed = pa * (1.0 - opened) * step(1.0 - A_DIM_PANES, a_hash(ida * 2.31 + im.w * 1.7));
 	float border = 1e9;
 	float drawn = 1e9;
 	for (int j = -1; j <= 1; j++) {
@@ -111,14 +122,17 @@ vec4 fracture(vec2 px, vec4 im) {
 			}
 			float e = dot(0.5 * (mr + r), normalize(dr));
 			border = min(border, e);
-			// which borders actually cracked: every rim of an open cell; ~88% of the closed-closed
-			// borders inside the patch; ~55% of the patch's own boundary (ragged, never outlined)
+			// which borders actually cracked (pass 5: sparse, so no cell is a closed polygon outline —
+			// the pass 4 outline cells read as a honeycomb / wireframe UI): every rim of an OPEN cell;
+			// A_KEEP_INNER of the closed-closed borders inside the patch; A_KEEP_FRINGE of the patch's
+			// own boundary. Each kept border has its own weight (hairlines of varied width).
 			float pb = in_patch(idb, (lq + r) * cs / reach, im.w);
 			float ob = pb * step(0.66 + 0.4 * length((lq + r) * cs / reach), a_hash(idb * 0.73 + im.w * 5.1));
 			float hb = a_hash(ida + idb + abs(ida - idb) * 5.7 + im.w);
-			float keep = max(opened, ob) > 0.5 ? 1.0 : (pa + pb > 1.5 ? step(0.12, hb) : step(0.45, hb) * step(0.5, pa + pb));
+			float keep = max(opened, ob) > 0.5 ? 1.0 : (pa + pb > 1.5 ? step(1.0 - A_KEEP_INNER, hb) : step(1.0 - A_KEEP_FRINGE, hb) * step(0.5, pa + pb));
 			if (keep > 0.5) {
-				drawn = min(drawn, e);
+				float wgt = max(opened, ob) > 0.5 ? 1.0 : 0.45 + 1.2 * a_hash(ida * 3.3 + idb * 3.3 + im.w);
+				drawn = min(drawn, e / wgt);
 			}
 		}
 	}
@@ -129,6 +143,7 @@ vec4 fracture(vec2 px, vec4 im) {
 	// hairlines fade toward the patch fringe (the fracture dies out in the glass)
 	line += 2.5 * smoothstep(0.55, 1.0, length(cca));
 	float cover = opened * smoothstep(OPEN_INSET, OPEN_INSET + 1.0, bpx);
+	dim = dimmed * smoothstep(OPEN_INSET, OPEN_INSET + 1.0, bpx);
 	vec2 off = (vec2(a_hash(ida + 11.0), a_hash(ida.yx + 23.0)) - 0.5) * 7.0 * pa;
 	return vec4(line, cover, off);
 }
@@ -139,16 +154,19 @@ void fragment() {
 	vec4 imps[3] = vec4[3](impact_a, impact_b, impact_c);
 	float line = 1e4;
 	float gap = 0.0;
+	float dim = 0.0;
 	vec2 shard = vec2(0.0);
 	for (int i = 0; i < 3; i++) {
-		vec4 fr = fracture(v_px, imps[i]);
+		float dm;
+		vec4 fr = fracture(v_px, imps[i], dm);
 		line = min(line, fr.x);
 		gap = max(gap, fr.y);
+		dim = max(dim, dm);
 		shard += fr.zw;
 	}
 	float hair = 1.0 - smoothstep(0.5 * fw, 1.6 * fw, line);
 	vec3 inner = vec3(0.0);
-	if (gap > 0.0) {
+	if (gap > 0.0 || dim > 0.0) {
 		// the Aether behind the Aether: another place. Its parallax runs AGAINST ours and its medium
 		// drifts the other way, in long horizontal strata (ours is curled and rising)
 		vec2 bp = v_px * 0.7 - camera_offset * 0.9 + vec2(-time_s * 3.2, 0.0);
@@ -177,6 +195,9 @@ void fragment() {
 	float a = step(0.01, length(shard));
 	col = mix(col, inner, gap);
 	a = max(a, gap);
+	// a dim pane: the same other world, darker and only half seen through the cracked glass
+	col = mix(col, inner * A_DIM_VALUE, dim * A_DIM_ALPHA * (1.0 - gap));
+	a = max(a, dim * A_DIM_ALPHA);
 	float la = hair * line_alpha * (0.55 + 0.45 * lamp);
 	col = mix(col, edge_col * (1.0 + 0.6 * lamp), la);
 	a = max(a, la);

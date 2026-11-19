@@ -19,7 +19,9 @@ func _backdrop_with(path: String) -> AetherBackdrop:
 
 func test_entity_is_the_only_black_write_and_the_middle_step_is_void() -> void:
 	var ent := (load("res://shaders/aether/entity_presence.gdshader") as Shader).code
-	assert_int(ent.count("COLOR =")).is_equal(1)
+	# pass 5: two writes — the black under s < 0, the world's crack colours outside (never black;
+	# test_aether_pass5.test_entity_writes_black_only_inside_the_mass)
+	assert_int(ent.count("COLOR =")).is_equal(2)
 	assert_bool(ent.contains("COLOR = vec4(0.0, 0.0, 0.0, 1.0);")).is_true()
 	var fog := (load("res://shaders/aether/aether_fog_band.gdshader") as Shader).code
 	# the middle step is a flat cold VOID made from the band's void colours, then floored
