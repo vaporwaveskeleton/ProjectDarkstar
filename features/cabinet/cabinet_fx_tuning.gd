@@ -106,6 +106,11 @@ extends TunableResource
 @export var wake_spacing_ticks: int = 2                   ## sim ticks ⚙ PM-approved 2026-11-18, SYS-001 §9: ticks back between wake dots
 @export_group("")
 
+@export_group("true-body frame ✱ PROPOSED (owner approval pending; not SYS-001 yet)")
+@export var true_frame_frames: int = 1                    ## drawn frames ✱ PROPOSED: a Charge hit on the costume entity shows its true silhouette this long (GDD §20: silhouette only)
+@export_group("")
+
+
 # --- Hit-stop ⚙ (owner-approved 2026-11-18, SYS-001 §9) ---
 # Sim frames (physics ticks at 60 Hz). Freezes the sim only: audio, CRT, state timers and input keep running.
 @export var hitstop_charge_hits_entity_frames: int = 3    ## frames ⚙ owner-approved 2026-11-18, SYS-001 §9 (_hit_entity)

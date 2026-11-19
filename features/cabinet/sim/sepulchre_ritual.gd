@@ -11,6 +11,8 @@ enum Phase { SEED, PROCESSION, GUARD, QUICKENING, AWAKENING, RAMPAGE, UNMADE }
 
 const BODY_RADIUS := 30.0        ## ✱ costume scale
 const BODY_DRAWN_RADIUS := BODY_RADIUS + 4.0   ## px ✱ body ring + vertebra plate reach: the silhouette the S6 chalk ring encloses
+const TRUE_FRAME_FILL: Color = Pal.NULL    ## the costume disc's colour
+const TRUE_FRAME_LINE: Color = Pal.BONE_3  ## the costume plates' colour
 const CONTACT_INSET := 4.0       ## ✱ SYS-001 §2.1's 16 px inset at the 64 px module scale, ÷4 for the costume
 const SEPULCHRE_RADIUS := 26.0   ## ✱ deposit / Charge contact radius of the altar
 const ENTITY_TURN := 2.2         ## ✱ rad/s steering: kite-able, never twitchy
@@ -35,6 +37,7 @@ var _restores := 0
 var _twitch := 0.0
 var _rot := 0.0
 var _line_said := false
+var _true_frames_left := 0       ## DRAWN frames of the S2 true-body silhouette still to show (counts in _draw, so it survives hit-stop)
 
 
 func reset() -> void:
@@ -51,6 +54,7 @@ func reset() -> void:
 	_staggered = 0.0
 	_restores = 0
 	_line_said = false
+	_true_frames_left = 0
 	_set_phase(_phase_for(segments))
 	world.segments_changed.emit(segments)
 	if segments >= t.segments_total and wakes:
@@ -166,6 +170,7 @@ func _hit_entity(at: Vector2) -> void:
 	world.shake(world.fx_tuning.entity_hit_shake_amp, world.fx_tuning.entity_hit_shake_dur)
 	world.hitstop(world.fx_tuning.hitstop_charge_hits_entity_frames, &"charge_hits_entity")
 	_twitch = 0.5
+	_true_frames_left = world.fx_tuning.true_frame_frames
 	if phase == Phase.AWAKENING and _awaken_t <= t.awakening_silence + t.stagger_window:
 		_stagger_hits += 1
 		if _stagger_hits >= t.stagger_hits:
@@ -276,9 +281,52 @@ func _draw() -> void:
 	if world == null:
 		return
 	if phase != Phase.UNMADE and (awake or phase == Phase.AWAKENING):
-		_draw_entity()
+		if _true_frames_left > 0:
+			_draw_true_frame()
+		else:
+			_draw_entity()
 	elif phase != Phase.UNMADE:
 		_draw_sepulchre()
+	advance_draw_frame()
+
+
+## One drawn frame has passed (end of _draw; tests call it directly). Counts drawn frames, not sim
+## ticks, so the impact frame is never swallowed by the hit-stop that follows the hit.
+func advance_draw_frame() -> void:
+	_true_frames_left = maxi(0, _true_frames_left - 1)
+
+
+## S2: is this drawn frame the impact frame (true silhouette instead of the costume)?
+func showing_true_frame() -> bool:
+	return _true_frames_left > 0
+
+
+## S2 impact frame. GDD §20 (closed 2026-11-17): in Act 0 the entity is seen only as a silhouette;
+## NARR-001 §3.4: no face. So one filled polygon (the costume disc's NULL) with a closed 1 px outline
+## (the plates' BONE_3): same registers, a different shape, not a flash. No teeth, eye, veins.
+func _draw_true_frame() -> void:
+	if not visible_at(entity_pos, BODY_RADIUS + 8.0):
+		return
+	var c := world.to_screen(entity_pos).round()
+	if _twitch > 0.0:
+		c += Vector2(roundf(sin(world.time * 80.0) * 2.0), roundf(cos(world.time * 70.0) * 1.0))
+	var poly := true_frame_polygon(c)
+	draw_colored_polygon(poly, Look.c(TRUE_FRAME_FILL))
+	var outline := PackedVector2Array()
+	for p in poly:
+		outline.append(p + Vector2(0.5, 0.5))      # pixel-centred 1 px line (TECH-001 §1.3)
+	outline.append(outline[0])
+	draw_polyline(outline, Look.c(TRUE_FRAME_LINE), 1.0)
+
+
+## The silhouette about screen point `c`, scaled so its farthest reach is BODY_DRAWN_RADIUS. Driven by
+## world.time (freezes with the sim).
+func true_frame_polygon(c: Vector2) -> PackedVector2Array:
+	return true_frame_polygon_at(c, world.time)
+
+
+func true_frame_polygon_at(c: Vector2, t: float) -> PackedVector2Array:
+	return MawView.true_silhouette(c, t, BODY_DRAWN_RADIUS / MawView.true_peak_radius(t))
 
 
 func _draw_sepulchre() -> void:
