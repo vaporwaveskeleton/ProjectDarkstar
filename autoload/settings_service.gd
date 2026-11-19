@@ -27,6 +27,7 @@ var settings_path: String = PATH   # tests point this at a temp file
 
 
 func _ready() -> void:
+	settings_path = TestMode.settings_path()
 	load_settings()
 
 
@@ -80,6 +81,9 @@ func _save() -> void:
 	var cfg := ConfigFile.new()
 	for key in _values:
 		cfg.set_value(SECTION, String(key), _values[key])
+	if not TestMode.allow_write(settings_path):
+		return
+	DirAccess.make_dir_recursive_absolute(settings_path.get_base_dir())
 	var err := cfg.save(settings_path)
 	if err != OK:
 		push_warning("SettingsService: could not write settings (%d)" % err)

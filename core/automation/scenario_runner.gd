@@ -14,6 +14,8 @@ const UiView := preload("res://core/automation/ui_view.gd")
 const Capture := preload("res://core/automation/capture.gd")
 
 const FIXTURE_DIR := "res://tests/fixtures/saves/"
+const APPROVED_FIXTURES := "res://tests/fixtures/saves/approved.json"
+const RESET_ROUTE_FRAMES := 240  ## ✱ the reset step waits this long for attract
 const MAX_DETAIL := 300        ## ✱ characters kept per step detail
 const COIN_PEEL_FRAMES := 300  ## ✱ give up peeling the tape after this many frames
 const COIN_STEP_FRAMES := 240  ## ✱ per phase of the coin sequence
@@ -33,6 +35,15 @@ var _shots: Array = []
 var _preset: Dictionary = {}   ## a failure decided before _ready (by the gate)
 var _timed_out := false
 var _detail := ""
+var _profile := ""   ## effective profile this run is held to ("dev" or "qa")
+
+
+## The build's profile: "dev" in the editor or an automation_dev build, "qa" in an automation_qa
+## build, "" otherwise. Single resolution point; tests inject opts.profile instead.
+static func build_profile() -> String:
+	if OS.has_feature("editor") or OS.has_feature("automation_dev"):
+		return "dev"
+	return "qa" if OS.has_feature("automation_qa") else ""
 
 
 func setup(scenario: Dictionary, opts: Dictionary) -> void:
@@ -57,6 +68,10 @@ func _ready() -> void:
 	if not errs.is_empty():
 		_finish(2, &"invalid", "; ".join(errs))
 		return
+	var refusal := _profile_refusal()
+	if refusal != "":
+		_finish(3, &"refused", refusal)
+		return
 	if not SaveService.backend is MemorySaveBackend:
 		_finish(3, &"refused", "SaveService is not using an in-memory backend (pass --no-save)")
 		return
@@ -64,9 +79,26 @@ func _ready() -> void:
 	SettingsService.reset_to_defaults()
 	var fx := _write_fixtures()
 	if fx != "":
-		_finish(2, &"invalid", fx)
+		_finish(3 if fx.begins_with("fixture not approved") else 2, &"refused" if fx.begins_with("fixture not approved") else &"invalid", fx)
 		return
 	_run.call_deferred()
+
+
+## Resolves the effective profile (a scenario can only ask for less) and returns a refusal text,
+## or "" when the scenario may run. Dev steps are checked here, before frame 0.
+func _profile_refusal() -> String:
+	var build := str(_opts.get("profile", build_profile()))
+	var asked := str(_scenario.get("profile", build))
+	if build == "":
+		return "this build has no automation profile"
+	if asked == "dev" and build != "dev":
+		return "scenario asks for the dev profile but this build is '%s'" % build
+	_profile = "qa" if (asked == "qa" or build == "qa") else "dev"
+	if _profile == "qa":
+		var dev := Schema.dev_steps_used(_scenario)
+		if not dev.is_empty():
+			return "dev-only steps are not allowed in the qa profile: %s" % ", ".join(dev)
+	return ""
 
 
 func _exit_tree() -> void:
@@ -82,6 +114,12 @@ func _on_route_changed(_route: StringName) -> void:
 
 func _write_fixtures() -> String:
 	var fixtures: Dictionary = _scenario.get("fixtures", {})
+	if _profile == "qa" and not fixtures.is_empty():
+		var approved: Variant = JSON.parse_string(FileAccess.get_file_as_string(APPROVED_FIXTURES)) if FileAccess.file_exists(APPROVED_FIXTURES) else null
+		var names: Array = approved as Array if typeof(approved) == TYPE_ARRAY else []
+		for slot: Variant in fixtures.keys():
+			if not names.has(str(fixtures[slot])):
+				return "fixture not approved for QA: '%s'" % fixtures[slot]
 	for slot: Variant in fixtures.keys():
 		var path := FIXTURE_DIR + str(fixtures[slot]) + ".json"
 		if not SaveService.is_known_slot(StringName(str(slot))) or not FileAccess.file_exists(path):
@@ -213,6 +251,10 @@ func _exec(step: Dictionary) -> bool:
 		"mouse_move":
 			input.mouse_move(Vector2(float(step.x), float(step.y)))
 			return true
+		"reset":
+			return await _reset()
+		"set_setting":
+			return _set_setting(str(step.key), step.value)
 		"mouse_button":
 			input.mouse_button({"left": MOUSE_BUTTON_LEFT, "right": MOUSE_BUTTON_RIGHT, "middle": MOUSE_BUTTON_MIDDLE}[str(step.button)], bool(step.pressed))
 			return true
@@ -290,6 +332,33 @@ func _activate(id: String) -> bool:
 	return await _tick()
 
 
+## Dev-only. SettingsService only, and only the keys it declares (the four accessibility settings).
+func _set_setting(key: String, value: Variant) -> bool:
+	var k := StringName(key)
+	if not SettingsService.DEFAULTS.has(k):
+		return _fail("unknown setting '%s' (allowed: %s)" % [key, ", ".join((SettingsService.DEFAULTS.keys() as Array).map(func(x: Variant) -> String: return str(x)))])
+	var want: Variant = SettingsService.DEFAULTS[k]
+	if typeof(want) == TYPE_FLOAT and typeof(value) in [TYPE_INT, TYPE_FLOAT]:
+		value = float(value)
+	if typeof(value) != typeof(want):
+		return _fail("setting '%s' needs a %s value" % [key, type_string(typeof(want))])
+	SettingsService.set_value(k, value)
+	return true
+
+
+## Clean slate between phases of a long scenario: empty memory saves, default settings, attract.
+func _reset() -> bool:
+	for slot: Variant in SaveService.ALLOWED_REASONS.keys():
+		SaveService.clear_slot(slot as StringName)
+	SettingsService.reset_to_defaults()
+	input.release_all()
+	if not SceneRouter.go_to(&"attract"):
+		return _fail("go_to('attract') was refused (router busy)")
+	return await _wait_for(func() -> Dictionary:
+		return {"ok": SceneRouter.current_route == &"attract" and not SceneRouter.is_busy,
+			"text": "route=%s busy=%s" % [SceneRouter.current_route, SceneRouter.is_busy]}, RESET_ROUTE_FRAMES)
+
+
 func _autopilot(on: bool) -> bool:
 	var root := _view.route_root()
 	var ap: Node = root.get_node_or_null("%Autopilot") if root != null else null
@@ -354,7 +423,9 @@ func _finish(code: int, outcome: StringName, detail: String) -> void:
 		"format": "darkstar.result", "version": 1,
 		"scenario": str(_scenario.get("id", "")),
 		"source": str(_opts.get("source", "")),
+		"profile": _profile,
 		"build": {
+			"profile": str(_opts.get("profile", build_profile())),
 			"godot": Engine.get_version_info().string,
 			"game_version": str(ProjectSettings.get_setting("application/config/version", "")),
 			"features": tags,

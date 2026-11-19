@@ -1,6 +1,6 @@
 {
 	"version": 1,
-	"comment": "Single source of step names and argument shapes for the scenario validator (scenario_schema.gd) and the Node CLI (tools/automation/darkstar_auto.js). Types: string, int, number, bool, string_array, scalar (string/number/bool), array (of scalars). Comparator rule (coded in both validators): wait_until takes EXACTLY ONE of eq ne lt lte gt gte in; assert takes either exists:bool alone (with id) or id+prop+exactly one comparator.",
+	"comment": "Single source of step names and argument shapes for the scenario validator (scenario_schema.gd) and the Node CLI (tools/automation/darkstar_auto.js). Types: string, int, number, bool, string_array, scalar (string/number/bool), array (of scalars). Comparator rule (coded in both validators): wait_until takes EXACTLY ONE of eq ne lt lte gt gte in; assert takes either exists:bool alone (with id) or id+prop+exactly one comparator. A step with dev:true is refused in the QA profile.",
 	"steps": {
 		"wait_frames": {"args": {"frames": "int"}, "comment": "Wait N physics frames."},
 		"wait_route": {"args": {"route": "string", "within": "int"}, "comment": "Pass when SceneRouter is on route and idle."},
@@ -20,6 +20,8 @@
 		"hold": {"args": {"action": "string", "frames": "int"}, "comment": "Press, wait frames (min 2), release."},
 		"key": {"args": {"keycode": "string", "frames": "int"}, "comment": "Hold a keyboard key for frames (min 2)."},
 		"mouse_move": {"args": {"x": "number", "y": "number"}, "comment": "Move the mouse to window coordinates."},
-		"mouse_button": {"args": {"button": "string", "pressed": "bool"}, "comment": "button: left, right or middle."}
+		"mouse_button": {"args": {"button": "string", "pressed": "bool"}, "comment": "button: left, right or middle."},
+		"reset": {"args": {}, "comment": "Clear all in-memory save slots, reset settings, release input, go to attract and wait for it (240 frames)."},
+		"set_setting": {"dev": true, "args": {"key": "string", "value": "scalar"}, "comment": "SettingsService only; key must be one of the four accessibility settings. Dev profile only (QA refuses it before frame 0)."}
 	}
 }

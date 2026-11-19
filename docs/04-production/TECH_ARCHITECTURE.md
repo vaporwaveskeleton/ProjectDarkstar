@@ -154,7 +154,7 @@ We refuse non-integer scaling **of the screen**. A fractional scale blurs a 1 px
 | `data_lint` | pre-build, CI | every SYS-001 §10 row ↔ exactly one `ds_` key; class check (§3.3) |
 | `palette_lint` | test suite | `Pal` = the palette file (built); generator render tests check kit colour pools (ART-001 §14.7, planned) |
 | `localize_extract` | deferred | English only (L10N-001 §1); `locale/en.po` is edited directly |
-| `export_presets` | release | `Windows Desktop` preset, PCK packed, no encryption at 1.0 |
+| `export_presets` | release, QA | `export_presets.cfg` is committed and credential-free (signing/Steam values go in a local override, never committed). Two presets, Windows Desktop, PCK embedded, no encryption: `Windows Desktop` (release, `build/windows/DARKSTAR.exe`) and `Windows QA` (feature `automation_qa`, `build/windows_qa/DARKSTAR_QA.exe`). Filters and the guard test: §9.1 "Profiles and presets". Export: `--headless --path . --export-release "<preset>" <exe>`; templates for 4.7.2.stable must be installed |
 
 Modders: we ship the `.tres` files loose in the PCK's `data/` folder so a player can edit a tunable in a text editor, and we ship no mod API, no loader hooks and no Steam Workshop at 1.0. Editing a `.tres` is supported as a supported-as-is affordance and is deliberately not a feature; §3.3 rejects a save that carries an out-of-class edit.
 
@@ -615,9 +615,18 @@ Profile flags for endings, Archivist variant and achievements are LOOP-001 §11.
 `SaveService.save_slot(slot, payload, reason)` refuses any other reason with `save_failed(slot, &"not_allowed_now")`. Payloads hold invariant IDs and numbers only, never display text. No gameplay writes any slot yet.
 
 ### 7.3 Storage, recovery, migration
-`FileSaveBackend` writes `user://saves/<slot>.json` via `.tmp` then rename, keeping the previous file as `.bak`. A corrupt or tampered main copy loads from `.bak` (`recovered = true`). A newer schema is refused and never overwritten. Migration: bump `SCHEMA_VERSION`, add one step in `SaveEnvelope.migrate`, never edit a shipped step. `MemorySaveBackend` is for tests. Steam Cloud is a future backend; not built.
+`FileSaveBackend` writes `user://saves/<slot>.json` via `.tmp` then rename, keeping the previous file as `.bak`. A corrupt or tampered main copy loads from `.bak` (`recovered = true`). A newer schema is refused and never overwritten. Migration: bump `SCHEMA_VERSION`, add one step in `SaveEnvelope.migrate`, never edit a shipped step. `MemorySaveBackend` is for tests. Steam Cloud is a future backend; not built. In test mode the default file root moves under `user://_test/` (§7.4).
 
 Device settings live in `user://settings.cfg` (`SettingsService`), not in a save slot (ruling R-05, §11.1a).
+
+### 7.4 Test isolation
+Test runs must never write the player's real `user://` files. `core/save/test_mode.gd` (`class_name TestMode`, static only) ships but is inert in release.
+- `TestMode.decide(debug_build, env, args)`: test mode is on only in a debug build AND (env `DARKSTAR_TEST_MODE=1` OR any command-line/user arg contains "gdunit", case-insensitive). An exported release build can never enter it.
+- `TestMode.active()` caches the decision. `TestMode.force(on)` overrides it; turning it on wipes `user://_test` once per process, so each run starts from defaults.
+- In test mode `SettingsService.settings_path` and the default `FileSaveBackend` root (`SaveService.backend`) redirect to `user://_test/settings.cfg` and `user://_test/saves`. `--no-save` is unchanged.
+- Write guard: `TestMode.allow_write(path)` is called at the write chokepoints (`SettingsService._save`, `FileSaveBackend.write_text` and `remove`). In test mode a write to a real player path is refused (`ERR_UNAUTHORIZED`) and recorded in `TestMode.blocked_writes`. Outside test mode it always allows.
+- Guard tests: `core/save/tests/test_user_data_isolation.gd` (paths under `user://_test`; the `decide` truth table incl. release = false; a deliberate real-path probe is refused and recorded; `persist = true` lands under `_test`) and `tests/test_zz_user_data_untouched.gd` (runs last; `blocked_writes` must be empty, so a test that hard-codes a real path fails loudly).
+- Not verified: a plain windowed launch outside tests (code read only).
 
 **Demo → full game (MARKET-001 §6, PROD-001 M4):** the demo build writes the same slots with the same `SaveEnvelope` schema and an extra payload field `content_scope = "demo"`. The full game reads demo saves through the normal migration path, clears `content_scope`, and keeps every anchored unlock earned in the demo. A demo build refuses a save whose `content_scope` is absent (a full-game save) instead of overwriting it, and says so in plain words. Both builds use the same Steam app data folder only if the demo is a Steam playable-demo branch of the same app (TECH-001 §1.4); otherwise the full game offers a one-time import from the demo folder.
 
@@ -701,6 +710,13 @@ The smoke run prints `BOOT_SMOKE: reached route 'cabinet'` and exits 0. GdUnit w
 | `tests/test_generated_assets_only.gd` | D-13/D-14 (amended): no hand-made image or audio files outside the generated folders; every Cabinet cue has a render; the `SfxSynth` fallback still builds (§6.5, §11.2) |
 | `core/audio/tests/test_audio_service.gd` | 23 cases (AUDIO-001 §12.7 C5): steal order, P0/P1 protection, concurrency caps, retrigger gate, bus routing, `silence()`, chant bed, cue-id table and lazy fallback. Whole suite 174 cases, 0 failures (was 151) |
 
+**Test isolation (never touch player files).** Tests run in `TestMode` (§7.4): settings and saves redirect to `user://_test/`, and a write to a real player path is refused and recorded; `tests/test_zz_user_data_untouched.gd` fails the run if any was attempted. A new test that needs real file IO must use `user://_test/` or its own folder, never `user://settings.cfg` or `user://saves`. A run without a gdunit arg (for example another runner started from the editor) must set env `DARKSTAR_TEST_MODE=1` or call `TestMode.force(true)`. `persist = false` is no longer required for safety (still fine to set).
+
+| Suite | Covers |
+|---|---|
+| `core/save/tests/test_user_data_isolation.gd` | test mode active, paths under `user://_test`, `decide` truth table, real-path probe refused and recorded, `persist = true` lands under `_test` |
+| `tests/test_zz_user_data_untouched.gd` | runs last: `TestMode.blocked_writes` is empty |
+
 Result on 2026-11-18 (attract boot / coin slot): 118 test cases, 0 failures, 0 errors; boot smoke (`-- --smoke --no-save`, attract → cabinet) exit 0 with no `ERROR`/`WARNING` lines. Not verified: real gamepad hardware, real mouse-drag feel, audio by ear.
 
 Not covered (honest list): native-resolution rendering after Act 0 (decided, not implemented, D-A), the real window at any size (the Steam-survey sizes of §1.3 are covered as pure arithmetic in `test_screen_fit` / `test_bezel_art`, not by rendering them), gamepad glyphs (none exist), shaders, audio, Steam, performance. Slopes, stairs, doors and moving platforms are N/A (§2.6).
@@ -738,8 +754,20 @@ Placed under §9 because it is a test tool (a scenario runs in the suite and fro
 - `--headless` has no renderer: `screenshot` steps are skipped. Use a windowed run (`--windowed`).
 - Scenario args are read from the real command line only (Q-T47).
 - The suite adapter limits above apply.
-- Cabinet entity ids and a state probe are not built (phase 2, Q-T49).
-- Export presets and the preset guard test are not built (phase 3).
+- Cabinet entity ids, a state probe and the cabinet-touching dev steps (teleport, spawn, kill_all, set_lives, set_stage, step_sim) are not built (phase 2, Q-T49).
+- Recorder replay is faithful only with the same stage seed, save state and `--fixed-fps 60`; determinism is not verified beyond a ±2-frame replay test. Raw keys not mapped to actions are not recorded.
+- Headless runs that quit on the attract route end with Godot's "ObjectDB instances were leaked" and "resources still in use" lines. Cause not investigated; harmless (Q-T54).
+
+**Profiles and presets.**
+- Profile `dev` = build feature `editor` or `automation_dev`; profile `qa` = feature `automation_qa`. Catalog steps marked `"dev": true` are refused in QA (exit 3, before frame 0). A scenario may declare `profile` and can only ask for less: qa on a dev build is held to qa; dev on a qa build is refused. `result.json` holds `profile` (effective) and `build.profile`.
+- QA saves: fixtures must be listed in `tests/fixtures/saves/approved.json`.
+- New steps: `set_setting{key,value}` (dev only; SettingsService accessibility keys only); `reset{}` (both profiles: clears memory saves, resets settings, back to attract).
+- `Windows Desktop` excludes `core/automation/*`, `features/*/automation/*`, `tests/*`, `core/*/tests/*`, `features/*/tests/*`, `scenes/tests/*`, `scenes/dev/*`, `data/routes/dev_*` (reserved for dev-only routes, added with the Aether gallery), `addons/gdUnit4/*`, `addons/godot_ai/*`, `reports/*`; `data/` stays shipped. `Windows QA` (feature `automation_qa`) includes `core/automation/step_catalog.json`, `tests/scenarios/*.json`, `tests/fixtures/saves/*.json` (json is not a resource, so it needs `include_filter`) and excludes test code, `tests/support/*`, gdUnit4, godot_ai, `reports/*`. The godot-ai export plugin strips its `_mcp_game_helper` autoload in headless export.
+- Guard test `core/automation/tests/test_export_presets.gd`: every non-automation preset excludes the required globs and has no automation feature; the QA preset has `automation_qa`, the json includes, excludes gdUnit4/godot_ai, keeps scenarios and fixtures; each `core/automation` and `features/*/automation` folder is covered by the release excludes; no credential-like non-empty keys.
+- Pack audit: `--export-pack "<preset>" build/audit/<x>.pck`, then `node tools/automation/pack_audit.js <file.pck> --profile release|qa` (exit 0 pass, 1 fail). Release must hold no automation, tests, gdUnit4, godot_ai, scenarios or fixtures; qa must hold the runner, `step_catalog.json`, scenarios, `approved.json`, and no gdUnit4, godot_ai or test code.
+- Recorder: `-- --record=<id> --no-save [--out=<dir>]` (dev profile, memory saves only) writes `<out>/<id>.scenario.json` on exit: InputMap action press/release, mouse buttons and position, idle frames collapsed to `wait_frames`.
+- Verified 2026-11-18: the exported release exe with `--smoke --no-save --scenario=a0_first_contact` prints one line "automation: not available in this build", reaches route `'cabinet'`, exit 0, no ERROR/WARNING. The exported QA exe passed `a0_first_contact`, `qa_reset`, `ui_settings_roundtrip` (profile qa; result.json under `%APPDATA%\Godot\app_userdata\DARKSTAR\automation\<id>\`). New scenarios `ui_settings_roundtrip` and `qa_reset` also pass in the suite adapter.
+- CI is a separate PR.
 
 **Adding automation support.**
 - New focusable UI control: give it a scene-unique `%Name`; that is its id.
@@ -752,7 +780,7 @@ Placed under §9 because it is a test tool (a scenario runs in the suite and fro
 |---|---|---|
 | P1 | Runner, gate, schema, catalog, input driver, UI view, capture, Node CLI, suite adapter, first scenarios | built (this branch; counts in the PR) |
 | P2 | Cabinet entity ids (`Acolyte.id`) and a Cabinet probe for state reads | planned |
-| P3 | Release exclusion, QA preset, preset guard test. The release preset will exclude `core/automation/*`, `features/*/automation/*`, `tests/*`, `*/tests/*`, `addons/gdUnit4/*`, `addons/godot_ai/*` | planned |
+| P3 | Release exclusion, QA preset and profile, preset guard test, recorder, pack audit, `set_setting`/`reset` steps | built (this branch), except that CI is a separate PR |
 
 **Relation to the `godot-ai` MCP.** `godot-ai` is an editor-time live tool (it talks to the open editor). This runner is separate: it runs the game by itself, from a scenario file, with no editor.
 
@@ -785,7 +813,7 @@ Placed under §9 because it is a test tool (a scenario runs in the suite and fro
 | Q-T45 | ~~S7 credits service record is PROPOSED (2026-11-18): (a) NARR-001 owner approval of the four stat-line wordings (`CAB_CREDITS_STAT_*`) and whether the credits set is added to NARR-001 §7.5; (b) `ds_cabinet.fx.credits_full_seconds` 13.0 and `credits_scroll_px_per_s` 24.0: SYS-001 rows, or stay ✱ here~~ **Resolved 2026-11-18:** owner approved the wording (whole credits set recorded in NARR-001 §7.5) and promoted both credits values to SYS-001 §9 (⚙) | `features/cabinet/service_record.gd`, `cabinet_fx_tuning.gd`; NARR-001 §7.5; SYS-001 §9 | closed |
 | Q-T46 | ~~S3 last-Charge slow-mo values are PROPOSED ✱ (`ds_cabinet.fx.slowmo_*`, 2026-11-18): `slowmo_scale` 0.25, `slowmo_trigger_px` 130.0, `slowmo_ramp_in_s` 0.15, `slowmo_ramp_out_s` 0.2, `slowmo_max_real_s` 2.5. Owner approval of the five values, and do they become SYS-001 §9 game-feel rows (⚙) or stay ✱ here?~~ **Resolved 2026-11-18:** owner approved the five values; they are SYS-001 §9 game-feel rows (⚙), slow-mo is outside the 1.5 s agency budget | `features/cabinet/cabinet_fx_tuning.gd`, `data/cabinet/cabinet_fx_tuning.tres`; SYS-001 §9 | closed |
 | Q-T47 | Scenario args are read from the real command line only. Should a `LaunchArgs` seam (one place that parses args and can be fed by tests) replace that? (2026-11-18) | §9.1 | decide when a second consumer needs it |
-| Q-T48 | Is `class_name` in export-excluded scripts safe on Godot 4.7? We avoid it in `core/automation/`. (2026-11-18) | §9.1 | verify in the phase 3 export test |
+| Q-T48 | ~~Is `class_name` in export-excluded scripts safe on Godot 4.7? We avoid it in `core/automation/`. (2026-11-18)~~ **Resolved 2026-11-18:** avoided by rule; the release export with `core/automation` excluded boots with zero errors. Not tested with `class_name` | §9.1 | closed |
 | Q-T49 | Cabinet probe and `Acolyte.id` (automation phase 2) touch Cabinet code; needs Sizzle/PM sequencing (2026-11-18) | §9.1 | PM schedules after the Sizzle batch |
 | Q-T29 | Detonation shard count conflict: GDD §8.2 (~line 208) says 3-5; SYS-001 §1.3 row 74 says 3-5 but row 76 says 4-6; the Cabinet code uses 4-6. Also no SYS-001 row for magnet pull speed (170 px/s) or shard drag (1.2/s), both currently ✱ in code (2026-11-18) | GDD §8.2; SYS-001 §1.3 | owner ruling on 3-5 vs 4-6; add rows or keep ✱ |
 | Q-T35 | Entity-voice processing: AUDIO-001 §4.3 and §7.5 forbid formant shift, pitch change and distortion; §11.3 specifies formant drift and sub-octave doubling at higher tiers (2026-11-18) | AUDIO-001 §4.3, §7.5, §11.3 | audio/owner |
@@ -801,6 +829,7 @@ Placed under §9 because it is a test tool (a scenario runs in the suite and fro
 | Q-T51 | Aether bed format and size: three 16 s stereo WAV beds are about 8.5 MB in Git LFS; keep WAV or move beds to Ogg? Relates to Q-T43 (2026-11-18) | AUDIO-001 §12.12, §12.6 | **Decided 2026-11-18 (PM under owner grant):** long beds move to Ogg Vorbis rendered by chirp `--ogg`, short SFX stay WAV. **Blocked:** chirp `--ogg` needs ffmpeg, not installed; installing it is the owner's call. Beds ship as WAV until then |
 | Q-T52 | T4 and T5 Aether beds: build now, or with the Act 3 and 4 content? Until then the gallery reuses T3 (2026-11-18) | AUDIO-001 §12.12 | **Decided 2026-11-18 (PM under owner grant):** build T4 and T5 beds in a follow-up PR after T1–T3 land. **Built 2026-11-18** (`aether_bed_t4`, `aether_bed_t5`) | closed |
 | Q-T53 | GDD §19 glossary has no entries for "Aether" or "Pretence"; the docs and code already use both words (2026-11-18) | GDD §19; AUDIO-001 §12.12; ART-001 §15 | owner confirms the words; doc-keeper adds them |
+| Q-T54 | Headless runs that quit from the attract route end with Godot's "ObjectDB instances were leaked at exit" and "resources still in use at exit" lines. Harmless; same lines in editor-binary runs, so not the runner's fault by evidence; cause not investigated (2026-11-18) | §9.1 | investigate when convenient |
 
 ### 11.1a Resolved questions
 
@@ -893,4 +922,7 @@ Rows R-01…R-19 are the owner-delegated rulings of 2026-11-17; later rows carry
 | 2026-11-18 | **Cabinet realism direction (PR C):** the diegetic bezel parts (coin door and slot, buttons, control panel, T-molding, glass) move from cartoon to tactile, worn realism, still generated in code; coin-door prototype goes to the PM for yes/adjust first. Detail in ART-001 §12.7a | owner, relayed by PM |
 | 2026-11-18 | **Aether T4 and T5 beds built (Q-T52 follow-up), UNAUDITIONED.** `aether_bed_t4` (Inverted: life backwards, register swap, detune 19) and `aether_bed_t5` (Unmaking: subtraction, near-silence, detune 22) join `audio/src/aether_beds.cx.js` as 16 s stereo WAV loops (AUDIO-001 §12.12); cue ids AMB-06 and AMB-07; still WAV because Ogg is blocked on ffmpeg (Q-T51) | owner approved via PM; audio session built |
 | 2026-11-18 | **M1 slice 3 cues added (AUDIO-001 §12.13), UNAUDITIONED.** Seven mono chirp renders in `audio/src/cabinet.cx.js` (`overfire_warn`, `overfire_burst`, `magnet_latch`, `charge_armed`, `magazine_full`, `charge_gutter`, `grub_steal`); §6.2 gains A13, A14, B10–B12, F11, F12; cue ids 38 to 45 and policy entries to 34 (verified); M1 wires the calls (PR 3: A07, A08, A13, B10, B11; PR 4: F11, B12). `act0_only` is a doc label only | PM-directed, requested by the M1 chat |
+| 2026-11-18 | **`export_presets.cfg` committed, credential-free (§1.4, §9.1).** It was gitignored. Two presets (`Windows Desktop` release, `Windows QA`), Windows Desktop, PCK embedded, no encryption, `export_filter=all_resources`, filters in §9.1. Presets must stay credential-free; signing/Steam values live in a local override, never committed (comment in `.gitignore`; guard test checks the cfg) | owner approved, relayed by the PM chat |
+| 2026-11-18 | **Automation phase 3 decisions (§9.1).** QA profile: steps marked `dev` are refused in QA (exit 3); QA fixtures must be in `tests/fixtures/saves/approved.json`; a scenario can only ask for a lower profile. Recorder is dev profile only, memory saves only. `class_name` avoided in export-excluded scripts (closes Q-T48). Export templates for 4.7.2.stable installed from the official 4.7.2 archive; both exports run and verified (§9.1). Opens Q-T54 (exit leak lines). Cabinet-touching ops stay phase 2 (Q-T49) | owner approved via the PM chat; builder verified |
+| 2026-11-18 | **Test isolation guard (§7.4, §9).** In-code `TestMode` (debug build AND env `DARKSTAR_TEST_MODE=1` or a gdunit arg) redirects settings and saves to `user://_test/` and refuses writes to real player paths, rather than env-only or per-test `persist = false` discipline. Cause: `test_cabinet_hitstop` without `persist = false` overwrote the real `user://settings.cfg` with defaults | owner request, relayed by the PM chat |
 | 2026-11-18 | **Cosmic horror handoffs added (AUDIO-001 §12.14), UNAUDITIONED; L9 to L12, the widened L6 and the Passing (T3+ signature, T2 echo) PM-approved 2026-11-18 under the owner grant; owning docs (WARP-001, NARR-001, SYS-001) being updated by the Cosmic horror chat; cue numbers first-pass ✱; no caller = no effect.** Twelve chirp renders in `audio/src/choir_horror.cx.js`: seven horror cues (`phantom_fire`, `listener_heard`, `matron_birth`, `matron_silenced`, `deceiver_steal`, `presence_flee`, `comforters_murmur`) and five lie-tell ticks `lie_tell_*` (L11); §6.2 gains F13, F14 and built ids on F03, F07, B07; `AudioService.set_subtraction(amount, ramp_s)` (low-pass and cut on `BUS-AMB`/`BUS-MUS` only); death-line keys not added to `locale/en.po` (L10N-001 §3); cue ids 45 to 57 and policy entries 34 to 46 (counted). The Matron fires nothing (SYS-001 §3) | PM-directed, from the Cosmic horror proposal |
