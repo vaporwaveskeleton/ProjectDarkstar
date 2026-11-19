@@ -259,6 +259,25 @@ func test_leader_only_when_the_killer_is_far_and_it_tracks_the_live_entity() -> 
 	assert_int(world.fx.death_leader(s0).size()).is_equal(0)
 
 
+func test_leader_starts_from_the_outline_edge_facing_a_killer_that_moved_round() -> void:
+	# The entity killed from the right, then rampaged round to the left: the leader must leave
+	# from the outline's left edge, never run back across the outline and the arrow.
+	var v0 := world.vigil.pos
+	world.ritual.entity_pos = v0 + Vector2(40, 0)
+	world.fx.death_mark(world.ritual.entity_pos, SepulchreRitual.BODY_DRAWN_RADIUS, Vector2.RIGHT, v0)
+	var m: FxLayer.DeathMark = world.fx.death_marks[0]
+	world.ritual.entity_pos = v0 + Vector2(-110, 0)
+	var lead := world.fx.death_leader(m)
+	assert_int(lead.size()).is_equal(2)
+	var c := world.to_screen(v0).round()
+	var left_edge := 0.0
+	for p in world.fx.death_outline(m):
+		left_edge = minf(left_edge, p.x - c.x)
+	assert_float(lead[0].x - c.x).is_less(left_edge)           # starts beyond the outline's left edge
+	assert_float(lead[1].x).is_less(lead[0].x)                 # and runs away from it, toward the killer
+	assert_float(world.fx.death_arrow(m)[0].x).is_greater(c.x) # the arrow stays on its (right) side
+
+
 func test_off_view_entity_ends_the_leader_at_the_edge_tick() -> void:
 	var v0 := world.vigil.pos
 	world.ritual.entity_pos = v0 + Vector2(40, 0)

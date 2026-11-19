@@ -10,7 +10,8 @@ const DASH_RING_ON := 3.0       ## px ✱ S6 coarse rhythm: only the big silhoue
 const DASH_RING_OFF := 3.0      ## px ✱
 const DASH_SMALL_ON := 2.0      ## px ✱ S6 fine rhythm: hull outline, arrow, leader (small shapes)
 const DASH_SMALL_OFF := 1.0     ## px ✱
-const SOLID_ON_PX := 1.0e9      ## dash_path "on" length that never breaks: a solid line, still drawn on by frac
+const LEADER_SAME_SIDE_COS := 0.5  ## ✱ cos 60°: live killer within 60° of the arrow -> leader continues the shaft
+const SOLID_ON_PX := 1.0e9     ## dash_path "on" length that never breaks: a solid line, still drawn on by frac
 const ARROW_HEAD_PX := 4.0      ## px ✱ S6 arrowhead barb length
 const ARROW_TIP_INSET_PX := 4.0 ## px ✱ S6 the arrow tip sits this far inside the outline, on the killer's side
 
@@ -306,7 +307,15 @@ func death_leader(m: DeathMark) -> PackedVector2Array:
 	if to_k.length() < 0.001:
 		return PackedVector2Array()
 	var dir := to_k.normalized()
+	# While the live killer is still on the arrow's side, the leader continues the arrow's shaft.
+	# Once it has moved round (a rampaging entity), start from the outline's edge that faces it,
+	# so the leader never runs back across the outline or the arrow (review follow-up).
 	var start := s_vigil + m.from_dir * (ARROW_TIP_INSET_PX * ft.death_outline_scale + ft.death_arrow_px)
+	if dir.dot(m.from_dir) < LEADER_SAME_SIDE_COS:
+		var reach := 0.0
+		for p in death_outline(m):
+			reach = maxf(reach, (p - s_vigil).dot(dir))
+		start = s_vigil + dir * (reach + maxf(MIN_RING_GAP_PX, ft.death_ring_pad_px))
 	var end := s_vigil + to_k - dir * (m.killer_radius + maxf(MIN_RING_GAP_PX, ft.death_ring_pad_px))
 	var tick := death_edge_tick(m)
 	if tick.size() == 2:

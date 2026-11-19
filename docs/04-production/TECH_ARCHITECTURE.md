@@ -135,6 +135,8 @@ The tests (`core/ui/tests/test_screen_fit.gd`, `features/cabinet/tests/test_beze
 
 We refuse non-integer scaling **of the screen**. A fractional scale blurs a 1 px outline, and the 1 px `VOID-0` outline is the last line of legibility when the warp layers start distorting shape (ART-001 §2). The frame around the screen is the native-resolution bezel (ART-001 §12.7a), not bars. A player who wants a smaller or larger screen gets a different integer step, not a fractional scale; the option is labelled by the multiple it produces. The sim never sees `k`.
 
+**Drawing rule: 1 px lines are drawn pixel-centred (2026-11-18, found in S6).** A 1 px `draw_line` / `draw_polyline` between integer grid coordinates is a 1 px-wide quad through pixel *corners*; on a near-45° run it covers no pixel centre and rasterises **nothing** (the S6 coroner's outline and arrow barbs vanished in a real windowed run while every unit test passed). On the integer grid, 1 px strokes use coordinates offset by +0.5 (pixel centres): `FxLayer.chalk_line_ends(a, b)` / `_chalk_line()` is the reference helper. Regression test: `features/cabinet/tests/test_readable_death.gd` `test_real_entity_death_in_the_real_stage_draws_the_outline_and_arrow` (asserts every chalk endpoint is pixel-centred, since headless has no pixels to read). This binds every 1 px vector on the Act 0 screen and bezel (bezel lines, `VectorText`/`PixelText` strokes, the video-limits work). Existing 1 px strokes elsewhere are not yet audited (a follow-up for their owners); ART-001 §14's Vector row ("coordinates snapped to whole pixels") should gain the same clarification (Visual Design to word it).
+
 ### 1.4 Build targets and pipeline
 
 | Target | Status | Notes |
