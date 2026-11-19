@@ -1,0 +1,31 @@
+{
+	"format": "darkstar.scenario",
+	"version": 1,
+	"id": "aether_far_leash_capture",
+	"profile": "qa",
+	"args": [],
+	"fixtures": {},
+	"timeout_frames": 900,
+	"steps": [
+		{"do": "wait_route", "route": "attract", "within": 240},
+		{"do": "goto", "route": "aether_gallery"},
+		{"do": "wait_route", "route": "aether_gallery", "within": 240},
+		{"do": "hold", "action": "ui_right", "frames": 2},
+		{"do": "wait_frames", "frames": 2},
+		{"do": "hold", "action": "ui_right", "frames": 2},
+		{"do": "wait_frames", "frames": 2},
+		{"do": "hold", "action": "ui_right", "frames": 2},
+		{"do": "wait_frames", "frames": 2},
+		{"do": "hold", "action": "ui_right", "frames": 2},
+		{"do": "wait_frames", "frames": 2},
+		{"do": "hold", "action": "ui_right", "frames": 2},
+		{"do": "wait_frames", "frames": 2},
+		{"do": "hold", "action": "ui_right", "frames": 2},
+		{"do": "wait_frames", "frames": 2},
+		{"do": "wait_frames", "frames": 150},
+		{"do": "screenshot", "name": "far_leash_t0", "target": "window"},
+		{"do": "wait_frames", "frames": 150},
+		{"do": "screenshot", "name": "far_leash_t360", "target": "window"},
+		{"do": "quit"}
+	]
+}
