@@ -1,0 +1,30 @@
+{
+	"format": "darkstar.scenario",
+	"version": 1,
+	"id": "m1_mouse_aim",
+	"profile": "qa",
+	"args": [],
+	"fixtures": {},
+	"timeout_frames": 900,
+	"steps": [
+		{"do": "wait_route", "route": "attract", "within": 120},
+		{"do": "goto", "route": "sector"},
+		{"do": "wait_route", "route": "sector", "within": 240},
+		{"do": "mouse_move", "x": 8, "y": 8},
+		{"do": "wait_frames", "frames": 60},
+		{"do": "assert", "id": "sector/vigil", "prop": "aim_x", "lt": -0.5},
+		{"do": "assert", "id": "sector/vigil", "prop": "aim_y", "lt": -0.2},
+		{"do": "assert", "id": "sector/vigil", "prop": "facing_deg", "lt": -95},
+		{"do": "assert", "id": "sector/vigil", "prop": "facing_deg", "gt": -175},
+		{"do": "checkpoint", "name": "aimed_up_left"},
+		{"do": "mouse_move", "x": 632, "y": 8},
+		{"do": "wait_frames", "frames": 60},
+		{"do": "assert", "id": "sector/vigil", "prop": "aim_x", "gt": 0.5},
+		{"do": "assert", "id": "sector/vigil", "prop": "aim_y", "lt": -0.2},
+		{"do": "assert", "id": "sector/vigil", "prop": "facing_deg", "gt": -85},
+		{"do": "assert", "id": "sector/vigil", "prop": "facing_deg", "lt": -5},
+		{"do": "checkpoint", "name": "aimed_up_right"},
+		{"do": "screenshot", "name": "mouse_aim", "target": "window"},
+		{"do": "quit"}
+	]
+}

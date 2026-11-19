@@ -1,6 +1,7 @@
 # DARKSTAR — Audio Design
 
 **Doc ID:** AUDIO-001 · **Version:** 1.1 · **Date:** 2026-11-18 · **Owner:** Audio / Design · **Status:** authored, pending review
+**Rev 1.10 (2026-11-18): §6.2 gains built ids on F01, F04, F05, B08; §12.15 added (The Six (Heralds) and Choir tells: ten new renders, all unauditioned); cue ids 57 to 67 and policy entries 46 to 56 (counted).**
 **Rev 1.8 (2026-11-18): §6.2 gains F13, F14 and built ids on F03, F07, B07; §12.14 added (Cosmic horror handoffs: Choir fire families, the Passing subtraction, death lines, seven new renders, plus five lie-tell ticks, all unauditioned; L9 to L12, the widened L6 and the Passing are PM-approved 2026-11-18); cue ids 45 to 57 and policy entries 34 to 46 (counted).**
 **Rev 1.7 (2026-11-18): §6.2 gains A13, A14, B10–B12, F11, F12 and built-cue ids on A07/A08; §12.13 added (M1 slice 3 cues, seven new renders, all unauditioned); cue ids 38 to 45.**
 **Rev 1.6 (2026-11-18): §12.12 adds `aether_bed_t4` and `aether_bed_t5` (owner-approved follow-up, Q-T52), both unauditioned; cue ids 36 to 38.**
@@ -709,7 +710,7 @@ IDs are stable for TECH-001's audio tables (TECH-001 §6). Levels are relative t
 | A04 | Geode crack | the crack threshold (SYS-001 §1.3) | a chalk line tearing; the first real tell that the face is giving | −13 dB |
 | A05 | Geode shatter | SYS-001 §1.3 | glass falling in three pieces, one of them late | −12 dB |
 | A06 | Shard pickup | SYS-001 §1.3 | a five-note ascending ladder, one note per shard, so the magazine's shape is heard | −15 dB |
-| A07 | Over-fire warning rise | the SYS-001 §1.3 consecutive-hit threshold | a sine climbing with the hit count; **it rises in pitch, never in level** (§1.4). Built as `overfire_warn`: one rise, called once at 6 hits by the caller; pitch only | −20 → −12 dB |
+| A07 | Over-fire warning rise | the SYS-001 §1.3 consecutive-hit threshold | a sine climbing with the hit count; **it rises in pitch, never in level** (§1.4). Built as `overfire_warn`: one rise, called once per geode when sustained fire reaches the SYS-001 §1.3 warn count (5 hits inside the over-fire window; detonation at 7) by the caller; pitch only | −20 → −12 dB |
 | A08 | Over-fire detonation | SYS-001 §1.3 (player-owned cause, §1.4) | a glass chord struck from inside, then a 0.4 s ✱ vacuum decay. Built as `overfire_burst` | −9 dB |
 | A09 | Dry fire | empty magazine | one dull chalk tick | −18 dB |
 | A10 | Lance vent | the SYS-001 §1.3 cooldown rows | a brass sigh, downward | −19 dB |
@@ -724,10 +725,10 @@ IDs are stable for TECH-001's audio tables (TECH-001 §6). Levels are relative t
 | B05 | Charge detonation on terrain or a unit | SYS-001 §1.4 | the same bell, shorter | −11 dB |
 | **B06** | **Charge lost — the glass chime** | **the SYS-001 §1.4 loss-feedback row 🔒 (GDD-owned behaviour; this doc owns the sound)** | **a clean 1.2 kHz ✱ glass chime with a fast attack and a 0.5 s ✱ decay, plus one Choir half-note a semitone down from the litany's last foot, from the nearest unit.** It is the only bright, short, pure tone in the game, which is what makes it cut without being loud | −11 dB |
 | B07 | Charge stolen by a Grave-Tide Deceiver (`deceiver_steal`, built, UNAUDITIONED, §12.14) | SYS-001 §3, §5.2 | the chime, then pulled upward out of tune | −12 dB |
-| B08 | Charge intercepted | SYS-001 §5.2 | a hard bell stop, a choked tail | −13 dB |
+| B08 | Charge intercepted (`charge_intercepted`, built, UNAUDITIONED, §12.15) | SYS-001 §5.2 | a hard bell stop, a choked tail; unlike B06 | −13 dB |
 | B09 | Charge recovered | SYS-001 §1.4 | the chime's pitch resolving back up | −15 dB |
 | B10 | Charge armed (`charge_armed`) | the magazine gains a pip from a collected shard | a short wet glass ring, below the A06 ladder | −17 dB |
-| B11 | Magazine full (`magazine_full`) | a shard collected at cap stays in the world | two muted notes down, never an alarm | −20 dB |
+| B11 | Magazine full (`magazine_full`) | the magazine reaches its cap (played once by the collection that fills it; afterwards the magnet is off and further shards stay in the world, §12.13) | two muted notes down, never an alarm | −20 dB |
 | B12 | Charge gutters out (`charge_gutter`) | a thrown Charge expires with no hit | the glass ring dying: slow attack, muffled and falling; deliberately unlike B06 (the player's loss, not the Choir's) | −17 dB |
 | C01 | Lantern up | SYS-001 §1.2 | gaslight catch, one breath of hiss | −16 dB |
 | C02 | Lantern down | SYS-001 §1.2 | the hiss dying, a brass tick | −17 dB |
@@ -757,11 +758,11 @@ IDs are stable for TECH-001's audio tables (TECH-001 §6). Levels are relative t
 | E06 | Warp Tier step-up | GDD-001 §8.7 | one detuned bell, pitch dropping with the Tier; never loud (§1.4) | −14 dB |
 | E07 | Compass lie tell | SYS-001 §6 | a soft out-of-tune tick on the Compass strip, so the lie is hearable (L2: the truth stays in the music, §7.3) | −20 dB |
 | E08 | Codex entry stamped | SYS-001 §1.5, GDD-001 §8.9 | chalk on slate, then the bed's filter opening (§2.2) | −16 dB |
-| F01 | Acolyte tell | SYS-001 §3 | the censer chain arriving late (🔒 the 0.25 s lag) | −17 dB |
+| F01 | Acolyte tell (`acolyte_tell`, built, UNAUDITIONED, §12.15) | SYS-001 §3 | the censer chain arriving late (🔒 the 0.25 s lag); the built cue is four censer-chain clinks over 0.25 s, and the 🔒 turret lag is the caller's timing | −17 dB |
 | F02 | Acolyte shot | SYS-001 §3 | a choir note struck hard, short | −15 dB |
 | F03 | Listener wind-up (`listener_heard`, built, UNAUDITIONED, §12.14) | SYS-001 §3 | a slow inhale, no teeth; the built cue is "heard you": the inhale turns toward the sound, the Listener's tell 8 f after your gunfire (SYS-001 §3) | −18 dB |
-| F04 | Deacon phantom materialises | SYS-001 §3 | the litany's rhythm with one syllable missing (§5.2) | −19 dB |
-| F05 | Deacon phantom dispelled | SYS-001 §3 | the missing syllable arriving late, then nothing | −19 dB |
+| F04 | Deacon phantom materialises (`phantom_appear`, built, UNAUDITIONED, §12.15) | SYS-001 §3 | the litany's rhythm with one syllable missing (§5.2); built as the rhythm in three feet, the middle foot one syllable short | −19 dB |
+| F05 | Deacon phantom dispelled (`phantom_dispel`, built, UNAUDITIONED, §12.15) | SYS-001 §3 | the missing syllable arriving late, then nothing; built as the missing syllable alone, then nothing | −19 dB |
 | F06 | Grub keening | SYS-001 §3 🔒 | a single voice, sliding, never a word | −16 dB |
 | F07 | Matron silenced (`matron_silenced`, built, UNAUDITIONED, §12.14) | SYS-001 §3, §5.1 | the metre losing its conductor: one beat of raggedness, then quiet | −18 dB |
 | F08 | Penitent | SYS-001 §3 | weeping at a fixed low level; the boon is a field-wide dim, not a sound | −22 dB |
@@ -1145,7 +1146,7 @@ Level targets: SFX peaks −6 to −14 dBFS; only the entity's set pieces (`wake
 | Engine, targets | Godot 4.7.2; Windows x86-64 + Steam is the only 1.0 target | TECH-001 §1.1, §1.4 |
 | Service | One autoload, `AudioService`: a pool of 24 one-shot `AudioStreamPlayer`s (`VOICES`). **Now (C2):** priority stealing and per-cue policy (§12.6); was blind round-robin. One looping chant player, `silence(seconds)`, `set_chant(level)`, `stop_all()`, `muted_for_tests`; new public helpers `active_count(id)`, `has_cue(id)` | `autoload/audio_service.gd` |
 | Cue source | **Now (C1):** `AudioService` loads the render `res://assets/audio/generated/sfx/<id>.wav` for every id in `data/audio/cue_ids.tres` and builds `SfxSynth` (22.05 kHz mono 16-bit, GDScript) only if a fallback cue lacks a render; with all renders present it builds zero synth cues. Was: the whole synth set built every boot | `audio_service.gd`, `core/audio/sfx_synth.gd`, `core/audio/cue_ids.gd` |
-| Sources | **Now (§12.14): 3 sources, 57 cue ids (45 + 12 of §12.14: 7 horror cues and 5 lie-tell ticks; counted in `data/audio/cue_ids.tres`).** Before §12.14: 45 (§12.13). Before §12.13: 38 (31 + 7). `audio/src/cabinet.cx.js`: 30 cues + the chant bed (31 files; the 5 M1 cues of C4 and the 2 Sizzle cues of §12.11 were added); `audio/src/aether_beds.cx.js`: 5 Aether renders (§12.12). Rendered to `assets/audio/generated/sfx/`. The 36 total is 31 + 5 by count; re-check against `data/audio/cue_ids.tres` after the code lands | §11.7 |
+| Sources | **Now (§12.15): 3 sources, 67 cue ids (57 + 10 of §12.15; counted in `data/audio/cue_ids.tres`).** Before §12.15: 57 (§12.14: 45 + 12, 7 horror cues and 5 lie-tell ticks; counted). Before §12.14: 45 (§12.13). Before §12.13: 38 (31 + 7). `audio/src/cabinet.cx.js`: 30 cues + the chant bed (31 files; the 5 M1 cues of C4 and the 2 Sizzle cues of §12.11 were added); `audio/src/aether_beds.cx.js`: 5 Aether renders (§12.12). Rendered to `assets/audio/generated/sfx/`. The 36 total is 31 + 5 by count; re-check against `data/audio/cue_ids.tres` after the code lands | §11.7 |
 | Loading | Synchronous `load()` of every listed cue in `_ready()` at boot. No streaming, no preload list, no loading screen (TECH-001 §2.1). Boot time **not measured** after C1 | `audio_service.gd` |
 | Buses | `Master` (= BUS-MST), `BUS-MUS`, `BUS-CHO`, `BUS-ENT`, `BUS-UI`, `BUS-FLY`, `BUS-AMB`, all to Master. No effects, no ducking, no sidechain | `data/audio/default_bus_layout.tres` |
 | Bus use | **Now (C2):** per-cue bus from `cue_policy.tres`: `wake_hit` and `entity_unmade` on `BUS-ENT`; menu, H and I cues on `BUS-UI`; `grub_keen` on `BUS-CHO`; the rest on `BUS-FLY`; the chant on `BUS-CHO`. All buses are at 0 dB. `BUS-MUS` is used by no code. **`BUS-AMB` is now used by the ambience slot and the two Aether one-shots (§12.12).** Was: every voice on `BUS-FLY` | `audio_service.gd`, `data/audio/cue_policy.tres` |
@@ -1406,7 +1407,7 @@ Both new cues are chirp renders (mono, from `audio/src/cabinet.cx.js`, `assets/a
 | `charge_gutter` | B12 | 0.9 s | −17 / −26.91 | `BUS-FLY`, P2, 2 voices | UNAUDITIONED |
 | `grub_steal` | F11 | 0.35 s | −17.37 / −30.68 | `grub_keen`'s bus, P3, 2 voices, 80 ms gate, ±25 cents jitter | UNAUDITIONED |
 
-`lance_dull` (§12.11) is now §6.2 A14 and `grub_die` is F12 (`act0_only` false). `act0_only` is a documentation label only; `AudioService` never checks it. **Wiring (owed by the M1 chat):** PR 3 calls A07, A08, A13, B10, B11; PR 4 calls F11 and B12. `overfire_warn` is called once, at 6 hits, by the caller (pitch only, §1.4). **Not built:** A10 vent, B01, B03, B05, B07 to B09, and a magnet loop hum (skipped by M1). Cue ids 45 and policy entries 34, verified against the data files.
+`lance_dull` (§12.11) is now §6.2 A14 and `grub_die` is F12 (`act0_only` false). `act0_only` is a documentation label only; `AudioService` never checks it. **Wiring:** PR 3 calls A07, A08, A13, B10, B11 (**wired 2026-11-18, M1 slice 3 PR 3**, TECH-001 §4.3; still unauditioned); PR 4 calls F11 and B12 (owed). As wired: `overfire_warn` is called once per geode when sustained fire reaches 5 hits inside the over-fire window (the SYS-001 §1.3 warn count; detonation at 7), pitch only (§1.4); `overfire_burst` on the detonation; `magnet_latch` when a shard enters the magnet radius; `charge_armed` once per Charge gained; `magazine_full` once, when a collection brings the magazine to its cap (not on every later shard: with the magazine full the magnet is off and overflow glass stays in the world). PR 3 also calls the existing `geode_hit`, `geode_crack`, `geode_break` and `shard_chime`. **Not built:** A10 vent, B01, B03, B05, B07 to B09, and a magnet loop hum (skipped by M1). Cue ids 45 and policy entries 34, verified against the data files.
 
 ### 12.14 Cosmic horror handoffs (PM-directed 2026-11-18; source: Cosmic horror design proposal §7.2, rev 2)
 
@@ -1443,4 +1444,39 @@ Both new cues are chirp renders (mono, from `audio/src/cabinet.cx.js`, `assets/a
 
 The five lie-tell ticks' policy entries are in `cue_policy.tres` as stated (BUS-UI, P1, 1 voice, 250 ms).tres` when this was written. Counts: cue ids 57 and policy entries 46 (counted in the data files). Source: `audio/src/choir_horror.cx.js`.
 
-**(e) Deferred.** Heralds (The Six, elite variants); F04 and F05 phantom materialise and dispel; the F01 Acolyte tell; the mote notch (a local ambience notch for the entity's black motes); the Recital.
+**(e) Deferred.** Heralds (The Six, elite variants); F04 and F05 phantom materialise and dispel; the F01 Acolyte tell; the mote notch (a local ambience notch for the entity's black motes); the Recital. (Heralds, F01, F04 and F05 are now built: §12.15.)
+
+### 12.15 The Six (Heralds) and Choir tells (PM-directed 2026-11-18)
+
+**Status: built, all UNAUDITIONED; levels are dBFS from the chirp build info, LUFS not measured; all mono.** Source: `audio/src/choir_horror.cx.js`, rendered to `assets/audio/generated/sfx/`. Numbers are first-pass ✱. Nothing plays until a caller asks (no caller = no effect). **Callers are owed by whoever builds the Choir AI; there is no Herald runtime yet.**
+
+**Heralds.** The Six are named, Entropy-gated, hard-counter elites (SYS-001 §5.2; the counters and gates are owned there, not here). Shared arrival: `herald_arrive` (HER-01), a full Choir chord with a cracked bell, 0.5 s rise, no sting (§1.4). `herald_reckoning` (HER-02) is the Ninth Reckoning, E10 only: the same sound a fourth lower and longer. Each counter has its own cue:
+
+| Herald counter | Cue | Id | Sound |
+|---|---|---|---|
+| Ninth Sky | `herald_dim` | HER-03 | the lantern dims; one per stack |
+| Salted Chord | `herald_salt` | HER-04 | the Ward taxed; a minor-second cluster |
+| Long Vigil | `herald_intercept` | HER-05 | the Surgelight boost dragged down |
+| Broken Censer | `charge_intercepted` | B08 | reuses B08 (hard bell stop, choked tail; unlike B06) |
+| Quiet Pew | `herald_hush` | HER-06 | a drawn breath, then stillness |
+
+The Quiet Pew chant mute itself is the caller's (SYS-001 §5.2); `herald_hush` only announces it. It stays fair through §5.5's visual chant indicator (L3).
+
+**Choir tells.** F01 `acolyte_tell`: four censer-chain clinks over 0.25 s; the 🔒 turret lag is the caller's timing. F04 `phantom_appear`: the litany rhythm in three feet, the middle foot one syllable short. F05 `phantom_dispel`: the missing syllable alone, then nothing. F04's three-feet shape does not depend on Q-T85 (sung 8 or 9).
+
+**Built-status table (UNAUDITIONED; dBFS from the chirp info; LUFS not measured; policy ✱ from `cue_policy.tres`).** Gate is the retrigger gate; a blank gate means none stated.
+
+| Cue | §6.2 / id | Length | Peak / RMS dBFS | Bus, priority, voices, gate, jitter |
+|---|---|---|---|---|
+| `acolyte_tell` | F01 | 0.29 s | −14.83 / −30.32 | `BUS-CHO`, P1, 3 voices, 0 ms gate, ±40 cents |
+| `phantom_appear` | F04 | 3.24 s | −19.76 / −36.5 | `BUS-CHO`, P3, 2 voices, 500 ms gate |
+| `phantom_dispel` | F05 | 0.26 s | −20.14 / −35.26 | `BUS-CHO`, P3, 2 voices, 100 ms gate |
+| `herald_arrive` | HER-01 | 4.38 s | −14.14 / −32.94 | `BUS-CHO`, P1, 1 voice, 3000 ms gate |
+| `herald_reckoning` | HER-02 | 5.18 s | −12.85 / −33.47 | `BUS-CHO`, P1, 1 voice, 3000 ms gate |
+| `herald_dim` | HER-03 | 0.85 s | −14.93 / −26.7 | `BUS-CHO`, P2, 1 voice, 300 ms gate |
+| `herald_salt` | HER-04 | 1.24 s | −12.06 / −31.58 | `BUS-CHO`, P2, 1 voice, 300 ms gate |
+| `herald_intercept` | HER-05 | 0.4 s | −14.96 / −26.33 | `BUS-FLY`, P2, 1 voice, 200 ms gate |
+| `charge_intercepted` | B08 | 0.08 s | −16.08 / −24.29 | `BUS-FLY`, P1, 1 voice |
+| `herald_hush` | HER-06 | 2.11 s | −21.68 / −36.13 | `BUS-CHO`, P2, 1 voice, 2000 ms gate |
+
+**Counts (counted in the data files):** cue ids 57 + 10 = 67 and policy entries 46 + 10 = 56. Re-check against `data/audio/cue_ids.tres` and `cue_policy.tres` once the code lands. The §12.14 deferred list (e) above is superseded for Heralds, F01, F04 and F05.
