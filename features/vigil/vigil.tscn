@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3]
+[gd_scene load_steps=17 format=3]
 
 [ext_resource type="Script" path="res://features/vigil/vigil.gd" id="1"]
 [ext_resource type="Script" path="res://features/vigil/vigil_input.gd" id="2"]
@@ -13,6 +13,8 @@
 [ext_resource type="Script" path="res://features/arc_lance/arc_lance_fx.gd" id="10"]
 [ext_resource type="Script" path="res://features/arc_lance/lance_recoil.gd" id="11"]
 [ext_resource type="Resource" path="res://data/arc_lance/arc_lance_fx.tres" id="12"]
+[ext_resource type="Script" path="res://features/composure/cockpit_flame.gd" id="13"]
+[ext_resource type="Resource" path="res://data/composure/cockpit_flame.tres" id="14"]
 
 [sub_resource type="CircleShape2D" id="body_shape"]
 resource_local_to_scene = true
@@ -43,6 +45,11 @@ polygon = PackedVector2Array(10, 0, -7, -7, -4, 0, -7, 7)
 [node name="Core" type="Polygon2D" parent="Facing/Visual"]
 color = Color(1, 0.937255, 0.752941, 1)
 polygon = PackedVector2Array(3, 0, -2, -2, -2, 2)
+
+[node name="CockpitFlame" type="Node2D" parent="Facing/Visual"]
+unique_name_in_owner = true
+script = ExtResource("13")
+stats = ExtResource("14")
 
 [node name="VigilInput" type="Node" parent="."]
 unique_name_in_owner = true

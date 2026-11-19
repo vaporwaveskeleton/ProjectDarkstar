@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ComposureWickStats" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://features/hud/composure_wick_stats.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+ds_namespace = "ds_hud.wick"
+source_section = "ART-001 §12.5 wick 64x16; Q-T119 band steps (heights ✱, TECH-001 §3.4)"
+clear_height_px = 11.0
+frayed_height_px = 8.0
+unmoored_height_px = 5.0
+hollowed_height_px = 3.0
+flame_half_width_px = 3.0
