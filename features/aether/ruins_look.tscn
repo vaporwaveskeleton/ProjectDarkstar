@@ -1,0 +1,94 @@
+[gd_scene load_steps=13 format=3]
+
+[ext_resource type="Script" path="res://features/aether/ruins_look.gd" id="1_look"]
+[ext_resource type="PackedScene" path="res://features/aether/aether_view.tscn" id="2_view"]
+[ext_resource type="PackedScene" path="res://features/aether/aether_backdrop.tscn" id="3_bd"]
+[ext_resource type="Script" path="res://features/aether/ruins_set.gd" id="4_set"]
+[ext_resource type="Script" path="res://features/aether/ruins_placeholders.gd" id="5_ph"]
+[ext_resource type="Script" path="res://features/aether/ruins_lamp.gd" id="6_lamp"]
+[ext_resource type="Shader" path="res://shaders/aether/ruins_hall.gdshader" id="7_hall"]
+[ext_resource type="Shader" path="res://shaders/aether/ruins_haze.gdshader" id="8_haze"]
+[ext_resource type="Resource" path="res://data/aether/ruins/ruins_look.tres" id="9_data"]
+[ext_resource type="Script" path="res://features/aether/ruins_foreground.gd" id="10_fg"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_hall"]
+resource_local_to_scene = true
+shader = ExtResource("7_hall")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_haze"]
+resource_local_to_scene = true
+shader = ExtResource("8_haze")
+
+[node name="RuinsLook" type="Node"]
+script = ExtResource("1_look")
+data = ExtResource("9_data")
+
+[node name="View" parent="." instance=ExtResource("2_view")]
+unique_name_in_owner = true
+
+[node name="Backdrop" parent="View/World" instance=ExtResource("3_bd")]
+unique_name_in_owner = true
+
+[node name="Hall" type="CanvasLayer" parent="View/World"]
+unique_name_in_owner = true
+layer = 1
+
+[node name="Ambient" type="CanvasModulate" parent="View/World/Hall"]
+unique_name_in_owner = true
+color = Color(0.164706, 0.188235, 0.341176, 1)
+
+[node name="Surface" type="ColorRect" parent="View/World/Hall"]
+unique_name_in_owner = true
+material = SubResource("ShaderMaterial_hall")
+offset_right = 640.0
+offset_bottom = 360.0
+mouse_filter = 2
+
+[node name="Set" type="Node2D" parent="View/World/Hall"]
+unique_name_in_owner = true
+script = ExtResource("4_set")
+
+[node name="Placeholders" type="Node2D" parent="View/World/Hall"]
+unique_name_in_owner = true
+visible = false
+script = ExtResource("5_ph")
+
+[node name="Stage" type="Node2D" parent="View/World/Hall"]
+unique_name_in_owner = true
+
+[node name="Lights" type="Node2D" parent="View/World/Hall"]
+unique_name_in_owner = true
+
+[node name="FloorPool" type="PointLight2D" parent="View/World/Hall/Lights"]
+unique_name_in_owner = true
+enabled = false
+
+[node name="MouthLight" type="PointLight2D" parent="View/World/Hall/Lights"]
+unique_name_in_owner = true
+enabled = false
+
+[node name="HourglassLight" type="PointLight2D" parent="View/World/Hall/Lights"]
+unique_name_in_owner = true
+enabled = false
+
+[node name="CabinetLight" type="PointLight2D" parent="View/World/Hall/Lights"]
+unique_name_in_owner = true
+
+[node name="HallLantern" type="Node2D" parent="View/World/Hall/Lights"]
+unique_name_in_owner = true
+script = ExtResource("6_lamp")
+hanging = true
+
+[node name="Lamps" type="Node2D" parent="View/World/Hall/Lights"]
+unique_name_in_owner = true
+
+[node name="Foreground" type="Node2D" parent="View/World/Hall"]
+unique_name_in_owner = true
+script = ExtResource("10_fg")
+
+[node name="Haze" type="ColorRect" parent="View/World/Hall"]
+unique_name_in_owner = true
+material = SubResource("ShaderMaterial_haze")
+offset_right = 640.0
+offset_bottom = 360.0
+mouse_filter = 2
