@@ -35,7 +35,7 @@ const MINIMAL := {
 	"shoot_vigil": {"dx": 0, "dy": -450},
 	"kill_all": {},
 	"pause_sim": {"on": true},
-	"step_sim": {"frames": 30},
+	"step_sim": {"frames": 30}, "wake_entity": {}, "place_entity": {"dx": 0, "dy": -20},
 }
 
 
@@ -171,7 +171,7 @@ func test_profile_field_values() -> void:
 
 
 func test_phase2_steps_validate_and_reject_bad_args() -> void:
-	for n in ["snapshot", "wait_event", "perf_sample", "set_stage", "set_lives", "teleport", "spawn", "shoot_vigil", "kill_all", "pause_sim", "step_sim"]:
+	for n in ["snapshot", "wait_event", "perf_sample", "set_stage", "set_lives", "teleport", "spawn", "shoot_vigil", "kill_all", "pause_sim", "step_sim", "wake_entity", "place_entity"]:
 		assert_array(Schema.validate(_sc([_step(n)]), false)).override_failure_message(n).is_empty()
 	_expect(_sc([_step("snapshot", {"name": "Bad Name"})]), "name must match")
 	_expect(_sc([_step("wait_event", {"count": 0})]), "count")
@@ -182,13 +182,14 @@ func test_phase2_steps_validate_and_reject_bad_args() -> void:
 	_expect(_sc([_step("spawn", {"kind": "dragon"})]), "kind must be one of")
 	_expect(_sc([_step("spawn", {"dy": -4001})]), "<= 4000")
 	_expect(_sc([_step("shoot_vigil", {"dx": 0, "dy": 0})]), "cannot both be 0")
+	_expect(_sc([_step("place_entity", {"dx": 4001})]), "<= 4000")
 	_expect(_sc([_step("step_sim", {"frames": 3601})]), "step_sim")
 	_expect(_sc([_step("step_sim", {"frames": 0})]), "frames")
 
 
 func test_cabinet_dev_steps_are_dev_only_and_probe_ops() -> void:
 	var defs: Dictionary = Schema.catalog().steps
-	for n in ["set_stage", "set_lives", "teleport", "spawn", "shoot_vigil", "kill_all", "pause_sim", "step_sim"]:
+	for n in ["set_stage", "set_lives", "teleport", "spawn", "shoot_vigil", "kill_all", "pause_sim", "step_sim", "wake_entity", "place_entity"]:
 		assert_bool(Schema.is_dev_step(n)).override_failure_message(n).is_true()
 		assert_bool(bool(defs[n].get("probe_op", false))).is_true()
 		assert_str(str(defs[n].route)).is_equal("cabinet")

@@ -6,8 +6,10 @@ extends RefCounted
 ##   cabinet/game      state (lower-case enum name), stage_index, demo
 ##   cabinet/score     score, lives
 ##   cabinet/record    grubs_destroyed, glass_mined, charges_thrown, glass_carried
-##   cabinet/vigil     alive, shield, pos_x, pos_y, use_scripted
-##   cabinet/world     acolytes, grubs, geodes, shots, hostile_shots, charges, paused_sim, sim_scale, hitstop_left, time
+##   cabinet/vigil     alive, shield, pos_x, pos_y, use_scripted, killer_kind ("none"|"entity"|"shot", from the LATEST
+##                     S6 death mark), killer_dx, killer_dy (torus delta death spot -> mark killer_pos), killer_on_screen, death_marks
+##   cabinet/world     acolytes, grubs, geodes, shots, hostile_shots, charges, paused_sim, sim_scale, hitstop_left, time,
+##                     death_marks, entity_awake, entity_dx, entity_dy (torus delta Vigil -> entity; 0 unless awake)
 ##   cabinet/acolyte/<id>    alive, hp, pos_x, pos_y, on_screen, dx, dy (torus delta from the Vigil)
 ##   cabinet/grub/<id>       alive, carrying, hp, pos_x, pos_y
 ##   cabinet/geode/<index>   alive, faces_left
@@ -25,8 +27,9 @@ const SINGLETONS: Dictionary = {
 	"cabinet/game": ["state", "stage_index", "demo"],
 	"cabinet/score": ["score", "lives"],
 	"cabinet/record": ["grubs_destroyed", "glass_mined", "charges_thrown", "glass_carried"],
-	"cabinet/vigil": ["alive", "shield", "pos_x", "pos_y", "use_scripted"],
-	"cabinet/world": ["acolytes", "grubs", "geodes", "shots", "hostile_shots", "charges", "paused_sim", "sim_scale", "hitstop_left", "time"],
+	"cabinet/vigil": ["alive", "shield", "pos_x", "pos_y", "use_scripted", "killer_kind", "killer_dx", "killer_dy", "killer_on_screen", "death_marks"],
+	"cabinet/world": ["acolytes", "grubs", "geodes", "shots", "hostile_shots", "charges", "paused_sim", "sim_scale", "hitstop_left", "time",
+		"death_marks", "entity_awake", "entity_dx", "entity_dy"],
 }
 const ENTITIES: Dictionary = {
 	"cabinet/acolyte/*": ["alive", "hp", "pos_x", "pos_y", "on_screen", "dx", "dy"],
@@ -35,7 +38,8 @@ const ENTITIES: Dictionary = {
 }
 const EVENTS: Array[String] = ["vigil_destroyed", "score_awarded", "hitstop_started", "slowmo_changed",
 	"sepulchre_cleared", "entity_unmade", "phase_changed", "segments_changed", "charges_changed"]
-const DEV_OPS: Array[String] = ["set_stage", "set_lives", "teleport", "spawn", "shoot_vigil", "kill_all", "pause_sim", "step_sim"]
+const DEV_OPS: Array[String] = ["set_stage", "set_lives", "teleport", "spawn", "shoot_vigil", "kill_all", "pause_sim", "step_sim",
+	"wake_entity", "place_entity"]
 
 var _root: Node
 var _world: ArcadeWorld
@@ -136,7 +140,9 @@ func _props_of(id: String) -> Dictionary:
 			return d
 		"cabinet/vigil":
 			var v := _world.vigil
-			return {"alive": v.alive, "shield": v.shield, "pos_x": v.pos.x, "pos_y": v.pos.y, "use_scripted": v.use_scripted}
+			var vd := {"alive": v.alive, "shield": v.shield, "pos_x": v.pos.x, "pos_y": v.pos.y, "use_scripted": v.use_scripted}
+			vd.merge(_killer_props())
+			return vd
 		"cabinet/world":
 			return _world_props()
 	var parts := id.split("/")
@@ -167,12 +173,34 @@ func _world_props() -> Dictionary:
 			shots += 1
 			if s.hostile:
 				hostile += 1
+	var rit := _world.ritual
+	var ent := Vector2.ZERO
+	if rit != null and rit.awake:
+		ent = _world.torus.delta(_world.vigil.pos, rit.entity_pos)
 	return {
+		"death_marks": _world.fx.death_marks.size(), "entity_awake": rit != null and rit.awake,
+		"entity_dx": ent.x, "entity_dy": ent.y,
 		"acolytes": _alive_count(_world.acolytes.items), "grubs": _alive_count(_world.grubs.items),
 		"geodes": _alive_count(_world.geodes.items), "shots": shots, "hostile_shots": hostile,
 		"charges": _world.glass.charges, "paused_sim": _world.paused_sim, "sim_scale": _world.sim_scale,
 		"hitstop_left": _world.hitstop_left, "time": _world.time,
 	}
+
+
+## What killed the Vigil, from the latest S6 death mark (FxLayer.death_marks). "entity" when the mark's
+## drawn radius is over the death_big_killer_px tuning value (FxLayer.death_is_big, the same cutoff).
+func _killer_props() -> Dictionary:
+	var marks: Array[FxLayer.DeathMark] = _world.fx.death_marks
+	var out := {"killer_kind": "none", "killer_dx": 0.0, "killer_dy": 0.0, "killer_on_screen": false, "death_marks": marks.size()}
+	if marks.is_empty():
+		return out
+	var m: FxLayer.DeathMark = marks.back()
+	var d := _world.torus.delta(m.vigil_pos, m.killer_pos)
+	out["killer_kind"] = "entity" if _world.fx.death_is_big(m) else "shot"
+	out["killer_dx"] = d.x
+	out["killer_dy"] = d.y
+	out["killer_on_screen"] = _world.on_screen(m.killer_pos, 0.0)
+	return out
 
 
 static func _alive_count(items: Array) -> int:
@@ -292,6 +320,16 @@ func dev_op(op: String, args: Dictionary) -> String:
 		"kill_all":
 			_kill_all()
 			return ""
+		"wake_entity":
+			return _wake_entity()
+		"place_entity":
+			var eo := _vec_arg(args, "dx", "dy")
+			if not _in_range(eo):
+				return "place_entity: dx and dy must be finite numbers with |v| <= %d" % int(MAX_OFFSET)
+			if _world.ritual == null or not _world.ritual.awake:
+				return "the Sepulchre entity is not awake"
+			_world.ritual.entity_pos = _world.torus.wrap(_world.vigil.pos + eo)
+			return ""
 		"pause_sim":
 			_world.paused_sim = bool(args.get("on", false))
 			return ""
@@ -305,6 +343,20 @@ func dev_op(op: String, args: Dictionary) -> String:
 				_world.step(1.0 / 60.0)
 			return ""
 	return "unknown cabinet op '%s'" % op
+
+
+## Starts the Awakening through the ritual's public deposit(): one shard short of the last segment,
+## then the deposit. The entity is awake after awakening_silence + stagger_window of sim time.
+func _wake_entity() -> String:
+	var rit := _world.ritual
+	if rit == null or not rit.wakes:
+		return "wake_entity: this Sepulchre does not wake"
+	if rit.awake or rit.phase >= SepulchreRitual.Phase.AWAKENING:
+		return "wake_entity: the entity is already waking or gone"
+	rit.segments = _world.tuning.segments_total - 1
+	rit.shard_points = _world.tuning.shards_per_segment - 1
+	rit.deposit()
+	return ""
 
 
 func _spawn(args: Dictionary) -> String:

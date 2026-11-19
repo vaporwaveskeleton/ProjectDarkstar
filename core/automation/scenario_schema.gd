@@ -204,6 +204,8 @@ static func _check_step(i: int, step: Dictionary, defs: Dictionary) -> Array[Str
 			if not SPAWN_KINDS.has(str(step.kind)):
 				errs.append("step %d (spawn): kind must be one of %s" % [i, ", ".join(SPAWN_KINDS)])
 			errs.append_array(_offsets(i, name, step, ["dx", "dy"]))
+		"place_entity":
+			errs.append_array(_offsets(i, name, step, ["dx", "dy"]))
 		"shoot_vigil":
 			errs.append_array(_offsets(i, name, step, ["dx", "dy"]))
 			if is_zero_approx(float(step.dx)) and is_zero_approx(float(step.dy)):

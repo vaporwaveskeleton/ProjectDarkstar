@@ -332,3 +332,90 @@ func test_phase_and_other_events_carry_scalars() -> void:
 	assert_array(seen[2]).is_equal(["slowmo_changed", [0.5]])
 	assert_str(seen[3][0]).is_equal("sepulchre_cleared")
 	assert_str(seen[4][0]).is_equal("entity_unmade")
+
+
+# --- killer and entity props (S6 death marks) --------------------------------------------------
+
+func test_no_killer_before_any_death() -> void:
+	assert_str(_val("cabinet/vigil", "killer_kind")).is_equal("none")
+	assert_int(_val("cabinet/vigil", "death_marks")).is_equal(0)
+	assert_int(_val("cabinet/world", "death_marks")).is_equal(0)
+	assert_float(_val("cabinet/vigil", "killer_dx")).is_equal(0.0)
+	assert_float(_val("cabinet/vigil", "killer_dy")).is_equal(0.0)
+	assert_bool(_val("cabinet/vigil", "killer_on_screen")).is_false()
+	assert_bool(_val("cabinet/world", "entity_awake")).is_false()
+	assert_float(_val("cabinet/world", "entity_dx")).is_equal(0.0)
+
+
+func test_a_hostile_shot_kill_reads_as_shot() -> void:
+	world.vigil.shield = 0.0
+	probe.dev_op("shoot_vigil", {"dx": 0, "dy": -90})
+	for i in 40:
+		world.step(DT)
+	assert_bool(_val("cabinet/vigil", "alive")).is_false()
+	assert_str(_val("cabinet/vigil", "killer_kind")).is_equal("shot")
+	assert_int(_val("cabinet/world", "death_marks")).is_equal(1)
+	assert_float(_val("cabinet/vigil", "killer_dy")).is_less(0.0)
+	assert_float(absf(_val("cabinet/vigil", "killer_dx"))).is_less(2.0)
+	assert_bool(_val("cabinet/vigil", "killer_on_screen")).is_true()
+
+
+func test_an_off_view_shot_reports_not_on_screen() -> void:
+	world.vigil.shield = 0.0
+	world.fx.death_mark(world.vigil.pos + Vector2(0, -200), 3.0, Vector2.UP, world.vigil.pos)
+	assert_bool(_val("cabinet/vigil", "killer_on_screen")).is_false()
+	assert_float(_val("cabinet/vigil", "killer_dy")).is_equal_approx(-200.0, 0.01)
+	assert_str(_val("cabinet/vigil", "killer_kind")).is_equal("shot")
+
+
+func test_the_latest_mark_decides_and_the_size_cutoff_reads_the_tuning() -> void:
+	world.fx.death_mark(world.vigil.pos + Vector2(0, -50), 3.0, Vector2.UP, world.vigil.pos)
+	world.fx.death_mark(world.vigil.pos + Vector2(50, 0), world.fx_tuning.death_big_killer_px + 1.0, Vector2.RIGHT, world.vigil.pos)
+	assert_int(_val("cabinet/vigil", "death_marks")).is_equal(2)
+	assert_str(_val("cabinet/vigil", "killer_kind")).is_equal("entity")
+	assert_float(_val("cabinet/vigil", "killer_dx")).is_equal_approx(50.0, 0.01)
+
+
+func _wake_and_wait() -> void:
+	assert_str(probe.dev_op("wake_entity", {})).is_empty()
+	for i in 400:
+		world.step(DT)
+		if world.ritual.awake:
+			return
+
+
+func test_wake_entity_then_place_entity_wraps_and_an_entity_kill_reads_as_entity() -> void:
+	world.vigil.shield = 0.0
+	assert_str(probe.dev_op("place_entity", {"dx": 0, "dy": -100})).is_equal("the Sepulchre entity is not awake")
+	_wake_and_wait()
+	assert_bool(_val("cabinet/world", "entity_awake")).is_true()
+	assert_str(probe.dev_op("wake_entity", {})).contains("already")
+	assert_str(probe.dev_op("place_entity", {"dx": 0, "dy": -100})).is_empty()
+	assert_float(_val("cabinet/world", "entity_dx")).is_equal_approx(0.0, 0.01)
+	assert_float(_val("cabinet/world", "entity_dy")).is_equal_approx(-100.0, 0.01)
+	probe.dev_op("teleport", {"x": 10, "y": 360})
+	assert_str(probe.dev_op("place_entity", {"dx": -40, "dy": 0})).is_empty()
+	assert_float(world.ritual.entity_pos.x).is_equal_approx(world.torus.size.x - 30.0, 0.01)
+	assert_float(_val("cabinet/world", "entity_dx")).is_equal_approx(-40.0, 0.01)
+	assert_str(probe.dev_op("place_entity", {"dx": 5000, "dy": 0})).contains("4000")
+	assert_str(probe.dev_op("place_entity", {"dx": "x", "dy": 0})).contains("finite")
+	probe.dev_op("place_entity", {"dx": 0, "dy": -20})
+	world.step(DT)
+	assert_bool(_val("cabinet/vigil", "alive")).is_false()
+	assert_str(_val("cabinet/vigil", "killer_kind")).is_equal("entity")
+	assert_bool(_val("cabinet/vigil", "killer_on_screen")).is_true()
+	assert_int(_val("cabinet/world", "death_marks")).is_equal(1)
+
+
+func test_wake_entity_fails_on_a_cold_sepulchre() -> void:
+	var s := _stage()
+	s.sepulchre_wakes = false
+	world.start(s)
+	assert_str(probe.dev_op("wake_entity", {})).contains("does not wake")
+
+
+func test_snapshot_vigil_and_world_carry_the_new_props() -> void:
+	var s: Dictionary = probe.snapshot()
+	assert_array(s.vigil.keys()).contains(["killer_kind", "killer_dx", "killer_dy", "killer_on_screen", "death_marks"])
+	assert_array(s.world.keys()).contains(["death_marks", "entity_awake", "entity_dx", "entity_dy"])
+	assert_array(probe.describe().dev_ops).contains(["wake_entity", "place_entity"])

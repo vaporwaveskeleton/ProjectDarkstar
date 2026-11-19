@@ -25,8 +25,12 @@
 		{"do": "screenshot", "name": "dead_16", "target": "arcade"},
 		{"do": "wait_frames", "frames": 20},
 		{"do": "screenshot", "name": "dead_36", "target": "arcade"},
+		{"do": "wait_frames", "frames": 40},
+		{"do": "screenshot", "name": "dead_76", "target": "arcade"},
 		{"do": "screenshot", "name": "dead_window", "target": "window"},
 		{"do": "assert", "id": "cabinet/vigil", "prop": "alive", "eq": false},
+		{"do": "assert", "id": "cabinet/vigil", "prop": "killer_kind", "eq": "shot"},
+		{"do": "assert", "id": "cabinet/world", "prop": "death_marks", "gte": 1},
 		{"do": "snapshot", "name": "after_death"},
 		{"do": "quit"}
 	]

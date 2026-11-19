@@ -33,6 +33,8 @@
 		"shoot_vigil": {"dev": true, "probe_op": true, "route": "cabinet", "args": {"dx": "number", "dy": "number"}, "comment": "Cabinet: fire one hostile censer shot from Vigil + (dx, dy) straight at the Vigil. (0,0) is rejected. Dev only."},
 		"kill_all": {"dev": true, "probe_op": true, "route": "cabinet", "args": {}, "comment": "Cabinet: remove Acolytes, Grubs and hostile shots (not the ritual, not geodes). Dev only."},
 		"pause_sim": {"dev": true, "probe_op": true, "route": "cabinet", "args": {"on": "bool"}, "comment": "Cabinet: set ArcadeWorld.paused_sim. Dev only."},
-		"step_sim": {"dev": true, "probe_op": true, "route": "cabinet", "args": {"frames": "int"}, "comment": "Cabinet: advance ArcadeWorld.step(1/60) N times (1..3600); needs paused_sim. Does not advance the CabinetGame state machine. Dev only."}
+		"step_sim": {"dev": true, "probe_op": true, "route": "cabinet", "args": {"frames": "int"}, "comment": "Cabinet: advance ArcadeWorld.step(1/60) N times (1..3600); needs paused_sim. Does not advance the CabinetGame state machine. Dev only."},
+		"wake_entity": {"dev": true, "probe_op": true, "route": "cabinet", "args": {}, "comment": "Cabinet: start the Awakening now (the entity is awake after ~4.2 s of sim time; wait for cabinet/world entity_awake). Fails on a Cold Sepulchre. Dev only."},
+		"place_entity": {"dev": true, "probe_op": true, "route": "cabinet", "args": {"dx": "number", "dy": "number"}, "comment": "Cabinet: put the awake Sepulchre entity at Vigil + (dx, dy), wrapped. |dx|,|dy| <= 4000. Fails unless the entity is awake. Dev only."}
 	}
 }
