@@ -43,6 +43,44 @@ float a_fbm(vec2 p, int octaves) {
 	return v;
 }
 
+// Pass 4 pareidolia guard (ART-001 rule, adopted: no closed holes in organic shapes near the play
+// centre). Over the play core the fog is built from STRIP fields only, so no threshold of it can
+// enclose a hole (an eye socket, a skull):
+//   w.x = across-flow position + a slow meander along the flow: any function of w.x alone has level
+//         sets that are graphs over the flow axis — strands that run out of the frame, never rings;
+//   w.y = along-flow position (stretched A_FOG_STREAK x) + a slow meander across it: transverse strips.
+// A field f = min(g(w.x), e(w.y), ...) has every sublevel set {f < t} = a union of strips, each
+// reaching the border, so its background is always border-connected. Mirrored on the CPU in
+// features/aether/tests/test_aether_pass4.gd, which flood-fills it for enclosed holes.
+// ✱ how far the fog is stretched along its drift over the play core.
+const float A_FOG_STREAK = 3.2;
+// ✱ the play core (pure strip field) and the ring where it blends back to the free fog, as a
+// fraction of the screen height from the screen centre.
+const float A_PLAY_CORE = 0.22;
+const float A_PLAY_RING = 0.5;
+
+vec2 a_strip_coords(vec2 p, vec2 dir, float sd) {
+	vec2 fd = normalize(dir);
+	float al = dot(p, fd);
+	float ac = dot(p, vec2(-fd.y, fd.x));
+	return vec2(ac + 0.7 * a_noise(vec2(al * 0.45, sd * 5.0)) + 0.22 * a_noise(vec2(al * 1.9, sd * 5.0 + 3.0)),
+		al / A_FOG_STREAK + 0.9 * a_noise(vec2(ac * 0.6, sd * 3.0 + 9.0)) + 0.45 * a_noise(vec2(ac * 2.1, sd * 3.0 + 1.0)));
+}
+
+// Play-core wisps: long open strands (an across-flow fbm) cut into lengths by an along-flow envelope.
+float a_fog_streak(vec2 w, float sd, int oct) {
+	float g = a_fbm(vec2(w.x * 2.6, sd * 3.0), oct);
+	float e = a_fbm(vec2(w.y * 1.3, sd * 3.0 + 17.0), 2);
+	return 0.5 + (min(g, e + 0.25) - 0.5) * 0.75;   // monotone: same level-set topology, softer
+}
+
+// T5 chalk: strokes across the flow coordinate only (open, directional; never contour rings of the
+// fog, which closed into loops with holes and read as skulls beside the lantern).
+// Irregular spacing and width (a 1D fbm across the flow), so they never read as ribs or stripes.
+float a_chalk_strand(float wx, float sd) {
+	return smoothstep(0.42, 0.62, a_fbm(vec2(wx * 4.2, sd * 7.0 + 2.0), 3));
+}
+
 float a_luma(vec3 c) {
 	return dot(c, vec3(0.299, 0.587, 0.114));
 }
@@ -52,12 +90,27 @@ float a_ridge(vec2 p) {
 	return abs(a_noise(p) - 0.5) * 2.0 - 0.5;
 }
 
-// An angular, sheared bite out of the rim at angle `ang` (< 0 inside the bite).
-float a_bite(vec2 p, float ang, float depth, float hw, float skew) {
+// Pass 4 (boxy-coastline fix): every bite is a wedge whose two flanks lean by their own angles, and
+// its opening is either ACUTE or OBTUSE, never near a right angle (radians; 0.55..1.15 = 32°..66°,
+// 2.0..2.3 = 115°..132°). Obtuse bites are shallow and lean less (each flank stays < 90° from the
+// radial), so they stay bites, not bays.
+const vec2 A_BITE_ACUTE = vec2(0.55, 1.15);
+const vec2 A_BITE_OBTUSE = vec2(2.0, 2.3);
+// The entity's edge fractures (N7: no limbs) live only in 0 < s < A_ENT_CRACK_BAND * grow.
+const float A_ENT_CRACK_BAND = 0.24;
+
+// A wedge bite out of the rim at angle `ang` (< 0 inside the bite): apex `depth` inside the rim,
+// opening `open` radians, flanks leaned by `lean` (-0.25..0.25 of the opening) so no two match.
+float a_bite(vec2 p, float ang, float depth, float open, float lean) {
 	vec2 rad = vec2(cos(ang), sin(ang));
-	vec2 q = p - rad * 1.02;
-	float along = dot(q, vec2(-rad.y, rad.x)) + skew * dot(q, rad);
-	return -dot(q, rad) - depth * (1.0 - abs(along) / hw);
+	vec2 q = p - rad * (1.02 - depth);
+	float a1 = open * (0.5 + lean);
+	float a2 = open * (0.5 - lean);
+	vec2 d1 = vec2(cos(ang + a1), sin(ang + a1));
+	vec2 d2 = vec2(cos(ang - a2), sin(ang - a2));
+	float e1 = dot(q, vec2(d1.y, -d1.x));
+	float e2 = dot(q, vec2(-d2.y, d2.x));
+	return -min(e1, e2);
 }
 
 // The entity's outline in its own normalised space (p = offset / radius). < 0 inside.
@@ -65,7 +118,8 @@ float a_bite(vec2 p, float ang, float depth, float hw, float skew) {
 // big smooth bulges along an edge read as a brow / nose / lips / chin in profile. The tear lives in
 // ridged (creased) noise at mid and fine scales plus angular, sheared bites: jagged fray, eaten
 // corners, no smooth concave / convex alternation. One ruled cut, TERRACED into straight steps,
-// and one impossible square inner corner: geometry that should not exist in fog.
+// and one impossible sharp inner corner: geometry that should not exist in fog. Pass 4: no right
+// angles anywhere on the coastline (bites acute or obtuse, slanted terrace risers, a 62° notch).
 float a_entity_shape(vec2 p, float seed, float t, int oct) {
 	vec2 w = p + 0.14 * vec2(a_noise(p * 0.8 + vec2(seed, t * 0.03)) - 0.5,
 		a_noise(p * 0.8 + vec2(seed + 4.1, -t * 0.025)) - 0.5);
@@ -78,23 +132,32 @@ float a_entity_shape(vec2 p, float seed, float t, int oct) {
 		d += 0.03 * (a_noise(w * 24.0 - seed) - 0.5);
 		d += 0.016 * (a_noise(w * 61.0 + seed * 2.0) - 0.5);
 	}
-	// angular eaten bites, sheared so no two match (never a paired, symmetric curve)
+	// angular eaten bites (pass 4): acute and obtuse wedges alternate by hash, each leaned its own
+	// way, so the coastline never makes a square notch
 	for (int i = 0; i < 8; i++) {
 		float h1 = a_hash(vec2(seed, float(i) * 1.7 + 0.2));
 		float h2 = a_hash(vec2(float(i) + 5.3, seed * 0.7));
+		float h3 = a_hash(vec2(float(i) * 3.1 + seed, 4.4));
 		float ang = 6.2831853 * (float(i) + 0.7 * h1) / 8.0 + seed;
-		d = max(d, -a_bite(p, ang, 0.07 + 0.15 * h2, 0.06 + 0.13 * h1, (h2 - 0.5) * 1.4));
+		bool acute = h3 < 0.55;
+		float open = acute ? mix(A_BITE_ACUTE.x, A_BITE_ACUTE.y, h1) : mix(A_BITE_OBTUSE.x, A_BITE_OBTUSE.y, h1);
+		float depth = acute ? 0.08 + 0.14 * h2 : 0.035 + 0.045 * h2;
+		d = max(d, -a_bite(p, ang, depth, open, (h2 - 0.5) * (acute ? 0.5 : 0.2)));
 	}
-	// the ruled cut, terraced: straight edges stepping in and out like something bitten in blocks
+	// the ruled cut, terraced: straight treads, each tilted its own way, with SLANTED risers (pass 4:
+	// no right-angle steps; the corners alternate acute / obtuse)
 	float ca = seed * 2.4;
 	vec2 cn = vec2(cos(ca), sin(ca));
-	float terrace = floor(dot(p, vec2(-cn.y, cn.x)) / 0.31 + seed * 3.0);
-	d = max(d, dot(p, cn) - 0.74 - 0.09 * (a_hash(vec2(terrace, seed + 2.0)) - 0.5));
-	// the impossible inner corner: a right-angled notch bitten into the rim
+	vec2 ct = vec2(-cn.y, cn.x);
+	float tx = dot(p, ct) + 0.62 * dot(p, cn);
+	float terrace = floor(tx / 0.31 + seed * 3.0);
+	float th = a_hash(vec2(terrace, seed + 2.0));
+	d = max(d, dot(p, cn) - 0.74 - 0.09 * (th - 0.5) - 0.28 * (th - 0.5) * (fract(tx / 0.31 + seed * 3.0) - 0.5) * 0.31);
+	// the impossible inner corner: a SHARP (62°) notch bitten into the rim, leaned to one side
 	float cb = seed * 1.7 + 2.2;
 	vec2 c = vec2(cos(cb), sin(cb)) * 0.86;
-	vec2 a1 = vec2(cos(cb + 0.785), sin(cb + 0.785));
-	vec2 a2 = vec2(cos(cb - 0.785), sin(cb - 0.785));
+	vec2 a1 = vec2(cos(cb + 1.2), sin(cb + 1.2));
+	vec2 a2 = vec2(cos(cb - 0.89), sin(cb - 0.89));
 	d = max(d, min(dot(p - c, a1), dot(p - c, a2)));
 	return d;
 }

@@ -1,12 +1,13 @@
 class_name EntityPresence
 extends AetherShaderRect
 ## The entity's presence: the only pure black in the game (ART-001 §16). A torn NULL wound whose
-## radius the backdrop drives; it has no rim, no glow and no halo. Filaments grow out of it with
-## drain. Lives in group `entity_presence` so tests can prove every black pixel source belongs to
-## it. Unlit, never a collider.
+## radius the backdrop drives; it has no rim, no glow and no halo. With drain, edge fractures craze
+## the world's surface along its loss edge (pass 4: never filaments or limbs — N7; they stay inside
+## the loss band, entity_presence.gdshader). Lives in group `entity_presence` so tests can prove
+## every black pixel source belongs to it. Unlit, never a collider.
 
 const GROUP := &"entity_presence"
-## ✱ quad half-size as a multiple of max_radius: room for the torn edge and the filaments.
+## ✱ quad half-size as a multiple of max_radius: room for the torn edge and its fracture band.
 const QUAD_REACH := 1.95
 
 ## ✱ largest radius this node will ever be asked for; sizes the quad.
@@ -14,8 +15,8 @@ const QUAD_REACH := 1.95
 ## ✱ kept for the scene files; the torn outline replaces the old wobble.
 @export var wobble: float = 0.16
 @export var seed: float = 0.0
-## ✱ filaments reaching out of the wound (5–9).
-@export var tendril_count: int = 7
+## ✱ crazing density: the fracture cells' side is (TAU / crack_cells) / 4 radii.
+@export var crack_cells: int = 22
 
 ## Centre in layer px.
 var centre: Vector2 = Vector2.ZERO:
@@ -38,7 +39,7 @@ func _ready() -> void:
 	super._ready()
 	light_mask = 0
 	set_param(&"seed", seed)
-	set_param(&"tendril_count", tendril_count)
+	set_param(&"crack_cells", float(crack_cells))
 	_place()
 	radius = radius
 
@@ -54,7 +55,7 @@ func set_time(t: float) -> void:
 	set_param(&"time_s", t)
 
 
-## 0..1: how far the filaments have grown (the backdrop ties it to drain).
+## 0..1: how far the edge fractures have spread (the backdrop ties it to drain).
 func set_growth(g: float) -> void:
 	set_param(&"grow", clampf(g, 0.0, 1.0))
 
