@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="ChargeMagazineStats" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://features/charges/charge_magazine_stats.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+ds_namespace = "ds_charges.magazine"
+source_section = "SYS-001 §1.4 magazine 5 base (🔒)"
+capacity = 5

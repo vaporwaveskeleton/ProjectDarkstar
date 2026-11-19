@@ -106,12 +106,24 @@ func test_the_entity_devouring_a_geode_counts_nothing() -> void:
 
 func test_a_detonation_counts_what_it_scatters() -> void:
 	world.start(_stage())
-	var g := world.geodes.add_geode(world.vigil.pos + Vector2(200, 0), 2)
-	for k in t.overfire_hits:
-		world.time += t.overfire_window / (t.overfire_hits + 1)
-		world.geodes.lance_hit(g)
+	world.glass.set_charges(0)
+	# held lance through the real fire path (scripted input, world.step) until the geode goes
+	var g := world.geodes.add_geode(world.vigil.pos + Vector2(120, 0), 2)
+	g.vel = Vector2.ZERO
+	var v := world.vigil
+	v.shield = 0.0
+	v.use_scripted = true
+	v.scripted_aim = Vector2.RIGHT * 10.0
+	v.facing = 0.0
+	v.scripted_fire = true
+	for i in roundi(3.0 * t.face_hits / t.lance_rate / DT):
+		world.step(DT)
+		if not g.alive:
+			break
+	v.scripted_fire = false
 	assert_bool(g.alive).is_false()
-	assert_int(world.record.glass_mined).is_equal(world.glass.shards.size())
+	assert_int(g.faces_left).override_failure_message("detonated, not mined out").is_greater(0)
+	assert_int(world.record.glass_mined).is_equal(world.glass.shards.size() + world.glass.charges)
 
 
 func test_a_charge_counts_only_when_it_actually_launches() -> void:

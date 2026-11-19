@@ -6,6 +6,7 @@ extends RefCounted
 const Runner := preload("res://core/automation/scenario_runner.gd")
 const Schema := preload("res://core/automation/scenario_schema.gd")
 const Recorder := preload("res://core/automation/recorder.gd")
+const CapsWriter := preload("res://core/automation/caps_writer.gd")
 const SCENARIO_DIR := "res://tests/scenarios/"
 const DEFAULT_OUT := "user://automation/"
 const REPORTS_DIR := "res://reports"
@@ -28,9 +29,24 @@ static func has_record_arg(args: PackedStringArray) -> bool:
 	return not arg_value(args, "record").is_empty()
 
 
-## Boot's single entry: the recorder for `--record=<id>`, else the scenario runner.
+static func has_caps_arg(args: PackedStringArray) -> bool:
+	return args.has("--automation-caps")
+
+
+## Boot's single entry: the caps writer for `--automation-caps`, the recorder for `--record=<id>`,
+## else the scenario runner.
 static func create_node(args: PackedStringArray) -> Node:
+	if has_caps_arg(args):
+		return create_caps(args)
 	return create_recorder(args) if has_record_arg(args) else create_runner(args)
+
+
+## `--automation-caps`: writes caps.json to --out (user:// or reports/; default user://automation/caps).
+static func create_caps(args: PackedStringArray) -> Node:
+	var w: Node = CapsWriter.new()
+	var out := arg_value(args, "out")
+	w.out_dir = DEFAULT_OUT + "caps" if out == "" else confine_out(out)
+	return w
 
 
 ## Returns the normalised, allowed output directory, or "" when `path` is not allowed.

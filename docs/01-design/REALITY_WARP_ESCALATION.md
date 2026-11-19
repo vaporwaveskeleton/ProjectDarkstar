@@ -210,7 +210,7 @@ These bind every row in §2 and §3. The warp lint (§7.3) fails the build on an
 
 **Conventions.** `Class` is *standing* (always on at that tier, budget-exempt) or *transient* (scheduled or triggered, budgeted at 3 novel per sector). A higher tier keeps the lower tier's standing set in reduced-cost variants (§5.2). `Primary AC` is the criterion the row is most likely to fail; every row must pass all five (§1.8). Effects are authored content, so their names are this doc's; the mechanics cite SYS-001 rows rather than restating values. `✱` marks a new parameter.
 
-### 2.1 T0 — Pretence (9 effects, Act 0 only)
+### 2.1 T0 — Pretence (10 effects, Act 0 only)
 
 | ID | Class | Effect | Trigger | What changes in play | Counterplay | Art / audio hand-off | Primary AC |
 |---|---|---|---|---|---|---|---|
@@ -223,6 +223,7 @@ These bind every row in §2 and §3. The warp lint (§7.3) fails the build on an
 | W0-07 | transient | Pretence Tear | A0-3, scripted, once | The cabinet frame tears and the score strip stops parsing for the 90 s cinematic (GDD-001 §6.1). Agency window 0 s: input is not required and none is lost. | skippable after the first watch (GDD-001 §6.1, §10 no-QTE skip) | ART-001 frame-tear shader; AUDIO-001 first Unmaking sting (inside the silence budget) | AC3 |
 | W0-08 | transient | Costume Removal | The T0→T1 rise | The CRT curvature drops and the black vacuum gives way to the aether: colour, fog and drifting life rise into the field (ART-001 §16, amended 2026-11-18; replaces "desaturation begins"). The player never sees a menu explaining it (GDD-001 §3 design rule). | none required | ART-001 tier ramp 0→1; AUDIO-001 stem crossfade | AC1 |
 | W0-09 | standing | Honest Seam | Act 0 torus wrap (GDD-001 §4.2) | The field wraps at the edges and every open seam is drawn in chalk `✱`, so the later one-way rule (H2) is felt as a theft rather than a new mechanic. | none required | ART-002 chalk seam decal; AUDIO-001 seam chime | AC4 |
+| W0-10 | transient | True-body frame | A0-2 / A0-3, each Charge hit on the costume entity | For one drawn frame (survives hit-stop) the costume is replaced by the entity's true silhouette: a vertebral column drawn as a filled null shape with a 1 px bone outline, no face and no interior (GDD §20: the entity is seen in Act 0 only as a silhouette; NARR-001 §3.4). It is a shape swap on the costume's own colours, not a flash, not a lie and not a HUD deviation; hit truth, scoring and timing are unchanged. The same curve is the stars' constellation in A0-3 and the reveal's vertebrae (TECH-001 §2.10). | none required; no hazard | TECH-001 §2.10 S2/S8; ART-001 §16 | AC1 |
 
 ### 2.2 T1 — Frayed (10 effects)
 
