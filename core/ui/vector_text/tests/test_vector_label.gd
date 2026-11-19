@@ -15,7 +15,7 @@ func test_default_colour_never_blooms() -> void:
 
 func test_text_overrides_key() -> void:
 	var l: VectorLabel = _label()
-	l.key = &"MENU_QUIT"
+	l.key = &"CAB_PANEL_POWER"
 	l.text = "HELLO"
 	assert_str(l.shown_text()).is_equal("HELLO")
 	assert_array(l.get_layout().lines).is_equal(PackedStringArray(["HELLO"]))
@@ -23,7 +23,7 @@ func test_text_overrides_key() -> void:
 
 func test_relayout_on_key_change_only() -> void:
 	var l: VectorLabel = _label()
-	l.key = &"MENU_QUIT"
+	l.key = &"CAB_PANEL_POWER"
 	var first: VectorLayout = l.get_layout()
 	var n: int = l.layout_count
 	assert_object(l.get_layout()).is_same(first)

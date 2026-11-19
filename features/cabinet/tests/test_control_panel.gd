@@ -1,12 +1,12 @@
 extends GdUnitTestSuite
-## The Cabinet's control panel (Q-T34): the strip under the screen, the three ArcadeButton pushbuttons in it,
+## The Cabinet's control panel (Q-T34): the strip under the screen, the two ArcadeButton pushbuttons (START, SERVICE) in it,
 ## their lamp, press, focus and disabled behaviour, and the shader that draws them.
 
 const SPEC := "res://data/cabinet/cabinet_screen.tres"
 const SHADER_PATH := "res://shaders/cabinet/arcade_button.gdshader"
 
 
-func _button(kind: ArcadeButton.Kind, key: String = "MENU_SETTINGS") -> ArcadeButton:
+func _button(kind: ArcadeButton.Kind, key: String = "CAB_PANEL_SERVICE") -> ArcadeButton:
 	var panel := ControlPanel.new()
 	add_child(panel)
 	auto_free(panel)
@@ -43,9 +43,9 @@ func test_nothing_else_lives_in_the_strip() -> void:
 
 func test_the_slots_sit_inside_the_panel_and_never_overlap() -> void:
 	var p := CabinetBezel.control_panel()
-	for i in 3:
+	for i in 2:
 		assert_bool(p.encloses(CabinetBezel.panel_slot(i))).override_failure_message("slot %d outside the panel" % i).is_true()
-		for j in range(i + 1, 3):
+		for j in range(i + 1, 2):
 			assert_bool(CabinetBezel.panel_slot(i).intersects(CabinetBezel.panel_slot(j))).is_false()
 
 
@@ -120,7 +120,7 @@ func test_the_material_is_the_cabinet_button_shader_with_the_cap_geometry() -> v
 
 
 func test_no_text_is_a_raw_key() -> void:
-	for pair in [[ArcadeButton.Kind.START, "MENU_NEW_VIGIL"], [ArcadeButton.Kind.SERVICE, "MENU_SETTINGS"], [ArcadeButton.Kind.SERVICE, "MENU_QUIT"]]:
+	for pair in [[ArcadeButton.Kind.START, "MENU_NEW_VIGIL"], [ArcadeButton.Kind.SERVICE, "CAB_PANEL_SERVICE"]]:
 		var b := _button(pair[0], pair[1])
 		assert_str(b.label_text()).is_not_equal(pair[1])
 		assert_str(b.label_text()).is_equal(tr(pair[1]).to_upper())

@@ -58,3 +58,4 @@ vast_jelly_count = 1
 value_deep = 0.3
 star_strength = 0.9
 lantern_scatter = 0.36
+missing = 0.4

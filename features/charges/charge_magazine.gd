@@ -40,3 +40,13 @@ func try_spend(n: int = 1) -> bool:
 
 func reset() -> void:
 	count = 0
+
+
+## Seam entry (TECH-001 §4.2a): copies the run's Charges in, clamped to the cap. No cue.
+func load_from(run: RunState) -> void:
+	count = clampi(run.charges, 0, capacity()) if run else 0
+
+
+## Seam clear: the magazine's count goes into the report (the only write-back path).
+func report_into(report: SeamReport) -> void:
+	report.charges = count

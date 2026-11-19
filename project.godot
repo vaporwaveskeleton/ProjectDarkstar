@@ -26,6 +26,7 @@ SettingsService="*res://autoload/settings_service.gd"
 SaveService="*res://autoload/save_service.gd"
 SceneRouter="*res://autoload/scene_router.gd"
 AudioService="*res://autoload/audio_service.gd"
+RunSession="*res://autoload/run_session.gd"
 _mcp_game_helper="*res://addons/godot_ai/runtime/game_helper.gd"
 
 [display]

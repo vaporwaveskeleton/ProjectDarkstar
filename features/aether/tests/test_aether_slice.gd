@@ -264,6 +264,7 @@ func test_ladder_damage_is_monotonic_and_grows_every_tier() -> void:
 			"fled": look.presence_fled,
 			"cracks": look.crack_amount if look.sky_cracks else 0.0,
 			"subtraction": look.subtraction_amount if look.subtraction else 0.0,
+			"missing": look.missing,
 		}
 		if not prev.is_empty():
 			var grew := false
@@ -283,6 +284,9 @@ func test_ladder_damage_is_monotonic_and_grows_every_tier() -> void:
 	assert_int(_ladder(3).rings_broken).is_equal(0)
 	assert_bool(_ladder(5).subtraction).is_true()
 	assert_bool(_ladder(4).subtraction).is_false()
+	# pass 6 cue: the ladder carries the same monotonic "missing" curve, strictly growing
+	for i in range(2, 6):
+		assert_float(_ladder(i).missing).is_greater(_ladder(i - 1).missing)
 
 
 func test_ladder_colours_follow_the_role_laws() -> void:

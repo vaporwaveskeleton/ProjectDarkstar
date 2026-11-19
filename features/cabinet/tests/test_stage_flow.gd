@@ -260,8 +260,9 @@ func test_the_reveal_clears_the_furthest_stage() -> void:
 	assert_int(int(p.get("act0_stage_reached", -99))).is_equal(-1)
 	assert_bool(bool(p.get("act0_complete", false))).is_true()
 	assert_bool(p.has("act0_shift_total")).is_false()
+	assert_int(int(p.get("act0_pending_vi", -1))).is_equal(300)   # Q-T141
 	var to_ruins: Dictionary = game._reveal_params()
-	assert_dict(to_ruins).is_equal({"shift_total": 300})
+	assert_dict(to_ruins).is_equal({"shift_total": 300, "act0_vigil_index": 300})   # TECH-001 §4.2a
 
 
 func test_the_demo_never_writes() -> void:

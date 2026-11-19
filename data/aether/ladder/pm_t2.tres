@@ -52,3 +52,4 @@ frost_presence = true
 reveal_life_count = 48
 life_density = 0.55
 rings_stalled = 1
+missing = 0.2

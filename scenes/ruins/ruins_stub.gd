@@ -1,11 +1,15 @@
 extends Control
 ## The Ruins of the Ninth Sky, first arrival (GDD §6.4), adrift in a dimmed aether (ART-001 §16) — a stub: the hub exists outside the loop,
-## so this is where the player lands after THE PRETENCE. It saves the anchored profile at the
-## allowed `ruins_entry` reason (SYS-001 §8) and returns to the cabinet's title.
+## so this is where the player lands after THE PRETENCE. Arrival goes to RunSession (TECH-001 §4.2a):
+## the one Act 0 bank, the Iteration start and the `ruins_entry` saves all happen there (Q-T142);
+## this stub never touches Ember or a save slot. It returns to the cabinet's title.
+## Ruins UI is a later PR: the bank is readable through the `run/session` automation id.
 
 var _t := 0.0
 var _font: Font
 var _ready_for_input := false
+## Route params, kept until the deferred arrival (SceneRouter calls on_route_entered after _ready).
+var _params: Dictionary = {}
 
 
 func _ready() -> void:
@@ -13,13 +17,18 @@ func _ready() -> void:
 	RenderingServer.set_default_clear_color(Pal.VOID_0)
 	_font = ThemeDB.fallback_font
 	mouse_filter = Control.MOUSE_FILTER_STOP
-	var loaded := SaveService.load_slot(&"profile")
-	var profile: Dictionary = loaded.payload if loaded.ok else {}
-	profile["act0_complete"] = true
-	profile["pretence_seen"] = true
-	SaveService.save_slot(&"profile", profile, &"ruins_entry")
+	# Deferred: runs once, after on_route_entered (or without it when the scene is run directly).
+	_arrive.call_deferred()
 	AudioService.set_chant(0.08)
 	get_tree().create_timer(3.0).timeout.connect(func() -> void: _ready_for_input = true)
+
+
+func on_route_entered(params: Dictionary) -> void:
+	_params = params
+
+
+func _arrive() -> void:
+	RunSession.core.arrive_at_ruins(_params)
 
 
 func _exit_tree() -> void:

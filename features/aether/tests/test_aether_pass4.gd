@@ -204,8 +204,11 @@ func test_entity_fractures_never_leave_the_loss_band() -> void:
 	for line: String in ["d += 0.065 * a_ridge(w * 9.5 + seed);", "d += 0.03 * (a_noise(w * 24.0 - seed) - 0.5);",
 			"d += 0.016 * (a_noise(w * 61.0 + seed * 2.0) - 0.5);", "float tear = 0.05 * a_ridge(p * 5.1 + sd * 5.0);",
 			"float s_out = s - dot(p / max(length(p), 0.001), vec2(0.05, -0.03));",
-			"float mid_l = 1.0 - smoothstep(0.4 + tear - aa, 0.4 + tear + aa, s_out);",
-			"float near_l = 1.0 - smoothstep(0.5 + tear - aa, 0.5 + tear + aa, s_out);",
+			# pass 6: the spiral arms and the soft side push the steps OUTWARD only (the lower edge of
+			# the mid step is still 0.4 + tear - aa, as below)
+			"float mid_l = 1.0 - smoothstep(0.4 + arm + tear - aa, 0.4 + arm + tear + aa + soft, s_out);",
+			"float near_l = 1.0 - smoothstep(0.5 + arm + tear - aa, 0.5 + arm + tear + aa + soft, s_out);",
+			"float arm = A_LOSS_ARM * fract(atan(p.y, p.x) * 0.31830989 + sd * 0.37);",
 			"float aa = 1.2 / e.z;"]:
 		assert_bool(c.contains(line)).override_failure_message("loss math changed: " + line).is_true()
 	var octave_gap := (0.065 + 0.03 + 0.016) * 0.5

@@ -21,6 +21,9 @@ extends TunableResource
 @export var tape_fall_seconds: float = 0.7       ## s ✱ the peeled tape falls off the bezel
 @export var coin_drop_seconds: float = 0.45      ## s ✱ the coin's travel into the slot
 
+# --- Power switch ---
+@export var power_off_seconds: float = 0.5       ## s ✱ the CRT collapse after the player confirms POWER (a plain fade of the same length under photosensitivity / reduced motion)
+
 
 func tunable_properties() -> PackedStringArray:
 	var out := PackedStringArray()
