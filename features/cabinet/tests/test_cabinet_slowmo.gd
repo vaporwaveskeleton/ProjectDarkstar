@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## Last-Charge slow-mo (PROPOSED numbers in CabinetFxTuning): the world slows, nothing else does.
+## Last-Charge slow-mo (owner-approved numbers in CabinetFxTuning (SYS-001 §9)): the world slows, nothing else does.
 
 const SCENE := preload("res://features/cabinet/cabinet_game.tscn")
 const DT := 1.0 / 60.0
