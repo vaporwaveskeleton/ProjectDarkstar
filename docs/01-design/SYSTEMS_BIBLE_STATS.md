@@ -72,11 +72,14 @@ Conventions used everywhere:
 | Projectile visual length | 14 px | — | |
 | Hits per projectile | 1 | 2 (pierce), 3 (`Shatter Shot` chain) | |
 | Time to shatter a small geode face | 0.9 s 🔒 | 0.55 s | = 5 lance hits at base rate |
-| Over-fire detonation | ≥ **9 hits in 1.2 s** on one geode ✱ | — | Sinistar's rule kept (RES-001): releases 4–6 shards at once, scattered (row "Shards per geode (detonated)"; Q-T29 resolved, PM under owner autonomy grant 2026-11-18) |
-| Shards per geode (calm kill) | 3 🔒 range 3–5 | — | `+1` if the face was mined, not detonated |
-| Shards per geode (detonated) | 4–6 ✱ | — | scatter radius 140 px — Grubs win that race. PM-approved 2026-11-18 (Q-T29) |
+| Over-fire detonation | ≥ **7 hits in 1.2 s** on one geode ✱ (warn at 5) | — | Sinistar's rule kept (RES-001): releases 4–6 shards at once, scattered (row "Shards per geode (detonated)"; Q-T29 resolved, PM under owner autonomy grant 2026-11-18) |
+| Shards per geode (calm kill) | 3 🔒 range 3–5 | — | `+1` if the face was mined, not detonated. As built (Cabinet and M1): each shattered face frees 1 shard; the last face frees the rest of the calm total, at least 1 |
+| Shards per geode (detonated) | 4–6 ✱ | — | scatter radius 140 px — Grubs win that race. PM-approved 2026-11-18 (Q-T29). The 4–6 is the geode's total: glass already freed by calm mining counts toward it, and a detonation always frees at least 1 more. Detonated shards come to rest within the scatter radius |
 | Geode size classes | 3 ✱ | — | faces per class = class + 1 → **1 / 2 / 3** faces; the Cabinet values, so M1 matches Act 0. PM-approved 2026-11-18 |
 | Geode radius per size class | **10 / 15 / 21 px** ✱ | — | small / medium / large; the Cabinet values. PM-approved 2026-11-18 |
+| Geode shard release (engineering) | face: ring radius + 6 px, 30 px/s; calm kill: radius + 10 px, 40 px/s; offset at least 4 px; offset fraction 0.3, slowest speed fraction 0.4, detonation inner fraction 0.35 ✱ | — | how freed shards leave the rock; the Cabinet's literals, mirrored in M1 (`ds_charges.geode.*`, TECH-001 §3.4). PM-accepted 2026-11-18 (PM under owner autonomy grant 2026-11-18) |
+| Geode shape (presentation) | 8 + 2 per size class vertices; radius jitter down to 0.72; 2 + 2 per size class glints ✱ | — | drawing only, never collision (the hurtbox is the radius row above). The Cabinet's literals. PM-accepted 2026-11-18 (PM under owner autonomy grant 2026-11-18) |
+| M1 sandbox geode layout | 10 geodes; none within 160 px ✱ of the Vigil spawn; sandbox run seed 146 ✱ | — | 10 is the PM's M1 slice 3 count. 160 px is the Cabinet's spawn-clear value. Seed 146 was chosen so a size-0 geode sits 175 px along the aim-right ray from spawn (the scenarios rely on it). Replaced by kit assembly later (ZONES-001). PM-accepted 2026-11-18 (PM under owner autonomy grant 2026-11-18) |
 | Recoil / pushback | none | — | intentional: mining precision |
 | Damage per lance hit | 1 ✱ | — | derived: 0.9 s to shatter a small geode face = 5 hits at 6 /s. **Approved by owner (2026-11-18)** |
 | Projectile lifetime | 0.9 s ✱ | — | **Approved by owner (2026-11-18)** |
@@ -90,8 +93,11 @@ Conventions used everywhere:
 | Charge cap gain per run | 1 Sigil pick max | 2 with the *Twin Vigil* chain | prevents pip-spam builds |
 | Shard magnet radius | 96 px ⚙ | 190 px (`Hookline`) | |
 | Shard magnet pull speed | 170 px/s ✱ | — | speed a shard inside the magnet radius moves toward the Vigil; the Cabinet value. PM-approved 2026-11-18 (Q-T29) |
-| Shard drag | 1.2 /s ✱ | — | slows a scattered shard after a detonation; the Cabinet value. PM-approved 2026-11-18 (Q-T29) |
-| Shard collection | 1 shard = 1 Charge, up to cap | — | overflow shards stay in the world, they do not vanish |
+| Shard magnet steer | 6 /s ✱ | — | how fast a shard's velocity turns toward the pull (per second); the Cabinet value. PM-accepted 2026-11-18 (PM under owner autonomy grant 2026-11-18) |
+| Shard drag | 1.2 /s ✱ | — | slows a scattered shard after a detonation; the Cabinet value. PM-approved 2026-11-18 (Q-T29). Applies only **outside** the magnet radius: inside it there is no drag, so a latched shard reaches full pull speed (PM-accepted 2026-11-18, M1 and Cabinet) |
+| Shard radius | 4 px ✱ | — | pickup size of one shard; the Cabinet value. PM-accepted 2026-11-18 (PM under owner autonomy grant 2026-11-18) |
+| Shard pickup margin | 2 px ✱ | — | a shard is collected within Vigil hitbox radius + shard radius + this; the Cabinet value. PM-accepted 2026-11-18 (PM under owner autonomy grant 2026-11-18) |
+| Shard collection | 1 shard = 1 Charge, up to cap | — | overflow shards stay in the world, they do not vanish. As built (M1): with the magazine full the magnet is off, so overflow glass is not pulled |
 | Shard lifetime | never despawns ✱ | — | follows the row above; no timer. PM-approved 2026-11-18 |
 | Charge life | 6.0 s ✱ | — | a fired Charge gutters (expires) after this; the Cabinet value. PM-approved 2026-11-18 (Q-T17 part) |
 | Charge speed | 210 px/s 🔒 | 250 px/s (`Homing Song`) | |

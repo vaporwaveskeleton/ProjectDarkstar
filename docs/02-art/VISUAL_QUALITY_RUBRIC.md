@@ -81,7 +81,7 @@ What the finished game must communicate through motion. Numbers are SYS-001's (c
 |---|---|---|---|---|---|
 | **Vigil** (SYS-001 §1.1–1.2) | where I am, where I face, how fast | procedural: thrust lean, 60 % hull rotation toward aim (GDD §4.1), wake trail; shader: lantern cone | idle drift → thrust (accel 2600 px/s²) → max 340 px/s → brake (0.28 s reversal); Surgelight burst 0.18 s; hit; post-hit grace 0.75 s ✱ | wake length ∝ speed; thrust SFX; screen shake ≤ 4 px (SYS-001 §9); lantern cone moves with aim | can a viewer read heading, speed band and Surgelight readiness from a 2 s clip? |
 | **Lantern cone** | aim, mining, Choir detection | shader | aim-up vs aim-down (mining 100 % / 65 %; detection +180 % / −60 %) | cone = key light from T1; phosphor glints on glass | is up/down state legible without the HUD? |
-| **Arc-Lance bolts** (§1.3) | my fire, its reach | vector | 6/s, 340 px/s, 14 px; pierce; geode face hit; over-fire detonation (≥ 9 in 1.2 s ✱) | hit spark (1 px chalk flecks, ART-001 §7), audio tick | bolts distinct from Choir shots in greyscale |
+| **Arc-Lance bolts** (§1.3) | my fire, its reach | vector | 6/s, 340 px/s, 14 px; pierce; geode face hit; over-fire detonation (≥ 7 in 1.2 s ✱, warn at 5; SYS-001 §1.3) | hit spark (1 px chalk flecks, ART-001 §7), audio tick | bolts distinct from Choir shots in greyscale |
 | **Null-Iron Charge** (§1.4) | the win condition | vector + brass-lamp trail | launch 210 px/s, homing 1.6 s, intercepted, fuse 0.9 s at a Shrine, hit entity (13 to unmake) | pip shatters on the HUD; impact on entity throws PHOS-5 shards + NULL holes closing over 6 frames | is "my Charge is in flight / was eaten / landed" readable? |
 | **Shards / glass** | economy | procedural drift, magnet 96 px | float → magnetised → collected; carried by Grubs at 130 px/s | collect chime | ownership: floating vs carried vs deposited |
 | **Choir units** (SYS-001 §3) | threat and telegraphs | procedural locomotion + ribbon secondary motion (ref: creature group) | Grub flee 190; Acolyte tell 21 f + turret lag 15 f; Deceiver tell 18 f; Listener tell 8 f then 380 px/s charge; Herald tell 24 f; Penitent drift | chant positional ≤ 420 px (audio); telegraph frame = audio cue frame | every tell is visible within its frame count, in greyscale, at 32 units on screen ✱ |
@@ -330,7 +330,7 @@ Read the 6.3 as: a solid arcade screen with a readable HUD, still without its ho
 1. A player-highlight treatment for the Vigil that survives clutter (Returnal's outline lesson; Ball x Pit's failure case). (cat. 1)
 2. Choir role silhouettes that separate in greyscale, not by colour alone. (cat. 2)
 3. Side-gutter HUD that carries real, glanceable information (Ball x Pit model) instead of empty panels. (cat. 9)
-4. One type system per layer (pixel faces on the cabinet screen; chalk faces after), TECH-001 Q-T23. (cat. 11)
+4. One type system per layer (pixel faces on the cabinet screen; VectorText faces after (TECH-001 §2.9a)). (cat. 11)
 5. Fog shader without blocky rectangular patches; fog/post render scale and quality presets, TECH-001 Q-T24. (cat. 11)
 6. Bullet-pattern language for the Choir in L1: colour-split shot types and patterns as composition (Saros lesson). (cat. 5)
 
