@@ -69,7 +69,7 @@ node .claude/skills/pxl/bin/pxl.js build art/src/<file>.px.js --out assets/art/g
 ```
 ```
 node tools/automation/darkstar_auto.js validate             # check all scenarios
-node tools/automation/darkstar_auto.js run a0_first_contact # headless; add --windowed for screenshots
+node tools/automation/darkstar_auto.js run a0_first_contact # headless; add --windowed for screenshots; `-- --dev-arg=v` passes game args
 node tools/automation/darkstar_auto.js run-all [--only=x]   # all scenarios; `caps` writes caps.json (probe ids, steps)
 %GODOT% --headless --path . --export-pack "Windows Desktop" build/audit/r.pck; node tools/automation/pack_audit.js build/audit/r.pck --profile release   # export check (QA: preset "Windows QA", --profile qa); exe: --export-release "<preset>" <exe>
 %GODOT% --path . --fixed-fps 60 -- --record=<id> --no-save  # recorder, dev only: writes <id>.scenario.json

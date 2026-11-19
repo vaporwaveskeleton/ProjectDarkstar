@@ -1,0 +1,25 @@
+{
+	"format": "darkstar.scenario",
+	"version": 1,
+	"id": "aether_unmaking_photosensitive",
+	"args": [],
+	"timeout_frames": 1200,
+	"steps": [
+		{"do": "wait_route", "route": "attract", "within": 240},
+		{"do": "set_setting", "key": "photosensitivity", "value": true},
+		{"do": "goto", "route": "aether"},
+		{"do": "wait_route", "route": "aether", "within": 240},
+		{"do": "wait_frames", "frames": 60},
+		{"do": "screenshot", "name": "ps_aether_first", "target": "window"},
+		{"do": "wait_frames", "frames": 96},
+		{"do": "screenshot", "name": "ps_presence_flee", "target": "window"},
+		{"do": "wait_frames", "frames": 219},
+		{"do": "screenshot", "name": "ps_entity_black", "target": "window"},
+		{"do": "wait_frames", "frames": 135},
+		{"do": "screenshot", "name": "ps_last_light", "target": "window"},
+		{"do": "wait_frames", "frames": 60},
+		{"do": "screenshot", "name": "ps_ember", "target": "window"},
+		{"do": "set_setting", "key": "photosensitivity", "value": false},
+		{"do": "quit"}
+	]
+}
