@@ -1,6 +1,6 @@
 # DARKSTAR — Roguelike Loop, Run Sigils, Pacts and the Lantern Tree
 
-**Doc ID:** LOOP-001 · **Version:** 1.4 · **Date:** 2026-11-19 · **Owner:** Design (systems / progression) · **Status:** §0–§14 authored (complete draft, pending review). Numbers marked "requested SYS-001 row" are proposals until SYS-001 adopts them.
+**Doc ID:** LOOP-001 · **Version:** 1.5 · **Date:** 2026-11-19 · **Owner:** Design (systems / progression) · **Status:** §0–§14 authored (complete draft, pending review). Numbers marked "requested SYS-001 row" are proposals until SYS-001 adopts them.
 
 Rev 1.1 (2026-11-17): §5 Relics, §6 run shape and the two escalators, §7 Pacts written out in full; the §4.1 Run-Sigil pick count corrected to SYS-001 §7.2's three; HULL-17's "Anchor ring" renamed to the **Anchor field** to match SYS-001 §1.1 and GDD-001 D-11. The 90 / 24 / 18 counts GDD-001 §7 promises are now all on disk. Requests **LR-01…LR-08** are open against SYS-001 and GDD-001 and are listed in §5.5, §6.5 and §7.5.
 
@@ -9,6 +9,8 @@ Rev 1.2 (2026-11-17): §8 Codex, §9 economy flow, §10 Iteration unlocks, §11 
 Rev 1.3 (2026-11-18, cosmic horror design rev 3; PM ruling 2026-11-18 (owner grant)): **Unwritten Ink retires** (CHD-15): the 27 Ink nodes cost 0 Ember and are gated by one Codex entry each (§3.3, new §3.7 gating map and backstops); respec is 10% of banked Ember (§3.5); the Codex stamp gates instead of paying (§8); Ink-paying Sigils pay Ember, SIG-S-14 and MADNESS-7 get new effects (§3.3, §4.2); the post-tree Ember sink (relighting the Ruins, rekindling a death-site Penitent) replaces the 20:1 overflow valve (§9.6); the §9.5 economy table is marked to re-run without Ink. **Relics fold into rare Run Sigils** offered at Seams 2/3/4 (CHD-14; §4.1, §5, §6.1); the noun "Relic" retires from player use. **Anchored state** gains the death-site list, per-kit visit counts and rekindled Penitents (CHD-09, CHD-11; §2). **The Eating of a Sky** makes the ninth-sky close playable, and **the Wrong Ruins** take one room away in Act 3 (CHD-08; §10.4, §11.2, §11.7). Ember amounts and sink prices are **value owed** (listed in §9.7 LR-14). Fragments and Threads are unchanged. **Same-day reconciliation (2026-11-18):** gating ids folded onto NARR-001's samples and the §8.2 classes widened (taught `cx_rule_`, Chronicle milestones, authored `cx_vigil_` pages, the Choir's sacred things), recount 144 (§3.3, §3.7, §8.2, §8.5, §12); the four gating discovery counts cite SYS-001 rows; within-tier death-backstop order is table order; SIG-S-14 and SIG-M-04 adopted, Q-03 closed (§4.2, §14); rekindled Penitents share the Penitent cap with Coma → rekindled → other precedence (§9.6); ending 4 always restores the Wrong Ruins room (§10.4, §11).
 
 Rev 1.4 (2026-11-19, PM under owner autonomy grant 2026-11-19, TECH-001 §11.1a Q-T145, Q-T146, Q-T148, Q-T149): the Lantern Tree tier prices and the Run Sigil reroll ladder moved to **SYS-001 §7.7** with no value change; §3.1 Cost, §3.3 rollup note, §3.6, §4.1 Reroll and §9.1–§9.2 now cite it, and the §3.3 Cost columns are marked as a derived view. §9.1 lists the Act 0 bank (SYS-001 §7.1, with its floor), tickets as the physical form of Ember (1 ticket = 1 Ember), and the Seam 5 clear paying Seam Ember.
+
+Rev 1.5 (2026-11-19, PM under owner autonomy grant, TECH-001 §11.2): new **§10.5 The first two hours: the Ruins as diegetic onboarding** (north star #5: R5, P-5, X-4): the onboarding law, beats 7–16 as a built spec, the first-visit noun budget, TEST-ONB-01/02 and the ONB-A…D checks, the X-4 assist set (ruled), and the Lantern Tree, art and cue hooks (Q-T191, Q-T193, Q-T194). LOOP-001 owns the onboarding spec; GDD-001 §9.1 points here.
 
 This is the progression contract. GDD-001 §6–§7 promises a run structure, a between-run tree, **90 nodes + 24 Pacts + 18 Relics** and "~120 Run Sigil pool entries". All of it is here, written out (the 18 Relic designs now ship as rare Run Sigils, §5). Numbers do not live in this doc: every stat, cost floor, yield and multiplier is in **SYS-001** (`SYSTEMS_BIBLE_STATS.md`), and where this doc needs a number it points at a SYS-001 row instead of inventing one. If a number here and a number in SYS-001 disagree, SYS-001 wins and this doc is a bug.
 
@@ -1003,6 +1005,87 @@ The design guarantee: the first six Hard Unmakings each unlock something *playab
 **The Eating of a Sky** (CHD-08; PM ruling 2026-11-18 (owner grant), cosmic horror design rev 3, design §1.3). Every ninth-sky close, and so every Hard Unmaking after Act 0, is a **playable sector, not a cutscene**. The sector the player is in when the ninth sky closes stays playable while the entity eats the sky in **its order of beauty**, from the most-lit, most-alive element downward: the biome's Presence first (ZONES-001 §2, Presences (CHD-03)), then the crystal sphere, the fog's colour, the stars, the Choir's lamps, the geodes. True black arrives last, at the Vigil's own lantern radius: **the player's own light is always the last thing eaten.** The player cannot stop it; they can keep their lantern lit to the end. No sting: the music loses its stems one by one (AUDIO-001 owns the cue). The **first Unmaking cinematic** (GDD-001 §6.1) stays as Act 0's version; from the first Hard Unmaking on, this playable eating replaces it. Loop rules it keeps: the run has already banked at `sky_9_closing` (§11.2), so nothing in the Eating costs currency, and the Hourglass Clock is spent (§6.5). Owed elsewhere: what plays if the ninth sky closes while the player is in the Ruins rather than a sector; whether anything in the Eating can hurt the Vigil; its length and pacing (GDD-001, ZONES-001, AUDIO-001).
 
 **The Wrong Ruins** (CHD-08; Act 3, design §1.3). From the Hard Unmaking that opens Act 3 (beat 4), **one Ruins room is missing**: its doorway opens onto Aether with a gap in it, the cast never mention it, and the Lantern Tree's light no longer reaches that wall. The room **comes back only after ending 4** (§11.5). **Until ending 4, ending 3 keeps it gone** (§11.4). **Ending 4 always restores it, even if ending 3 was seen earlier**, because ending 4 unwrites the loss (2026-11-18, cosmic horror design call within CHD-08, flagged in the Phase 2 PR; this replaces the earlier reading "ending 3 wins"). The missing room's state is part of the Ruins shape (anchored, §2) and is written as save flags (§11.7). Which room is owed (NARR-001 §5); it cannot be a room a system needs — the Lantern Tree, the Chalk Desk, the Archive or the Cabinet.
+
+### 10.5 The first two hours: the Ruins as diegetic onboarding (Iteration 1)
+
+*PM under owner autonomy grant, 2026-11-19 (TECH-001 §11.2; PROD-001 §2.1 north star #5: R5, P-5, X-4). This section is the owning spec for the first Ruins visit and the onboarding of Act 1. GDD-001 §9.1 points here. NARR-001 §5.7 owns the scene's words and cast; SYS-001 owns every number; SLICE beats 7–16 (`research/act1_vertical_slice.md` §2) are the source skeleton. Built in `scenes/ruins/ruins.gd` and `features/interactions/ruins_onboarding.gd` (TECH-001 §2.9).*
+
+**Why LOOP-001 and not GDD §9.1.** The first visit teaches the loop's own rules (what stays, what is spent, what gates a launch, when the clock runs), and every one of those rules is owned here (§2, §3, §6.5, §8). The GDD keeps the act map; this doc keeps the onboarding that the act map promises.
+
+#### 10.5.1 The law: the world teaches, the HUD never does
+
+1. **No tutorial pop-ups, no prompt text, no menus** in the Ruins. Every interaction is a place on the floor. A place is marked the way Sable marks one: a chalk ring and tick on the flagstones. Focus is the chalk lifting in the lamp light (RuinsLook prop state `focused`), never a button glyph.
+2. **Every rule is stated once, by a person or an object, in the world's voice.** The voice is Sunless Sea's literary register filtered through the cast (NARR-001 §5): Sable's chalk is second person, present tense, short, never a question (§5.1); the Cabinet keeps its arcade capitals (§4.1). All words are `tr()` keys (L10N-001); NARR-001 §5.7 lists them.
+3. **The gate is the world's rule, not the designer's.** The hangar mouth is dark until a Lantern Tree lamp burns. The pilot lamp gutters at the dark edge and will not pass. Nothing says "you must buy a node".
+4. **Nothing is timed.** Chalk that is being written finishes on any press; every line stays on the slate until the player leaves; the Codex page stays open until dismissed.
+5. **The clock is an object before it is a number.** A brass Hourglass, full, stands by the hangar mouth. On the first visit its sand does not move until the launch (GDD-001 §6.2 exception; TECH-001 Q-T162, settled). On every later visit it runs in the Ruins as everywhere, and the chalk beside it says so.
+
+#### 10.5.2 The visit, beat by beat
+
+| # | Beat (SLICE) | What the player does | What the world teaches | Built as |
+|---|---|---|---|---|
+| 7 | **Cold open** | nothing yet | *Someone kept a light on.* The hall lantern catches (RuinsLook cold open); no title card | `RuinsLook.set_first_visit(true)` |
+| 8 | **The Chalk Desk** | watch; any press finishes a line | Sable's chalk writes itself: the greeting, then **the anchoring rule, once** ("What you buy here stays. The rest goes back into the dark."), then the Act 0 Vigil Index as a chalk tally. **The pilot lamp appears and can be walked on the first chalk stroke** | phase `chalk`; lines `NARR_SABLE_FIRST_1/2`, `NARR_SABLE_TALLY` |
+| 9 | **The Cabinet pays out** | watch the tickets fly | The wall Cabinet's marquee reads SCORE BANKED; brass tickets (1 ticket = 1 Ember, Q-T148) arc to the Lantern Tree and hang there; a brass plate under it shows the total in EMBER. The chalk under the Tree: "Light one. The dark is long." **Ember and the Tree arrive in one gesture.** | phase `payout`; `TicketFlight`; plate `RUINS_TICKET_PLATE` |
+| 9b | **The gate** | walk right | The pilot lamp reaches the dark mouth, gutters and stops. The player looks for light and finds the Tree | `dark_threshold_x` ✱; event `gutter` |
+| 9c | **First light** | stand at the Tree, press | One lamp catches on the Tree; its light reaches the hangar mouth, which glows (RuinsLook `mouth_light`). **Interim (Q-T191):** the lamp lights without a purchase until the Lantern Tree feature lands; then this is the player's first node purchase at the tier-1 price (SYS-001 §7.7), which the Act 0 floor always covers (Q-T146) | `RuinsLook.light_lamp`; Tree hook `_use_tree()` |
+| 10 | **The Codex desk** | stand at the desk, press | A freshly stamped page glows on the open book (`cx_place_act0_3`, NARR-001 §8.4). Pressing brings the page close (parchment, the CODEX running head); the clock is held while it is read (Q-T138 `codex`). *The Codex exists, is short, and is the story.* | `StationMark` page; `PAUSE_CODEX` |
+| 11 | **The Hourglass** | walk past it | Its sand is full and still; the chalk beside it writes itself as the lamp first passes: "The sand starts when you leave." | `PAUSE_FIRST_GLASS` held until launch |
+| 11b | **The launch** | walk into the lit mouth | The run starts at Seam 1 and the sand begins to fall. There is no confirm and no button: walking out is the decision | `launch()` (the one place a run starts) |
+| 12–14 | **PM-01 "First Vigil"** | play | The HUD set (Ledger Compass, Vigil Index, Charge pips and hull lamps, Composure wick and cockpit flame; no Hourglass on the default HUD). The race is taught by the Grub vigil ring around the cold Sepulchre (ZONES-001 §3.1) | sector (unchanged here) |
+| 15 | **The lantern-down reveal (CH-3)** | toggle the lantern in a dark corridor | Darkness is a choice you make to *see*: the far fog lights with life the lantern was washing out (ART-001 §16.3). **The Ruins pre-echo it:** with the pilot lamp down for `dark_reveal_s` ✱, a hidden chalk line shows on the hall wall ("Some things are written only for the dark."). The player who tries it in the safe room has learned the verb before the sector needs it; the player who does not loses nothing | event `dark_reveal`; key `NARR_SABLE_DARK_1` |
+| 16 | **Seam exit, first Sigil** | choose 1 of 3 | A build begins (§4.1) | sector (unchanged here) |
+
+**A later visit** (after a death, a win or a quit): no cold open, no payout; Sable's slate reads "You return. What you carried is counted." (`NARR_SABLE_RETURN_1`); the Tree's lamp already burns, so the mouth is open; the Hourglass sand shows what is left and falls while the player stands in the hall ("The sand runs while you stand here."). A death's clock cost is seen as sand already fallen.
+
+**Which visit is the first.** The visit that banks Act 0 (RunSession `arrive_at_ruins` pays Ember) or one the Unmaking marks `first_visit`. The bank is written on arrival (`ruins_entry`, TECH-001 §7.2), so a quit before the launch makes the next visit a later one: the anchoring rule is never repeated.
+
+#### 10.5.3 The noun budget (P-5)
+
+**First visit, on screen: Ember and Codex, and nothing else.** The Lantern Tree and the Hourglass are taught as objects and are never named on screen on the first visit (both names arrive in the Codex later). Pacts, Entropy, Threads, Sigils, Seams, the Choir, Composure-as-a-word, warp and Iteration are not written anywhere in the Ruins on the first visit. `features/interactions/tests/test_ruins_onboarding.gd` (`test_first_visit_words_keep_the_noun_budget`) fails the build if a first-visit key names any of them.
+
+**After Seam 1 (the P-5 noun test, PROD-001 §4.1 row 9):** testers name every HUD resource: Charges, Composure (flame or wick), the Ledger Compass and the score. The words they may use are their own; the test passes on recognition, not vocabulary.
+
+| Noun | First met | As what | Named on screen when |
+|---|---|---|---|
+| Ember | beat 9 | brass tickets stamped EMBER; the plate under the Tree | at once (the ticket print) |
+| Codex | beat 10 | a stamped page on a desk | at once (the page's running head) |
+| Lantern Tree | beat 9 | a brass sapling with unlit lamps | never on the first visit; its Codex entry, later |
+| Hourglass | beat 11 | a brass hourglass, full | never on the first visit; the in-run HUD at ≤ the SYS-001 §6 threshold |
+| Charges, Composure, Compass | beat 12 | HUD objects in PM-01 | the noun test after Seam 1 |
+
+#### 10.5.4 Tests wired to this spec
+
+| Test | What it proves | Where | When |
+|---|---|---|---|
+| `TEST-ONB-01` (WARP-001 §7.4) | A first-time player finishes Act 1 alive at least once in five attempts within 25 min | PROD-001 milestone playtest | M3+ (needs Act 1) |
+| `TEST-ONB-02` (WARP-001 §7.4) | Asked what happened to the game, the player gives some wording of "what the hell was that" | PROD-001 milestone playtest, logged verbatim | M2 slice playtest |
+| ONB-A (automation) | The first visit runs in order: chalk before payout, the gate dark until the Tree lamp, the launch only by walking in, the sand held until the launch, Seam 1 entered | `tests/scenarios/ruins_onboarding_first_visit.scenario.json` (captures 01–10) | every run of the scenarios |
+| ONB-B (unit) | The rules of 10.5.1–10.5.2: movement on the first stroke, any press finishes a line, the Tree waits for its tickets, the dark refuses the lamp, a later visit runs the clock | `features/interactions/tests/test_ruins_onboarding.gd`, `scenes/tests/test_ruins_scene.gd` | every suite run |
+| ONB-C (unit, P-5) | The first visit's words keep the noun budget | `test_first_visit_words_keep_the_noun_budget` | every suite run |
+| ONB-D (playtest) | Time from the Ruins cold open to the launch: proposed target **≤ 3 min median** (SLICE beats 7–11 run 1:34 → 3:32), and **no tester asks how to leave** | PROD-001 M2 slice protocol | M2 slice playtest |
+
+ONB-D's 3 min is a playtest target, not a game number; it is not a SYS-001 row.
+
+#### 10.5.5 The assist set (X-4), ruled
+
+*PM under owner autonomy grant, 2026-11-19 (TECH-001 §11.2).* The owner's X-4 decision was "which assists ship". The ruling is the set below for M2–M3. Every assist is honest: it never hides information and never lies (WARP-001 §4.7), and none changes a SYS-001 number.
+
+| Id | Assist | Where it acts | Status |
+|---|---|---|---|
+| A1 | **Text never times out.** Any press finishes chalk being written; lines stay until the player leaves; pages stay until dismissed | the Ruins (built); every later chalk, Pact and Codex surface | ships, always on (not a setting) |
+| A2 | **Reduced motion** (existing setting): tickets appear on the Tree without the flight; station marks do not breathe | the Ruins (built); WARP-001 effects | ships (setting) |
+| A3 | **Mouse walk.** A click on the floor walks the pilot lamp there; a click on the station in reach uses it | the Ruins (built) | ships, always on |
+| A4 | **Photosensitivity** (existing setting): the pilot lamp's gutter dims without flicker; no full-field luminance step anywhere (WARP-001 §4.5) | the Ruins (built); global | ships (setting) |
+| A5 | **Text scale 200%** (existing setting) | global (GDD §10) | ships (setting) |
+| A6 | **One press, never a hold** for every Ruins interaction; no timing windows | the Ruins (built) | ships, always on |
+| — | Difficulty assists that change a SYS-001 number (a slower Hourglass, a softer D-08 hull, slower Choir) | — | **not in the set.** Deferred until the M2 playtest has ONB-D and TEST-ONB-02 data; reopening it needs SYS-001 rows (TECH-001 Q-T192) |
+
+#### 10.5.6 Hooks left open
+
+- **The Lantern Tree station (Q-T191).** The ship-handling design chat owns the Tree's handling nodes. The Ruins calls one hook when the player uses the Tree; the Tree feature replaces it with a purchase and forwards every lit node to `RuinsLook.light_lamp`. The gate rule (`RuinsOnboarding.gate_open()`: a lamp burns) does not change.
+- **The Ruins' own art (Q-T193).** The desks, the Cabinet, the Tree and the Hourglass are RuinsLook's lit stand-ins today; each gets its own art without changing the stations.
+- **Ruins cues (Q-T194).** The scene calls `ruins_chalk_write`, `ruins_ticket_payout`, `ruins_tickets_land`, `ruins_lamp_gutter`, `ruins_tree_lamp`, `ruins_codex_page` and `ruins_dark_chalk` only when the cue exists (AUDIO-001 E08 is the chalk-on-slate sound). The Aether sound chat authors them.
 
 ---
 

@@ -75,29 +75,40 @@ func test_steady_ledger_on_presents_the_honest_model_even_with_a_liar() -> void:
 	l.begin_smear(1, 0.1, 5.0)
 	l.begin_glyph(0, 5.0)
 	assert_object(m.presented()).is_same(m)
-	assert_that(l.glyph_for("3", 5, 6)).is_null()
+	assert_that(l.glyph_for("3", 5, "333333")).is_null()
 
 
 func test_glyph_swaps_one_digit_for_a_neighbour() -> void:
 	SettingsService.set_value(&"steady_ledger", false)
 	var l := HudLiar.new()
 	assert_bool(l.begin_glyph(1, 5.0)).is_true()
-	assert_that(l.glyph_for("3", 4, 6)).is_equal("8")   # second digit from the right
-	assert_that(l.glyph_for("3", 5, 6)).is_null()
+	assert_that(l.glyph_for("3", 4, "333333")).is_equal("8")   # second digit from the right
+	assert_that(l.glyph_for("3", 5, "333333")).is_null()
 	l.now_s = 6.0
-	assert_that(l.glyph_for("3", 4, 6)).is_null()       # over
+	assert_that(l.glyph_for("3", 4, "333333")).is_null()       # over
 
 
-func test_vigil_index_value_stays_true_under_the_glyph() -> void:
+func test_glyph_skips_group_separators() -> void:
 	SettingsService.set_value(&"steady_ledger", false)
-	var strip: VigilIndexStrip = auto_free(VigilIndexStrip.new())
-	strip.size = Vector2(80, 12)
-	add_child(strip)
 	var l := HudLiar.new()
-	strip.liar = l
-	strip.value = 1234
+	l.begin_glyph(3, 5.0)   # the 4th digit from the right of "12,345" is the "2" at index 1
+	assert_that(l.glyph_for("2", 1, "12,345")).is_equal("7")
+	assert_that(l.glyph_for(",", 2, "12,345")).is_null()
+
+
+func test_brass_hud_index_value_stays_true_under_the_glyph() -> void:
+	SettingsService.set_value(&"steady_ledger", false)
+	var hud: BrassHud = auto_free(BrassHud.new())
+	hud.size = Vector2(640, 360)
+	add_child(hud)
+	var l := HudLiar.new()
+	hud.liar = l
+	hud.set_values(1234, 0, 0, 1, 5, 1, 1, 1, false)
+	assert_bool(hud.index_smudged()).is_false()
 	l.begin_glyph(0, 5.0)
-	strip._process(0.0)
-	assert_bool(strip.smudged()).is_true()
-	assert_int(strip.value).is_equal(1234)
-	assert_str(strip.shown_text()).is_equal("001234")
+	hud._process(0.0)
+	assert_bool(hud.index_smudged()).is_true()
+	assert_int(hud.score).is_equal(1234)
+	SettingsService.set_value(&"steady_ledger", true)
+	hud._process(0.0)
+	assert_bool(hud.index_smudged()).is_false()

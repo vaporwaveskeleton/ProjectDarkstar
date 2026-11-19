@@ -119,7 +119,7 @@ func test_live_hitbox_lands_one_hit_per_window_then_breaches() -> void:
 	assert_int(v.health.current_hp).is_equal(0)
 	assert_bool(breached[0]).is_true()
 	assert_bool(v.motor.enabled).is_false()
-	assert_str((runner.find_child("HullLabel") as Label).text).is_equal("Hull breached")
+	assert_str((runner.find_child("BrassHud") as BrassHud).hull_label.text).is_equal("Hull breached")
 	hb.queue_free()
 
 

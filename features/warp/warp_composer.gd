@@ -40,7 +40,7 @@ var session: RunSessionCore
 var composure: Composure
 var far: AetherFarLayer
 var compass: LedgerCompass
-var index_strip: VigilIndexStrip
+var hud: BrassHud
 var camera: Camera2D
 var torus: Torus
 var vigil: Node2D
@@ -79,13 +79,13 @@ func _ready() -> void:
 
 ## Sector entry: inject the sector's pieces, compute the tier, build the standing set.
 func bind(p_session: RunSessionCore, p_composure: Composure, p_far: AetherFarLayer,
-		p_compass: LedgerCompass, p_strip: VigilIndexStrip, p_camera: Camera2D, p_torus: Torus,
+		p_compass: LedgerCompass, p_hud: BrassHud, p_camera: Camera2D, p_torus: Torus,
 		p_vigil: Node2D) -> void:
 	session = p_session
 	composure = p_composure
 	far = p_far
 	compass = p_compass
-	index_strip = p_strip
+	hud = p_hud
 	camera = p_camera
 	torus = p_torus
 	vigil = p_vigil
@@ -113,8 +113,8 @@ func enter_seam() -> void:
 	liar.tier = current_tier()
 	if compass:
 		compass.model.liar = liar
-	if index_strip:
-		index_strip.liar = liar
+	if hud:
+		hud.liar = liar
 	if far:
 		far.set_tier(current_tier())
 	_next_false_chant = INF
@@ -249,7 +249,7 @@ func _begin_deviation(id: StringName) -> bool:
 	if id == &"W1-09":
 		return liar.begin_smear(_smear_slot(), warp_set.blip_lag_s, dur)
 	if id == &"W1-10":
-		var digits := str(index_strip.value).length() if index_strip else 1
+		var digits := str(hud.score).length() if hud else 1
 		return liar.begin_glyph(posmod(int(schedule.start_of(id) * 7.0), maxi(1, digits)), dur)
 	return false
 
@@ -461,8 +461,6 @@ func _drive_visuals() -> void:
 	_sign.still = ps or rm
 	if live.has(&"W1-07"):
 		_sign.phase = 1.0 - clampf((_false_chant_end - t) / maxf(0.1, warp_set.false_chant_s), 0.0, 1.0)
-	if live.has(&"W1-10") and index_strip:
-		index_strip.queue_redraw()
 
 
 func _step_cam() -> void:

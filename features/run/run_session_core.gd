@@ -41,6 +41,9 @@ const PAUSE_CINEMATIC := &"cinematic"
 const PAUSE_ATTRACT := &"attract"
 const PAUSE_CURTAIN := &"curtain"
 const PAUSE_RUINS_MENU := &"ruins_menu"
+## Q-T162 (settled 2026-11-19): the Ruins holds this on the first visit until the launch, so the
+## Hourglass starts when you leave (beat 11; GDD §6.2 exception).
+const PAUSE_FIRST_GLASS := &"first_glass"
 
 ## Route param keys (TECH-001 §4.2a).
 const PARAM_ACT0_VI := "act0_vigil_index"
@@ -66,6 +69,8 @@ var _profile := ProfileState.new()
 var _pauses: Dictionary = {}
 ## True between enter_seam and end_seam / die (abandon is refused here, Q-T144).
 var _in_seam := false
+## The Vigil Index the last arrival banked (−1 = none): the Ruins chalks it as a tally (LOOP-001 §10.5).
+var act0_vi_banked := -1
 ## False when the profile on disk could not be read: never overwrite it (no data loss).
 var _profile_writable := true
 
@@ -144,6 +149,7 @@ func _bank_act0(params: Dictionary) -> int:
 	var pay := maxi(floori(float(vi) / float(maxi(1, stats.score_per_ember))), stats.act0_bank_floor_ember)
 	_profile.ember_banked += pay
 	_profile.act0_banked = true
+	act0_vi_banked = vi
 	return pay
 
 

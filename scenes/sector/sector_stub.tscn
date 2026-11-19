@@ -1,4 +1,4 @@
-[gd_scene load_steps=38 format=3]
+[gd_scene load_steps=37 format=3]
 
 [ext_resource type="Script" path="res://scenes/sector/sector_stub.gd" id="1"]
 [ext_resource type="PackedScene" path="res://features/vigil/vigil.tscn" id="2"]
@@ -8,8 +8,11 @@
 [ext_resource type="Script" path="res://features/hud/ledger_compass.gd" id="6"]
 [ext_resource type="Resource" path="res://data/hud/ledger_compass.tres" id="7"]
 [ext_resource type="Resource" path="res://data/cabinet/stage_first_vigil.tres" id="8"]
-[ext_resource type="Script" path="res://features/sector/sector_floor.gd" id="9"]
-[ext_resource type="Resource" path="res://data/sector/sector_floor.tres" id="10"]
+[ext_resource type="Script" path="res://features/sector/sector_depth.gd" id="9"]
+[ext_resource type="Resource" path="res://data/sector/sector_depth_back.tres" id="10"]
+[ext_resource type="Resource" path="res://data/sector/sector_depth_front.tres" id="32"]
+[ext_resource type="Script" path="res://features/sector/race_framer.gd" id="33"]
+[ext_resource type="Script" path="res://features/hud/brass_hud.gd" id="34"]
 [ext_resource type="Script" path="res://features/sector/sector_wrap.gd" id="11"]
 [ext_resource type="PackedScene" path="res://features/charges/shard_field.tscn" id="12"]
 [ext_resource type="Script" path="res://features/charges/geode_sandbox.gd" id="13"]
@@ -34,7 +37,6 @@
 [ext_resource type="Script" path="res://features/warp/warp_composer.gd" id="w1"]
 [ext_resource type="Resource" path="res://data/warp/t1_frayed.tres" id="w2"]
 [ext_resource type="Resource" path="res://data/warp/warp_tier.tres" id="w3"]
-[ext_resource type="Script" path="res://features/hud/vigil_index_strip.gd" id="w4"]
 
 [node name="SectorStub" type="Node2D"]
 script = ExtResource("1")
@@ -49,11 +51,21 @@ layer = -10
 unique_name_in_owner = true
 look = ExtResource("31")
 
-[node name="Floor" type="Node2D" parent="."]
+[node name="Depth" type="CanvasLayer" parent="."]
+layer = -5
+
+[node name="DepthBack" type="Node2D" parent="Depth"]
 unique_name_in_owner = true
 script = ExtResource("9")
 style = ExtResource("10")
-draw_base = false
+
+[node name="Fore" type="CanvasLayer" parent="."]
+layer = 2
+
+[node name="DepthFront" type="Node2D" parent="Fore"]
+unique_name_in_owner = true
+script = ExtResource("9")
+style = ExtResource("32")
 
 [node name="VigilSpawn" type="Marker2D" parent="."]
 unique_name_in_owner = true
@@ -114,16 +126,24 @@ position = Vector2(320, 180)
 script = ExtResource("4")
 stats = ExtResource("5")
 
+[node name="RaceFramer" type="Node" parent="." node_paths=PackedStringArray("camera")]
+unique_name_in_owner = true
+script = ExtResource("33")
+camera = NodePath("../SectorCamera")
+
 [node name="Hud" type="CanvasLayer" parent="."]
 layer = 5
 
-[node name="HullLabel" type="Label" parent="Hud"]
+[node name="BrassHud" type="Control" parent="Hud"]
 unique_name_in_owner = true
-auto_translate_mode = 2
-offset_left = 8.0
-offset_top = 6.0
-offset_right = 160.0
-offset_bottom = 26.0
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("34")
 
 [node name="LedgerCompass" type="Control" parent="Hud"]
 unique_name_in_owner = true
@@ -139,20 +159,6 @@ grow_horizontal = 2
 mouse_filter = 2
 script = ExtResource("6")
 stats = ExtResource("7")
-
-[node name="VigilIndexStrip" type="Control" parent="Hud"]
-unique_name_in_owner = true
-layout_mode = 3
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -128.0
-offset_top = 4.0
-offset_right = -12.0
-offset_bottom = 24.0
-grow_horizontal = 0
-mouse_filter = 2
-script = ExtResource("w4")
 
 [node name="ComposureWick" type="Control" parent="Hud"]
 unique_name_in_owner = true

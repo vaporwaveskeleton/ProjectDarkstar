@@ -98,13 +98,18 @@ func apply(model: HudModel) -> HudModel:
 	return out
 
 
-## The VectorLabel glyph seam for the Vigil Index (W1-10). `text_len` is the shown string length.
-func glyph_for(ch: String, index: int, text_len: int) -> Variant:
-	if not glyph_live() or HudModel.steady_ledger_on():
+## The VectorLabel glyph seam for the Vigil Index (W1-10). `text` is the shown string; the target is
+## the `glyph_digit`-th digit from the right, counting digits only (group separators are skipped).
+func glyph_for(ch: String, index: int, text: String) -> Variant:
+	if not glyph_live() or HudModel.steady_ledger_on() or not NEIGHBOUR.has(ch):
 		return null
-	if index != text_len - 1 - glyph_digit:
-		return null
-	return NEIGHBOUR.get(ch, null)
+	var n := 0
+	for i in range(text.length() - 1, -1, -1):
+		if NEIGHBOUR.has(text[i]):
+			if n == glyph_digit:
+				return NEIGHBOUR[ch] if i == index else null
+			n += 1
+	return null
 
 
 func _record(world: PackedVector2Array) -> void:

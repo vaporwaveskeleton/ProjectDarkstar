@@ -140,7 +140,8 @@ func test_catalog_and_validator_agree() -> void:
 ## a1_golden_path: coin → Act 0 → reveal → the 94 s Unmaking → Ruins → PM-01 (~20600 frames, Act 0
 ## capture switches as args; TECH-001 §9.1).
 ## warp_t1_capture: the T1 warp stills (dev `--warp-showcase` arg, ~1000 frames + margin; TECH-001 §5.1a).
-const LONG_SCENARIOS: Array[String] = ["a1_golden_path.scenario.json", "warp_t1_capture.scenario.json"]
+const LONG_SCENARIOS: Array[String] = ["a1_golden_path.scenario.json", "ruins_onboarding_first_visit.scenario.json",
+	"warp_t1_capture.scenario.json"]
 
 
 func test_shipped_scenarios_are_valid_for_the_suite() -> void:
