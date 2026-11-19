@@ -21,10 +21,6 @@ msgstr "New Vigil"
 msgid "MENU_SETTINGS"
 msgstr "Settings"
 
-#. Quits to the desktop.
-msgid "MENU_QUIT"
-msgstr "Quit"
-
 msgid "MENU_BACK"
 msgstr "Back"
 
@@ -50,6 +46,20 @@ msgstr "Abandon"
 
 msgid "CONFIRM_KEEP_PLAYING"
 msgstr "Keep Playing"
+
+#. Confirmation when the POWER rocker is pressed on the attract screen.
+msgid "CONFIRM_QUIT_TITLE"
+msgstr "Quit the game?"
+
+#. Must stay truthful: nothing is lost on the title screen; saved progress is already written.
+msgid "CONFIRM_QUIT_BODY"
+msgstr "Your saved progress is kept."
+
+msgid "CONFIRM_QUIT_YES"
+msgstr "Quit"
+
+msgid "CONFIRM_QUIT_STAY"
+msgstr "Stay"
 
 msgid "SETTINGS_TITLE"
 msgstr "Settings"
@@ -283,6 +293,22 @@ msgstr "OK"
 
 msgid "CAB_BOOT_DONE"
 msgstr "SELF TEST COMPLETE"
+
+#. Control panel decal under the small service button (opens Settings). Period-true arcade wording (pass 2c).
+msgid "CAB_PANEL_SERVICE"
+msgstr "SERVICE"
+
+#. Plain-language caption shown beside the SERVICE button while it has focus or the mouse is over it.
+msgid "CAB_PANEL_SERVICE_HINT"
+msgstr "Settings"
+
+#. Decal beside the power rocker switch on the cabinet's right side (quits the game after a confirmation).
+msgid "CAB_PANEL_POWER"
+msgstr "POWER"
+
+#. Plain-language caption shown beside the POWER rocker while it has focus or the mouse is over it.
+msgid "CAB_PANEL_POWER_HINT"
+msgstr "Quit game"
 
 #. Price label on the coin door of the bezel.
 msgid "CAB_COIN_PRICE"

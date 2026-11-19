@@ -11,6 +11,7 @@ Index (TECH-001 §5.1 WarpComposer, §5.5 rendering ladder):
   - `bezel_print.gdshader`: reverse-printed ink under glass (fade, mottle, halftone, scuffs, flakes) for the field, columns and sticker text.
   - `bezel_glass.gdshader`: sheen, dust, fingerprints and scratches over the printed bezel.
   - `arcade_button.gdshader`: the control panel's pushbuttons (translucent cap, lamp, chrome ring, focus halo; Q-T34).
+  - Pass 2c (2026-11-19): `control_panel.gdshader` (the angled laminate panel slab: lip, front shadow, contact shadows, grain, palm polish), `panel_decal.gdshader` (printed decals with wear, never dimmed by a disabled button), `power_rocker.gdshader` (the POWER rocker switch on the right cabinet side), `hazard_tape.gdshader` (the coin door's printed-vinyl hazard tape and its adhesive side). `bezel_glass.gdshader` now carries the thumb smear beside the left screen edge, gated by the screen light. `crt.gdshader` gained the `collapse` and `collapse_fade` uniforms (the power-off line and dot; a plain fade when `collapse_fade` is 1).
   - `bezel_vent.gdshader`: perforated black-metal speaker grilles.
   - `bezel_sticker.gdshader`: the worn vinyl NEW! sticker with a lifted corner.
   - `contact_shadow.gdshader`: the soft shadow and occlusion under a raised part.

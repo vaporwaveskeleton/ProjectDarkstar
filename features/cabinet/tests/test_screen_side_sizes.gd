@@ -115,7 +115,7 @@ func test_attract_screen_is_drawn_in_the_arcade_viewport() -> void:
 	for n in ["Backdrop", "StripHud", "Play", "PowerOn", "Logo", "Pages"]:
 		var c := scene.find_child(n, true, false)
 		assert_bool(vp.is_ancestor_of(c)).override_failure_message("%s should be on the tube" % n).is_true()
-	for n in ["Frame", "CoinSlot", "ControlPanel", "NewVigil", "Settings", "Quit"]:
+	for n in ["Frame", "CoinSlot", "ControlPanel", "NewVigil", "Settings", "Power"]:
 		assert_bool(vp.is_ancestor_of(scene.find_child(n, true, false))).override_failure_message("%s must be outside the tube" % n).is_false()
 	var play := scene.get_node("%Play") as Control
 	assert_object(Rect2(play.position, play.size)).is_equal(spec.play_rect())

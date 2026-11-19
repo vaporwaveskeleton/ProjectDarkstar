@@ -385,7 +385,7 @@ Code: `features/cabinet/bezel_art.gd`, `bezel_piece.gd`, `bezel_print.gd`, `cabi
 - **Backlit marquee (Q-T32 (a) built):** the top 28 units; lettering ink height about 21 units including stroke.
 - **The coin door stays black** (warmth only in its highlights). **Die-cut sticker** for the NEW! slogan. **All bezel text is `VectorText`.**
 - **New print strings** (the bezel tagline): `CAB_BEZEL_TAG_1` "ONE COIN." and `CAB_BEZEL_TAG_2` "ONE VIGIL."
-- **Built (pass 2b):** the control panel under the screen (TECH-001 Q-T34, resolved; §2.10): three pushbuttons, NEW VIGIL a big lit start button, SETTINGS and QUIT smoked service caps; decorative in game.
+- **Built (pass 2b):** the control panel under the screen (TECH-001 Q-T34, resolved; §2.10): three pushbuttons, NEW VIGIL a big lit start button, SETTINGS and QUIT smoked service caps; decorative in game. (Revised in pass 2c, below: SETTINGS became SERVICE and QUIT a POWER rocker.)
 
 **Built (pass 2b polish, 2026-11-19; commit 520d874; values in `data/cabinet/cabinet_surface.tres`).** After The Reviewer's notes on pass 2.
 - **Glass reads through light:** the glass band lowers contrast where it crosses the print, and the thumb smear sits in the screen glow's path and hazes with the live screen light (`cab_screen_light`).
@@ -394,6 +394,14 @@ Code: `features/cabinet/bezel_art.gd`, `bezel_piece.gd`, `bezel_print.gd`, `cabi
 - **Marquee:** a hot tube band, backlit lettering; the dark patch is a cold shadow under the plastic (blocked backlight), and warm light spills onto the bezel below.
 - **Coin door:** the label is flat faded paper; the slot lip is dimmed so the lit price plate wins.
 - **The room** takes a faint screen-coloured spill.
+
+**Built (pass 2c, 2026-11-19; values in `data/cabinet/cabinet_surface.tres`).** After The Reviewer's 2c notes; the panel is period-true (TECH-001 §2.10, §11.2).
+- **The panel is an angled laminate:** a bevelled top lip against the bezel, a shadow under its front edge, contact shadows under each button, its own fine grain, and palm-polish (smoother, glossier) beside START. The START decal is partly rubbed off; the SERVICE decal is lightly worn. Printed decals stay legible when a button is disabled (only the lamp goes dark).
+- **Controls:** START (NEW VIGIL), a small SERVICE button, and a POWER rocker on the right cabinet side under the coin door (the apron vent there was shortened; owner confirmation open, Q-T82). A plain-language caption plate ("Settings", "Quit game") is drawn on the panel or bezel while a control has focus or the mouse is over it, never over the screen.
+- **Thumb smear:** now on the bezel glass beside the left screen edge, gated by the screen light: invisible when the screen is dark, a clear haze when bright.
+- **Hazard tape is printed vinyl:** a sheen, flat inks slightly out of register, edges lifting with a shadow, dirt on the adhesive edge, and a crease. The peeled flap shows the adhesive side. The tape's behaviour (peel, drag, hold, fall) is unchanged.
+- **Power-off:** after POWER is confirmed the CRT collapses to a line, then a dot (a plain fade under photosensitivity or reduced motion).
+- **Not done:** the room spill reaching the floor (optional). Not evaluated in motion or by The Reviewer.
 
 **Approved re-composition (owner, 2026-11-18; PR C; built in part by pass 2, above, and pass 2b, above): Sinistar-style portrait cabinet.** The screen is a **256×304 portrait** tube (PR B, built; TECH-001 §1.3) with 28 units of thick black tube mask above and below and 192-unit side panels on the 640×360 reference; the bezel fills the whole window at any aspect (no bars). Composition: a **large emblem illustration in each side panel**, an **instruction card beside the screen**, a **thin backlit marquee** in the top 28 reference units above the screen (lettering ink height about 21 units including stroke, centred above the screen; the big logo lives in the side-panel art; it must read as a real backlit translucent sign: uneven backlight, a dead tube band, dust on the top edge; ruled 2026-11-18, TECH-001 Q-T32; built in pass 2), a **thick tube mask**, **restrained inks** (a smaller share of the ink set than the interim bezel), and a **control panel** carrying `CoinSlot` plus the NEW VIGIL / SETTINGS / QUIT buttons (one focus domain with the coin slot). **All live readouts (score, Vigils, HI, magazine, Sepulchre progress, credits) move onto the screen**, in an on-screen HUD strip; the bezel carries printed art and the coin door only. Bezel text is `VectorText` (code-generated stroke alphabet, tessellated to polygons; no font files; D-13), drawn natively, sharp at any scale, with MSAA for edges. This borrows Sinistar's layout, not its face: the §12.7a motif rule (no mouth, no two eyes, no skull) stands. The HUD strip is 40 px (Q-T31, resolved); the marquee height is resolved (Q-T32, above). **Until PR C, the printed bezel described above is the interim design.**
 
@@ -604,6 +612,8 @@ Pal entry to register (`pal_map`): VOID-0, VOID-1, CHOIR-0, PHOS-0, GAS-0, NULL 
 
 `set_lattice` is unused. T2's deep field is darker (`value_deep` 0.32 → 0.2 ✱) so the three value bands stay apart under the greener murk.
 
+**The cumulative "how much is missing" cue (pass 6, 2026-11-19).** The tiers also sort by one monotonic cue: how much of the picture is gone. `AetherLook.missing` ✱ (dev placeholders 0 / 0.2 / 0.4 / 0.6 / 0.85 for T1 to T5; owner to set) drives three things together: saturation drain, star dropout and a flat VOID slice in the far layer. The slice starts inside the picture and widens by tier; it is never black and never touches the frame edge. Detail and tests: §16.6e. Known limit: the greyscale order T2 < T3 < T4 depends on reading the slice (value alone does not order them).
+
 **Three-value structure.** Every tier's frame holds three value bands: the play band top, the fog mid, the deep background (`value_deep`) lowest. A tier that collapses two bands fails the greyscale read (§16.3).
 
 **Budget and fallback (CH-7).** Each technique is one toggleable layer with a measured frame time. The Steam Deck / iGPU `low` preset drops detail, never information (fewer fbm octaves, half-res fog bands, static god-rays, fewer particles) and keeps the sphere curve, the entity's black and the play-band fog cap. Quality ladder and cost status: TECH-001 §8, §11.1 Q-T62 (ladder built in pass 2; §16.6 lists what no rung drops).
@@ -699,6 +709,8 @@ Supersede the matching pass 3 lines where they differ.
 
 **Pareidolia rule (adopted, proposed by The Reviewer; PM under owner autonomy grant):** no closed holes in organic shapes near the play centre, and no thin appendages hanging from the entity. This is the organic-shape companion to the entity face rule (N4, §16.6b; the limb rule N7 is NARR-001 §3.4). Enforcement: `features/aether/tests/test_aether_pass4.gd`: a CPU flood-fill of the fog and chalk strand maths over 3 drift directions × 2 seeds × 2 times × 4 thresholds on a 110×110 grid, with a control proving the old ring construction is caught; entity cracks bounded inside a band just outside the mass (`A_ENT_CRACK_BAND` 0.24 × grow, checked for every radius and growth the backdrop produces). Honest limits: no headless shader render (CPU mirror, double precision); the blend ring between play core and free fog, the opaque far band and colour terms are not covered.
 
+**Pareidolia rule, extended (pass 6, PM under owner autonomy grant 2026-11-19, proposed by The Reviewer):** no closed circles in organic or fog shapes near the play centre; geometric orrery rings and crystal spheres are exempt. Implementation and test: §16.6e.
+
 **Entity.** Hanging tendrils removed; crazed-glaze cracks inside the band instead (thin 0.9 px to a 0.35 px hairline, never free-ending). Bites are acute (32 to 66°) or obtuse (115 to 132°) wedges, never square. Terrace risers slant.
 
 **Play-centre fog (every tier).** Built from drift-aligned strands combined with `min`, so there are no holes.
@@ -725,6 +737,30 @@ Supersede the matching pass 4 lines where they differ.
 **Cost (CH-7, Q-T94 resolved for high).** 1080p high, RTX 4070, same-session sweep (other Godot processes running): pass 4 2.956 / 2.965 / 3.387 / 2.981 / 3.362 / 4.397 ms; final 2.559 / 2.824 / 2.950 / 2.708 / 2.972 / 3.464 ms for exhibits 0 to 5, every exhibit under its pass 3 bar, but exhibits 2 and 4 by only 0.07 and 0.04 ms (noise about ±0.2 ms). Trims: loss mask every second bite (`A_LOSS_BITE_STEP` 2 ✱), skipped past `A_LOSS_REACH` 1.75 ✱ plus AA width (proven conservative, tested); free fog skipped where strip weight is full (`A_STRIP_FULL` 0.8 ✱); one fewer streak and curl octave; silver-lining sample faded then skipped. Low and medium not re-measured (TECH-001 Q-T123). Figures in TECH-001 §8.5.
 
 **Known weaknesses (pass 5).** T5 left edge: a swirl around a hole with a crisp circular edge (reads a little like a whirlpool or eye; sits in the ring, outside the bound). T5 right ring fog is billowy and lighter (about 0.45 by eye, not measured, vs about 0.7 pool). The entity's crazed band reads as a pale mosaic or stained glass. T4: one dim pane reads as a dark blob. The 0.14 cap darkens every tier's centre a little compared with pass 4.
+
+### 16.6e Pass 6 rules (2026-11-19)
+Supersede the matching pass 5 lines where they differ. Tests: `features/aether/tests/test_aether_pass6.gd`. Evidence status: the model-viewer pilot (below) and the cost sweep are the only measurements; no human has sorted the tiers yet.
+
+**Tier sort (G-2).** A model-viewer pilot (5 fresh AI agents, not humans; write-up in the shared notes `aether_sort_pilot_proxy.md`) gave 0 of 5 exact orders on pass 5; T5 was placed last 5 of 5; T1 was misread because of a dark orrery disc. Model-viewer pilots are evidence for direction only; the human cold-viewer sort is scheduled with the owner's M2 test round (PROD-001 §4.1, TECH-001 §11.2). The pass 6 re-run gave 0 of 5 valid exact orders, with 2 of 5 viewers invalid (label mix-ups): a smoke test only. Open (TECH-001 Q-T126): the five exhibits are five biomes, so viewers sort places by mood, not tiers by damage; proposed G-2 wording is one biome at every tier, and the principle that each tier is the previous tier plus one more kind of damage to the same elements. Owner to decide.
+
+**Monotonic "missing" cue (§15.4).** `AetherLook.missing` ✱ (0 / 0.2 / 0.4 / 0.6 / 0.85 for T1 to T5, dev placeholders) drives: saturation drain (`A_MISS_DESAT` 0.9 ✱, luminance kept); star dropout along the same curve; and a flat VOID slice (`a_missing()` in `aether_common.gdshaderinc`) with `A_MISS_SEAM` -44, `A_MISS_X` 170, `A_MISS_LEN` (30, 130), `A_MISS_INWARD` 0.4, `A_MISS_W` (0.7, 16) ✱. The slice starts at a far-layer seam inside the picture, never the frame edge (NARR-001 N8), widens by tier, is flat VOID (`mix(void_lo, void_hi, 0.22)`), never black, and stops short of the entity's mid loss step. Tested: zero at T1 and strictly growing; drives saturation, slice and stars together; starts off-centre and never reaches the frame edge or the play core.
+
+**T1 lit sun.** The dark orrery globe is now a lit brass sun (BONE_3 body, BONE_4 bloom); rings calmer (`ORRERY_CALM` 0.72 ✱). Rule: no dark, round, centred object in T1 (it pre-empts the entity). Open (TECH-001 Q-T124): §15.4's T1 row asks for "one dark smudge in the fog that is a little too still", while the pass 6 brief said "nothing in T1 darker than the fog". The smudge was kept pending an owner ruling.
+
+**No closed circles (pareidolia extension, §16.6c).** Loss steps follow two spiral arms broken every half turn (`A_LOSS_ARM` 0.2 ✱) with a soft side toward the frame centre (`A_LOSS_SOFT` 0.08 ✱); the drain stretch is twisted off the radial (`A_DRAIN_TWIST` 0.5 ✱); `A_LOSS_REACH` 1.75 to 2.02 keeps the early-out provably conservative. Test: a CPU mirror of the loss boundary: at least 2 breaks per turn, no unbroken arc longer than π × 1.02, radius varies at least 0.9 × the arm. Same limits as §16.6c (CPU mirror, not a shader render).
+
+**Entity edge.** A gradient of disintegration: crazing erodes inward (`A_ENT_ERODE` 0.42, `A_ENT_ERODE_K` 1.3 ✱) and dims inward; fragments start from 0.45 of the band (`A_ENT_FRAGMENT_FROM` 0.2 to 0.45 ✱). Black still only inside the mass (§16.6d).
+
+**T4.** Dim panes get the same lit crack rim as open panes (tested).
+
+**Cost (CH-7).** 1080p high, RTX 4070, same-session sweep, exhibits T1 / T2 / T3 / T4 / T5 / entity. Before pass 6: 2.561 / 3.081 / 3.006 / 2.639 / 2.865 / 3.477 ms. After: 2.549 / 2.797 / 3.011 / 2.730 / 2.990 / 3.580 ms. Pass 5 bars: 2.56 / 2.82 / 2.95 / 2.71 / 2.97 / 3.46. T5 (+0.125 vs before) and the entity (+0.10) are likely real (`A_LOSS_REACH` gives 1.33× more pixels that evaluate the shape near holes); T3 and T4 are within noise (±0.1 to 0.25). Pass 6 is over the pass 5 bar on T5 and the entity exhibit: TECH-001 Q-T125. Figures in TECH-001 §8.5.
+
+**Known weaknesses (pass 6).**
+- T5 centre and right fog reads as grey satin or curtain folds after desaturation (not brighter than the pool).
+- T5 slice reads as a floating dark slab.
+- T1 lit sun with its axis line may read as a scope or target.
+- T4 dim pane is a fully outlined polygon.
+- Greyscale sort T2 < T3 < T4 relies on reading the VOID slice; value alone does not order them (T3's leviathan is darkest).
 
 Dev-route gating tests: `tests/test_dev_routes_gate.gd`. Backdrop and gallery load tests: `features/aether/tests/test_aether_backdrop.gd`, `scenes/dev/aether_gallery/tests/test_aether_gallery_loads.gd`.
 

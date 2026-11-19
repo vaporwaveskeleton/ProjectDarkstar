@@ -35,6 +35,8 @@ var _anim := 0.0
 var _await_release := false
 var _t := 0.0
 var _face: CoinDoorFace
+var _tape_main: TapeStrip           ## the printed length (stuck or falling)
+var _tape_flap: TapeStrip           ## the peeled flap, adhesive side out
 var _text_cache: Dictionary = {}
 
 
@@ -47,6 +49,11 @@ func _ready() -> void:
 	_face = CoinDoorFace.new()
 	add_child(_face)
 	_face.fit_to(Rect2(Vector2.ZERO, size))
+	_tape_main = TapeStrip.new()
+	_tape_flap = TapeStrip.new()
+	_tape_flap.set_seed(3.0)
+	add_child(_tape_main)
+	add_child(_tape_flap)
 
 
 ## The tape came off on an earlier visit (profile `cabinet_tape_peeled`).
@@ -170,6 +177,8 @@ func _on_tape(p: Vector2) -> bool:
 
 func _draw() -> void:
 	var plate := Rect2(Vector2.ZERO, size)
+	_tape_main.visible = false
+	_tape_flap.visible = false
 	var ready_glow := 0.0
 	if phase == Phase.OPEN and hint_visible:
 		ready_glow = 0.5 + 0.5 * sin(_t * 5.0)
@@ -203,14 +212,14 @@ func _draw_coin(k: float) -> void:
 ## toward the hand (or droops when let go), adhesive side out.
 func _draw_tape_stuck() -> void:
 	var p := TAPE_A.lerp(TAPE_B, peel)
-	_strip(p, TAPE_B, true)
+	_strip(p, TAPE_B, true, 0.0, TAPE_A.lerp(TAPE_B, CREASE_AT) if peel < CREASE_AT - 0.05 else null)
 	if peel <= 0.0:
 		return
 	var flap_len := TAPE_A.distance_to(TAPE_B) * peel
 	var dir := Vector2(-0.35, 1.0).normalized().rotated(sin(_t * 2.0) * 0.08)
 	if _dragging and _grab.distance_to(p) > 1.0:
 		dir = (_grab - p).normalized()
-	_strip(p, p + dir * flap_len, false)
+	_strip(p, p + dir * flap_len, false, 0.8)
 
 
 func _draw_tape_falling(k: float) -> void:
@@ -219,32 +228,17 @@ func _draw_tape_falling(k: float) -> void:
 	var mid := (TAPE_A + TAPE_B) * 0.5
 	var a := mid + (TAPE_A - mid).rotated(rot) + drop
 	var b := mid + (TAPE_B - mid).rotated(rot) + drop
-	_strip(a, b, true)
+	_strip(a, b, true, 1.0)
 
 
-## One length of tape from `a` to `b`: hazard stripes on the face, plain on the adhesive side.
-func _strip(a: Vector2, b: Vector2, face: bool) -> void:
-	var length := a.distance_to(b)
-	if length < 0.5:
+## One length of tape from `a` to `b`, drawn by its TapeStrip child (printed vinyl on the face, adhesive on the flap).
+func _strip(a: Vector2, b: Vector2, face: bool, lift: float = 0.0, crease: Variant = null) -> void:
+	if a.distance_to(b) < 0.5:
 		return
-	var along := (b - a) / length
-	var n := along.orthogonal() * TAPE_W * 0.5
-	if not face:
-		var quad := PackedVector2Array([a + n, b + n, b - n, a - n])
-		draw_colored_polygon(quad, Look.c(Pal.BONE_3))
-		Pal.glow_polyline(self, quad, Look.c(Pal.BONE_4), Look.c(Pal.BONE_1))
-		return
-	var d := 0.0
-	var i := 0
-	while d < length:
-		var e := minf(d + STRIPE, length)
-		var s0 := a + along * d
-		var s1 := a + along * e
-		var col := Look.c(Pal.GAS_4) if i % 2 == 0 else Look.c(Pal.VOID_0)
-		draw_colored_polygon(PackedVector2Array([s0 + n, s1 + n, s1 - n, s0 - n]), col)
-		d = e
-		i += 1
-	draw_polyline(PackedVector2Array([a + n, b + n, b - n, a - n, a + n]), Look.c(Pal.GAS_2), 1.0)
+	(_tape_main if face else _tape_flap).place(a, b, TAPE_W * 0.5, face, lift, crease)
+
+
+const CREASE_AT := 0.42            ## where along the full strip the tape bends over the slit's ridge
 
 
 const HINT_X := 78.0               ## plate-local x where the prompt starts: just right of the printed column

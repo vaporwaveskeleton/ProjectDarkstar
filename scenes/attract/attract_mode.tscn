@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3]
+[gd_scene load_steps=23 format=3]
 
 [ext_resource type="Script" path="res://scenes/attract/attract_mode.gd" id="1"]
 [ext_resource type="Script" path="res://core/ui/screen_stack.gd" id="2"]
@@ -22,6 +22,7 @@
 [ext_resource type="Resource" path="res://data/cabinet/screen_registers.tres" id="vreg_data"]
 [ext_resource type="Script" path="res://features/cabinet/control_panel.gd" id="19"]
 [ext_resource type="Script" path="res://features/cabinet/arcade_button.gd" id="20"]
+[ext_resource type="Script" path="res://features/cabinet/power_rocker.gd" id="21"]
 
 [sub_resource type="ShaderMaterial" id="crt_mat"]
 resource_local_to_scene = true
@@ -207,19 +208,9 @@ focus_mode = 2
 script = ExtResource("20")
 kind = 1
 slot = 1
-label_key = "MENU_SETTINGS"
+label_key = "CAB_PANEL_SERVICE"
+caption_key = "CAB_PANEL_SERVICE_HINT"
 variant = 1.0
-
-[node name="Quit" type="BaseButton" parent="Rig/ControlPanel"]
-unique_name_in_owner = true
-layout_mode = 3
-anchors_preset = 0
-focus_mode = 2
-script = ExtResource("20")
-kind = 1
-slot = 2
-label_key = "MENU_QUIT"
-variant = 2.0
 
 [node name="CoinSlot" type="Control" parent="Rig"]
 unique_name_in_owner = true
@@ -227,6 +218,12 @@ layout_mode = 0
 focus_mode = 2
 script = ExtResource("8")
 tuning = ExtResource("11")
+
+[node name="Power" type="BaseButton" parent="Rig"]
+unique_name_in_owner = true
+layout_mode = 0
+focus_mode = 2
+script = ExtResource("21")
 
 [node name="Overlays" type="CanvasLayer" parent="." node_paths=PackedStringArray("base_screen")]
 unique_name_in_owner = true

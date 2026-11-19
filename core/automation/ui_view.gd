@@ -14,6 +14,8 @@ const STATE_IDS := {
 	"sector/vigil": {"route": "sector", "member": "", "props": ["vigil_x", "vigil_y", "vigil_speed", "hull_max_hp", "camera_x", "compass_markers", "camera_gap", "facing_deg", "aim_x", "aim_y", "composure", "composure_band"]},
 	"sector/field": {"route": "sector", "member": "", "props": ["geodes_alive", "geodes_detonated", "shards_free", "shards_live", "charges", "score", "charges_in_flight", "charges_lost", "charges_hit", "charges_guttered", "dry_fires"]},
 	"sector/choir": {"route": "sector", "member": "", "props": ["grubs_alive", "grubs_carrying", "segments", "deposited_shards", "sepulchre_complete"]},
+	# Route-independent: read from the RunSession autoload (TECH-001 §4.2a), on any route.
+	"run/session": {"route": "*", "autoload": "RunSession", "props": ["ember", "act0_banked", "hourglass_left", "skies_dark", "seam_index", "clock_paused"]},
 }
 
 var _route_host: Node
@@ -32,6 +34,12 @@ func route_root() -> Node:
 
 ## Returns {"ok": bool, "node": Node, "error": String}.
 func resolve(id: String) -> Dictionary:
+	if STATE_IDS.has(id) and (STATE_IDS[id] as Dictionary).has("autoload"):
+		var tree := Engine.get_main_loop() as SceneTree
+		var auto: Node = tree.root.get_node_or_null(str(STATE_IDS[id].autoload)) if tree else null
+		if auto == null:
+			return _err("'%s' is not available (no %s)" % [id, STATE_IDS[id].autoload])
+		return {"ok": true, "node": auto, "error": ""}
 	var root := route_root()
 	if root == null:
 		return _err("no route is mounted")

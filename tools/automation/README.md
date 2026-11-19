@@ -98,6 +98,12 @@ node tools/automation/darkstar_auto.js run-all [--only=<substr>]  # every scenar
   `kill_all` (Acolytes, Grubs, hostile shots), `kill_acolyte{acolyte_id}` (int or "last"; kills just that Acolyte, leaves shots alone; fails if no live Acolyte has that id), `place_entity` (dx,dy, |v| ≤ 4000; entity must be awake), `wake_entity`
   (needs a non-Cold Sepulchre, so `set_stage 1` first; awake after about 4.2 s: wait on `cabinet/world entity_awake`), `pause_sim`, `step_sim` (needs paused_sim; steps ArcadeWorld only, not
   the CabinetGame state machine, so the death timer and respawn do not advance).
+- **Stage scenarios.** `cabinet/game` has prop `stage_id` (`a0_1`..`a0_5`, `""` out of range). `a0_stage_0_first_vigil`,
+  `a0_stage_1_drift`, `a0_stage_2_censer_watch`, `a0_stage_3_shoal`, `a0_stage_4_stillwater` each go coin, New Vigil, play,
+  `set_stage N`, still during READY, play, then assert `stage_index`, `stage_id` and the start-of-play geode / Grub /
+  Acolyte counts (entity cold); stages 2-4 also `wake_entity`, wait `entity_awake`, still. Stills `stage_N_ready`,
+  `stage_N_play`, `stage_N_window` (+ `stage_N_awake`), snapshot `stage_N`. 522 frames (stages 0-1), 779 (2-4). Acolyte
+  `eq` asserts may need loosening when the P2 pressure switches land; the awake phase is not asserted.
 - **Death scenarios.** `a0_death_marks_clear` (marks held through DEAD, cleared on respawn, `killer_kind` "none")
   and `a0_death_reduced_motion` (uses `set_setting`; chalk completes at once with Reduced Motion). Dev steps, so
   not run in QA exes.

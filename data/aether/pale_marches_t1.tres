@@ -49,3 +49,4 @@ glow_band_px = 75
 glow_band_inset = 60
 frost_presence = true
 reveal_life_count = 40
+missing = 0

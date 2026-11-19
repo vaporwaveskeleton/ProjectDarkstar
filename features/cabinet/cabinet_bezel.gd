@@ -125,8 +125,8 @@ static func marquee() -> Rect2:
 ## The strip under the screen, across the opening's width: the 28 reference units below the hole (less the
 ## key-black tube-mask edge), the cabinet's control-panel lip. The attract menu's pushbuttons sit here, on
 ## the print, never over the tube.
-const PANEL_SLOT_X: Array[float] = [56.0, 148.0, 208.0]       ## ✱ art placement: slot centres, panel-local x
-const PANEL_SLOT_W: Array[float] = [36.0, 32.0, 32.0]         ## each slot's width: the button, its ring and its printed label
+const PANEL_SLOT_X: Array[float] = [56.0, 148.0]              ## ✱ art placement: slot centres, panel-local x (START, SERVICE)
+const PANEL_SLOT_W: Array[float] = [36.0, 32.0]               ## each slot's width: the button, its ring and its printed label
 
 
 static func control_panel() -> Rect2:
@@ -134,7 +134,19 @@ static func control_panel() -> Rect2:
 	return Rect2(h.position.x, h.end.y + EDGE, h.size.x, float(ScreenFit.REF.y) - h.end.y - EDGE)
 
 
-## Slot `i` (0 start, 1 settings, 2 quit) in rig units: full height of the panel, centred on its x.
+## Slot `i` (0 start, 1 service) in rig units: full height of the panel, centred on its x.
 static func panel_slot(i: int) -> Rect2:
 	var p := control_panel()
 	return Rect2(p.position.x + PANEL_SLOT_X[i] - PANEL_SLOT_W[i] * 0.5, p.position.y, PANEL_SLOT_W[i], p.size.y)
+
+
+# --- The power rocker (pass 2c) ----------------------------------------------------------------------
+## The POWER rocker module sits on the right column under the coin door, where the apron vent was (the vent
+## is shortened to make room): column-local, so it moves with the column and never meets the door (ends at y 332),
+## the vent or the bottom grille (starts at y 350). It quits the game after a confirmation.
+const POWER_LOCAL := Rect2(31.0, 334.5, 44.0, 14.5)           ## ✱ art placement: label on the left, rocker on the right
+const APRON_VENT_LOCAL := Rect2(6.0, 338.0, 20.0, 10.0)       ## ✱ the shortened vent under the coin door
+
+
+static func power_rocker() -> Rect2:
+	return Rect2(POWER_LOCAL.position + Vector2(right_x(), 0.0), POWER_LOCAL.size)
