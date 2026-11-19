@@ -7,20 +7,29 @@ extends Control
 ## HudModel/HudLiar upstream (TECH-001 §5.2, §5.4), never to this drawing code.
 ##
 ## Registration: the Vigil is found by its group &"vigil"; anything else joins with
-## `LedgerCompass.register(node, kind)` (group &"compass_marker" + meta "compass_kind").
+## `LedgerCompass.register(node, kind, rank)` (group &"compass_marker" + metas "compass_kind",
+## "compass_rank"). Lower ranks are listed first (stable), so under the cap a Sepulchre and its
+## Grubs are not crowded out by geodes. With a `torus` set, positions are wrapped into the sector
+## first (actors sit on the image nearest the Vigil, possibly outside [0, size)).
 ## Marker positions are sampled and redrawn at most `redraw_hz` times a second (≤ 10 Hz ✱).
 
 const HONEST := true
 const GROUP := &"compass_marker"
 const VIGIL_GROUP := &"vigil"
 const KIND_META := &"compass_kind"
+const RANK_META := &"compass_rank"
+const RANK_DEFAULT := 100
 const KIND_VIGIL := &"vigil"
 const KIND_DEFAULT := &"marker"
 const KIND_THREAT := &"threat"
+const KIND_SEPULCHRE := &"sepulchre"
+const KIND_GRUB := &"grub"
 
 @export var stats: LedgerCompassStats
 ## The world area the widget maps (the sector's bounds).
 @export var world_rect: Rect2 = Rect2(0, 0, 640, 360)
+## The sector's torus when it wraps (injected by the sector). Null = off-map targets are clamped.
+var torus: Torus
 
 ## Widget-local marker positions and kinds from the last refresh (≤ max_markers).
 var marker_points: PackedVector2Array = PackedVector2Array()
@@ -30,8 +39,9 @@ var _since_refresh: float = INF
 
 
 ## Adds `node` to the compass as a marker of `kind`.
-static func register(node: Node2D, kind: StringName = KIND_DEFAULT) -> void:
+static func register(node: Node2D, kind: StringName = KIND_DEFAULT, rank: int = RANK_DEFAULT) -> void:
 	node.set_meta(KIND_META, kind)
+	node.set_meta(RANK_META, rank)
 	node.add_to_group(GROUP)
 
 
@@ -60,9 +70,10 @@ func refresh() -> void:
 	if is_inside_tree():
 		var nodes: Array[Node] = []
 		nodes.append_array(get_tree().get_nodes_in_group(VIGIL_GROUP))
-		nodes.append_array(get_tree().get_nodes_in_group(GROUP))
+		nodes.append_array(by_rank(get_tree().get_nodes_in_group(GROUP)))
 		for n in collect(nodes, stats.max_markers if stats else 0):
-			marker_points.append(map_point(n.global_position, world_rect, size))
+			var p := torus.wrap(n.global_position) if torus != null else n.global_position
+			marker_points.append(map_point(p, world_rect, size))
 			marker_kinds.append(kind_of(n))
 	refresh_count += 1
 	queue_redraw()
@@ -94,6 +105,19 @@ static func collect(nodes: Array[Node], cap: int) -> Array[Node2D]:
 	return out
 
 
+## `nodes` ordered by compass rank, lowest first; equal ranks keep their order (stable).
+static func by_rank(nodes: Array[Node]) -> Array[Node]:
+	var keyed: Array = []
+	for i in nodes.size():
+		keyed.append([int(nodes[i].get_meta(RANK_META, RANK_DEFAULT)), i, nodes[i]])
+	keyed.sort_custom(func(a: Array, b: Array) -> bool:
+		return int(a[0]) < int(b[0]) or (int(a[0]) == int(b[0]) and int(a[1]) < int(b[1])))
+	var out: Array[Node] = []
+	for k: Array in keyed:
+		out.append(k[2] as Node)
+	return out
+
+
 static func kind_of(n: Node) -> StringName:
 	if n.is_in_group(VIGIL_GROUP):
 		return KIND_VIGIL
@@ -110,11 +134,14 @@ static func map_point(world: Vector2, world_area: Rect2, widget_size: Vector2) -
 	return t * widget_size
 
 
-## Role colours (ART-001 §4 palette only): the Vigil in gas-gold, threats in SIGNAL, others bone.
+## Role colours (ART-001 §4 palette only): the Vigil in gas-gold, threats in SIGNAL, the Choir's
+## Sepulchre and Grubs in Choir hue, others bone.
 static func color_for(kind: StringName) -> Color:
 	match kind:
 		KIND_VIGIL:
 			return Pal.GAS_4
 		KIND_THREAT:
 			return Pal.SIGNAL
+		KIND_SEPULCHRE, KIND_GRUB:
+			return Pal.CHOIR_4
 	return Pal.BONE_4

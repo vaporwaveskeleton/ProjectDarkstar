@@ -1,0 +1,32 @@
+{
+	"format": "darkstar.scenario",
+	"version": 1,
+	"id": "m1_grub_procession",
+	"profile": "qa",
+	"args": [],
+	"fixtures": {},
+	"timeout_frames": 1200,
+	"steps": [
+		{"do": "wait_route", "route": "attract", "within": 120},
+		{"do": "goto", "route": "sector"},
+		{"do": "wait_route", "route": "sector", "within": 240},
+		{"do": "mouse_move", "x": 632, "y": 180},
+		{"do": "assert", "id": "sector/choir", "prop": "grubs_alive", "eq": 4},
+		{"do": "assert", "id": "sector/choir", "prop": "deposited_shards", "eq": 0},
+		{"do": "assert", "id": "sector/choir", "prop": "segments", "eq": 0},
+		{"do": "press", "action": "aim_right"},
+		{"do": "wait_frames", "frames": 10},
+		{"do": "press", "action": "fire_lance"},
+		{"do": "wait_until", "id": "sector/field", "prop": "geodes_alive", "lt": 10, "within": 300},
+		{"do": "release", "action": "fire_lance"},
+		{"do": "release", "action": "aim_right"},
+		{"do": "hold", "action": "move_left", "frames": 20},
+		{"do": "wait_until", "id": "sector/choir", "prop": "grubs_carrying", "gte": 1, "within": 600},
+		{"do": "checkpoint", "name": "grub_stole_glass"},
+		{"do": "wait_until", "id": "sector/choir", "prop": "deposited_shards", "gte": 1, "within": 700},
+		{"do": "checkpoint", "name": "grub_deposited"},
+		{"do": "assert", "id": "sector/choir", "prop": "grubs_alive", "eq": 4},
+		{"do": "screenshot", "name": "grub_procession", "target": "window"},
+		{"do": "quit"}
+	]
+}

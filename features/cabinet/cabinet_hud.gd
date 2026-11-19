@@ -10,6 +10,7 @@ extends Control
 
 @export var screen_hud: CabinetScreenHud
 @export var field: BezelField
+@export var light_source: SubViewport   ## the arcade screen's SubViewport: ScreenLight reads its average colour
 
 var score := 0:
 	set(v):
@@ -54,6 +55,8 @@ var peel := 0.0:
 			_right.peel = v
 		if _glass != null:
 			_glass.peel = v
+		for part in _parts:
+			part.visible = v < 1.0
 		if field != null:
 			field.peel = v
 		if screen_hud != null:
@@ -68,6 +71,9 @@ var _left: BezelPrint
 var _right: BezelPrint
 var _door: CoinDoorFace
 var _glass: BezelGlass
+var _parts: Array[Control] = []
+var _tube: ScreenTube
+var _text_cache: Dictionary = {}
 
 
 func _ready() -> void:
@@ -78,10 +84,13 @@ func _ready() -> void:
 	_door = CoinDoorFace.new()
 	add_child(_door)
 	_door.fit_to(_door_plate())
+	_parts = BezelAssembly.add_sheet_parts(self, get_parent() as ScreenRig)
 	_glass = BezelGlass.new()
 	_glass.rig = get_parent() as ScreenRig
 	add_child(_glass)
 	_glass.peel = peel
+	_tube = BezelAssembly.add_tube(self)
+	BezelAssembly.add_light(self, light_source)
 	_left.peel = peel
 	_right.peel = peel
 	_left.crack = crack
@@ -123,4 +132,4 @@ func _door_plate() -> Rect2:
 func _draw() -> void:
 	if peel >= 1.0:
 		return
-	CabinetBezel.draw_price(self, _door_plate(), tr("CAB_COIN_PRICE"))
+	CabinetBezel.draw_price(self, _text_cache, _door_plate(), tr("CAB_COIN_PRICE"))

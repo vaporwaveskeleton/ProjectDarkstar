@@ -1,6 +1,6 @@
 class_name BezelField
 extends Control
-## The printed field around the screen hole (interim: PR C re-composes the bezel), reverse-printed on glass. Navy print
+## The printed sheet round the screen hole (PR C pass 2: one sheet with the two columns), reverse-printed on glass. Navy print
 ## ink over the whole window in rig units (ScreenFit.bezel_rect, so no bars at any aspect) except the
 ## hole itself, with the key-black tube-mask edge hugging the hole above and below; the two columns
 ## (BezelPrint) sit on top of it, flush against the hole's sides. It is drawn as four rectangles
@@ -100,8 +100,15 @@ static func _shift(r: Rect2, d: Vector2) -> Rect2:
 
 
 func _draw() -> void:
+	# the sheet: the top and bottom bands within the sheet's width (the sides beyond it are the room,
+	# CabinetRoom, dark), then the key-black tube-mask edges
 	var rs := painted()
-	for i in 4:
-		draw_rect(rs[i], inks.ink(&"navy"))
+	var sx := CabinetBezel.sheet_x()
+	for i in 2:
+		var r := rs[i]
+		var x0 := maxf(r.position.x, sx.x)
+		var x1 := minf(r.end.x, sx.y)
+		if x1 > x0:
+			draw_rect(Rect2(x0, r.position.y, x1 - x0, r.size.y), inks.ink(&"navy"))
 	for i in range(4, 6):
 		draw_rect(rs[i], inks.ink(&"key_black"))

@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3]
+[gd_scene load_steps=27 format=3]
 
 [ext_resource type="Script" path="res://scenes/sector/sector_stub.gd" id="1"]
 [ext_resource type="PackedScene" path="res://features/vigil/vigil.tscn" id="2"]
@@ -17,6 +17,13 @@
 [ext_resource type="Resource" path="res://data/charges/geode.tres" id="15"]
 [ext_resource type="Script" path="res://features/charges/charge_magazine.gd" id="16"]
 [ext_resource type="Resource" path="res://data/charges/charge_magazine.tres" id="17"]
+[ext_resource type="Script" path="res://features/charges/charge_launcher.gd" id="18"]
+[ext_resource type="Resource" path="res://data/charges/charge.tres" id="19"]
+[ext_resource type="Script" path="res://features/sepulchre/procession_sandbox.gd" id="20"]
+[ext_resource type="Resource" path="res://data/sepulchre/procession_sandbox.tres" id="21"]
+[ext_resource type="Resource" path="res://data/sepulchre/sepulchre.tres" id="22"]
+[ext_resource type="Script" path="res://features/choir/grub_procession.gd" id="23"]
+[ext_resource type="Resource" path="res://data/choir/grub.tres" id="24"]
 
 [node name="SectorStub" type="Node2D"]
 script = ExtResource("1")
@@ -48,6 +55,25 @@ magazine = NodePath("../ChargeMagazine")
 unique_name_in_owner = true
 script = ExtResource("16")
 stats = ExtResource("17")
+
+[node name="ChargeLauncher" type="Node" parent="." node_paths=PackedStringArray("magazine")]
+unique_name_in_owner = true
+script = ExtResource("18")
+stats = ExtResource("19")
+magazine = NodePath("../ChargeMagazine")
+
+[node name="GrubProcession" type="Node" parent="." node_paths=PackedStringArray("shard_field")]
+unique_name_in_owner = true
+script = ExtResource("23")
+stats = ExtResource("24")
+shard_field = NodePath("../ShardField")
+
+[node name="ProcessionSandbox" type="Node" parent="." node_paths=PackedStringArray("grubs")]
+unique_name_in_owner = true
+script = ExtResource("20")
+stats = ExtResource("21")
+sepulchre_stats = ExtResource("22")
+grubs = NodePath("../GrubProcession")
 
 [node name="Actors" type="Node2D" parent="."]
 unique_name_in_owner = true

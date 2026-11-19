@@ -1,7 +1,8 @@
 class_name AetherLeviathan
 extends AetherShaderRect
 ## The Presence (leviathan) crossing the frame: scale by occlusion — it passes in front of the
-## sphere line, blots out the stars, is cropped by both frame edges (body ~60% of frame height).
+## sphere line, blots out the stars, is cropped by the frame: its back climbs off the top edge and
+## its belly curve passes over the lantern without enclosing it (pass 3).
 ## Moves, fades at the ends of its pass, flees as drain rises.
 ## Never a collider (no physics body anywhere under it). Emits `leviathan_entered` when it comes
 ## into the frame and `leviathan_closest` when its middle passes the frame centre.
@@ -11,10 +12,11 @@ signal leviathan_closest
 
 ## ✱ quad size in logical px: many times the frame, so it is only ever seen cropped.
 @export var quad_size: Vector2 = Vector2(2600.0, 900.0)
-## ✱ y of the body's centre line in layer px (low, so the frame crops it).
-@export var body_y: float = 176.0
-## ✱ body thickness in logical px (about 60% of the 360 px frame).
-@export var thickness: float = 230.0
+## ✱ y of the body's centre line in layer px: high, so the back runs off the top of the frame and
+## the belly curve passes just above the lantern (pass 3: the body never encloses the lantern).
+@export var body_y: float = 30.0
+## ✱ body thickness in logical px (back 60% above the centre line, belly 40% below).
+@export var thickness: float = 300.0
 ## ✱ extra speed per unit of drain (it flees).
 @export var flee_speedup: float = 5.0
 

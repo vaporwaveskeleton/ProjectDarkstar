@@ -188,7 +188,7 @@ script = ExtResource("20")
 fx_tuning = ExtResource("fx_tuning")
 spec = ExtResource("28")
 
-[node name="Hud" type="Control" parent="Rig" node_paths=PackedStringArray("screen_hud", "field")]
+[node name="Hud" type="Control" parent="Rig" node_paths=PackedStringArray("screen_hud", "field", "light_source")]
 unique_name_in_owner = true
 layout_mode = 3
 anchors_preset = 15
@@ -200,6 +200,7 @@ mouse_filter = 2
 script = ExtResource("18")
 screen_hud = NodePath("../ArcadeScreen/ScreenViewport/HudLayer/ScreenHud")
 field = NodePath("Field")
+light_source = NodePath("../ArcadeScreen/ScreenViewport")
 
 [node name="Field" type="Control" parent="Rig/Hud" node_paths=PackedStringArray("rig")]
 layout_mode = 3

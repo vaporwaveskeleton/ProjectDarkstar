@@ -30,6 +30,15 @@ unique_name_in_owner = true
 script = ExtResource("2_band")
 shader = ExtResource("10_fog")
 
+[node name="RibBackLayer" type="Parallax2D" parent="."]
+unique_name_in_owner = true
+scroll_scale = Vector2(0.1, 0.1)
+
+[node name="SetPiecesBack" type="Node2D" parent="RibBackLayer"]
+unique_name_in_owner = true
+script = ExtResource("17_set")
+half = 1
+
 [node name="SkyLayer" type="Parallax2D" parent="."]
 unique_name_in_owner = true
 scroll_scale = Vector2(0.06, 0.06)

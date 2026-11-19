@@ -1,11 +1,12 @@
 # DARKSTAR — Systems Bible (Numbers)
 
-**Doc ID:** SYS-001 · **Version:** 1.4 · **Status:** Authoritative for all numbers · **Last updated:** 2026-11-18
+**Doc ID:** SYS-001 · **Version:** 1.5 · **Status:** Authoritative for all numbers · **Last updated:** 2026-11-19
 **Owner:** Design (systems) · **Upstream:** `GDD_DARKSTAR_v0.2.md` (GDD-001) · **Downstream:** every other doc in this set
 **Data target:** `docs/04-production/TECH_ARCHITECTURE.md` §6 (data-driven tables) — every table below maps 1:1 to a `.tres`/JSON resource.
 **Rev 1.1 (2026-11-17):** the Anchor field rows in §1.1 (owner decision D-11 of GDD-001 §18); **rev 1.2 (2026-11-17, owner-delegated rulings R-01, R-04, R-10, R-11, R-14):** §1.2 post-hit grace, §9 resolution closed to 640×360, hitbox diameter and entity exception, on-screen caps; §2.2 ninth-sky Hunger as one +2 row, §6 Hourglass budget/death cost/refund, §7.2 Codex stamp note, §7.5 Fragments and Threads (LOOP-001 LR-09…LR-13); the warp-owned numbers WARP-001 asked for in its §8 R-01 to R-05, added to §6, §9 and §10; and the §2.2 eaten-rule pointer corrected from WARP-001 §6 to §3. **No pre-existing number in this doc was changed by that revision.**
 **Rev 1.3 (2026-11-18, cosmic horror design rev 3; PM ruling 2026-11-18 (owner grant), GDD-001 §18 D-15, CHD-17):** first-pass rows for the Passing, the Glimpse, gaze and the entity's on-screen silhouette (new §2.3); gaze drain and the Procession let-pass gain (§1.5); hull Charge lamps (§1.4); kit memory, reserve kits, the Procession and the death-site Penitent cap (new §4.1); the Hourglass in-run show threshold (§6); the lie-law rows and the tear silence (§9); Codex gating, the respec row and the post-tree Ember sink (new §7.6). **Retired (CHD-15, Unwritten Ink):** the §7.2 `Codex firsts` Ink row, the §7.3 Ink multiplier column, the §6 Shrine purge Ink payout and the §7.5 20 : 1 overflow valve. Every new game-visible row is marked **PM-approved 2026-11-18 under owner grant; retune at playtest** (not `✱`). Rows with no ruled value say "value owed" and are listed in TECH-001 §11.1 (Q-T66).
 **Rev 1.4 (2026-11-18, Act 1 vertical slice; PM ruling 2026-11-18 (owner grant)):** §7.1 new row "Act 0 bank (first Ruins visit, once)" (the existing Ember formula applied once; PM-approved 2026-11-18 under owner grant; retune at playtest); §6 Hourglass Clock budget row notes the first-visit start at the first launch (GDD §6.2 exception). **No pre-existing number was changed.** Open: the bank's save reason (TECH-001 §11.1 Q-T101).
+**Rev 1.5 (2026-11-19, M1 slice 3 PR 4; PM under owner autonomy grant 2026-11-19):** §1.4 turn-authority reading (time for a 180° turn), Charge contact radius, trail and hits on target; §2 phase-0 row: "Sepulchre HP per segment 8 ✱" **dropped for phases 0–1** (1 Charge hit = 1 segment; TECH-001 Q-T110), new Sepulchre and sandbox procession rows; §3 Grub flee-while-carrying (never, Q-T112), body/steering and idle-orbit rows. All new values are the Cabinet's or M1 engineering values, ✱.
 
 ---
 
@@ -102,8 +103,11 @@ Conventions used everywhere:
 | Shard lifetime | never despawns ✱ | — | follows the row above; no timer. PM-approved 2026-11-18 |
 | Charge life | 6.0 s ✱ | — | a fired Charge gutters (expires) after this; the Cabinet value. PM-approved 2026-11-18 (Q-T17 part) |
 | Charge speed | 210 px/s 🔒 | 250 px/s (`Homing Song`) | |
-| Turn authority | 1.6 s 🔒 | 2.6 s (`Homing Song`, +Composure cost) | |
-| Charge HP (interceptable) | 1 dmg unit ✱ | — | Grub 1, Acolyte 1, Listener 2, geode contact 1, Shrine proximity destroys it (0.9 s fuse) |
+| Turn authority | 1.6 s 🔒 | 2.6 s (`Homing Song`, +Composure cost) | read as the time a Charge needs to turn through 180°, so the steering limit is π / turn authority rad/s (the Cabinet's reading, `glass_field.gd`; M1 uses the same). PM-accepted 2026-11-19 (PM under owner autonomy grant 2026-11-19) |
+| Charge HP (interceptable) | 1 dmg unit ✱ | — | Grub 1, Acolyte 1, Listener 2, geode contact 1, Shrine proximity destroys it (0.9 s fuse). As built (M1): Grub and geode contact intercept it; Acolyte, Listener and Shrine are not built |
+| Charge contact radius | 4 px ✱ | — | the Charge's hit and interception circle; the Cabinet value. PM-accepted 2026-11-19 (PM under owner autonomy grant 2026-11-19) |
+| Charge trail (presentation) | 10 points ✱ | — | drawing only; the Cabinet value. PM-accepted 2026-11-19 (PM under owner autonomy grant 2026-11-19) |
+| Charge hits on its target (phases 0–1) | 1 ✱ | — | in phases 0–1 the Charge's target is the Sepulchre and one hit knocks 1 segment off (§2 row 0). PM ruling C4, M1 slice 3 (PM under owner autonomy grant 2026-11-18; TECH-001 Q-T110) |
 | Charge → entity | 1 **Unravel hit** | — | 🔒 |
 | Entity hits to unmake (complete) | 13 🔒 | — | fewer while incomplete: `hits_needed = 13 - 3 + ceil(segments/7)` ✱ → 3 at 0 segments, 13 at 20 |
 | Charge loss feedback | glass chime + Choir half-note | — | 🔒 GDD; audio doc owns the sound |
@@ -147,13 +151,22 @@ Formal name **Nhael'Gharoth, the Waking Dark**; Choir names "the Hollow King", "
 
 | Phase | Threshold | Key numbers |
 |---|---|---|
-| 0 Seed / Cold Sepulchre | sector start | Sepulchre HP per segment **8** ✱; salt ward blocks 1 deposit for 30 s |
-| 1 Procession | 1–11 segments | each deposited shard = **1 segment point**, segment costs **3 shards** ✱ → **60 shards** to complete a sector |
+| 0 Seed / Cold Sepulchre | sector start | no Sepulchre HP: in phases 0–1 one Null-Iron Charge hit knocks **1 segment** off (500 pts, §7.1); the former "Sepulchre HP per segment 8 ✱" is dropped for phases 0–1 (PM ruling C4, M1 slice 3; recorded as TECH-001 Q-T110, PM under owner autonomy grant 2026-11-19); salt ward blocks 1 deposit for 30 s |
+| 1 Procession | 1–11 segments | each deposited shard = **1 segment point**, segment costs **3 shards** ✱ → **60 shards** to complete a sector (GDD §8.4 follows this, TECH-001 Q-T111) |
 | 2 Guard | 6+ segments (Litany Ring) | 8 Acolyte ring nodes; +15% deposit speed per living node |
-| 3 Quickening | ≥ 12 segments 🔒 | Compass starts lying; whisper line; charges can knock modules off |
+| 3 Quickening | ≥ 12 segments 🔒 | Compass starts lying; whisper line; charges can knock modules off (§2.1 `Module knock`; phases 0–1 use row 0's 1 segment per hit) |
 | 4 AWAKENING | 20/20 🔒 | 3 s stagger window; stagger needs **3 hits** in it 🔒; the Awakening line (AUDIO-001) |
 | 5 Rampage | after awakening | contact death 🔒 (no weapons); speed below; heals by eating |
 | 6 Unravel | Act 3–4 only | 3 rule-threads; latch time 1.4 s each ✱; R key GDD §4.1 |
+
+Sepulchre numbers for phases 0–1 as built in M1 (`ds_sepulchre.*`, TECH-001 §3.4):
+
+| Field | Value | Notes |
+|---|---|---|
+| Sepulchre deposit radius | 26 px ✱ | a carrying Grub deposits inside this distance; the Cabinet value. PM-accepted 2026-11-19 (PM under owner autonomy grant 2026-11-19) |
+| Sepulchre hurt radius | 26 px ✱ | Charges hit it inside this radius; the lance leaves a chalk tick and does no damage; the Cabinet value. PM-accepted 2026-11-19 (PM under owner autonomy grant 2026-11-19) |
+| Deposit pulse (presentation) | 0.3 s ✱ | how long the deposit ring shows. PM-accepted 2026-11-19 (PM under owner autonomy grant 2026-11-19) |
+| M1 sandbox procession layout | Sepulchre at (1100, 560); one route (760, 440) → (900, 520) → (1010, 580); Grubs start on a 60 px ring round the Sepulchre ✱ | torus positions in the 1920×720 sandbox (TECH-001 Q-T58); 4 Grubs (§4, the PM's M1 count); the ring is the Cabinet's 60. Replaced by kit anchors later (ZONES-001 §6.1). PM-accepted 2026-11-19 (PM under owner autonomy grant 2026-11-19) |
 
 ### 2.1 Entity stats
 
@@ -167,7 +180,7 @@ Formal name **Nhael'Gharoth, the Waking Dark**; Choir names "the Hollow King", "
 | Eats a Choir unit | +1 Unravel hit restored | 1 restore per 6 s, cap 3 per rampage | ✱ keeps healing legible |
 | Eats a Shrine | +1 Unravel hit restored, Corruption −1 | — | the entity does not share; this is a claw-back tool |
 | Gaze cone | 62° half-angle, 520 px | +8° per T above 2 | |
-| Module knock (charge on a piece) | knocks 1–3 modules off | — | 500 pts each, Sinistar's "piece" score kept (RES-001) |
+| Module knock (charge on a piece) | knocks 1–3 modules off | — | 500 pts each, Sinistar's "piece" score kept (RES-001). In phases 0–1 a Charge hit on the Sepulchre knocks exactly 1 segment (§2 row 0, TECH-001 Q-T110) |
 | Post-failure | sector → **Hollow**, permanent entity patrol in that biome, Hunger +1 🔒 | — | GDD §8.4 failure state |
 
 ### 2.2 Hunger (entity-side escalation, automatic)
@@ -222,6 +235,9 @@ Oubliette Grub AI numbers (the Cabinet values, so M1 matches Act 0; closes that 
 | Grub seek speed | 160 px/s ✱ | speed toward a free shard, before it carries one (carry and flee speeds are in the table above). PM-approved 2026-11-18 |
 | Grub flee radius | 110 px ✱ | distance from the Vigil at which a Grub starts to flee. PM-approved 2026-11-18 |
 | Grub respawn | 6.0 s ✱ | delay before a killed Grub is replaced. PM-approved 2026-11-18 |
+| Grub flee while carrying | never ✱ | a Grub carrying glass does not flee the lantern ("devotion beats fear", the Cabinet rule). PM under owner autonomy grant 2026-11-19 (TECH-001 Q-T112) |
+| Grub body and steering (engineering) | radius 6 px; pickup margin 4 px; steer 5 /s; arrive 2 px; flee step 80 px; waypoint reach 12 px; a dying carrier drops its shard with 0.3 of its velocity ✱ | the Cabinet's literals, mirrored in M1 (`ds_choir.grub.*`, TECH-001 §3.4); waypoint reach is new in M1. PM-accepted 2026-11-19 (PM under owner autonomy grant 2026-11-19) |
+| Grub idle orbit (no free glass) | 90 px round the Sepulchre at 70 px/s, orbit point turning 0.3 rad/s ✱ | the Cabinet's literals. PM-accepted 2026-11-19 (PM under owner autonomy grant 2026-11-19) |
 
 ### 3.1 Faction laws that are numbers, not mood 🔒
 

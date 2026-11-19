@@ -12,6 +12,10 @@ const KEYS := [
 	"print_misregister", "print_fade", "print_mottle", "print_halftone", "print_halftone_cell", "print_scuff", "print_flake", "backer_color",
 	"glass_reflection", "glass_edge_tint", "glass_edge_color", "glass_dust", "glass_smudge", "glass_scratch",
 	"sticker_fade", "sticker_curl", "vent_dust",
+	"spill_gain", "spill_radius", "spill_boost", "spill_curve", "spill_interval", "spill_smooth", "spill_steady_color", "spill_steady_amount", "recess_shadow",
+	"recess_width", "tube_corner_radius", "tube_glass", "tube_reflection", "tube_dust", "tube_bloom", "tube_edge_shadow", "tube_max_shift",
+	"tmold_width", "bolt_radius", "marquee_lettering", "marquee_stroke", "marquee_tracking", "marquee_unevenness", "print_dot_gain",
+	"price_cap", "price_stroke", "price_tracking", "glass_band", "glass_screen_reflection",
 ]
 
 
@@ -89,14 +93,16 @@ func test_coin_slot_owns_a_door_face_that_follows_the_glow() -> void:
 func test_price_text_sits_fully_on_the_lit_plate_inside_the_inner_panel() -> void:
 	var plate := Rect2(Vector2.ZERO, CabinetBezel.coin_plate().size)
 	var lit := CabinetBezel.price_button(plate)
+	var s := load(SURFACE) as CabinetSurface
 	var text := TranslationServer.translate("CAB_COIN_PRICE")
-	var w := float(PixelText.width(text, 1))
+	var sz := BezelText.ink_size(text, s.price_cap, s.price_stroke, s.price_tracking)
 	assert_bool(CabinetBezel.fits_price()).is_true()
-	var x := lit.get_center().x - w * 0.5
-	assert_float(x).is_greater_equal(lit.position.x)
-	assert_float(x + w).is_less_equal(lit.end.x)
-	assert_float(x - floorf(x)).is_equal(0.0)          # starts on a whole unit
-	assert_float(lit.size.y).is_greater_equal(float(PixelText.H))
+	assert_float(sz.x).is_less_equal(lit.size.x)
+	assert_float(sz.y).is_less_equal(lit.size.y)
+	assert_float(lit.get_center().x).is_equal_approx(plate.size.x * 0.5, 0.001)
+	# a sensible plate: the lettering (VectorText, smaller cap height) has a margin, and the plate is not huge
+	assert_float(lit.size.x - sz.x).is_greater(2.0)
+	assert_float(lit.size.y).is_less(14.0)
 	# the plate sits inside the door's inner panel (door 55.2 wide, rim 3.2)
 	assert_float(lit.position.x).is_greater_equal(0.4 + 3.2)
 	assert_float(lit.end.x).is_less_equal(plate.size.x - 0.4 - 3.2)

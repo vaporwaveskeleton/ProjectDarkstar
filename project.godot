@@ -188,3 +188,10 @@ environment/defaults/default_clear_color=Color(0.0392157, 0.0392157, 0.0705882, 
 2d/snap/snap_2d_transforms_to_pixel=false
 2d/snap/snap_2d_vertices_to_pixel=false
 anti_aliasing/quality/msaa_2d=2
+
+[shader_globals]
+
+cab_screen_light={
+"type": "color",
+"value": Color(0.5, 0.6, 0.85, 0.2)
+}

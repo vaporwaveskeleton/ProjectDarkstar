@@ -1,8 +1,7 @@
 class_name ChargeMagazine
 extends Node
 ## Null-Iron Charge pips (GDD §8.3, SYS-001 §1.4): one collected shard = one Charge, up to the cap.
-## Sector-side holder until RunSession owns run state (TECH-001 §4.2). Firing Charges is not built
-## here (M1 slice 3 PR 4 spends from this).
+## Sector-side holder until RunSession owns run state (TECH-001 §4.2). ChargeLauncher spends from it.
 
 @export var stats: ChargeMagazineStats
 
@@ -28,6 +27,15 @@ func try_add(n: int = 1) -> int:
 	if is_full():
 		AudioService.play(&"magazine_full")
 	return added
+
+
+## Spends `n` Charges. False (nothing spent) when fewer than `n` are loaded. No cue here: the
+## launcher plays charge_fire or dry_fire.
+func try_spend(n: int = 1) -> bool:
+	if n <= 0 or count < n:
+		return false
+	count -= n
+	return true
 
 
 func reset() -> void:

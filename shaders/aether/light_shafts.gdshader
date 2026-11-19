@@ -43,8 +43,8 @@ void fragment() {
 		vec2 lq = spx - lev_origin;
 		vec2 prof = a_lev_profile(lq.x, lev_time, lev_quad, lev_thick);
 		if (prof.y > 0.5) {
-			float top = prof.x - prof.y * 0.5 - 8.0;
-			float bottom = prof.x + prof.y * 0.5;
+			float top = prof.x - prof.y * A_LEV_BACK - 8.0;
+			float bottom = prof.x + prof.y * A_LEV_BELLY;
 			float shade = smoothstep(top - 4.0, top + 14.0, lq.y) * (1.0 - 0.55 * smoothstep(bottom, bottom + 170.0, lq.y));
 			v *= 1.0 - shade * lev_presence * 0.92;
 		}
