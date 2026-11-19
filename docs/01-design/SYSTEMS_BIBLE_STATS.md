@@ -4,7 +4,7 @@
 **Owner:** Design (systems) · **Upstream:** `GDD_DARKSTAR_v0.2.md` (GDD-001) · **Downstream:** every other doc in this set
 **Data target:** `docs/04-production/TECH_ARCHITECTURE.md` §6 (data-driven tables) — every table below maps 1:1 to a `.tres`/JSON resource.
 **Rev 1.1 (2026-11-17):** the Anchor field rows in §1.1 (owner decision D-11 of GDD-001 §18); **rev 1.2 (2026-11-17, owner-delegated rulings R-01, R-04, R-10, R-11, R-14):** §1.2 post-hit grace, §9 resolution closed to 640×360, hitbox diameter and entity exception, on-screen caps; §2.2 ninth-sky Hunger as one +2 row, §6 Hourglass budget/death cost/refund, §7.2 Codex stamp note, §7.5 Fragments and Threads (LOOP-001 LR-09…LR-13); the warp-owned numbers WARP-001 asked for in its §8 R-01 to R-05, added to §6, §9 and §10; and the §2.2 eaten-rule pointer corrected from WARP-001 §6 to §3. **No pre-existing number in this doc was changed by that revision.**
-**Rev 1.3 (2026-11-18, cosmic horror design rev 3; PM ruling 2026-11-18 (owner grant), GDD-001 §18 D-15, CHD-17):** first-pass rows for the Passing, the Glimpse, gaze and the entity's on-screen silhouette (new §2.3); gaze drain and the Procession let-pass gain (§1.5); hull Charge lamps (§1.4); kit memory, reserve kits, the Procession and the death-site Penitent cap (new §4.1); the Hourglass in-run show threshold (§6); the lie-law rows and the tear silence (§9); Codex gating, the respec row and the post-tree Ember sink (new §7.6). **Retired (CHD-15, Unwritten Ink):** the §7.2 `Codex firsts` Ink row, the §7.3 Ink multiplier column, the §6 Shrine purge Ink payout and the §7.5 20 : 1 overflow valve. Every new game-visible row is marked **PM-approved 2026-11-18 under owner grant; retune at playtest** (not `✱`). Rows with no ruled value say "value owed" and are listed in TECH-001 §11.1 (Q-T65).
+**Rev 1.3 (2026-11-18, cosmic horror design rev 3; PM ruling 2026-11-18 (owner grant), GDD-001 §18 D-15, CHD-17):** first-pass rows for the Passing, the Glimpse, gaze and the entity's on-screen silhouette (new §2.3); gaze drain and the Procession let-pass gain (§1.5); hull Charge lamps (§1.4); kit memory, reserve kits, the Procession and the death-site Penitent cap (new §4.1); the Hourglass in-run show threshold (§6); the lie-law rows and the tear silence (§9); Codex gating, the respec row and the post-tree Ember sink (new §7.6). **Retired (CHD-15, Unwritten Ink):** the §7.2 `Codex firsts` Ink row, the §7.3 Ink multiplier column, the §6 Shrine purge Ink payout and the §7.5 20 : 1 overflow valve. Every new game-visible row is marked **PM-approved 2026-11-18 under owner grant; retune at playtest** (not `✱`). Rows with no ruled value say "value owed" and are listed in TECH-001 §11.1 (Q-T66).
 
 ---
 
@@ -271,7 +271,7 @@ Cosmic horror design rev 3 (PM ruling 2026-11-18 (owner grant)). The rules are Z
 | Death-site Penitent cap | 1 per sector, shared with the Coma Penitent | one Penitent slot per sector for the Coma Penitent, rekindled Penitents (§7.6) and other death-site Penitents; precedence is ZONES-001 §4.5's. PM-approved 2026-11-18 under owner grant; retune at playtest |
 | Procession: shards when broken | 12 | the Mourning Glass body drops this many shards; the sector's Choir go to full detection. PM-approved 2026-11-18 under owner grant; retune at playtest |
 | Procession: Sepulchre segments when let pass | +1 segment | the column consecrates the Sepulchre (Lantern down). The Composure gain is §1.5 `Procession let pass (Lantern down)`. PM-approved 2026-11-18 under owner grant; retune at playtest |
-| Procession: Deacon count | **value owed** | Deacons leading the column (ZONES-001 §6.6); with its draw frequency, host Seams and let-pass test in TECH-001 §11.1 Q-T69 |
+| Procession: Deacon count | **value owed** | Deacons leading the column (ZONES-001 §6.6); with its draw frequency, host Seams and let-pass test in TECH-001 §11.1 Q-T70 |
 
 ---
 
@@ -317,7 +317,7 @@ Cosmic horror design rev 3 (PM ruling 2026-11-18 (owner grant)). The rules are Z
 | Corruption: geode → Shrine | 90 s of unattended Choir activity within 200 px ✱ |
 | Corruption: Shrine → sector bruise | 4 Shrines ✱ |
 | Corruption: sector → Hollow | 10 Shrines or a lost entity encounter |
-| Shrine purge reward | +1 Composure, −1 Corruption, ~~Ink 15~~ (first purge of a biome per iteration). **Ink payout retired 2026-11-18, CHD-15:** it pays Ember instead, amount **value owed** (TECH-001 §11.1 Q-T65) |
+| Shrine purge reward | +1 Composure, −1 Corruption, ~~Ink 15~~ (first purge of a biome per iteration). **Ink payout retired 2026-11-18, CHD-15:** it pays Ember instead, amount **value owed** (TECH-001 §11.1 Q-T66) |
 | Ledger Compass | sector list + entity marker; **lies** at T ≥ 3 or Composure ≤ 3 (one lie per sector; the lie is always *legible* — WARP-001 §4) |
 
 ---
@@ -350,7 +350,7 @@ Score is **Ember's primary input**: `Ember = floor(score / 200)` plus milestone 
 | Choir elites / Heralds | 60–200 |
 | ~~Codex firsts (2–5 × 20 Ink)~~ | ~~40–100 Ink — 20 Ink is per Codex **stamp** (first read of an entry); Ilse Marrow’s marginalia and `cx_vigil_` entries pay 0 (LOOP-001 §8, LR-13)~~ **Retired 2026-11-18, CHD-15:** a Codex stamp pays no currency; it gates a Lantern Tree node (§7.6; LOOP-001 §3.7) |
 | Run-Sigil picks | 3 (choose-1-of-3, 1 paid reroll each) |
-| Former-Ink Ember (SIG-S-04, SIG-S-08, SIG-S-18, SIG-W-20; Shrine purge, §6) | **value owed**: the rows are in §7.6 (TECH-001 §11.1 Q-T65) |
+| Former-Ink Ember (SIG-S-04, SIG-S-08, SIG-S-18, SIG-W-20; Shrine purge, §6) | **value owed**: the rows are in §7.6 (TECH-001 §11.1 Q-T66) |
 | **Run total** | **~450–800 Ember**, plus the former-Ink Ember above once valued. ~~40–100 Ink~~ (retired 2026-11-18, CHD-15). The LOOP-001 §9.5 economy model is to be re-run without Ink (LR-14); no new totals until then |
 
 ### 7.3 Entropy rewards
@@ -415,7 +415,7 @@ Cosmic horror design rev 3 (PM ruling 2026-11-18 (owner grant)). Unwritten Ink r
 | Ember sink B: rekindle price | **value owed** | rekindles one chosen death-site Penitent (LOOP-001 §9.6) |
 | Rekindled Penitents | at most 1 per kit | a rekindled Penitent stays lit through Hard Unmakings; same Penitent behaviour, no power. It takes the shared per-sector slot (§4.1 `Death-site Penitent cap`). PM-approved 2026-11-18 under owner grant; retune at playtest |
 
-All owed values, and the LOOP-001 §9.5 economy re-run without Ink (LR-14), are one open question: TECH-001 §11.1 Q-T65. Both sinks are cosmetic plus memory and never buy power (GDD-001 §3).
+All owed values, and the LOOP-001 §9.5 economy re-run without Ink (LR-14), are one open question: TECH-001 §11.1 Q-T66. Both sinks are cosmetic plus memory and never buy power (GDD-001 §3).
 
 ---
 
@@ -428,9 +428,9 @@ All owed values, and the LOOP-001 §9.5 economy re-run without Ink (LR-14), are 
 | Chronicle memory (CHD-09, CHD-11, CHD-15) | the death-site list (kit plus position per death), per-kit visit counts, rekindled sites and Ruins relights persist through death **and** Hard Unmaking (Anchored state, LOOP-001 §2) |
 | Soft-lock | impossible: after 3 deaths in the same Seam, that kit is re-rolled and a Penitent is attached (invisible mercy, GDD §8.9) |
 | Telemetry keys (entity dialogue inputs) | `glass_hunted`, `charges_thrown`, `charges_lost`, `shrine_purged`, `hollow_sectors`, `penitent_shot`, `seam_deaths`, `iterations`, `hunger`, `warp_max` |
-| Per-kit route telemetry key (CHD-07, CHD-11) | **value owed**: per-Chronicle, per-kit route data (entry points, most-flown lanes) read by kit-memory dressing (ZONES-001 §4.8) and Your Own Vigil's route mimicry (ZONES-001 §7.1). Key name and shape owed (TECH-001 §11.1 Q-T70) |
+| Per-kit route telemetry key (CHD-07, CHD-11) | **value owed**: per-Chronicle, per-kit route data (entry points, most-flown lanes) read by kit-memory dressing (ZONES-001 §4.8) and Your Own Vigil's route mimicry (ZONES-001 §7.1). Key name and shape owed (TECH-001 §11.1 Q-T71) |
 | Death line generation | composed from the top 2 keys (AUDIO-001 §4.10 clauses; NARR-001 §7.2 printout) — "YOU HUNTED GLASS. YOU HUNTED GLASS AND DIED." |
-| STILL ON DUTY trigger death | **value owed**: which death in a Chronicle plays the entity's borrowed Cabinet line "STILL ON DUTY." (NARR-001 §3.2 samples; TECH-001 §11.1 Q-T65) |
+| STILL ON DUTY trigger death | **value owed**: which death in a Chronicle plays the entity's borrowed Cabinet line "STILL ON DUTY." (NARR-001 §3.2 samples; TECH-001 §11.1 Q-T66) |
 | Save cadence | on Ruins entry, on Tree purchase, on iteration end. Never mid-run (no save-scumming of the entity's state) |
 
 ---
