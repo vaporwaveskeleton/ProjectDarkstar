@@ -64,6 +64,11 @@ func has_host() -> bool:
 
 ## Request a route change. Repeated requests while a change is in flight are ignored (returns false).
 ## The change happens on a later frame so the calling button/scene is never freed mid-callback.
+## `params` go to the new scene's `on_route_entered(params)`. One key belongs to the router:
+## `"skip_curtain": true` skips the host's transition_out and transition_in, so the old scene's
+## last frame is followed directly by the new scene's first (remove, mount and enter happen in
+## one deferred call, one frame). For hand-offs that are their own transition, e.g. Act 0 into
+## the Aether (TECH-001 §2.1, Q-T60). Anything but a bool `true` keeps the curtain.
 func go_to(route_id: StringName, params: Dictionary = {}) -> bool:
 	if is_busy:
 		return false
@@ -76,6 +81,16 @@ func go_to(route_id: StringName, params: Dictionary = {}) -> bool:
 	return true
 
 
+## True only when `params` holds "skip_curtain" (String or StringName key) set to the bool `true`.
+static func skips_curtain(params: Dictionary) -> bool:
+	for key: Variant in ["skip_curtain", &"skip_curtain"]:
+		if params.has(key):
+			var v: Variant = params[key]
+			if typeof(v) == TYPE_BOOL and bool(v):
+				return true
+	return false
+
+
 func _perform(route_id: StringName, params: Dictionary) -> void:
 	var packed := load(table.path_for(route_id)) as PackedScene
 	if packed == null:
@@ -84,14 +99,15 @@ func _perform(route_id: StringName, params: Dictionary) -> void:
 		route_failed.emit(route_id, &"load_failed")
 		return
 	if has_host():
-		if _host.has_method("transition_out"):
+		var curtain := not skips_curtain(params)
+		if curtain and _host.has_method("transition_out"):
 			await _host.transition_out()
 		var scene := packed.instantiate()
 		_host.mount(scene)
 		if scene.has_method("on_route_entered"):
 			scene.on_route_entered(params)
 		current_route = route_id
-		if _host.has_method("transition_in"):
+		if curtain and _host.has_method("transition_in"):
 			await _host.transition_in()
 	else:
 		var err := get_tree().change_scene_to_packed(packed)
