@@ -253,7 +253,7 @@ Every proper name used in any DARKSTAR doc, string or asset that is **not** in G
 | the Salt Mother | Choir saint | NARR §2.1; LOOP-001 PACT-24 | the Matron who salted her own Sepulchre | S2 | canon |
 | the Hollow King | entity epithet | GDD-001 §8.4 | Choir name for the entity | S0 | canon |
 | the Star That Failed | entity epithet | GDD-001 §8.4 | Choir name for the Ninth Light | S0 | canon |
-| the Pretence | Office term | GDD-001 §6.1; NARR §4.4 | the Office's name for the training rotation; "THAT WAS A PRETENCE." | S0 (line) / S3 (meaning) | canon |
+| the Pretence | Office term | GDD-001 §6.1; NARR §4.4, §5.4, §9.5 | the Office's name for the training rotation. "THAT WAS A PRETENCE." is the last screen in the Cabinet's ROM, written by Theodora Lune; on a normal clear the skin decays before it can show (*the Decay*, GDD-001 §6.1 A0-5), so the line is read only in ending 5 (§9.5) and as the one line on her maker's plate (§5.4) (reveal decay, owner direction 2026-11-19; PROPOSED until the owner rules TECH-001 Q-T180–Q-T185) | S0 (the Decay) / S3 (the line and its meaning) | canon; the line's placement PROPOSED (TECH-001 Q-T181) |
 | the Chronicle | meta term | LOOP-001 §6 | the whole history of a save across Iterations | S0 | canon |
 | the Unmaking Rehearsal | scripted sequence | WARP-001 §6.2 | Act 4's one input-denying beat | S2 | canon |
 | Pact of Ascension (**PACT-ASC**) | Pact | GDD-001 §9.3; LOOP-001 §11.4 | a 25th Pact outside the pool, offered only by Sable Vane; ending 3 | S3 | canon |
@@ -421,7 +421,7 @@ The arcade costume of Act 0 is not the game lying. It is the **Office's vocabula
 | 1UP / extra life | another try | a **Second Vigil**: the Office's term for redeploying a recovered pilot | NARR §1.4; LOOP-001 HULL-6 |
 | HIGH SCORE | the leaderboard | **the honour roll**: the enlistment list. Every initials entry on a Vigil hall cabinet was a name the Office called up | Theodora Lune's message (§9.5) |
 | GAME OVER | you lost | STAND DOWN: the shift ended. The Office never used "dead" on any form | Office duty logs (§8) |
-| THE PRETENCE | the training rotation (A0 levels were the "Pretence Hall" curriculum) | a simulation in which the Dark Star always lost, by design | "THAT WAS A PRETENCE." (GDD-001 §6.1) — Theodora put the line at the end of the curriculum herself, as a warning disguised as a twist |
+| THE PRETENCE | the training rotation (A0 levels were the "Pretence Hall" curriculum) | a simulation in which the Dark Star always lost, by design | "THAT WAS A PRETENCE." — the last screen in the Cabinet's ROM. Theodora put the line at the end of the curriculum herself, as a warning disguised as a twist. On a normal clear the machine never reaches it: the skin decays first (GDD-001 §6.1, *the Decay*). It is shown only in ending 5 (§9.5) and is the one line on her maker's plate (§5.4) (reveal decay, owner direction 2026-11-19; PROPOSED until the owner rules TECH-001 Q-T180–Q-T185) |
 | VIGIL | a shift | a deployment from which the Office did not plan a return | Codex, Act 3 |
 | QUOTA | a target | an amount of glass the Office knew would not finish the light | §10.2 |
 | THE LIGHT | the goal | the Ninth Light, which could not finish | ending 4 |
@@ -434,7 +434,8 @@ PM ruling 2026-11-18 (owner grant), cosmic horror design rev 3, CHD-16.
 | Beat | Rule | Why |
 |---|---|---|
 | **Cabinet (Act 0)** | imperative, cheerful, transactional: it wants your credit. INSERT CREDIT. PLAYER 1. | the Office's recruitment voice (§4.4) |
-| **The tear** | after "THAT WAS A PRETENCE." there is **no text at all** for the opening of the Aether, for SYS-001's tear silence row. Colour, fog and room tone only. No caption, prompt, tooltip or entity line in that time | the first thing the player meets after the lie is a world, not a sentence |
+| **The Decay** (reveal decay, owner direction 2026-11-19; PROPOSED until the owner rules TECH-001 Q-T180–Q-T185) | **wordless.** After A0-5's credits the Cabinet's skin wears out instead of printing a title card (GDD-001 §6.1; ART-001 §12.7b; AUDIO-001 §12.18). From the end of the credits to the end of the tear silence **no new text appears**. The Cabinet's existing copy (attract lines, INSERT CREDIT, the honour roll) may only **lose** glyphs: the Decay subtracts, it never writes, and lost glyphs never leave a word or message behind. In ending 5, Theodora's screens and the line come first, then the Decay (§9.5) | the owner: the title card read as cheesy; the costume should fail, not explain itself. A machine wearing out is something every player has seen; it needs no words |
+| **The tear** | after the Decay there is **no text at all** for the opening of the Aether, for SYS-001's tear silence row. Colour, fog and room tone only. No caption, prompt, tooltip or entity line in that time | the first thing the player meets after the lie is a world, not a sentence |
 | **First words** | the first words the player reads after the Pretence are in the Ruins, in sentence case, from a person: **Sable Vane** at the Chalk Desk (§5.7; §7.5, first Ruins visit). No other Ruins text (the Cabinet's marquee, Ilse's notes) may be read before it (§14 Q-14) | a human voice, after a machine's |
 | **The inversion** | from Act 1, **the Cabinet's face is the one the entity borrows**: its lines are set in the Cabinet's type (ART-001 owns the face). The cheerful voice of Act 0 comes back as the entity's | the player's own training (the Lampkeepers' curriculum) is what talks to them in the dark. AUDIO-001 §4.2 was brought into line by the Game audio chat (§14 Q-15, closed 2026-11-18) |
 
@@ -492,7 +493,7 @@ Four people and one machine. None of them is a vendor; each one owns a system (G
 
 **The high-score table.** From Hard Unmaking 3 (*The Ledger Opens*), the honour roll on the Cabinet shows a top score that is not yours, under the initials **T.L.**, with a note beside it: `0 WARD 0 SURGE` (LOOP-001 §11.6). Your best Vigil Index sits one line below it. Nobody comments on it. Nothing explains it. It is Theodora Lune's high score on her own machine, and it tells anyone who reads it how to find her (ending 5).
 
-**Theodora Lune** was the Office engineer who designed the cabinet. She wrote its curriculum, its attract copy, its honour roll — and its last screen, *THAT WAS A PRETENCE.*, which the Office approved as an inspiring twist. She meant it literally. Her one honest act is hidden in the machine (§9.5). She is never seen. Her maker's plate is on the Cabinet's back panel, visible once the Ruins become a lattice (beat 5) and the wall behind it is gone. Her resignation letter is `cx_chron_hu_05`.
+**Theodora Lune** was the Office engineer who designed the cabinet. She wrote its curriculum, its attract copy, its honour roll — and its last screen, *THAT WAS A PRETENCE.*, which the Office approved as an inspiring twist. She meant it literally. On a normal clear that screen never comes: the skin wears through first (GDD-001 §6.1, *the Decay*), and nothing in the game says why. The line survives in two places only: the Cabinet shows it after her message in ending 5 (§9.5), and it is the one line on her maker's plate, *THAT WAS A PRETENCE. — T. LUNE*, in the Cabinet face (ART-001 §13 maker's plate row) (reveal decay, owner direction 2026-11-19; PROPOSED until the owner rules TECH-001 Q-T180–Q-T185). Her one honest act is hidden in the machine (§9.5). She is never seen. Her maker's plate is on the Cabinet's back panel, visible once the Ruins become a lattice (beat 5) and the wall behind it is gone. Her resignation letter is `cx_chron_hu_05`.
 
 ### 5.5 The Penitent, as cast
 
@@ -541,6 +542,22 @@ PM ruling 2026-11-18 (owner grant), Act 1 vertical slice, amended the same day a
 6. **The Hourglass, by the hangar mouth.** A brass Hourglass, full. Under it, Sable's chalk: "The sand starts when you leave." The Hourglass Clock starts at the first launch, not on arrival, on this visit only (GDD-001 §6.2 exception). The Vigil waits, lamp lit, in the light of the Tree's lamp; walking into it launches.
 
 **The noun budget for the first visit:** Ember (printed on the tickets), Lantern Tree, Codex, Hourglass. Nothing else is named on screen. Pacts, Entropy, Threads and the word Composure come later; Sable's Pact line moves to the first time a Pact is offered (§7.5).
+
+**The words, as built** (PM under owner autonomy grant, 2026-11-19; LOOP-001 §10.5 owns the onboarding spec, this table owns the words; `locale/en.po`). Four Ruins-register lines are new (marked ✚); they keep Sable's voice (§5.1: second person, present tense, short, never a question, printable on a contract).
+
+| Key | Text | Where it is written | When |
+|---|---|---|---|
+| `NARR_SABLE_FIRST_1` | You're back. Most aren't. | the Chalk Desk slate | first visit, first |
+| `NARR_SABLE_FIRST_2` | What you buy here stays. The rest goes back into the dark. | the slate | first visit, the anchoring rule, once |
+| `NARR_SABLE_TALLY` ✚ | Counted: {n}. | the slate | first visit; {n} = the Act 0 Vigil Index |
+| `NARR_CAB_SCORE_BANKED` | SCORE BANKED | the wall Cabinet's marquee | the payout; then `NARR_CAB_ATTRACT_1` returns |
+| `RUINS_TICKET_PLATE` | {n} EMBER | a brass plate under the Tree | after the tickets hang; {n} = Ember banked |
+| `NARR_SABLE_TREE` | Light one. The dark is long. | the floor under the Tree | first visit, after the tickets land |
+| `RUINS_CODEX_HEADER`, `CX_PLACE_ACT0_3_TITLE`, `CX_PLACE_ACT0_3_BODY` | CODEX · Last Normal Day (cabinet stage) · the §8.4 body | the stamped page, close up | the Codex desk |
+| `NARR_SABLE_GLASS` | The sand starts when you leave. | chalk by the Hourglass | first visit, as the lamp first passes |
+| `NARR_SABLE_RETURN_1` ✚ | You return. What you carried is counted. | the slate | every later visit |
+| `NARR_SABLE_GLASS_RETURN` ✚ | The sand runs while you stand here. | chalk by the Hourglass | every later visit |
+| `NARR_SABLE_DARK_1` ✚ | Some things are written only for the dark. | the hall wall, faint | with the pilot lamp down (the beat 15 pre-echo, LOOP-001 §10.5.2) |
 
 *Resolved 2026-11-18 (TECH-001 §11.1 Q-T102, design calls within the PM ruling):* no hand on the first visit (the chalk writes itself, matching §5.1 and §5.6); the old "first visit" Pact line re-triggered; line 1 in the present tense.
 
@@ -816,7 +833,8 @@ Community rule: Sable is the only character who speaks outside the game (Discord
 | Act 0 attract | "MINE GLASS · MAKE CHARGES · SAVE THE LIGHT" |
 | Act 0 high score table header | "HONOUR ROLL" |
 | Act 0 game over | "STAND DOWN" |
-| Act 0 final screen | "THAT WAS A PRETENCE." |
+| Act 0 final screen | none on a normal clear: the skin decays with no words (GDD-001 §6.1, §4.5 *The Decay*). The ROM's last screen, "THAT WAS A PRETENCE.", shows only in ending 5 (§9.5) |
+| The Cabinet's maker's plate (back panel, from Hard Unmaking beat 5; §5.4) | "THAT WAS A PRETENCE. — T. LUNE" (PROPOSED, TECH-001 Q-T181) |
 | Ruins, first visit, the ticket payout (§5.7; after Sable's first line, §4.5) | "SCORE BANKED" |
 | Ruins, Act 1 | "PLAYER 1 · STILL ON DUTY" |
 | Ruins, Act 1 | "HIGH SCORE: YOU" |
@@ -1225,7 +1243,7 @@ Positions on the question §1.6 withholds — **does the entity, once unmade, be
 
 ### 9.5 Ending 5 — The Pretence Kept (secret), and the Archivist
 
-**When:** Act 0 completed without ever using Surgelight or Ward Pulse — on first play or by inserting credit at the Cabinet in the Ruins later (LOOP-001 §11.6). The message plays on the Cabinet's marquee **after the second credits roll and before "THAT WAS A PRETENCE."** It unlocks the **Archivist** variant at once.
+**When:** Act 0 completed without ever using Surgelight or Ward Pulse — on first play or by inserting credit at the Cabinet in the Ruins later (LOOP-001 §11.6). The message plays on the Cabinet's marquee **after the last credits roll (A0-5) and before the Decay** (GDD-001 §6.1). It unlocks the **Archivist** variant at once. (Was "after the second credits roll and before THAT WAS A PRETENCE.", written for the three-stage Act 0 and the title card; reveal decay, owner direction 2026-11-19; PROPOSED until the owner rules TECH-001 Q-T180–Q-T185.)
 
 **The only hint:** from beat 3 the honour roll's top line is *T.L. · 0 WARD 0 SURGE* (§5.4). The game never explains it.
 
@@ -1244,7 +1262,7 @@ Positions on the question §1.6 withholds — **does the entity, once unmade, be
 | 9 | IF YOU HAVE NOT SIGNED, DON'T. |
 | 10 | If you already have — bring your lamp home. / Stand down, little lantern. |
 
-Then: *THAT WAS A PRETENCE.* — the same screen every player sees, now read as a warning instead of a twist.
+Then: *THAT WAS A PRETENCE.* — the Cabinet's last screen, in the Cabinet face, held for SYS-001 `ds_cabinet.decay.ending5_line_hold_s` (PROPOSED). **No other player is shown it:** on every other clear the skin decays before the ROM gets there (§4.5 *The Decay*). Here, and only here, the machine gets to say it, and it can only be read as a warning. Then the Decay runs as on every clear, and the tear follows. (Was "the same screen every player sees, now read as a warning instead of a twist"; the payoff is now that the warning is *hers*, shown to the careful player alone. reveal decay, owner direction 2026-11-19; PROPOSED until the owner rules TECH-001 Q-T180–Q-T185.)
 
 The last line is where the entity's "LITTLE LANTERN" came from (§3.2). Players who reach Act 1's "RUN, LITTLE LANTERN." after this screen will hear it differently, and that is the whole design.
 
@@ -1299,10 +1317,10 @@ MARKET-001 uses this table. A tier may appear in a channel only if the channel's
 
 | Tier | Contains | Store page | Trailer | Press kit | Community / Discord |
 |---|---|---|---|---|---|
-| **S0** | arcade shell; boss built from your ore; "THAT WAS A PRETENCE."; it eats a sky; the Ruins exist; the Cabinet exists as an object; Hollow King / Star That Failed | yes | yes | yes | yes |
+| **S0** | arcade shell; boss built from your ore; the arcade skin wears out and the Aether is behind it (the Pretence; the words "THAT WAS A PRETENCE." are S3, §9.5); it eats a sky; the Ruins exist; the Cabinet exists as an object; Hollow King / Star That Failed | yes | yes | yes | yes |
 | **S1** | the loop, Lantern Tree, Pacts, Codex; Sable, Ilse, Wick by name and role; the Lantern Office exists; Rites by name | yes | yes | yes | yes |
 | **S2** | the Ninth Light; the Unborn Dark; the Choir is a funeral society; phantoms as mercy; the Salt Mother; rule-eating examples | no | as images only, no words | yes, marked | yes |
-| **S3** | the cabinet was a recruitment machine; the honour roll; Theodora Lune by name; the entity's words come from the Cabinet; the Office knew in Y3 | **never** | **never** | embargo / spoiler section | spoiler-tagged only |
+| **S3** | the cabinet was a recruitment machine; the honour roll; Theodora Lune by name; the Cabinet's last screen "THAT WAS A PRETENCE." (ending 5, the maker's plate; §9.5); the entity's words come from the Cabinet; the Office knew in Y3 | **never** | **never** | embargo / spoiler section | spoiler-tagged only |
 | **S4** | the Choir are the Lampkeepers' families; Tomas Marrow; Theodora's message text; ending 3/4 positions | **never** | **never** | **never** | spoiler-tagged; staff never post first |
 
 ---

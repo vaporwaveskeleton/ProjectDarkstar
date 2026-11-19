@@ -38,6 +38,8 @@ Conventions used everywhere:
 
 ### 1.1 Movement ⚙ (GDD §4.2 values kept exactly)
 
+This is the **Cabinet profile** (Act 0). Its 🔒 rows are locked for Act 0 only (Q-T164, PM under owner autonomy grant, 2026-11-19). Everything after THE PRETENCE flies the Aether profile, §1.1a.
+
 | Field | Base | Scaling / source | Notes |
 |---|---|---|---|
 | `max_speed` | 340 px/s | 🔒 GDD | +8% per HULL tier-1 plating-style node is **not** allowed; speed nodes are `⚙` and capped at +12% total |
@@ -52,6 +54,35 @@ Conventions used everywhere:
 | `anchor_freeze` duration | 6.0 s | 8.0 s (HULL-16) | ✱ Choir units inside stop moving, chanting and firing; elites and Heralds freeze for half duration. It never damages: a stall, not a kill, per GDD-001 §8.7. |
 | `anchor_rearm` | 20 s | 14 s (HULL-12) | ✱ the timer starts when the freeze lands, not when the field is raised. |
 | `anchor` exclusions and cap | Sepulchre and The Penitent are never frozen; max 6 units per cast | — | ✱ frozen units still count against §4 spawn budgets and the §9 contact budget (`Simultaneous hostile contacts`). Stopping a deposit is WARD-6's job, not the ring's. |
+
+### 1.1a Aether handling profile ✱ (GDD §4.2a; ruled, PM under owner autonomy grant, 2026-11-19)
+
+> **Status: ruled, PM under owner autonomy grant, 2026-11-19** (TECH-001 Q-T164, Q-T165; queued for the owner's later review). Every value here is ✱: first-pass, retuned at playtest. §1.1 stays the **Cabinet profile** for Act 0.
+
+The Aether profile replaces §1.1 for all flight after THE PRETENCE. The motor is the same as in §1.1 (`VigilMotor.step_velocity`): thrust adds `accel` along the input, capped at `max_speed`; coasting decays by `exp(-drag·t)`; braking removes `brake` per second. The derived figures below come from that model and still have to be checked by a motor test once the numbers are approved.
+
+| Field | Cabinet (§1.1) | Aether ✱ | `ds_` key | Notes |
+|---|---|---|---|---|
+| Profile switch | — | `true` | `ds_vigil.aether_move.enabled` | `false` = sectors fly the Cabinet profile. Keeps the change data-switchable for A/B, like D-08 |
+| `max_speed` | 340 px/s 🔒 | **220 px/s** | `ds_vigil.aether_move.max_speed` | ≈ 65% of the Cabinet. Must stay above the Grub flee speed (§3, 190 px/s) so the race still holds |
+| `accel` | 2600 px/s² 🔒 | **560 px/s²** | `ds_vigil.aether_move.accel` | top speed from rest in ≈ 0.39 s (Cabinet ≈ 0.13 s) |
+| `drag` (coast) | 3.4 /s | **0.9 /s** | `ds_vigil.aether_move.drag` | coasts ≈ 245 px from top speed (v / drag), ≈ 5 body-lengths of 48 px (Cabinet ≈ 100 px) |
+| `brake` (Space) | 5200 px/s² | **700 px/s²** | `ds_vigil.aether_move.brake` | stops from top speed in ≈ 0.31 s over ≈ 35 px. Strong, but not instant |
+| Full reversal | 0.28 s 🔒 | **≈ 0.79 s** (derived, straight line) | — | 2 × 220 / 560. The Cabinet identity is untouched; this becomes the Aether identity (Q-T164) |
+| `hull_turn` (keel) | — (the body never rotates) | **180 °/s** | `ds_vigil.aether_move.hull_turn` | a 180° swing takes 1.0 s. The hull turns toward the WASD direction |
+| `thrust_lateral` | — | **0.45 × `accel`** | `ds_vigil.aether_move.thrust_lateral` | thrust at 90° to the keel |
+| `thrust_reverse` | — | **0.6 × `accel`** | `ds_vigil.aether_move.thrust_reverse` | thrust at 180° to the keel. Between the angles, interpolate on the cosine ✱ |
+| `snap_turn` (lance turret aim) | 720 °/s | **720 °/s (unchanged)** | `ds_vigil.move.snap_turn` | the aim stays arcade-precise. In the Aether it turns the turret, not the hull |
+| Lantern Down thrust | — | **× 0.7** | `ds_vigil.aether_move.lantern_down_thrust` | running dark: a weaker drive (top speed from rest ≈ 0.56 s) |
+| Lantern Down drag | — | **× 0.6** | `ds_vigil.aether_move.lantern_down_drag` | the glide is longer in the dark (coast ≈ 405 px) |
+| Surgelight impulse | 200 px/s, 0.18 s | **240 px/s, 0.22 s** | `ds_vigil.aether_move.surge_impulse`, `ds_vigil.aether_move.surge_time` | may exceed `max_speed` while it lasts; drag then brings the ship back ✱ |
+| Surgelight cooldown | 1.6 s | **2.0 s** | `ds_vigil.aether_move.surge_cooldown` | LANTERN-7 / LANTERN-16 cuts apply as percentages; the 0.55 s floor is unchanged. The Composure cost at T ≥ 2 (§1.5) is unchanged |
+| Choir projectile speed, Aether sectors | × 1.0 | **× 0.75** | `ds_sector.aether.projectile_speed_mul` | telegraph times are never shortened. Dodge check: moving one body-length (48 px) from rest takes ≈ 0.19 s in the Cabinet and ≈ 0.41 s in the Aether, so × 0.75 closes only part of the gap. Coasting and Surgelight cover the rest; playtest decides (Q-T168) |
+| Camera velocity lead | — (aim lookahead 1.5% only, GDD §4.2) | **0.25 s of velocity, capped at 48 px** ✱ | `ds_camera.aether.velocity_lead_s`, `ds_camera.aether.velocity_lead_max_px` | engineering; shows what is ahead of a long coast |
+| Hitbox | `ds_vigil.move.hitbox_circle_px` 🔒 | **unchanged** | — | the Aether art grows (ART-001 §16.7), the hitbox does not |
+| Hull HP | 1 🔒 | **unchanged** | `ds_vigil.hull.max_hp` | D-08 stays open and switchable. The profile never touches the hull |
+
+**Speed budget per profile.** The +12% cap on speed nodes (§1.1, LOOP-001 §3.3) applies to whichever profile is active, so the Aether ceiling is ≈ 246 px/s. LANTERN-10 and LANTERN-13 still scale `accel` and `brake` by the same percentage, so each profile keeps its own full-reversal time. Even with every node, a fully upgraded Aether Vigil never reaches the Cabinet's snap: the weight is part of who the ship is, not a penalty to grind away (LOOP-001 §3.8).
 
 ### 1.2 Hull, lantern and the dark
 
@@ -539,6 +570,11 @@ The tree totals (LOOP-001 §3.3 node rollup, 17,480 Ember over 63 Ember nodes) a
 | UI safe area at 200 % text | Every HUD element keeps its anchor rectangle inside the safe area at 200 % text scale at 640×360 logical; warp may hide an element, never displace one | Accessibility floor (GDD-001 §10); the anchor set is WARP-001 §4.1 (its §8 R-03). `TEST-ACC-04` is the pass condition |
 | Screen shake under Reduced Motion | off ✱ | Reduced Motion disables screen shake (the Cabinet behaviour). PM-approved 2026-11-18 |
 | Camera follow | 0.12 s critically damped, 24 px deadzone, 1.5% aim lookahead | GDD §4.2. Accepted readings (PM under owner autonomy grant 2026-11-18, TECH-001 §11.1a): 1.5% lookahead = a fraction of the visible viewport **per axis** along the aim (Q-T55); 0.12 s = the smoothing time T of the critically damped spring, omega = 2/T (Q-T56); 24 px = the radius of a **circular** deadzone (Q-T57) |
+| Race framing reach (`ds_camera.race_reach_px`) | 900 px ⚙ **proposed** | Race points (Charges in flight, Grubs carrying glass, the Sepulchre while either happens) farther than this from the Vigil are ignored by the camera lean. PM under owner autonomy grant 2026-11-19 (sector slice look); retune at playtest |
+| Race framing max lean (`ds_camera.race_lean_max_frac`) | 0.7 of the half view per axis ⚙ **proposed** | Caps the lean so the Vigil never leaves the screen; zoom stays fixed (Z1). PM under owner autonomy grant 2026-11-19; retune at playtest |
+| Race framing lean time (`ds_camera.race_lean_time_s`) | 0.6 s ⚙ **proposed** | Smoothing time of the lean (same critically damped spring as follow). PM under owner autonomy grant 2026-11-19; retune at playtest |
+| Race pull-out zoom (`ds_camera.race_pull_zoom`) | 0.8 ⚙ **proposed** | Zoom the camera eases to (same spring and time as the lean) while the Sepulchre is a race target off the zoom-1 frame (TECH-001 Q-T211). The one context exception to Zoom 1.0; 0 = off. PM under owner autonomy grant 2026-11-19; retune at playtest |
+| Race pull-out max (`ds_camera.race_pull_max_s`) | 2.5 s ⚙ **proposed** | Longest one pull-out lasts; then zoom 1 until the Sepulchre stops being a race target. PM under owner autonomy grant 2026-11-19; retune at playtest |
 | M1 sandbox arena | wrapping torus 1920×720 ✱ | Same source as the Cabinet's torus field (`CabinetStage.field_size`), so M1 matches Act 0; no clear colour shows (a repeating floor covers the view). Real kit bounds come from ZONES-001 later. TECH-001 Q-T58, PM under owner autonomy grant 2026-11-18 |
 | Zoom | 1.0 (T0) → 1.06 (T3) → breathing ±2% over 11 s (T5) | GDD §4.2. Zoom 1.0 = the 640×360 logical frame, the fixed post-Act 0 camera scale (TECH-001 Q-T25 resolved Z1, PM under owner autonomy grant 2026-11-18) |
 | Lie spend window (L6) | 3 s | a HUD lie never concerns the count of a resource the player can spend within this window (WARP-001 §4.2 L6, widened). PM-approved 2026-11-18 under owner grant; retune at playtest |
@@ -546,7 +582,7 @@ The tree totals (LOOP-001 §3.3 node rollup, 17,480 Ember over 63 Ember nodes) a
 | Lie lull intercept window | 1.5 s | L9: a lie may start only with no hostile projectile on course to intercept the Vigil within this time. PM-approved 2026-11-18 under owner grant; retune at playtest |
 | Lie audio tell length | 0.25 s | L11: each lie onset cue, one per tell family (AUDIO-001 owns the cues). PM-approved 2026-11-18 under owner grant; retune at playtest |
 | Lie death-attribution window | 2.0 s | L12: a lie live this close before the Vigil's death is named on the death screen (WARP-001 §4.2; wording NARR-001). PM-approved 2026-11-18 under owner grant; retune at playtest |
-| Tear silence (no text) | 20 s | after THAT WAS A PRETENCE, no text of any kind for this long at the opening of the Aether (NARR-001 §4.5). PM-approved 2026-11-18 under owner grant; retune at playtest |
+| Tear silence (no text) | 20 s | after the Decay and the tear (GDD-001 §6.1; was "after THAT WAS A PRETENCE", retired as a title card 2026-11-19, PROPOSED Q-T181), no text of any kind for this long at the opening of the Aether (NARR-001 §4.5). The Decay before it adds no text either (NARR-001 §4.5 *The Decay*). PM-approved 2026-11-18 under owner grant; retune at playtest |
 | Shroud (hazard terrain) | blocks movement, 1 Ward-slice / 1 Surgelight burn to clear, HP 3 | ✱ T2+ terrain |
 | Hitbox policy | player hitbox = a circle of **12 px diameter** (6 px radius; smaller than the sprite); every enemy hitbox = sprite alpha ∩ 1 px inset, **except the entity**, whose contact hitbox is §2.1's 16 px inset from the composite silhouette | fairness over realism. Diameter reading and entity exception: owner-delegated rulings R-04, R-10 (2026-11-17) |
 | On-screen Choir units | ≤ 32 ✱ | spawn budgets (§4) may never schedule past it; excess spawns queue off-screen. `ContactBudget` and pooling size from here (TECH-001 §8.2). Ruling R-14 |
@@ -597,6 +633,27 @@ The tree totals (LOOP-001 §3.3 node rollup, 17,480 Ember over 63 Ember nodes) a
 | True-body frame, duration (`ds_cabinet.fx.true_frame_frames`) | 1 drawn frame ⚙ | a Charge hit on the costume entity shows its true silhouette (silhouette only, GDD §20) for this many drawn frames; PM-approved 2026-11-19 (owner authority; TECH-001 Q-T95) |
 | Star spine, hold (`ds_cabinet.fx.spine_hold_pull`) | 0.02 `Starfield.pull` ⚙ | the A0-3 spine stars brighten and hold below this pull (about 1.1 s into the reveal's 8 s ease-in); PM-approved 2026-11-19 (owner authority) |
 | Star spine, travel span (`ds_cabinet.fx.spine_pull_span`) | 0.07 `Starfield.pull` ⚙ | pull range over which the stars travel to the vertebrae; arrives at pull 0.09 (about 2.4 s), before the vertebrae show at 2.5 s; PM-approved 2026-11-19 (owner authority) |
+| Decay D1, back to attract (`ds_cabinet.decay.attract_s`) | 2.0 s | the Decay (GDD-001 §6.1 A0-5; WARP-001 W0-07; ART-001 §12.7b): after the last credits line clears, the machine shows its attract honour roll as if nothing happened; d = 0 is the frame the last credits line clears (in ending 5, after the line hold below); **PROPOSED, owner approval needed** (reveal decay, 2026-11-19; TECH-001 Q-T184) |
+| Decay D2, tired phosphor (`ds_cabinet.decay.phosphor_s`) | 4.0 s | persistence ghosts, register drift, the INSERT CREDIT blink slows and loses glyphs, the shell sags flat; **PROPOSED, owner approval needed** (reveal decay, 2026-11-19; TECH-001 Q-T184) |
+| Decay D3, the skin fails (`ds_cabinet.decay.skin_s`) | 5.0 s | bezel bleach and peel, bulbs die, light through the worn print, bloom bleed, the raster shrinks; the hum fails; **PROPOSED, owner approval needed** (reveal decay, 2026-11-19; TECH-001 Q-T184) |
+| Decay D4, collapse (`ds_cabinet.decay.collapse_s`) | 2.0 s | the picture collapses to a line (0.4 s ✱) and a dot (0.4 s ✱); the dot holds for the rest; the tear opens from the dot at the end. D1 to D4 total 13.0 s (derived), all before the tear, so outside the first Unmaking's 90 s budget; **PROPOSED, owner approval needed** (reveal decay, 2026-11-19; TECH-001 Q-T184) |
+| Decay collapse silence (`ds_cabinet.decay.collapse_silence_s`) | 1.2 s | total silence while the dot holds, before the tear; the same length as the Awakening silence (GDD-001 §12) but it does not draw on that per-run budget (Act 0 is not a run); **PROPOSED, owner approval needed** (reveal decay, 2026-11-19; TECH-001 Q-T184) |
+| Decay phosphor persistence, peak (`ds_cabinet.decay.persistence_max`) | 0.6 | alpha of the previous frame kept by the CRT pass at the end of D2 (0 = none); a ghost trail, never a flash; **PROPOSED, owner approval needed** (reveal decay, 2026-11-19; TECH-001 Q-T184) |
+| Decay bloom bleed, peak (`ds_cabinet.decay.bloom_bleed_px_max`) | 2 grid px | CRT-pass bleed radius at the end of D3; the CRT pass is the one T0 place soft light is allowed (ART-001 §15.1); **PROPOSED, owner approval needed** (reveal decay, 2026-11-19; TECH-001 Q-T184) |
+| Decay raster shrink, peak (`ds_cabinet.decay.raster_shrink_max`) | 0.15 | fraction of the picture height lost to a sagging raster by the end of D3, before D4's collapse; **PROPOSED, owner approval needed** (reveal decay, 2026-11-19; TECH-001 Q-T184) |
+| Decay register drift, step (`ds_cabinet.decay.register_drift_steps`) | 1 RGB332 step | per drifting register, on one channel; **registers 1–6 only** (VOID and BONE, ART-001 §15.2a); register 0 and every role register (CHOIR, PHOS, GAS, SIGNAL: 7–15) never drift, so the role laws hold; **PROPOSED, owner approval needed** (reveal decay, 2026-11-19; TECH-001 Q-T184) |
+| Decay register drift, interval (`ds_cabinet.decay.register_drift_interval_s`) | 0.8 s | one register write per interval across D2–D3, round-robin over registers 1–6; **PROPOSED, owner approval needed** (reveal decay, 2026-11-19; TECH-001 Q-T184) |
+| Decay blink period, end (`ds_cabinet.decay.blink_period_end_s`) | 2.4 s | INSERT CREDIT's blink period slows from ART-001 §12.7's 1.0 s to this by the end of D2; steady (no blink) under photosensitivity, as now; **PROPOSED, owner approval needed** (reveal decay, 2026-11-19; TECH-001 Q-T184) |
+| Decay glyph loss per blink (`ds_cabinet.decay.glyph_drop_per_blink`) | 1 glyph | attract copy and the honour roll lose glyphs (never gain, never re-form a word; NARR-001 §4.5); under photosensitivity, one glyph per D2 interval of 1.0 s ✱ instead; **PROPOSED, owner approval needed** (reveal decay, 2026-11-19; TECH-001 Q-T184) |
+| Decay bulb death interval (`ds_cabinet.decay.bulb_die_interval_s`) | 0.5 s | one bulb (the attract card's chasing bulbs, then the coin-door lamp last) goes dark per interval in D3; a dim-out of 0.2 s ✱, never a flicker; **PROPOSED, owner approval needed** (reveal decay, 2026-11-19; TECH-001 Q-T184) |
+| Decay print bleach, peak (`ds_cabinet.decay.print_bleach_max`) | 0.7 | fraction of bezel ink saturation lost by the end of D3, worst at the edges; **PROPOSED, owner approval needed** (reveal decay, 2026-11-19; TECH-001 Q-T184) |
+| Decay light through the print, peak (`ds_cabinet.decay.worn_through_light_max`) | 0.35 | alpha of the Aether behind the bezel (TECH-001 §11.2 PR D hand-off: Aether drawn behind the bezel) where the print has worn through, end of D3; it is pearl fog light, not a flash (WARP-001 §4.5); **PROPOSED, owner approval needed** (reveal decay, 2026-11-19; TECH-001 Q-T184) |
+| Decay shell detune, end (`ds_cabinet.decay.shell_detune_cents_end`) | −40 cents | the attract shell (AUDIO-001 §2.1) sags flat across D2–D3 as a tape or failing supply would; AUDIO-001 §12.18; **PROPOSED, owner approval needed** (reveal decay, 2026-11-19; TECH-001 Q-T184) |
+| Decay hum, end frequency (`ds_cabinet.decay.hum_hz_end`) | 47 Hz | the cabinet hum (AUDIO-001 §2.1, 50 Hz ✱) sags to this across D2–D3, then stops at the end of D3; **PROPOSED, owner approval needed** (reveal decay, 2026-11-19; TECH-001 Q-T184) |
+| Ending 5 line hold (`ds_cabinet.decay.ending5_line_hold_s`) | 4.0 s | ending 5 only: the Cabinet's last screen THAT WAS A PRETENCE. holds this long after Theodora's screen 10 (NARR-001 §9.5), then the Decay starts at D1; **PROPOSED, owner approval needed** (reveal decay, 2026-11-19; TECH-001 Q-T184) |
+| Wear level by stage (W0-11, only if Q-T180 option B) (`ds_cabinet.wear.level_by_stage`) | [0, 0, 1, 2, 3] for a0_1…a0_5 | applied at each stage start, never mid-play (WARP-001 W0-11); **PROPOSED, owner approval needed** (reveal decay, 2026-11-19; TECH-001 Q-T184) |
+| Wear detune per level (W0-11) (`ds_cabinet.wear.detune_cents_per_level`) | −2 cents | the stage chiptune runs this many cents flat per wear level (−6 at a0_5); amends AUDIO-001 §3 "`detune_cents = 0` at T0" for Act 0 stages only; **PROPOSED, owner approval needed** (reveal decay, 2026-11-19; TECH-001 Q-T184) |
+| Wear dead bulbs per level (W0-11) (`ds_cabinet.wear.dead_bulbs_per_level`) | 1 | bulbs already dark on the attract card and READY card at that level; **PROPOSED, owner approval needed** (reveal decay, 2026-11-19; TECH-001 Q-T184) |
 
 Hit-stop does **not** count toward the 1.5 s "Player agency loss" budget above: it is a presentation freeze with input buffered, not a warp effect. The last-Charge slow-mo is likewise not a warp effect and is not counted in that budget: it slows the sim only and the player keeps control (the Vigil runs at real speed).
 
@@ -616,6 +673,7 @@ Hit-stop does **not** count toward the 1.5 s "Player agency loss" budget above: 
 | Hourglass Clock rate | 🔒 **not warp-writable.** Hiding the clock is legal (WARP-001 §4.3); stopping, slowing, reversing or spending it is not. The only open question is whether it runs during exploration at all, which is an A/B flag (`clock_runs_during_exploration`), not a warp permission (WARP-001 §6.1 D-01, its §8 R-04) | design + engineering |
 | Warp state seed contract | 🔒 the warp state must be derivable from the seed alone: world tier, Hunger preset and the WARP-001 §3.2 registry state are deterministic per seed ✱. No daily or weekly challenge mode exists without this row (WARP-001 §6.1 D-06, its §8 R-05) | engineering |
 | Cosmic horror first-pass rows (§1.4 hull lamps, §1.5 gaze and Procession, §2.3, §4.1, §6 Hourglass threshold, §7.6, §9 lie and tear rows) | PM-approved 2026-11-18 under owner grant; retune at playtest. Move one if `TEST-PASS-01` or `TEST-LIE-02` (WARP-001) shows a Passing or a lie reading as unfair, or if kit memory stages arrive far from the simulated runs 4 / 11 / 25 for the first kit (ZONES-001 §4.8) | design |
+| Aether handling profile (§1.1a) | PM under owner autonomy grant, 2026-11-19 (TECH-001 Q-T164–Q-T169). Move a row if a first-flight playtest shows the weight reading as broken controls rather than as a heavier ship (players pressing harder, fighting the keel), or if Aether deaths cluster on bullets that could not be dodged at the slower pace. Fix the numbers, and do not switch the profile off | design |
 
 ---
 
