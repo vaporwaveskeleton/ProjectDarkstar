@@ -1,6 +1,7 @@
 # DARKSTAR — Audio Design
 
 **Doc ID:** AUDIO-001 · **Version:** 1.1 · **Date:** 2026-11-18 · **Owner:** Audio / Design · **Status:** authored, pending review
+**Rev 1.9 (2026-11-18, PM-directed, placement only, no design change): §4.16 added (placement of NARR-001 §3.2's nine borrowed entity lines: channel, trigger, delivery rules); §5.6 added (placement of NARR-001 §2.1's six Choir fragments); §5.1 flagged open (nine syllables sung here versus eight sung in NARR-001, TECH-001 Q-T75); §12.14 (c) records MSG_DEATH_LIE_COMPASS live, CHARGES and INDEX reserved. Nothing built or rendered.**
 **Rev 1.8 (2026-11-18): §6.2 gains F13, F14 and built ids on F03, F07, B07; §12.14 added (Cosmic horror handoffs: Choir fire families, the Passing subtraction, death lines, seven new renders, plus five lie-tell ticks, all unauditioned; L9 to L12, the widened L6 and the Passing are PM-approved 2026-11-18); cue ids 45 to 57 and policy entries 34 to 46 (counted).**
 **Rev 1.7 (2026-11-18): §6.2 gains A13, A14, B10–B12, F11, F12 and built-cue ids on A07/A08; §12.13 added (M1 slice 3 cues, seven new renders, all unauditioned); cue ids 38 to 45.**
 **Rev 1.6 (2026-11-18): §12.12 adds `aether_bed_t4` and `aether_bed_t5` (owner-approved follow-up, Q-T52), both unauditioned; cue ids 36 to 38.**
@@ -603,6 +604,39 @@ LOOP-001 §3.4: a capstone's first purchase gives no mechanical surprise beyond 
 | Hard Unmaking | 4 | §4.14 |
 | **Total authored entity lines** | **164** | longest 7 words; mean ≈ 3.7 ✱ |
 
+### 4.16 Borrowed lines: audio placement (PM-directed 2026-11-18; NARR-001 §3.2 owns the lines)
+
+NARR-001 §3.2 ("Borrowed lines") offers nine entity lines, each with a verifiable Cabinet, Office, Litany or telemetry source, and hands their rows to this doc. NARR-001 owns the words and the sources; this section owns only where they play and how. The words are **not copied here**: rows are identified by their order in the NARR-001 §3.2 "Borrowed lines" table (B1 to B9, counted top to bottom, 2026-11-18) and by the Cabinet text the line is built from. Counts: nine lines, seven new, two already in §4 (B1 in §4.5, B9 in §4.7). No new line is added to the §4.15 rollup until the keys are built (L2: each must map to a SYS-001 row first).
+
+| NARR-001 §3.2 row | Line (identifier only) | When it plays (as NARR-001 states it) | Channel | Status |
+|---|---|---|---|---|
+| B1 | the Little Lantern run line | existing: Rampage start, §4.5 | `BUS-ENT`, full line | existing, no change |
+| B2 | the Cabinet's credit prompt (`locale/en.po`) | the start of an Iteration after a Hard Unmaking | `BUS-ENT`, full line | new; act not stated by NARR-001, so the room rule below follows the Iteration's Act; trigger row owed |
+| B3 | the Cabinet's player-one marquee (spoken as words, not a digit) | Act 3, when Your Own Vigil enters (ZONES-001 §7) | `BUS-ENT`, full line | new; Act 3 room rule applies |
+| B4 | the Office's quota line (duty log, Cabinet credits) | when the Sepulchre completes | `BUS-ENT`, full line | new; must be true at that moment (L2) |
+| B5 | the Observatory's last order | Act 4, "said back sincerely" | `BUS-ENT`, full line | new; Act 4 room rule applies; delivery stays flat (below) |
+| B6 | the turn-history line (three repeats, your own telemetry, as §4.10) | Act 3, in a Remembered kit (ZONES-001 kit memory, CHD-11) | `BUS-ENT`, full line | new; the repeated word must be the true most-flown turn (L2) |
+| B7 | the Litany's "one short" | when the player is one Charge short of an unmake | `BUS-ENT`, full line | new; true at that moment (L2); the Charge count is the SYS-001 row |
+| B8 | the Cabinet's on-duty marquee line (Ruins, Act 1) | a late death in a Chronicle; **which death is a value owed** (SYS-001 row requested by NARR-001) | `BUS-ENT`, full line | new; trigger blocked until SYS-001 supplies the row |
+| B9 | the sincere thanks | existing, §4.7 (Charge lost) | `BUS-ENT`, full line | existing, no change |
+
+**Channel.** NARR-001 §3.2 assigns none of the nine to the Quickening whisper, so none uses the whisper channel (−26 LUFS ✱, §4.3). All nine are full lines on `BUS-ENT` at the §4.3 level (−19 LUFS ✱, ceiling −3 dBTP ✱). A line moves to the whisper channel only if NARR-001 or a SYS-001 row ties it to the Quickening.
+
+**Delivery rules that already apply (no new design).**
+
+| Rule | Source | Effect on the nine |
+|---|---|---|
+| Dry, unprocessed | §4.3; NARR-001 §3.2 ("nothing is added to them") | no growl, pitch-down, reverb wash, formant shift, distortion, granular or ring modulation |
+| Room | §4.3 | none in Acts 0 to 2; the −18 dB ✱ room only in Acts 3 and 4 (B3, B5, B6 by their stated Act) |
+| Borrowed Cabinet face | §4.2 (Type row) | from Act 1 the big type is the Cabinet's face; size, one-block-at-a-time and hard cut unchanged |
+| Never over the protected silence | §4.3 Silence; GDD-001 §12 | none plays inside the Awakening's 1.2 s silence; the silence budget (two per run, WARP-001) is not spent by these lines |
+| Never ducked | §4.3, §7.3 | `BUS-ENT` stays above the chant |
+| Gaps and repeats | §4.4 | 6 s ✱ minimum between entity blocks; no repeat of a spent line in a run; one entity block at a time (§4.2) |
+| Captions | §8.2 | `[ENTITY]` tag and the line twice by design (big type and caption slot) |
+| Source honesty | NARR-001 §3.2 | the line must be verifiable in the Cabinet, the Office logs, the Litany or the player's own play |
+
+**Not built.** No keys, renders or cue ids exist for B2 to B8 (no caller). The rows and keys are owed to the M1 narration work after the owner reviews the lines; this table fixes only placement.
+
 ---
 
 ## 5. The Choir's chant
@@ -610,6 +644,8 @@ LOOP-001 §3.4: a capstone's first purchase gives no mechanical surprise beyond 
 The chant is not music. It is a faction behaviour with a position, a radius and laws (SYS-001 §3.1), and GDD-001 §8.5 requires it to be audible *and* to carry a visual indicator. It is therefore authored, recorded and specified like a mechanic.
 
 ### 5.1 The nine-syllable litany ✱
+
+> **Open (2026-11-18, TECH-001 §11.1 Q-T75):** NARR-001 §2.1 and its Q-11 say the Litany is written in nine syllables, sung in eight, always one short (only ending 3 sings all nine). This section says nine, sung in three feet of three. Text below is unchanged until the owner rules.
 
 **"THE KING IS HOLLOW — THE SKY IS HIS."** Nine syllables, three feet of three. Its originality is deliberate (RES-001 §5): it names the Hollow King and the failed star in the game's own words.
 
@@ -688,6 +724,21 @@ Chant is information. A player who cannot hear it must get the same information.
 | Layer priority | drawn above the field, below the entity's big type, never above: Charge pips, the Composure wick, the Ledger Compass, Unravel Focus markers, or another player-critical marker ✱ (the same order as §7.2) |
 | Warp Tier ≥ 3 | pinned with the rest of the fixed HUD by the Steady Ledger toggle (GDD-001 §10) |
 | Options | `Off / Minimal / Full` — default **Full**; `Off` is allowed only because every chant effect also has a numeric HUD readout in the Ledger Compass strip, so no information is lost (L3) |
+
+### 5.6 Choir liturgy fragments: audio placement (PM-directed 2026-11-18; NARR-001 §2.1 owns the words)
+
+NARR-001 §2.1 ("Liturgy fragments") offers six Choir lines (F1 to F6 here, the table's `#` column) and leaves open where they appear: "any sung or spoken form is AUDIO-001 §5's". The words are not copied here. This section places each against §5's structure only; it adds no new unit behaviour.
+
+| NARR-001 §2.1 # | NARR-001 says | Audio placement against §5 | Captions (§8.2) | Status |
+|---|---|---|---|---|
+| 1 | a Litany line, 8 syllables (the sung form) | the litany itself: sung by the chanting units of §5.2 (Acolyte on the move, Matron-led, Rites), positional per §5.3 | the chant caption with its direction and distance tags; `[CHORUS]` / `[CHORUS STOPS]` | **blocked on Q-T75**: §5.1 is nine syllables in three feet of three; NARR-001 says sung in eight. Not placed until resolved |
+| 2 | the Carried's bearing words | no sung placement: §5.2 says the Grub does not sing the litany and only keens | text only (Codex quote); no caption unless spoken | not placed; owner to say if any voiced form is wanted |
+| 3 | doctrine | no unit and no moment stated; no audio | Codex only | not placed |
+| 4 | doctrine; the gap (the late ninth voice) | no unit and no moment stated; no audio. Touches the nine-versus-eight question, so held with row 1 | Codex only | not placed; see Q-T75 |
+| 5 | a Matron, on being silenced | never voiced: a silenced Matron is the loudest silence (§5.2) and the `matron_silenced` cue (F07, §12.14) is the sound; nothing may speak over the silence event (§5.3) | text only; the silence event carries `[CHORUS STOPS]` | not placed as sound |
+| 6 | the Comforters, at the leading edge of a Passing (WARP-001, CHD-02) | already placed: `comforters_murmur` (PAS-02, §12.14 (b)), a wordless three-beat murmur on `BUS-CHO`; the words are subtitle text only | `[CHORUS]` plus the NARR-001 text | placed, UNAUDITIONED |
+
+**Positional and caption rules that apply to any sung placement:** §5.3 (radius, never-mute occlusion, one voice per unit up to 10 ✱, never ducked) and §8.2 (`[CHORUS]` tag, direction and distance tag, `[CHORUS UNCERTAIN]` for false cues). **Litany rule held:** NARR-001 §2.1 and Q-11 say the Litany is written in nine syllables, sung in eight and always one short, and only ending 3 sings all nine. §5.1 and §8.2 (the nine-tick tracker) still say nine sung. They disagree, so neither is changed here: TECH-001 §11.1 Q-T75.
 
 ---
 
@@ -1416,7 +1467,7 @@ Both new cues are chirp renders (mono, from `audio/src/cabinet.cx.js`, `assets/a
 
 **(b) The Passing.** `AudioService.set_subtraction(amount, ramp_s)` (read back with `subtraction()`): a low-pass on `BUS-AMB` and `BUS-MUS`, 20000 Hz ✱ open to 500 Hz ✱ closed (exponential), plus up to −18 dB ✱ on those buses. It never touches `BUS-ENT`, `BUS-CHO`, `BUS-FLY` or `BUS-UI` (L3). The caller passes the lead ramp; the telegraph value (`ds_warp.passing.telegraph_s`) and the T2 echo amount (≤ 0.3) are owned by WARP-001 and cited, not held here. Constants: `SUBTRACTION_OPEN_HZ`, `SUBTRACTION_CLOSED_HZ`, `SUBTRACTION_CUT_DB` (TECH-001 §2.7). Cues: `presence_flee` (PAS-01; stereo, `BUS-AMB`, a vast Presence receding, 1 s rise, no transient) and `comforters_murmur` (PAS-02; a wordless three-beat murmur; the words "Let it pass. Let it pass. Let it pass over." are subtitle text only, owned by NARR-001). No engine or thrust sound (§12.4).
 
-**(c) Death lines (L12).** Text only, no voice, no audio beyond C08 `vigil_die`. Shown only when a HUD lie was live within the window before death (2.0 s, owned by the Cosmic horror docs). Wording is NARR-001's; proposed: "COMPASS READING DISCREPANCY NOTED." / "CHARGE TALLY DISCREPANCY NOTED." / "INDEX READING DISCREPANCY NOTED." with proposed keys `MSG_DEATH_LIE_COMPASS`, `MSG_DEATH_LIE_CHARGES`, `MSG_DEATH_LIE_INDEX`. **Not added to `locale/en.po`:** L10N-001 §3 lets keys in only with the code that shows them, and no post-Act-0 death screen exists yet.
+**(c) Death lines (L12).** Update 2026-11-18 (NARR-001 §7.2 table, which owns the wording and the key names): **only `MSG_DEATH_LIE_COMPASS` is live**; `MSG_DEATH_LIE_CHARGES` and `MSG_DEATH_LIE_INDEX` are **reserved** (authored, no trigger: under the widened L6 no legal lie concerns the Charge tally or the Vigil Index yet). All three stay text only and **not in `locale/en.po`** until a death screen exists. Original entry follows. Text only, no voice, no audio beyond C08 `vigil_die`. Shown only when a HUD lie was live within the window before death (2.0 s, owned by the Cosmic horror docs). Wording is NARR-001's; proposed: "COMPASS READING DISCREPANCY NOTED." / "CHARGE TALLY DISCREPANCY NOTED." / "INDEX READING DISCREPANCY NOTED." with proposed keys `MSG_DEATH_LIE_COMPASS`, `MSG_DEATH_LIE_CHARGES`, `MSG_DEATH_LIE_INDEX`. **Not added to `locale/en.po`:** L10N-001 §3 lets keys in only with the code that shows them, and no post-Act-0 death screen exists yet.
 
 **Lie-tell ticks (L11).** Five mono cues, one per WARP-001 tell family: information, not alarms. Each is ≤ 0.25 s ✱, `BUS-UI`, P1, 1 voice, 250 ms gate (all ✱). Ids LIE-01 to LIE-05. The visual twin is the tell's stroke animation (L11). All UNAUDITIONED.
 
