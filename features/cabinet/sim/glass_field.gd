@@ -58,6 +58,17 @@ func free_shards() -> Array[Shard]:
 	return out
 
 
+## Is the Vigil's magnet pulling this shard right now? (Same test as the pull in tick().)
+func in_magnet(s: Shard) -> bool:
+	var v := world.vigil
+	return v.alive and charges < world.tuning.magazine and world.torus.distance(s.pos, v.pos) < world.tuning.magnet_radius
+
+
+## P2 pilfer: an unclaimed, uncarried shard the magnet is not pulling.
+func pilferable(s: Shard) -> bool:
+	return s.alive and s.claimed_by == 0 and not s.carried and not in_magnet(s)
+
+
 func tick(delta: float) -> void:
 	var t := world.tuning
 	var v := world.vigil

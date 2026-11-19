@@ -96,6 +96,37 @@ func test_the_default_roster_is_this_roster_and_counts_five() -> void:
 	assert_int(CabinetStageRoster.default_size()).is_equal(5)
 
 
+## P2 "pressure" switches per stage (PM Q-T105, 2026-11-19); a0_1 keeps every default (= pre-P2).
+## Columns: acolyte_reinforce_s, acolyte_cap, geode_drift_s, grubs_after_wake, grub_pilfer,
+## acolyte_escort, carry_charges_in.
+const PRESSURE := {
+	&"a0_1": [0.0, 0, 0.0, false, false, false, false],
+	&"a0_2": [40.0, 2, 20.0, false, true, false, true],
+	&"a0_3": [25.0, 6, 20.0, false, true, true, true],
+	&"a0_4": [35.0, 4, 12.0, true, true, false, true],
+	&"a0_5": [30.0, 5, 0.0, true, true, false, true],
+}
+
+
+func test_each_stage_has_its_pressure_switches() -> void:
+	for st: CabinetStage in roster.stages:
+		var row: Array = PRESSURE[st.id]
+		var got: Array = [st.acolyte_reinforce_s, st.acolyte_cap, st.geode_drift_s, st.grubs_after_wake,
+			st.grub_pilfer, st.acolyte_escort, st.carry_charges_in]
+		assert_array(got).override_failure_message("%s pressure row %s" % [st.id, got]).is_equal(row)
+
+
+func test_a_new_stage_defaults_to_no_pressure() -> void:
+	var st := CabinetStage.new()
+	assert_float(st.acolyte_reinforce_s).is_equal(0.0)
+	assert_int(st.acolyte_cap).is_equal(0)
+	assert_float(st.geode_drift_s).is_equal(0.0)
+	assert_bool(st.grubs_after_wake).is_false()
+	assert_bool(st.grub_pilfer).is_false()
+	assert_bool(st.acolyte_escort).is_false()
+	assert_bool(st.carry_charges_in).is_false()
+
+
 func test_a_zone_card_has_a_zone_cue_and_only_then() -> void:
 	for st: CabinetStage in roster.stages:
 		assert_bool(st.zone_cue != &"").override_failure_message("%s: zone_cue iff zone_key" % st.id) \

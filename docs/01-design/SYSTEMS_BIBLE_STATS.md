@@ -160,6 +160,30 @@ Act 0 is a five-stage shift (~9–11 min skilled; GDD §6.1; TECH-001 §2.10). O
 | `a0_4` | Fourth Vigil / Shoal (geode-rich) | 26 | 6 | 2 | 1 | 4 | yes | 1 |
 | `a0_5` | The Last Normal Day / Stillwater (geode-scarce, last stage) | 8 | 4 | 2 | 1 | 0 | yes | 1 |
 
+**Pressure switches (P2, built; PM 2026-11-19, TECH-001 §11.1 Q-T105; retune at playtest `⚙`).** Per-stage `CabinetStage` fields; each default reproduces the pre-P2 game, and `a0_1` keeps every default. Vigil rows are untouched. TECH-001 §2.10 holds the behaviour.
+
+| Id | Bell interval (`acolyte_reinforce_s`) | Acolyte cap (`acolyte_cap`) | Geode drift (`geode_drift_s`) | Grubs after wake | Grub pilfer | Acolyte escort | Carry Charges in |
+|---|---|---|---|---|---|---|---|
+| default | 0 (off) | 0 | 0 (off) | no | no | no | no |
+| `a0_1` | default | default | default | no | no | no | no |
+| `a0_2` | 40 s | 2 | 20 s | no (cold) | yes | no | yes |
+| `a0_3` | 25 s | 6 | 20 s | no | yes | yes | yes |
+| `a0_4` | 35 s | 4 | 12 s | yes | yes | no | yes |
+| `a0_5` | 30 s | 5 | default (off) | yes | yes | no | yes |
+
+Meaning: a bell (every interval, while the Vigil is alive and under control) warns, then brings one Acolyte from just off view if fewer than the cap live (guard ring counted). Drift-in adds a geode every `geode_drift_s` while live geodes sit below half the stage count. "Grubs after wake" keeps the Sepulchre birthing replacement Grubs after the entity wakes (§3 Grub respawn). Pilfer: Grubs prefer loose glass the Vigil's magnet is not pulling. Escort: idle non-guard Acolytes trail a laden Grub. Carry: the next stage starts with the Charges held at the last stage's end (cap: magazine 5).
+
+Engineering rows (✱, `CabinetTuning`, `ds_cabinet.tuning.*`; PM-accepted 2026-11-19 under delegated owner authority, Q-T105; retune at playtest):
+
+| Field | Value | Notes |
+|---|---|---|
+| Bell warning (`reinforce_tell_s`) | 1.0 s ✱ | censer bell rings at its start, then the Acolyte arrives |
+| Arrival offset (`reinforce_entry_px`) | 24 px ✱ | outside the current view edge |
+| Drift floor (`geode_drift_floor`) | 0.5 ✱ | drift-in runs while live geodes < floor(stage geodes × this) |
+| Drift clearance (`geode_drift_clear_px`) | 160 px ✱ | a drift-in geode is off view and at least this far from the Vigil |
+| Pilfer radius (`grub_pilfer_radius`) | 160 px ✱ | how far a pilfering Grub looks for loose glass |
+| Escort distance (`escort_distance`) | 60 px ✱ | an escorting Acolyte trails its Grub at this distance |
+
 `a0_5` margin (PM 2026-11-19, TECH-001 §11.1 Q-T130): Grubs 5 → 4 and Guard Acolytes 2 → 1; **retune at playtest (Reviewer: a0_5 sits on the 24-shard floor)**. `a0_1` is the old A0-1 stage and `a0_5` the old A0-3 stage (The Last Normal Day); `a0_2`–`a0_4` are new. Vigil rows (§1.1–§1.5) are not touched by the shift (the 340 px/s lock stays).
 
 ---
@@ -253,7 +277,7 @@ Oubliette Grub AI numbers (the Cabinet values, so M1 matches Act 0; closes that 
 |---|---|---|
 | Grub seek speed | 160 px/s ✱ | speed toward a free shard, before it carries one (carry and flee speeds are in the table above). PM-approved 2026-11-18 |
 | Grub flee radius | 110 px ✱ | distance from the Vigil at which a Grub starts to flee. PM-approved 2026-11-18 |
-| Grub respawn | 6.0 s ✱ | delay before a killed Grub is replaced. PM-approved 2026-11-18 |
+| Grub respawn | 6.0 s ✱ | delay before a killed Grub is replaced. PM-approved 2026-11-18. In the Cabinet it stops at the wake unless the stage sets `grubs_after_wake` (§1.6, P2) |
 | Grub flee while carrying | never ✱ | a Grub carrying glass does not flee the lantern ("devotion beats fear", the Cabinet rule). PM under owner autonomy grant 2026-11-19 (TECH-001 Q-T112) |
 | Grub body and steering (engineering) | radius 6 px; pickup margin 4 px; steer 5 /s; arrive 2 px; flee step 80 px; waypoint reach 12 px; a dying carrier drops its shard with 0.3 of its velocity ✱ | the Cabinet's literals, mirrored in M1 (`ds_choir.grub.*`, TECH-001 §3.4); waypoint reach is new in M1. PM-accepted 2026-11-19 (PM under owner autonomy grant 2026-11-19) |
 | Grub idle orbit (no free glass) | 90 px round the Sepulchre at 70 px/s, orbit point turning 0.3 rad/s ✱ | the Cabinet's literals. PM-accepted 2026-11-19 (PM under owner autonomy grant 2026-11-19) |
@@ -382,7 +406,7 @@ Cosmic horror design rev 3 (PM ruling 2026-11-18 (owner grant)). The rules are Z
 | Chain bonus | none | +10% per 3 s of continuous fire, cap +50%, resets on hit-taken | ✱ arcade-feel hook for clips |
 | Lives at start (Act 0) | 3 ✱ | — | arcade convention; `CabinetTuning.lives_start` 3. PM-approved 2026-11-19 (Q-T107); built |
 | Lives cap (Act 0) | 5 ✱ | — | `CabinetTuning.lives_cap` 5. PM-approved 2026-11-19 (Q-T107); built |
-| Extra life (Act 0) | at 10,000, then 30,000, then every +40,000 | — | PM-approved 2026-11-19 (Q-T107); **build: P2**. Built today: first at 10,000 (`extra_life_first`), then every 20,000 (`extra_life_every`, single step); the schedule change is not built. GDD §9.4 owns the rule |
+| Extra life (Act 0) | at 10,000, then 30,000, then every +40,000 | — | PM-approved 2026-11-19 (Q-T107); **built (P2)**: `extra_life_first` 10,000, `extra_life_second` 30,000, `extra_life_every` 40,000, cap `lives_cap`. GDD §9.4 owns the rule |
 | Act 0 bank (first Ruins visit, once) | Ember = `floor(Act 0 Vigil Index / 200)` | — | the existing Ember formula below, applied once, at the first Ruins visit; the wall Cabinet pays it out in tickets (GDD §7.1; NARR-001 §5.7). A Cabinet replay never banks again (LOOP-001 §11.6; save reason open, TECH-001 §11.1 Q-T101). PM-approved 2026-11-18 under owner grant; retune at playtest |
 
 Score is **Ember's primary input**: `Ember = floor(score / 200)` plus milestone bonuses. The design note that matters: score never buys power *inside* a run (anti-pillar, GDD §3).
