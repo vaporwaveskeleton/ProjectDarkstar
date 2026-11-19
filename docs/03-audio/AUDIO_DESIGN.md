@@ -136,6 +136,8 @@ Four stems per biome 🔒 (GDD-001 §12), plus shared state overlays that are bi
 | D Decomposed | silent | — | — | −∞ |
 | extra | cabinet hum (50 Hz ✱ mains buzz), a coin-drop thunk, 1UP chime | attract idle | on start | −26 dB |
 
+**The Decay (owner direction 2026-11-19; PROPOSED until TECH-001 Q-T180–Q-T185 are ruled).** After A0-5's credits the shell restarts as if for attract and then dies: it sags flat, loses its voices and stops, and the hum sags and fails (§12.18; GDD-001 §6.1). Built today: neither the shell loop nor the hum exists as a sound; the cabinet plays one-shots only (§12.18).
+
 **Trigger:** title screen, and the credits roll at the end of A0-1 and again at A0-3 (GDD-001 §6.1). **Loop:** 8 bars at 120 BPM ✱ (≈16 s). **Transition:** input starts New Vigil → one 4-bar outro ✱, then the A0-1 bed. **The A0-2 rule 🔒:** from the second authored level the first chant line is heard *under* the music (GDD-001 §6.1) — one voice of C enters at −22 dB rel. master ✱, at the diegetic radius of SYS-001 §3.1, so a player with music up still hears it as coming from around a corner. **Params:** `silence_spent = 0`, `warp_tier = 0`, `clock_pressure = 0`.
 
 ### 2.2 Ruins (hub)
@@ -335,6 +337,8 @@ This is the deferral GDD-001 §8.4 makes to this doc: phase 4's Awakening line "
 | Act 0 Awakening (A0-3) 🔒 | **"IT WAKES."** | 2 | the thesis line, kept verbatim (GDD-001 §8.4); the only entity line in Act 0 |
 
 Act 0 has no other entity line. The whole act is a costume (GDD-001 §6.1, §11), and a costume does not speak. The line arrives after the protected 1.2 s silence (GDD-001 §12) at a near-whispered level (§2.10), in full-screen big type (§4.2), and it is never withheld even if the Awakening is staggered (GDD-001 §8.4). Everything the entity says in Acts 1–4 is the costume coming off.
+
+**No line in the reveal (PROPOSED 2026-11-19, TECH-001 Q-T182).** The built reveal (`PretenceReveal`) shows "ONE SKY LESS." in big type inside the Cabinet. That breaks this section's one-line rule (it is §4.5's Act 1 Hollow-sector line), and the Decay that replaces the title card is wordless (NARR-001 §4.5), so the reveal drops it. The line stays in §4.5 for Act 1.
 
 ### 4.2 Display rule 🔒 (GDD-001 §10)
 
@@ -1575,3 +1579,19 @@ The reinforcement timings behind `censer_bell` are the Arcade layer's PROPOSED n
 **Voice (PM direction 2026-11-19): the Aether, not the Cabinet.** This is the post-Pretence Vigil, so the cues are wet (reverb, slow chorus), with slow onsets and no transient (§1.4). The band-down cues grow more unsettling by tuning and register, never by level: in Frayed a glass partial beats slowly (1.5 Hz) against a sine; in Unmoored the beat speeds up (5 Hz) and a fifth soured by +11 cents joins. In Hollowed the beating swells, then everything cuts at once and only a dry low breath remains: the field goes dry and wide (a build state, not a punishment, §1.1). The recovery is a soft relief: the hiss thins upward over 2 s ✱ while the beating pair settles onto a clean unison and a warm fifth opens above it. Lengths include the reverb tails. Caller: M1's Composure (PR #60), once per band change.
 
 **Counts (counted in the data files):** cue ids 74 + 4 = 78 and policy entries 68 + 4 = 72.
+
+### 12.18 The Decay (Act 0 reveal) — owner direction 2026-11-19; PROPOSED until TECH-001 Q-T180–Q-T185 are ruled
+
+**Status: design only, nothing built, nothing rendered.** The Decay replaces the title card (GDD-001 §6.1; WARP-001 W0-07; ART-001 §12.7b). Its sound is the Cabinet's own sound **failing**, not a new sound arriving: no sting, no riser, no hit (§1.4 startle budget; D-15 zero startle). Every number is SYS-001 `ds_cabinet.decay.*` (PROPOSED).
+
+| Beat | What is heard | How it is made |
+|---|---|---|
+| D1 Back to attract | the attract shell starts clean, bar 1, with the cabinet hum under it | the shell (§2.1 layer A) and the hum must first exist: both **runtime `SfxSynth`** voices, because they must morph continuously (CLAUDE.md: anything that morphs stays runtime), never a render |
+| D2 Tired phosphor | the shell sags flat toward `shell_detune_cents_end`, like a tired supply; the hum sags toward `hum_hz_end` and starts to beat against itself | parameter ramps on the two runtime voices: pitch offset in cents, hum frequency, a second hum partial a few tenths of a hertz off ✱ |
+| D3 The skin fails | the shell loses voices: melody first, then harmony; the bass keeps a bar that never resolves; each dying bulb is a tiny filament tick ✱; the hum stops at the end of D3 | voice mutes on the runtime shell; `decay_bulb_tick` one-shot (a 30 ms ✱ dry tick, ≤ −30 dBFS ✱, rendered from `audio/src/cabinet.cx.js` or runtime) |
+| D4 Collapse | the picture's collapse has the soft falling whine of a CRT switching off, then `collapse_silence_s` of total silence while the dot holds | `decay_crt_off` one-shot (a falling sine whine from ~15.7 kHz ✱ down, quiet, no thump), then `AudioService.silence` |
+| The tear | as built: the first Unmaking sting inside the silence budget, then the Aether (§12.12) | unchanged |
+
+Ending 5: Theodora's screens and the held line (NARR-001 §9.5) play over the hum only (no shell), then D1 starts. The Decay draws nothing from the Awakening silence budget (GDD-001 §12): Act 0 is not a run.
+
+Proposed new cue ids: `decay_bulb_tick`, `decay_crt_off` (one-shots) and the runtime voices `cabinet_hum` and `attract_shell`. They get §6.2 rows and policy entries when the owner approves (PROD-001 §4.2); the counts above are unchanged until then.

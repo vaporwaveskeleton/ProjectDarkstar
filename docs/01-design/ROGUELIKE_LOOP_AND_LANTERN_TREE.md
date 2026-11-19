@@ -1077,10 +1077,10 @@ Discoverability: Threads are visible on the Tree from the first Hard Unmaking, s
 | `act0_clean` | starting Act 0 | tracked flag `act0_clean_hands = true` | `act0_dirty` the first time Surgelight or Ward Pulse is pressed in Act 0 |
 | `act0_dirty` | any use | nothing visible | — |
 | `honour_roll_entry` | any Act 0 clear (first play or a Cabinet replay) with a score on the table | the three-letter initials entry screen (UI-001 §1, Cabinet face ART-001 §11); the player's initials are stored as `honour_roll_initials` in the profile and appear in `cx_vigil_honour_roll` | back to the flow above |
-| `pretence_kept` | A0-3 cleared while `act0_clean_hands` | after the second credits roll and before "THAT WAS A PRETENCE", the **Cabinet's marquee** shows Theodora Lune's message (NARR-001 §9) | `archivist_unlocked` |
+| `pretence_kept` | A0-5 cleared while `act0_clean_hands` (A0-3 before the five-stage shift) | after the last credits roll, the **Cabinet's marquee** shows Theodora Lune's message (NARR-001 §9.5), then the Cabinet's last screen *THAT WAS A PRETENCE.* (shown on this path only), then the wordless Decay and the tear (GDD-001 §6.1). On a normal clear the line is never shown (reveal decay, owner direction 2026-11-19; PROPOSED until TECH-001 Q-T180–Q-T185 are ruled) | `archivist_unlocked` |
 | `archivist_unlocked` | always | Ilse Marrow completes the record: the Archivist variant of every `cx_choir_` entry (§8.4), plus `cx_chron_end_05` | normal play |
 
-Act 0 is replayable at any time from **the Cabinet in the Ruins** (*Insert credit*): the same three authored stages, with the cabinet costume, as a self-contained arcade game. A clean-hands run there counts. That replay path is the whole secret: a player who has learned that the Cabinet is playable, and that the tutorial is hiding something, is a player who tells someone.
+Act 0 is replayable at any time from **the Cabinet in the Ruins** (*Insert credit*): the same authored stages (five since the shift, GDD-001 §6.1), with the cabinet costume, as a self-contained arcade game. A clean-hands run there counts. That replay path is the whole secret: a player who has learned that the Cabinet is playable, and that the tutorial is hiding something, is a player who tells someone.
 
 Word of mouth, by design: the game gives **exactly one** in-world hint and never a direct one. From Hard Unmaking 3, the Cabinet's high-score table lists the initials **T.L.** with the note `0 WARD 0 SURGE` beside the top score ✱. No character mentions it, no Codex entry explains it, no achievement description names the condition (§11.9 lists it as hidden). It must spread from players to players.
 
@@ -1121,7 +1121,7 @@ IDs are invariant; display names live in `locale/` (L10N-001). "Hidden" achievem
 | ID | Earned for | Hidden |
 |---|---|---|
 | `ach_first_vigil` | clear A0-1 | |
-| `ach_pretence` | see "THAT WAS A PRETENCE" (A0-3) | |
+| `ach_pretence` | witness the Pretence: the Decay and the tear at the end of A0-5 (was: see "THAT WAS A PRETENCE" at A0-3; the line is no longer on screen on a normal clear; id unchanged; reveal decay, owner direction 2026-11-19; PROPOSED until TECH-001 Q-T180–Q-T185 are ruled) | |
 | `ach_clean_hands` | ending 5 — The Pretence Kept | **yes** |
 | `ach_first_dark` | the first Hard Unmaking | |
 | `ach_four_darks` | four Hard Unmakings | |
