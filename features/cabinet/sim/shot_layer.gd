@@ -61,13 +61,19 @@ func tick(delta: float) -> void:
 	shots.assign(shots.filter(func(s: Shot) -> bool: return s.alive))
 
 
+const HOSTILE_SHOT_RADIUS := 3.0   ## px ✱ the hostile shot's DRAWN radius (_draw below): sizes the chalk death ring (S6)
+
+
 ## Returns true if the shot was consumed.
 func _resolve(s: Shot) -> bool:
 	if s.hostile:
 		var v := world.vigil
 		if v.alive and world.torus.distance(s.pos, v.pos) <= v.radius + 2.0:
 			s.alive = false
-			v.kill()
+			var away := world.torus.delta(v.pos, s.pos)   # toward the shot
+			if s.vel.length() > 0.0:
+				away = -s.vel.normalized()
+			v.kill(s.pos, away, HOSTILE_SHOT_RADIUS)
 			return true
 		return false
 	var dir := s.vel.normalized()
