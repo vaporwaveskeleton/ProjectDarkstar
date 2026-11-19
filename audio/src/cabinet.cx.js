@@ -237,3 +237,49 @@ sfx("charge_gutter", { vol: 0.18 },
 sfx("grub_steal", { vol: 0.3 },
   tone({ wave: "saw", freq: 300, to: 460, slide: 0.22, dur: 0.25, env: [0.03, 0.08, 0.6, 0.1], filter: { type: "bp", cutoff: 900, q: 3 }, vibrato: { rate: 6, depth: 0.2 } }),
   tone({ wave: "saw", freq: 302, to: 463, slide: 0.22, dur: 0.25, env: [0.04, 0.08, 0.5, 0.1], filter: { type: "bp", cutoff: 1300, q: 4 }, vol: 0.5 }))
+
+// --- The Act 0 shift (Arcade layer chat, PM-directed 2026-11-19; AUDIO-001 §12.16) ----------------
+// Cabinet chiptune voice: square and triangle, short envelopes, a little crush. No stings (§1.1):
+// zone cards get short jingles, never hits. Each ≤ 2.5 s (the READY card). UNAUDITIONED.
+
+// Censer bell: one bell 1 s before an Acolyte reinforcement enters (acolyte_squad.gd). A warning
+// tell, kept quiet (under the §1.4 −18 LUFS-S onset line): a crushed FM bell, short ring.
+sfx("censer_bell", { vol: 0.22, fx: [crush({ bits: 9 })] },
+  tone({ wave: "fm", fm: { ratio: 3.5, index: 3, decay: 0.3 }, freq: "A5", dur: 0.05, env: [0.004, 0.25, 0.2, 0.5] }),
+  tone({ wave: "triangle", freq: "A4", dur: 0.05, env: [0.004, 0.2, 0.1, 0.3], vol: 0.4 }))
+
+// Zone cards: one shared three-note motif (the litany's foot), re-voiced per zone.
+const zoneNote = (t, n, wave = "square", vol = 0.5) =>
+  at(t, tone({ wave, freq: n, dur: 0.14, duty: 0.25, env: [0.004, 0.06, 0.6, 0.08], vol }))
+
+// Drift: calm, open, major, unhurried.
+sfx("zone_drift", { vol: 0.3, fx: [crush({ bits: 10 })] },
+  zoneNote(0, "C5"), zoneNote(0.22, "E5"), zoneNote(0.44, "G5"),
+  at(0.66, tone({ wave: "triangle", freq: "C6", dur: 0.5, env: [0.01, 0.2, 0.5, 0.3], vol: 0.5 })),
+  at(0, tone({ wave: "triangle", freq: "C4", dur: 1.0, env: [0.01, 0.3, 0.4, 0.3], vol: 0.35 })))
+
+// Censer Watch: minor, with the censer bell answering the motif.
+sfx("zone_censer_watch", { vol: 0.3, fx: [crush({ bits: 10 })] },
+  zoneNote(0, "A4"), zoneNote(0.22, "C5"), zoneNote(0.44, "E5"),
+  at(0.7, play("censer_bell", { vol: 1.4 })),
+  at(0, tone({ wave: "triangle", freq: "A3", dur: 1.0, env: [0.01, 0.3, 0.4, 0.3], vol: 0.35 })))
+
+// Shoal: the motif rippling (fast arpeggio, gentle vibrato), like light through water.
+sfx("zone_shoal", { vol: 0.3, fx: [crush({ bits: 10 }), delay({ time: 0.11, feedback: 0.3, mix: 0.25 })] },
+  at(0, tone({ wave: "square", freq: "D5", dur: 0.5, duty: 0.25, arp: { notes: [0, 3, 7, 12], rate: 0.05 }, env: [0.005, 0.1, 0.6, 0.15], vol: 0.45 })),
+  at(0.6, tone({ wave: "triangle", freq: "A5", dur: 0.45, vibrato: { rate: 6, depth: 0.2 }, env: [0.01, 0.15, 0.5, 0.3], vol: 0.5 })),
+  at(0, tone({ wave: "triangle", freq: "D4", dur: 1.1, env: [0.01, 0.3, 0.4, 0.3], vol: 0.35 })))
+
+// Hollow: the motif falling, and its last note missing (always one short).
+sfx("zone_hollow", { vol: 0.3, fx: [crush({ bits: 9 })] },
+  zoneNote(0, "E5"), zoneNote(0.26, "C5"),
+  at(0, tone({ wave: "triangle", freq: "E3", dur: 1.2, env: [0.01, 0.4, 0.3, 0.5], vol: 0.4 })))
+
+// CONTINUE?: a countdown tick (Visual Design owns the count and its timing; one call per step).
+sfx("continue_tick", { vol: 0.22 },
+  tone({ wave: "square", freq: 988, dur: 0.04, duty: 0.5, env: [0.002, 0.03, 0.3, 0.02] }))
+
+// Continue taken: a coin's worth of hope, two bright steps up (CabinetGame.on_route_entered).
+sfx("continue_taken", { vol: 0.3, fx: [crush({ bits: 10 })] },
+  zoneNote(0, "G5"), zoneNote(0.12, "C6"),
+  at(0.24, tone({ wave: "square", freq: "E6", dur: 0.25, duty: 0.25, env: [0.004, 0.08, 0.5, 0.15], vol: 0.45 })))

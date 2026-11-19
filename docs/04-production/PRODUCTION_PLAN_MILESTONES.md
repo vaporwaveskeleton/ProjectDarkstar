@@ -94,6 +94,57 @@ An imagined 1.0 review scored the game 9/10, with sub-scores for graphics and ar
 | Docs | TECH-001 §4.3 (shard magnet), §4.9 (seed); SYS-001 rows for anything new |
 | Risks | the race is invisible at 640×360 → fix with art/audio, not with UI text (GDD-001 P5) |
 
+#### M1 playtest protocol (exit criteria 1, 2 and 4)
+
+The owner runs these sessions. One protocol, five testers ✱ (exit criterion 1). Session lengths and the order below are ✱ production values for the PM to adjust; they are not game numbers.
+
+**Setup (once per machine).**
+- Build from a checkout of `main` with the editor binary (it carries the `editor` feature, so `--route` works). Release exports ignore `--route` (TECH-001 §9.1). The **Windows QA** export (`automation_qa`) also honours it.
+- Launch, one line per hull mode; `--no-save` keeps the tester's profile untouched:
+
+```
+tools\godot\Godot_v4.7.2-stable_win64_console.exe --path . -- --route=sector --hull=1 --no-save
+tools\godot\Godot_v4.7.2-stable_win64_console.exe --path . -- --route=sector --hull=2 --no-save
+```
+
+- `--hull=1` is the one-hit hull (D-08 default); `--hull=2` is the 2 HP hull with 0.75 s post-hit grace (SYS-001 §1.2). Any other value falls back to 1. Note: `--hull` is not build-gated.
+- Mouse and keyboard only for M1 (the exit criterion is about mouse aim). Record the mouse model and the monitor's refresh rate.
+
+**Order (counterbalanced).** Testers 1, 4 and 5 play hull 1 then hull 2; testers 2 and 3 play hull 2 then hull 1. Each block is 8 minutes ✱ of free play, with a 2-minute ✱ break between blocks. Do not tell the tester which mode is which; call them "A" and "B".
+
+**Say only this at the start:** "Fly with WASD, aim with the mouse, left button fires, right button throws a Charge. Play however you like. Think aloud if you can." No mention of glass, Grubs, the Sepulchre or the race.
+
+**Record during play** (the observer, on paper or a sheet):
+| Field | How |
+|---|---|
+| Race described unprompted | yes/no, plus the time from launch (exit criterion 2: within 90 s) and the tester's own words |
+| Mouse-aim complaints | count and quote each one (lag, floaty, offset, overshoot); exit criterion 1 needs zero across all five |
+| Deaths and immediate retries | per block; note when a death felt unfair to the tester |
+| First over-fire, first Charge thrown, first Grub killed | time from launch, or "never" |
+| Confusion points | what the tester asked or misread, with a timestamp |
+
+**Ask after each block** (open answers; do not lead):
+1. "What were you trying to do?"
+2. "Did the ship go where you aimed? Describe anything that felt off."
+3. "What killed you, and was it fair?"
+
+**Ask after both blocks:**
+4. "Which mode, A or B, would you rather play? Why?" (D-08 preference.)
+5. "In which one did you take more risks?"
+6. "Anything you wanted to do that you couldn't?"
+
+**Results.** One row per tester in the table below, then a one-line verdict per exit criterion. D-08 is decided from this data plus M2 data (§6), not from preference alone.
+
+| Tester | Order | Race unprompted (time) | Aim complaints | Deaths A / B | Prefers | Reason (quote) |
+|---|---|---|---|---|---|---|
+| 1 | 1→2 | | | | | |
+| 2 | 2→1 | | | | | |
+| 3 | 2→1 | | | | | |
+| 4 | 1→2 | | | | | |
+| 5 | 1→2 | | | | | |
+
+Not covered yet: Composure, the full Ledger Compass and the Litany Ring are not built, so do not ask about them.
+
 #### Status notes (2026-11-18)
 
 **Work landed 2026-11-18 (not M1 scope).** Merged PRs; detail lives in the owning doc, not here.
@@ -145,6 +196,7 @@ An imagined 1.0 review scored the game 9/10, with sub-scores for graphics and ar
 | Art / audio | generator render tests and frame cost at the on-screen caps (ART-001 §14.7); audio voice budget and boot-time generation check (AUDIO-001 §7.5, §11.5) |
 | Docs | TECH-001 §8.1–§8.4 with measurements; ASSET-003 import presets verified |
 | Risks | the warp misses budget → WARP-001 §5.3 refusal ladder, never a silent quality drop |
+| Watch items | Ledger Compass p99/max frame spikes (up to 0.365 ms p99, 2.65 ms max on a debug build, against the 0.2 ms ✱ budget whose statistic is p95): re-measure on a release build on minimum spec (TECH-001 §5.4, §8.5; PM 2026-11-19) |
 
 ### M4 — Demo (target 2027-09 ✱)
 | | |
