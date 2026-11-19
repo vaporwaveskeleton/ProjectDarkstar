@@ -270,8 +270,8 @@ sfx("zone_shoal", { vol: 0.3, fx: [crush({ bits: 10 }), delay({ time: 0.11, feed
   at(0.6, tone({ wave: "triangle", freq: "A5", dur: 0.45, vibrato: { rate: 6, depth: 0.2 }, env: [0.01, 0.15, 0.5, 0.3], vol: 0.5 })),
   at(0, tone({ wave: "triangle", freq: "D4", dur: 1.1, env: [0.01, 0.3, 0.4, 0.3], vol: 0.35 })))
 
-// Hollow: the motif falling, and its last note missing (always one short).
-sfx("zone_hollow", { vol: 0.3, fx: [crush({ bits: 9 })] },
+// Stillwater (was "Hollow", renamed by PM ruling 2026-11-19): the motif falling, its last note missing (always one short).
+sfx("zone_stillwater", { vol: 0.3, fx: [crush({ bits: 9 })] },
   zoneNote(0, "E5"), zoneNote(0.26, "C5"),
   at(0, tone({ wave: "triangle", freq: "E3", dur: 1.2, env: [0.01, 0.4, 0.3, 0.5], vol: 0.4 })))
 
