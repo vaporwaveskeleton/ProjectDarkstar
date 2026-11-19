@@ -84,6 +84,14 @@ extends TunableResource
 @export var lance_dull_db: float = 0.0                    ## dB ⚙ owner-approved 2026-11-18, SYS-001 §9: lance_dull cue volume
 @export_group("")
 
+@export_group("readable death ✱ PROPOSED (owner approval pending; not SYS-001 yet)")
+@export var death_ring_pad_px: float = 4.0                ## px ✱ PROPOSED: chalk ring radius beyond the killer's own radius
+@export var death_ring_draw_s: float = 0.25               ## s ✱ PROPOSED: sim time for the ring to draw itself 0..360 deg (full at once under Reduced Motion)
+@export var death_arc_radius_px: float = 12.0             ## px ✱ PROPOSED: chalk arc radius around the Vigil's death position
+@export var death_arc_deg: float = 60.0                   ## deg ✱ PROPOSED: chalk arc span, centred on the hit direction
+@export var death_edge_tick_px: float = 5.0               ## px ✱ PROPOSED: chalk tick on the view edge pointing at an off-view killer
+@export_group("")
+
 # --- Hit-stop ⚙ (owner-approved 2026-11-18, SYS-001 §9) ---
 # Sim frames (physics ticks at 60 Hz). Freezes the sim only: audio, CRT, state timers and input keep running.
 @export var hitstop_charge_hits_entity_frames: int = 3    ## frames ⚙ owner-approved 2026-11-18, SYS-001 §9 (_hit_entity)

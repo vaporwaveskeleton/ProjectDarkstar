@@ -103,10 +103,14 @@ func tick(delta: float) -> void:
 		vel = vel.bounce(away) * 0.5 if vel.dot(away) < 0.0 else vel
 
 
-func kill() -> void:
+## killer_pos / from_dir / killer_radius feed the chalk death mark (S6): from_dir points from the
+## Vigil toward what hit it. Defaults (INF) keep old callers working and draw no mark.
+func kill(killer_pos: Vector2 = Vector2.INF, from_dir: Vector2 = Vector2.ZERO, killer_radius: float = 0.0) -> void:
 	if not alive or shield > 0.0:
 		return
 	alive = false
+	if killer_pos.is_finite():
+		world.fx.death_mark(killer_pos, killer_radius, from_dir, pos)
 	world.sfx(&"vigil_die")
 	world.fx.burst(pos, Look.c(Pal.GAS_4), world.fx_tuning.vigil_death_burst_a_count, world.fx_tuning.vigil_death_burst_a_speed)
 	world.fx.burst(pos, Look.c(Pal.GAS_2), world.fx_tuning.vigil_death_burst_b_count, world.fx_tuning.vigil_death_burst_b_speed)
