@@ -144,7 +144,8 @@ We refuse non-integer scaling **of the screen**. A fractional scale blurs a 1 px
 | Linux x86-64 | post-1.0 | not built during development; CI does a compile-check only from month 6 ✱ |
 | macOS | post-1.0 | out of scope for v1 entirely |
 | Steam Deck verification | target, not gate | verified after the vertical slice; the ×2/40-bar case above is the one we test first |
-| Web / console / mobile | refused | refused, not deferred |
+| Web | tested 2026-11-18 (boots; single run) | low priority, not a release target; inherits the desktop tests |
+| Console / mobile | refused | refused, not deferred |
 
 | Build step | Runs | Output |
 |---|---|---|
@@ -304,7 +305,7 @@ Refused as autoloads: a UI manager (menus use a per-scene `ScreenStack`), a game
 | interactions | `features/interactions` (shrines, Chalk Desk, Sepulchre deposit) | empty |
 | (game-specific) | `features/composure`, `features/warp`, `features/sector`, `features/hud` | empty |
 
-Each empty folder has a `README.md` naming its owner doc. `core/audio/` holds `sfx_synth.gd` (fallback synth), `cue_policy.gd` + `cue_policy_entry.gd` (voice policy, data in `data/audio/cue_policy.tres`) and `cue_ids.gd` + `cue_id_entry.gd` (cue id table, `data/audio/cue_ids.tres`); tests in `core/audio/tests/`. Shared, feature-agnostic code lives in `core/` (`audio`, `components`, `data`, `i18n`, `math`, `physics`, `rng`, `routing`, `save`, `ui`). Menus and the bootstrap sector live in `scenes/`.
+Each empty folder has a `README.md` naming its owner doc. `core/audio/` holds `sfx_synth.gd` (fallback synth), `cue_policy.gd` + `cue_policy_entry.gd` (voice policy, data in `data/audio/cue_policy.tres`) and `cue_ids.gd` + `cue_id_entry.gd` (cue id table, `data/audio/cue_ids.tres`); tests in `core/audio/tests/`. Shared, feature-agnostic code lives in `core/` (`audio`, `components`, `data`, `i18n`, `math`, `physics`, `rng`, `routing`, `save`, `ui`, plus `automation` (dev/QA only, §9.1)). Menus and the bootstrap sector live in `scenes/`.
 
 ### 2.10 Act 0 — the Cabinet (`features/cabinet/`)
 
@@ -666,7 +667,7 @@ tools\godot\Godot_v4.7.2-stable_win64_console.exe --headless --path . --import
 tools\godot\Godot_v4.7.2-stable_win64_console.exe --headless --path . -s addons/gdUnit4/bin/GdUnitCmdTool.gd -a core -a features -a scenes -a tests --ignoreHeadlessMode -c
 tools\godot\Godot_v4.7.2-stable_win64_console.exe --headless --path . --quit-after 600 -- --smoke
 ```
-The smoke run prints `BOOT_SMOKE: reached route 'sector'` and exits 0. GdUnit writes HTML/XML reports to `reports/` (generated, not source).
+The smoke run prints `BOOT_SMOKE: reached route 'cabinet'` and exits 0. GdUnit writes HTML/XML reports to `reports/` (generated, not source).
 
 | Suite | Covers |
 |---|---|
@@ -694,6 +695,57 @@ The smoke run prints `BOOT_SMOKE: reached route 'sector'` and exits 0. GdUnit wr
 Result on 2026-11-18 (attract boot / coin slot): 118 test cases, 0 failures, 0 errors; boot smoke (`-- --smoke --no-save`, attract → cabinet) exit 0 with no `ERROR`/`WARNING` lines. Not verified: real gamepad hardware, real mouse-drag feel, audio by ear.
 
 Not covered (honest list): native-resolution rendering after Act 0 (decided, not implemented, D-A), the real window at any size (the Steam-survey sizes of §1.3 are covered as pure arithmetic in `test_screen_fit` / `test_bezel_art`, not by rendering them), gamepad glyphs (none exist), shaders, audio, Steam, performance. Slopes, stairs, doors and moving platforms are N/A (§2.6).
+
+### 9.1 Automation runner (dev/QA)
+
+Placed under §9 because it is a test tool (a scenario runs in the suite and from the CLI); it is not a runtime service, so it is not in §2.8.
+
+**Purpose.** Drive the game from outside the player's hands: scripted input, UI actions, waits, asserts, screenshots. **No networking; D-09 stands.** The runner works in-process (a scenario file read by the game itself); there are no sockets, ports or servers.
+
+**Boundary.**
+- Code lives in `core/automation/` (`automation_gate.gd`, `scenario_runner.gd`, `scenario_schema.gd`, `input_driver.gd`, `ui_view.gd`, `capture.gd`, `step_catalog.json`), tests in `core/automation/tests/`. No file declares `class_name`.
+- No autoload. `ScenarioRunner` is a child of Boot, loaded **by path**, only if the launch args contain `--scenario=<id>` **and** the build has feature `editor`, `automation_dev` or `automation_qa`. Game code never references it, except Boot's guarded loader.
+- New signal: `ScenarioRunner.scenario_finished(outcome)` (dev/QA only; EVT-001).
+
+**Launch.** `godot --path . --fixed-fps 60 -- --scenario=<id> --no-save --out=<dir>`. The Node CLI builds this line: `node tools/automation/darkstar_auto.js validate` and `... run <id> [--windowed]` (see `tools/automation/README.md`).
+
+**Scenarios.** `tests/scenarios/<id>.scenario.json`. The format is checked by `scenario_schema.gd`. **`core/automation/step_catalog.json` is the single source for the step list** (name, arguments, meaning); read it there, do not copy it here.
+
+**Ids.** Ids only, never display text. UI controls: `<route>/ui/<Name>` (for example `attract/ui/NewVigil`). Read-only game state (phase 1): `cabinet/game`, `cabinet/score`, `cabinet/record`. A control's `<Name>` is its scene-unique `%Name` (UI-001 §7, §8).
+
+**Determinism.** Waits count physics frames, each with a `within` limit. The CLI launches with `--fixed-fps 60`. The GdUnit path has no fixed-fps and asserts the outcome only (pass or fail), never frame counts or timing.
+
+**Safety.**
+- The runner refuses (exit 3) unless `SaveService.backend` is a `MemorySaveBackend`; it sets `SettingsService.persist = false` and resets settings to defaults before the first route.
+- `--out` must be under `user://` or the project `reports/` folder, with no `..`; a bad path is refused (exit 3).
+- No `eval`, no expression language, no console command execution: steps come only from the catalog.
+- Held input is tracked in a ledger; every held key, button or mouse button is released when the scenario ends, on any outcome.
+
+**Result.** `reports/automation/<id>-<stamp>/` holds `result.json`, screenshots and `console.log` (generated, not source). Exit codes: 0 pass; 1 fail or timeout; 2 invalid scenario; 3 refused (saves not in memory, or `--out` outside the allowed folders); a build without the feature tags prints one line and boots normally, ignoring `--scenario`; CLI only: 4 watchdog, 5 crashed.
+
+**Suite adapter.** `tests/test_scenarios.gd` runs scenarios headless inside the GdUnit suite. It allows only scenarios with `args: []` and `timeout_frames` ≤ 1200 ✱.
+
+**Known limitations.**
+- `--headless` has no renderer: `screenshot` steps are skipped. Use a windowed run (`--windowed`).
+- Scenario args are read from the real command line only (Q-T47).
+- The suite adapter limits above apply.
+- Cabinet entity ids and a state probe are not built (phase 2, Q-T49).
+- Export presets and the preset guard test are not built (phase 3).
+
+**Adding automation support.**
+- New focusable UI control: give it a scene-unique `%Name`; that is its id.
+- New state id: add it to the table in `ui_view.gd`.
+- New step: add it to `step_catalog.json`, implement it in `scenario_runner.gd`, add a test in `core/automation/tests/`.
+
+**Phases.**
+
+| Phase | Content | Status |
+|---|---|---|
+| P1 | Runner, gate, schema, catalog, input driver, UI view, capture, Node CLI, suite adapter, first scenarios | built (this branch; counts in the PR) |
+| P2 | Cabinet entity ids (`Acolyte.id`) and a Cabinet probe for state reads | planned |
+| P3 | Release exclusion, QA preset, preset guard test. The release preset will exclude `core/automation/*`, `features/*/automation/*`, `tests/*`, `*/tests/*`, `addons/gdUnit4/*`, `addons/godot_ai/*` | planned |
+
+**Relation to the `godot-ai` MCP.** `godot-ai` is an editor-time live tool (it talks to the open editor). This runner is separate: it runs the game by itself, from a scenario file, with no editor.
 
 ## 10. Import conventions
 **D-13:** no raster imports feed the game. The reference PNGs under `assets/sprites/` are local-only reference: kept on disk, **not in git** (`.gitignore`) and **ignored by Godot** (`assets/sprites/.gdignore`), so they are never imported, exported or pushed. Only `SPRITE_MANIFEST.csv` is tracked, as the inventory of parts to build (owner decision 2026-11-18). Exports must still exclude `tools/**` (set in the export preset when it is created). Historical, for the reference PNGs only: per ART-002 §7, canvas default filter Nearest (set in `project.godot`); pixel atlases import with `compress/mode = Lossless`, mipmaps off, `fix_alpha_border = true`. Every `.csv` under `assets/` imports as `keep` (ruling R-19), never as a translation; PNG import flags per ASSET-003. ART-002 §7 mentions a `godot/DarkStar/` path; the project root is the repo root (TASK-BOOT Q4), so that path is obsolete — §11 Q-T08. No import preset file is committed yet. `docs/`, `tools/`, `research/` and `Claude outputs/` carry `.gdignore`.
@@ -723,6 +775,9 @@ Not covered (honest list): native-resolution rendering after Act 0 (decided, not
 | Q-T44 | ~~Hit-stop frame values and the Reduced Motion scale are PROPOSED ✱ (`ds_cabinet.fx.hitstop_*`: `charge_hits_entity` 3, `entity_unmade` 8, `vigil_death` 6, `it_wakes` 4, `modules_knocked` 2 frames; max 10; `reduced_motion_scale` 0.5; 2026-11-18). Where do they live: a SYS-001 §9 row, or stay ✱ here?~~ **Resolved 2026-11-18:** owner approved the values; they are SYS-001 §9 game-feel rows (⚙), hit-stop is outside the 1.5 s agency budget | `features/cabinet/cabinet_fx_tuning.gd`, `data/cabinet/cabinet_fx_tuning.tres`; SYS-001 §9 | closed |
 | Q-T45 | ~~S7 credits service record is PROPOSED (2026-11-18): (a) NARR-001 owner approval of the four stat-line wordings (`CAB_CREDITS_STAT_*`) and whether the credits set is added to NARR-001 §7.5; (b) `ds_cabinet.fx.credits_full_seconds` 13.0 and `credits_scroll_px_per_s` 24.0: SYS-001 rows, or stay ✱ here~~ **Resolved 2026-11-18:** owner approved the wording (whole credits set recorded in NARR-001 §7.5) and promoted both credits values to SYS-001 §9 (⚙) | `features/cabinet/service_record.gd`, `cabinet_fx_tuning.gd`; NARR-001 §7.5; SYS-001 §9 | closed |
 | Q-T46 | ~~S3 last-Charge slow-mo values are PROPOSED ✱ (`ds_cabinet.fx.slowmo_*`, 2026-11-18): `slowmo_scale` 0.25, `slowmo_trigger_px` 130.0, `slowmo_ramp_in_s` 0.15, `slowmo_ramp_out_s` 0.2, `slowmo_max_real_s` 2.5. Owner approval of the five values, and do they become SYS-001 §9 game-feel rows (⚙) or stay ✱ here?~~ **Resolved 2026-11-18:** owner approved the five values; they are SYS-001 §9 game-feel rows (⚙), slow-mo is outside the 1.5 s agency budget | `features/cabinet/cabinet_fx_tuning.gd`, `data/cabinet/cabinet_fx_tuning.tres`; SYS-001 §9 | closed |
+| Q-T47 | Scenario args are read from the real command line only. Should a `LaunchArgs` seam (one place that parses args and can be fed by tests) replace that? (2026-11-18) | §9.1 | decide when a second consumer needs it |
+| Q-T48 | Is `class_name` in export-excluded scripts safe on Godot 4.7? We avoid it in `core/automation/`. (2026-11-18) | §9.1 | verify in the phase 3 export test |
+| Q-T49 | Cabinet probe and `Acolyte.id` (automation phase 2) touch Cabinet code; needs Sizzle/PM sequencing (2026-11-18) | §9.1 | PM schedules after the Sizzle batch |
 | Q-T29 | Detonation shard count conflict: GDD §8.2 (~line 208) says 3-5; SYS-001 §1.3 row 74 says 3-5 but row 76 says 4-6; the Cabinet code uses 4-6. Also no SYS-001 row for magnet pull speed (170 px/s) or shard drag (1.2/s), both currently ✱ in code (2026-11-18) | GDD §8.2; SYS-001 §1.3 | owner ruling on 3-5 vs 4-6; add rows or keep ✱ |
 | Q-T35 | Entity-voice processing: AUDIO-001 §4.3 and §7.5 forbid formant shift, pitch change and distortion; §11.3 specifies formant drift and sub-octave doubling at higher tiers (2026-11-18) | AUDIO-001 §4.3, §7.5, §11.3 | audio/owner |
 | Q-T36 | AUDIO-001 §7.4 allows "two baked room impulses, no runtime convolution"; §11.2 uses Godot bus effects instead of impulses (2026-11-18) | AUDIO-001 §7.4, §11.2 | audio/owner |
@@ -815,3 +870,5 @@ Rows R-01…R-19 are the owner-delegated rulings of 2026-11-17; later rows carry
 | 2026-11-18 | **S3 last-Charge slow-mo design (§2.10).** The slow-down is a sim-only dt scale: `ArcadeWorld.sim_scale` gives `sdt = delta * sim_scale` to every layer except the Vigil layer (real `delta`, so the player keeps full control); CRT clock, audio, input and `CabinetGame` timers stay real; no `Engine.time_scale`, no tree pause. `end_slowmo()` snaps to 1.0 before hit-stop; Reduced Motion disables it; new signal `slowmo_changed(scale)` (EVT-001) drives `AudioService.set_bed_pitch_scale`. Values are PROPOSED ✱, pending (Q-T46) | owner approved the S3 batch item; values pending (Q-T46) |
 | 2026-11-18 | **S3 trigger distance moved from 80 to 130 px.** `slowmo_trigger_px` 80.0 → 130.0 by owner decision ("start further out"); measured real-time slow-mo in the last episode 0.833 to 0.850 s (autopilot stage 2, seeds 9/11/13; was 0.23 s at 80 px). Other slow-mo values unchanged. Values still PROPOSED, pending approval (Q-T46) | owner, relayed by the PM chat |
 | 2026-11-18 | **S3 slow-mo values approved and promoted to SYS-001 §9.** The owner approved the five values (`slowmo_scale` 0.25, `slowmo_trigger_px` 130, `slowmo_ramp_in_s` 0.15, `slowmo_ramp_out_s` 0.2, `slowmo_max_real_s` 2.5); they are game-feel rows (⚙, keys `ds_cabinet.fx.slowmo_*`). Slow-mo is sim-only, off under Reduced Motion, not a warp effect and outside the 1.5 s "Player agency loss" budget. Closes Q-T46 | owner (reply "Approve"), relayed by the PM chat |
+| 2026-11-18 | **Automation = an in-process scenario runner, no sockets (§9.1).** Owner: "The game is single player only - only implement networking if absolutely necessary, find a better/easier way to do automated testing and qa"; "Build all, CI later". Approach: scenario files run by the game itself (a) from the Node CLI and (b) inside the GdUnit suite. No autoload; child of Boot, loaded by path behind a feature gate. D-09 stands | owner, relayed by the PM chat |
+| 2026-11-18 | **Smoke route doc fix and Web wording.** §9 now says the smoke run reaches route `'cabinet'` (matches `boot.gd` and CLAUDE.md §4). §1.4 Web row: "Web export tested 2026-11-18 (boots; single run), low priority, not a release target; inherits the desktop tests"; console/mobile stay refused | owner (wording), relayed by the PM chat |

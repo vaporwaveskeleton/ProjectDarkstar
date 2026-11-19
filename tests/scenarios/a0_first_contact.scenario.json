@@ -1,0 +1,29 @@
+{
+	"format": "darkstar.scenario",
+	"version": 1,
+	"id": "a0_first_contact",
+	"profile": "qa",
+	"args": [],
+	"fixtures": {},
+	"timeout_frames": 1200,
+	"steps": [
+		{"do": "wait_route", "route": "attract", "within": 120},
+		{"do": "coin"},
+		{"do": "wait_until", "id": "attract/ui/NewVigil", "prop": "enabled", "eq": true, "within": 240},
+		{"do": "activate", "id": "attract/ui/NewVigil"},
+		{"do": "wait_route", "route": "cabinet", "within": 240},
+		{"do": "wait_until", "id": "cabinet/game", "prop": "state", "eq": "play", "within": 600},
+		{"do": "hold", "action": "move_right", "frames": 30},
+		{"do": "hold", "action": "fire_lance", "frames": 20},
+		{"do": "key", "keycode": "SHIFT", "frames": 2},
+		{"do": "autopilot", "on": true},
+		{"do": "wait_frames", "frames": 120},
+		{"do": "assert", "id": "cabinet/game", "prop": "state", "ne": "game_over"},
+		{"do": "assert", "id": "cabinet/game", "prop": "demo", "eq": false},
+		{"do": "assert", "id": "cabinet/score", "prop": "lives", "gte": 0},
+		{"do": "checkpoint", "name": "in_play"},
+		{"do": "screenshot", "name": "arcade", "target": "arcade"},
+		{"do": "screenshot", "name": "full", "target": "window"},
+		{"do": "quit"}
+	]
+}
