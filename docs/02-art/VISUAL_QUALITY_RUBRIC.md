@@ -330,7 +330,7 @@ Read the 6.3 as: a solid arcade screen with a readable HUD, still without its ho
 1. A player-highlight treatment for the Vigil that survives clutter (Returnal's outline lesson; Ball x Pit's failure case). (cat. 1)
 2. Choir role silhouettes that separate in greyscale, not by colour alone. (cat. 2)
 3. Side-gutter HUD that carries real, glanceable information (Ball x Pit model) instead of empty panels. (cat. 9)
-4. One type system per layer (pixel faces on the cabinet screen; chalk faces after), TECH-001 Q-T23. (cat. 11)
+4. One type system per layer (pixel faces on the cabinet screen; VectorText faces after (TECH-001 §2.9a)). (cat. 11)
 5. Fog shader without blocky rectangular patches; fog/post render scale and quality presets, TECH-001 Q-T24. (cat. 11)
 6. Bullet-pattern language for the Choir in L1: colour-split shot types and patterns as composition (Saros lesson). (cat. 5)
 

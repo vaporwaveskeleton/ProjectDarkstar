@@ -44,7 +44,7 @@ Saves, telemetry keys (SYS-001 §8), route ids, `ds_` keys, enum values and seed
 | English fallback | the locale is not `en`, or an unknown locale does not show English text |
 | plurals | `tr_count` gives the wrong form or separator |
 | number format | English grouping or decimals are wrong |
-| glyph coverage | the UI font lacks a character used in `en.po` |
+| glyph coverage | `data/ui/vector_glyphs.tres` lacks a glyph for a character used in `en.po` (`core/ui/vector_text/tests/test_vector_glyph_coverage.gd`, TECH-001 §2.9a) |
 
 `scenes/tests/test_attract_mode.gd` adds: no raw key is ever shown, and all text stays inside the screen at 200 % text size.
 
@@ -66,6 +66,7 @@ tools\godot\Godot_v4.7.2-stable_win64_console.exe --headless --path . -s addons/
 ```
 
 ## 9. Fonts, audio, subtitles
-* Fonts: ART-001 §11 defines three bitmap faces (Ledger, Litany, Cabinet) with English coverage. Until they are drawn, the UI uses Godot's fallback font; glyph coverage is tested against whatever font the Theme sets.
+* Fonts: there are no font files (D-13/D-14). The Act 0 screen uses the `PixelText` Cabinet face (ART-001 §11); everything else uses `VectorText` / `VectorLabel` (TECH-001 §2.9a).
+* **Glyph coverage:** every character in a `locale/` msgstr needs a glyph in `data/ui/vector_glyphs.tres`, or `test_vector_glyph_coverage` fails (a missing glyph draws a box on screen).
 * Warp text effects (WARP-001) operate on the displayed string, never on the key.
 * Entity lines are spoken and shown as big-type subtitles (GDD §10).
