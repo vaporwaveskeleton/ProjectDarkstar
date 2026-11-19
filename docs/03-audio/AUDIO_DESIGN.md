@@ -1,7 +1,7 @@
 # DARKSTAR — Audio Design
 
 **Doc ID:** AUDIO-001 · **Version:** 1.1 · **Date:** 2026-11-18 · **Owner:** Audio / Design · **Status:** authored, pending review
-**Rev 1.9 (2026-11-18, PM-directed, placement only, no design change): §4.16 added (placement of NARR-001 §3.2's nine borrowed entity lines: channel, trigger, delivery rules); §5.6 added (placement of NARR-001 §2.1's six Choir fragments); §5.1 flagged open (nine syllables sung here versus eight sung in NARR-001, TECH-001 Q-T75); §12.14 (c) records MSG_DEATH_LIE_COMPASS live, CHARGES and INDEX reserved. Nothing built or rendered.**
+**Rev 1.9 (2026-11-18, PM-directed, placement only, no design change): §4.16 added (placement of NARR-001 §3.2's nine borrowed entity lines: channel, trigger, delivery rules); §5.6 added (placement of NARR-001 §2.1's six Choir fragments); §5.1 flagged open (nine syllables sung here versus eight sung in NARR-001, TECH-001 Q-T85); §12.14 (c) records MSG_DEATH_LIE_COMPASS live, CHARGES and INDEX reserved. Nothing built or rendered.**
 **Rev 1.8 (2026-11-18): §6.2 gains F13, F14 and built ids on F03, F07, B07; §12.14 added (Cosmic horror handoffs: Choir fire families, the Passing subtraction, death lines, seven new renders, plus five lie-tell ticks, all unauditioned; L9 to L12, the widened L6 and the Passing are PM-approved 2026-11-18); cue ids 45 to 57 and policy entries 34 to 46 (counted).**
 **Rev 1.7 (2026-11-18): §6.2 gains A13, A14, B10–B12, F11, F12 and built-cue ids on A07/A08; §12.13 added (M1 slice 3 cues, seven new renders, all unauditioned); cue ids 38 to 45.**
 **Rev 1.6 (2026-11-18): §12.12 adds `aether_bed_t4` and `aether_bed_t5` (owner-approved follow-up, Q-T52), both unauditioned; cue ids 36 to 38.**
@@ -645,7 +645,7 @@ The chant is not music. It is a faction behaviour with a position, a radius and 
 
 ### 5.1 The nine-syllable litany ✱
 
-> **Open (2026-11-18, TECH-001 §11.1 Q-T75):** NARR-001 §2.1 and its Q-11 say the Litany is written in nine syllables, sung in eight, always one short (only ending 3 sings all nine). This section says nine, sung in three feet of three. Text below is unchanged until the owner rules.
+> **Open (2026-11-18, TECH-001 §11.1 Q-T85):** NARR-001 §2.1 and its Q-11 say the Litany is written in nine syllables, sung in eight, always one short (only ending 3 sings all nine). This section says nine, sung in three feet of three. Text below is unchanged until the owner rules.
 
 **"THE KING IS HOLLOW — THE SKY IS HIS."** Nine syllables, three feet of three. Its originality is deliberate (RES-001 §5): it names the Hollow King and the failed star in the game's own words.
 
@@ -731,14 +731,14 @@ NARR-001 §2.1 ("Liturgy fragments") offers six Choir lines (F1 to F6 here, the 
 
 | NARR-001 §2.1 # | NARR-001 says | Audio placement against §5 | Captions (§8.2) | Status |
 |---|---|---|---|---|
-| 1 | a Litany line, 8 syllables (the sung form) | the litany itself: sung by the chanting units of §5.2 (Acolyte on the move, Matron-led, Rites), positional per §5.3 | the chant caption with its direction and distance tags; `[CHORUS]` / `[CHORUS STOPS]` | **blocked on Q-T75**: §5.1 is nine syllables in three feet of three; NARR-001 says sung in eight. Not placed until resolved |
+| 1 | a Litany line, 8 syllables (the sung form) | the litany itself: sung by the chanting units of §5.2 (Acolyte on the move, Matron-led, Rites), positional per §5.3 | the chant caption with its direction and distance tags; `[CHORUS]` / `[CHORUS STOPS]` | **blocked on Q-T85**: §5.1 is nine syllables in three feet of three; NARR-001 says sung in eight. Not placed until resolved |
 | 2 | the Carried's bearing words | no sung placement: §5.2 says the Grub does not sing the litany and only keens | text only (Codex quote); no caption unless spoken | not placed; owner to say if any voiced form is wanted |
 | 3 | doctrine | no unit and no moment stated; no audio | Codex only | not placed |
-| 4 | doctrine; the gap (the late ninth voice) | no unit and no moment stated; no audio. Touches the nine-versus-eight question, so held with row 1 | Codex only | not placed; see Q-T75 |
+| 4 | doctrine; the gap (the late ninth voice) | no unit and no moment stated; no audio. Touches the nine-versus-eight question, so held with row 1 | Codex only | not placed; see Q-T85 |
 | 5 | a Matron, on being silenced | never voiced: a silenced Matron is the loudest silence (§5.2) and the `matron_silenced` cue (F07, §12.14) is the sound; nothing may speak over the silence event (§5.3) | text only; the silence event carries `[CHORUS STOPS]` | not placed as sound |
 | 6 | the Comforters, at the leading edge of a Passing (WARP-001, CHD-02) | already placed: `comforters_murmur` (PAS-02, §12.14 (b)), a wordless three-beat murmur on `BUS-CHO`; the words are subtitle text only | `[CHORUS]` plus the NARR-001 text | placed, UNAUDITIONED |
 
-**Positional and caption rules that apply to any sung placement:** §5.3 (radius, never-mute occlusion, one voice per unit up to 10 ✱, never ducked) and §8.2 (`[CHORUS]` tag, direction and distance tag, `[CHORUS UNCERTAIN]` for false cues). **Litany rule held:** NARR-001 §2.1 and Q-11 say the Litany is written in nine syllables, sung in eight and always one short, and only ending 3 sings all nine. §5.1 and §8.2 (the nine-tick tracker) still say nine sung. They disagree, so neither is changed here: TECH-001 §11.1 Q-T75.
+**Positional and caption rules that apply to any sung placement:** §5.3 (radius, never-mute occlusion, one voice per unit up to 10 ✱, never ducked) and §8.2 (`[CHORUS]` tag, direction and distance tag, `[CHORUS UNCERTAIN]` for false cues). **Litany rule held:** NARR-001 §2.1 and Q-11 say the Litany is written in nine syllables, sung in eight and always one short, and only ending 3 sings all nine. §5.1 and §8.2 (the nine-tick tracker) still say nine sung. They disagree, so neither is changed here: TECH-001 §11.1 Q-T85.
 
 ---
 
