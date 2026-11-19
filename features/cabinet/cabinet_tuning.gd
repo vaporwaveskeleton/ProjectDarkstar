@@ -55,6 +55,14 @@ extends TunableResource
 @export var acolyte_range: float = 300.0         ## px ✱ engagement range
 @export var acolyte_shot_life: float = 2.2       ## s ✱
 
+# --- Stage pressure (P2, PM Q-T105; per-stage switches live on CabinetStage) ---
+@export var reinforce_tell_s: float = 1.0        ## s ✱ censer-bell warning before a reinforcement Acolyte arrives
+@export var reinforce_entry_px: float = 24.0     ## px ✱ the arrival point sits this far outside the view edge
+@export var geode_drift_floor: float = 0.5       ## ✱ drift-in runs while live geodes < floor(stage.geodes × this)
+@export var geode_drift_clear_px: float = 160.0  ## px ✱ a drift-in geode appears at least this far from the Vigil (and off-view)
+@export var grub_pilfer_radius: float = 160.0    ## px ✱ how far a pilfering Grub looks for loose glass
+@export var escort_distance: float = 60.0        ## px ✱ an escorting Acolyte trails its laden Grub at this distance
+
 # --- Score (SYS-001 §7.1, Act 0 — the 1983 table) and lives (GDD §9.4) ---
 @export var score_face: int = 5
 @export var score_shard: int = 200
@@ -63,7 +71,8 @@ extends TunableResource
 @export var score_module: int = 500
 @export var score_entity: int = 15000
 @export var extra_life_first: int = 10000
-@export var extra_life_every: int = 20000
+@export var extra_life_second: int = 30000       ## PM Q-T107 (2026-11-19): 10k, 30k, then every extra_life_every
+@export var extra_life_every: int = 40000        ## PM Q-T107: 70k, 110k, …
 @export var lives_cap: int = 5
 @export var lives_start: int = 3                 ## ✱ arcade convention; requested SYS-001 row
 

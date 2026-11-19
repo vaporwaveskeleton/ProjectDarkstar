@@ -59,7 +59,7 @@ func _build_hardware() -> void:
 	var x0 := 0.0 if column == &"left" else 2.0
 	var vents: Array[Rect2] = [Rect2(x0, 0, 78, 10), Rect2(x0, 350, 78, 10)]
 	if column == &"right":
-		vents.append(Rect2(6, 338, 68, 10))
+		vents.append(CabinetBezel.APRON_VENT_LOCAL)
 		_hardware.append(BezelSticker.make(CabinetBezel.RIGHT_STICKER))
 	for r in vents:
 		_hardware.append(BezelVent.make(r))
