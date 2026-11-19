@@ -92,6 +92,8 @@ func launch(from: Vector2, dir: Vector2) -> bool:
 	if charges <= 0:
 		return false
 	set_charges(charges - 1)
+	if world.record != null:
+		world.record.charges_thrown += 1
 	var c := Charge.new()
 	c.pos = from
 	c.dir = dir.normalized()

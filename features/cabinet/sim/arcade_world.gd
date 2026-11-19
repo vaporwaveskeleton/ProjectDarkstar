@@ -25,6 +25,7 @@ signal hitstop_started(beat: StringName)   ## a hit-stop freeze began or was ext
 @export var move_stats: VigilMoveStats
 
 var stage: CabinetStage
+var record: ServiceRecord             ## S7 run-wide counts; owned by CabinetGame, survives start()
 var torus: Torus
 var rng := RandomNumberGenerator.new()
 var view_centre := Vector2.ZERO

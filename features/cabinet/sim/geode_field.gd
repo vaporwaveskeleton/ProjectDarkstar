@@ -80,7 +80,7 @@ func lance_hit(g: Geode, by_player: bool = true) -> bool:
 	g.recent.append(world.time)
 	g.recent.assign(g.recent.filter(func(x: float) -> bool: return world.time - x <= t.overfire_window))
 	if g.recent.size() >= t.overfire_hits:
-		detonate(g)
+		detonate(g, by_player)
 		return true
 	g.hits_on_face += 1
 	if g.hits_on_face >= t.face_hits:
@@ -89,19 +89,19 @@ func lance_hit(g: Geode, by_player: bool = true) -> bool:
 		if g.faces_left <= 0:
 			# calm kill: free what is left of the calm total, +1 for mining it (SYS-001 §1.3)
 			var remaining := maxi(1, t.shards_calm + 1 - g.shards_freed)
-			_free_shards(g, remaining, g.radius + 10.0, 40.0)
+			_free_shards(g, remaining, g.radius + 10.0, 40.0, by_player)
 			_break(g, false)
 			return true
-		_free_shards(g, 1, g.radius + 6.0, 30.0)
+		_free_shards(g, 1, g.radius + 6.0, 30.0, by_player)
 		world.sfx(&"geode_hit", 0.0)
 	return false
 
 
-func detonate(g: Geode) -> void:
+func detonate(g: Geode, by_player: bool = true) -> void:
 	var t := world.tuning
 	# 4–6 is the geode's total (SYS-001 §1.3): glass already freed by mining counts toward it
 	var n := world.rng.randi_range(t.shards_detonated_min, t.shards_detonated_max) - g.shards_freed
-	_free_shards(g, maxi(1, n), t.detonation_scatter * 0.35, t.detonation_scatter)
+	_free_shards(g, maxi(1, n), t.detonation_scatter * 0.35, t.detonation_scatter, by_player)
 	_break(g, true)
 
 
@@ -111,7 +111,10 @@ func devour(g: Geode) -> void:
 	world.fx.burst(g.pos, Look.c(Pal.BONE_2), world.fx_tuning.geode_devour_burst_count, world.fx_tuning.geode_devour_burst_speed)
 
 
-func _free_shards(g: Geode, n: int, dist: float, speed: float) -> void:
+## `by_player`: only the player's mining counts in the service record (an Acolyte's does not).
+func _free_shards(g: Geode, n: int, dist: float, speed: float, by_player: bool = true) -> void:
+	if by_player and world.record != null:
+		world.record.glass_mined += n
 	for k in n:
 		var dir := Vector2.from_angle(world.rng.randf() * TAU)
 		world.glass.spawn_shard(world.torus.wrap(g.pos + dir * world.rng.randf_range(4.0, dist * 0.3)),

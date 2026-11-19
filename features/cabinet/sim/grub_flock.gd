@@ -151,6 +151,8 @@ func kill(g: Grub, by_player: bool) -> void:
 		g.shard.vel = g.vel * 0.3
 		g.shard = null
 	if by_player:
+		if world.record != null:
+			world.record.grubs_destroyed += 1
 		world.award(world.tuning.score_grub, g.pos)
 		world.sfx(&"grub_die", -4.0)
 		world.fx.burst(g.pos, Look.c(Pal.CHOIR_4), world.fx_tuning.grub_death_burst_count, world.fx_tuning.grub_death_burst_speed)
