@@ -1,8 +1,7 @@
-[gd_scene load_steps=31 format=3]
+[gd_scene load_steps=30 format=3]
 
 [ext_resource type="Script" path="res://features/cabinet/cabinet_game.gd" id="1"]
-[ext_resource type="Resource" path="res://data/cabinet/stage_first_vigil.tres" id="2"]
-[ext_resource type="Resource" path="res://data/cabinet/stage_last_normal_day.tres" id="3"]
+[ext_resource type="Resource" path="res://data/cabinet/stage_roster.tres" id="2"]
 [ext_resource type="Resource" path="res://data/cabinet/cabinet_tuning.tres" id="4"]
 [ext_resource type="Resource" path="res://data/cabinet/cabinet_fx_tuning.tres" id="fx_tuning"]
 [ext_resource type="Script" path="res://features/cabinet/sim/arcade_world.gd" id="5"]
@@ -52,7 +51,7 @@ shader_parameter/time_s = 0.0
 
 [node name="CabinetGame" type="Node"]
 script = ExtResource("1")
-stages = Array[Resource]([ExtResource("2"), ExtResource("3")])
+roster = ExtResource("2")
 tuning = ExtResource("4")
 
 [node name="Rig" type="Control" parent="."]

@@ -3,7 +3,8 @@ extends AetherShaderRect
 ## The entity's presence: the only pure black in the game (ART-001 §16). A torn NULL wound whose
 ## radius the backdrop drives; it has no rim, no glow and no halo. With drain, edge fractures craze
 ## the world's surface along its loss edge (pass 4: never filaments or limbs — N7; they stay inside
-## the loss band, entity_presence.gdshader). Lives in group `entity_presence` so tests can prove
+## the loss band, entity_presence.gdshader). Pass 5: no black strokes outside the mass — the cracks
+## are the world's (cold VOID gaps with lit glaze rims, a few lifted fragments), never black. Lives in group `entity_presence` so tests can prove
 ## every black pixel source belongs to it. Unlit, never a collider.
 
 const GROUP := &"entity_presence"
@@ -40,6 +41,9 @@ func _ready() -> void:
 	light_mask = 0
 	set_param(&"seed", seed)
 	set_param(&"crack_cells", float(crack_cells))
+	set_param(&"gap_col", Pal.VOID_1)
+	set_param(&"rim_col", Pal.VOID_5)
+	set_param(&"void_hi", Pal.VOID_4)
 	_place()
 	radius = radius
 

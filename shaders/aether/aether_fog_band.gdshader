@@ -81,63 +81,84 @@ void fragment() {
 	if (tier == 4) {
 		t = -t;   // the Litany: the medium runs backwards
 	}
-	// strip coordinates (pass 4 guard) on the plain drifting domain, before the drain stretch
-	vec2 sw = a_strip_coords(p + drift_dir * t, drift_dir, seed);
-	// toward the entity the fog is stretched into radial streaks (water to a drain)
+	// toward the entity the fog is stretched into radial streaks (water to a drain); `p` stays the
+	// plain drifting domain for the strip coordinates (pass 4 guard: taken before the drain stretch)
+	vec2 pd = p;
 	if (toward.z > 0.0) {
-		p -= toward.xy * dot(p, toward.xy) * 0.55 * toward.z;
+		pd -= toward.xy * dot(pd, toward.xy) * 0.55 * toward.z;
 	}
+	// play core weight (every band; the law-4 cap) and the translucent bands' strip-field weight.
+	// Pass 5 (Q-T94): the strip weight reaches 1 at pw = A_STRIP_FULL, and where it is 1 the free fog
+	// (and its silver-lining sample once the lining has faded) is never computed.
+	float r_scr = length((SCREEN_UV - 0.5) * vec2(screen_size.x / screen_size.y, 1.0));
+	float pw = 1.0 - smoothstep(A_PLAY_CORE, A_PLAY_RING, r_scr);
+	float play = min(pw * (1.0 - is_far) / A_STRIP_FULL, 1.0);
+	float lining = silver * (1.0 - smoothstep(0.3, 0.5, play));
 	vec2 adv = drift_dir * t;
-	vec2 f = flow_at(p, t, warp_octaves);
 	vec2 pull = toward.xy * toward.z * inflow;
-	float n;
-	float m;
-	float n_up;
-	if (two_sample == 1) {
+	float n = 0.5;
+	float m = 0.5;
+	float n_up = 0.5;
+	if (play > 0.999) {
+		// the core is the strip field outright; the free fog is never seen there
+	} else if (two_sample == 1) {
+		vec2 f = flow_at(pd, t, max(warp_octaves - 1, 2));   // pass 5 (Q-T94): the curl is large-scale
 		// advect along the flow: two samples blended across a cycle hide the reset (no pop)
 		float cyc = fract(t * 0.5);
 		float cyc2 = fract(cyc + 0.5);
-		vec2 q1 = p + adv + f * flow_strength * cyc - pull * cyc;
-		vec2 q2 = p + adv + f * flow_strength * cyc2 - pull * cyc2;
+		vec2 q1 = pd + adv + f * flow_strength * cyc - pull * cyc;
+		vec2 q2 = pd + adv + f * flow_strength * cyc2 - pull * cyc2;
 		float w = abs(cyc * 2.0 - 1.0);
 		vec2 warp1 = vec2(a_fbm(q1 + vec2(1.7, 9.2), warp_octaves), a_fbm(q1 + vec2(8.3, 2.8), warp_octaves));
 		vec2 warp2 = vec2(a_fbm(q2 + vec2(1.7, 9.2), warp_octaves), a_fbm(q2 + vec2(8.3, 2.8), warp_octaves));
 		n = mix(a_fbm(q1 + 1.6 * warp1, octaves), a_fbm(q2 + 1.6 * warp2, octaves), w);
 		m = mix(warp1.x, warp2.x, w);
-		n_up = silver > 0.0 ? a_fbm(q1 + 1.6 * warp1 + vec2(0.0, -0.12), octaves) : n;
+		n_up = lining > 0.0 ? a_fbm(q1 + 1.6 * warp1 + vec2(0.0, -0.12), octaves) : n;
 	} else {
-		vec2 q = p + adv + f * flow_strength * 0.5 - pull * 0.5;
+		vec2 f = flow_at(pd, t, max(warp_octaves - 1, 2));   // pass 5 (Q-T94): the curl is large-scale
+		vec2 q = pd + adv + f * flow_strength * 0.5 - pull * 0.5;
 		vec2 warp = vec2(a_fbm(q + vec2(1.7, 9.2), warp_octaves), a_fbm(q + vec2(8.3, 2.8), warp_octaves));
 		n = a_fbm(q + 1.6 * warp, octaves);
 		m = warp.x;
 		n_up = n;
 	}
 	if (tier == 3) {
-		n += 0.08 * sin(time_s * 0.12 + p.y * 0.8);   // tidal swell
+		n += 0.08 * sin(time_s * 0.12 + pd.y * 0.8);   // tidal swell
 	}
 	// pass 4 pareidolia guard (every tier): over the play core the translucent bands ARE a strip
 	// field (a_fog_streak: open strands drifting along their own length — the domain only
 	// translates, so the strips stay strips), blended back to the free fog across the play ring.
 	// The opaque far band keeps its own soft field (low contrast, under the lantern pool).
-	float r_scr = length((SCREEN_UV - 0.5) * vec2(screen_size.x / screen_size.y, 1.0));
-	float play = (1.0 - smoothstep(A_PLAY_CORE, A_PLAY_RING, r_scr)) * (1.0 - is_far);
-	if (play > 0.01) {
-		n = mix(n, a_fog_streak(sw, seed, max(octaves - 1, 2)), play);
-		n_up = mix(n_up, n, play);   // no silver-lining offset sample over the core
-	}
-	if (tier == 5) {
-		// fog peeling into chalk strands: a min with an across-flow stroke keeps the strip property
-		n = min(n, mix(1.0, a_chalk_strand(sw.x, seed), 0.7));
+	// the value the colour is shaded from (pass 5: never the across-strand field over the core)
+	float n_shade = n;
+	if (play > 0.01 || tier == 5) {
+		// strip coordinates only where they are used (pass 5, Q-T94)
+		vec2 sw = a_strip_coords(p + drift_dir * t, drift_dir, seed);
+		if (play > 0.01) {
+			n = mix(n, a_fog_streak(sw, seed, max(octaves - 2, 2)), play);
+			n_up = mix(n_up, n, play);   // no silver-lining offset sample over the core
+			// pass 5: short ragged streaks (a min with a phase-of-(w.y + h(w.x)) field: still strips)
+			float ph = a_dash_phase(sw, seed);
+			n = min(n, mix(1.0, a_fog_dash(ph, seed), play));
+			// flat shade, varied along the strand only: no cross-strand gradient (that was the satin)
+			n_shade = mix(n, a_streak_shade(ph, seed), play);
+			m = mix(m, 0.5, play);
+		}
+		if (tier == 5) {
+			// fog peeling into chalk strands: a min with an across-flow stroke keeps the strip property
+			// (pass 5: the chalk cuts the density only; the colour never shades across a chalk strand)
+			n = min(n, mix(1.0, a_chalk_strand(sw.x, seed), 0.7));
+		}
 	}
 	float dens = smoothstep(0.34, 0.78, n);
 	// value structure: luminous just inside the shell, deep beyond it and deep below
 	float sd = a_sphere_d(spx);
 	float lumb = exp(-pow((sd + glow_band_inset) / glow_band_px, 2.0));
 	float beyond = smoothstep(-6.0, 24.0, sd);
-	vec3 col = mix(col_deep, col_mid, smoothstep(0.25, 0.65, n));
-	col = mix(col, col_high, smoothstep(0.5, 0.85, n) * (0.55 + 0.45 * m));
-	col = mix(col, col_glow, smoothstep(0.45, 0.8, n) * lumb * 0.85);
-	col += col_high * clamp((n - n_up) * 3.0, 0.0, 1.0) * lift * silver * (0.4 + 0.6 * lumb);
+	vec3 col = mix(col_deep, col_mid, smoothstep(0.25, 0.65, n_shade));
+	col = mix(col, col_high, smoothstep(0.5, 0.85, n_shade) * (0.55 + 0.45 * m));
+	col = mix(col, col_glow, smoothstep(0.45, 0.8, n_shade) * lumb * 0.85);
+	col += col_high * clamp((n - n_up) * 3.0, 0.0, 1.0) * lift * lining * (0.4 + 0.6 * lumb);
 	float bright = mix(deep_k, 1.0, lumb) * mix(1.0, 0.55, beyond);
 	col = mix(col_deep, col, bright);
 	// engraving: a fine cross-hatch that thickens in the shadows (far band only)
@@ -162,6 +183,9 @@ void fragment() {
 			col += star_col * s * stars;
 		}
 	}
+	// pass 5, law 4: over the play core the fog's own light stays under A_PLAY_FOG_LUMA, so only the
+	// lantern's in-scatter (below) can make anything there bright
+	col = a_cap_luma(col, A_PLAY_FOG_LUMA, pw);
 	// the lantern: warm light pooled into the fog (the last warm thing)
 	float ld = length(spx - lantern_px) / max(lantern_r, 1.0);
 	float lp = exp(-ld * ld * 4.0);

@@ -629,7 +629,7 @@ Act 0 shows the modern picture: **empty black space, neon shapes, a vacuum.** Th
 ### 16.3 Readability in a full sky
 A rich background must never cost legibility (GDD P5, WARP-001 §5.1 "value before hue"):
 - **Depth separates play from aether.** The gameplay layer (the Vigil, Choir, glass, shots, the entity) sits in front, crisp and highest in local contrast. Aether, spheres and life sit behind, softened by fog and lower in contrast.
-- **Fog density is capped where play happens.** The fog may be thick in the distance and at the edges, but never thick enough to hide a unit, a shot or a telegraph. Density is a WarpComposer parameter with a ceiling.
+- **Fog density is capped where play happens.** The fog may be thick in the distance and at the edges, but never thick enough to hide a unit, a shot or a telegraph. Density is a WarpComposer parameter with a ceiling. Pass 5 enforcement of law 4 for fog is in §16.6d ("Law 4 fog cap").
 - **Nothing in the background out-shines the lantern.** (Law 4, §4, amended.)
 - **Every effect reads in greyscale** (§10, WARP-001 §5.1).
 
@@ -711,6 +711,19 @@ Supersede the matching pass 3 lines where they differ.
 
 **Known weaknesses.** T5 far band reads as pale draped satin sheets around the lantern (not a law breach; pass 5) and is brighter than pass 3; crazing can look twiggy at mid drain; the T4 behind-world is still fairly flat; the vane spines are subtle at 25%.
 
-**Cost.** High, 1080p, RTX 4070: 4.38 ms on the entity exhibit (TECH-001 §8.5, Q-T94: trim before M3). ✱ params are listed in TECH-001 §9.1.
+**Cost.** High, 1080p, RTX 4070: 4.38 ms on the entity exhibit (TECH-001 §8.5, Q-T94: trim before M3). ✱ params are listed in TECH-001 §9.1. (Superseded by pass 5 below.)
+
+### 16.6d Pass 5 rules (2026-11-19)
+Supersede the matching pass 4 lines where they differ.
+
+**No black strokes outside the true-black mass (adopted; proposed by The Reviewer; PM under owner autonomy grant 2026-11-19).** Companion to the pareidolia rule above. `entity_presence` writes black only where `s < 0`. World-side cracks are VOID_1 hairline gaps with thin VOID_5 lit rims fading outward, plus a few lifted fragments filled with the flat VOID middle band (`mix(VOID_1, VOID_4, 0.22)`), all inside `0 < s < A_ENT_CRACK_BAND` × grow (`A_ENT_FRAGMENTS` 0.22, `A_ENT_FRAGMENT_FROM` 0.2 ✱). Test: `features/aether/tests/test_aether_pass5.gd` (black only inside the mass). TECH-001 §11.2.
+
+**Law 4 fog cap (enforcement note for §16.3).** Pass 4's T5 fog read as satin sheets with folds near lantern-pool brightness (The Reviewer). Fix: play-core strands are cut into short ragged streaks (`A_FOG_DASH` 9 ✱) shaded flat along the strand only (no cross-strand gradient); chalk cuts density only, never colour; every band's own light over the play core is capped at `A_PLAY_FOG_LUMA` 0.14 ✱ before lantern in-scatter. Test: an analytic bound, not a render, mirroring the fog shader's lantern, drain and band-alpha terms. Fog beside the ship (capped fog, lantern weight `BESIDE_LP` 0.5 ✱) must be at most `POOL_RATIO` 0.8 ✱ × the dimmest pool heart, and the cap under half the pool heart, for every look. Printed ratios: drowned_observatory 0.73, green_rot 0.66, litany 0.74, pale_marches 0.76, the_black 0.68. Not covered: grade, bloom, non-fog layers, the play RING (blend to free fog): TECH-001 Q-T122.
+
+**T4.** Remaining hairlines are sparse (`A_KEEP_INNER` 0.3, `A_KEEP_FRINGE` 0.18 ✱) with varied weight; `A_DIM_PANES` 0.16 ✱ of closed panes are dim-filled with the other world (`A_DIM_ALPHA` 0.5, `A_DIM_VALUE` 0.55 ✱); no closed outline polygons.
+
+**Cost (CH-7, Q-T94 resolved for high).** 1080p high, RTX 4070, same-session sweep (other Godot processes running): pass 4 2.956 / 2.965 / 3.387 / 2.981 / 3.362 / 4.397 ms; final 2.559 / 2.824 / 2.950 / 2.708 / 2.972 / 3.464 ms for exhibits 0 to 5, every exhibit under its pass 3 bar, but exhibits 2 and 4 by only 0.07 and 0.04 ms (noise about ±0.2 ms). Trims: loss mask every second bite (`A_LOSS_BITE_STEP` 2 ✱), skipped past `A_LOSS_REACH` 1.75 ✱ plus AA width (proven conservative, tested); free fog skipped where strip weight is full (`A_STRIP_FULL` 0.8 ✱); one fewer streak and curl octave; silver-lining sample faded then skipped. Low and medium not re-measured (TECH-001 Q-T123). Figures in TECH-001 §8.5.
+
+**Known weaknesses (pass 5).** T5 left edge: a swirl around a hole with a crisp circular edge (reads a little like a whirlpool or eye; sits in the ring, outside the bound). T5 right ring fog is billowy and lighter (about 0.45 by eye, not measured, vs about 0.7 pool). The entity's crazed band reads as a pale mosaic or stained glass. T4: one dim pane reads as a dark blob. The 0.14 cap darkens every tier's centre a little compared with pass 4.
 
 Dev-route gating tests: `tests/test_dev_routes_gate.gd`. Backdrop and gallery load tests: `features/aether/tests/test_aether_backdrop.gd`, `scenes/dev/aether_gallery/tests/test_aether_gallery_loads.gd`.

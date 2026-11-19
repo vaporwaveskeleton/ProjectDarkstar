@@ -7,6 +7,7 @@ extends Control
 
 var _ready_title := ""
 var _ready_sub := ""
+var _ready_zone := ""            ## zone name line above the READY title ("" = none)
 var _ready_t := 0.0
 var _banner := ""
 var _banner_t := 0.0
@@ -29,6 +30,8 @@ signal credits_stat_shown(index: int)       ## stat line `index` (0..3) just scr
 @export var fx_tuning: CabinetFxTuning   ## credits scroll speed (data/cabinet/cabinet_fx_tuning.tres)
 
 const MARGIN := 4.0              ## text keeps this far from the screen edge
+const ZONE_GAP := 6.0            ## ✱ px between the zone line and the READY title below it
+const READY_CLEAR := 14.0     ## ✱ px between the READY card and the play-view centre (Vigil hull 12 px + margin)
 
 
 func _ready() -> void:
@@ -41,10 +44,33 @@ func _ready() -> void:
 	clip_contents = true
 
 
-func show_ready(title: String, sub: String, seconds: float) -> void:
+## The READY card. `zone` (optional) is the zone name line, drawn small above the title.
+func show_ready(title: String, sub: String, seconds: float, zone: String = "") -> void:
 	_ready_title = title
 	_ready_sub = sub
+	_ready_zone = zone
 	_ready_t = seconds
+
+
+## Top of the READY title, and of the zone line above it (play-view y). One layout for _draw and tests.
+## The whole card sits above the play view centre, where the Vigil spawns (Reviewer, PR #57): its
+## bottom (the READY line) ends READY_CLEAR px above the centre.
+func ready_title_top() -> float:
+	var h := block_height(_ready_title, 3) + 2.0 + block_height(_ready_sub, 1) + 12.0 + float(PixelText.H * 2)
+	return size.y * 0.5 - READY_CLEAR - h
+
+
+## Bottom of the READY line (play-view y).
+func ready_bottom() -> float:
+	return ready_title_top() + block_height(_ready_title, 3) + 2.0 + block_height(_ready_sub, 1) + 12.0 + float(PixelText.H * 2)
+
+
+func ready_zone_top() -> float:
+	return ready_title_top() - ZONE_GAP - block_height(_ready_zone, 1)
+
+
+func ready_zone() -> String:
+	return _ready_zone if _ready_t > 0.0 else ""
 
 
 func banner(text: String, seconds: float) -> void:
@@ -113,7 +139,9 @@ func block_height(s: String, scale: int) -> float:
 func _draw() -> void:
 	var cy := size.y * 0.5
 	if _ready_t > 0.0:
-		var y := _block(cy - 48.0, _ready_title, 3, Look.c(Pal.BONE_5)) + 2.0
+		if not _ready_zone.is_empty():
+			_block(ready_zone_top(), _ready_zone, 1, Look.c(Pal.GAS_4))
+		var y := _block(ready_title_top(), _ready_title, 3, Look.c(Pal.BONE_5)) + 2.0
 		y = _block(y, _ready_sub, 1, Look.c(Pal.BONE_2)) + 12.0
 		if int(_t * 3.0) % 2 == 0:
 			_centered(y, tr("CAB_READY"), 2, Look.c(Pal.GAS_4))

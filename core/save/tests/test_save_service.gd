@@ -41,6 +41,12 @@ func test_run_end_reason_is_allowed_on_run_and_iteration_only() -> void:
 	assert_bool(mem.exists("profile")).is_false()
 
 
+## PM 2026-11-19: the Cabinet saves the furthest Act 0 stage reached at each stage start.
+func test_profile_accepts_the_cabinet_stage_reason() -> void:
+	assert_int(svc.save_slot(&"profile", {"act0_stage_reached": 2}, &"cabinet_stage")).is_equal(OK)
+	assert_int(svc.save_slot(&"run", {"seam": 2}, &"cabinet_stage")).is_equal(ERR_UNAUTHORIZED)
+
+
 func test_unknown_slot_is_refused() -> void:
 	assert_int(svc.save_slot(&"cheats", {}, &"ruins_entry")).is_equal(ERR_INVALID_PARAMETER)
 	assert_str(String(svc.load_slot(&"cheats").reason)).is_equal("unknown_slot")

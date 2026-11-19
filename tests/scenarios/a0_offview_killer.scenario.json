@@ -18,6 +18,7 @@
 		{"do": "shoot_vigil", "dx": 0, "dy": -450, "acolyte_id": "last"},
 		{"do": "assert", "id": "cabinet/world", "prop": "hostile_shots", "gte": 1},
 		{"do": "wait_until", "id": "cabinet/game", "prop": "state", "eq": "dead", "within": 400},
+		{"do": "assert", "id": "cabinet/vigil", "prop": "shooter_on_screen", "eq": false},
 		{"do": "screenshot", "name": "offview_00", "target": "arcade"},
 		{"do": "wait_frames", "frames": 6},
 		{"do": "screenshot", "name": "offview_06", "target": "arcade"},
@@ -32,7 +33,6 @@
 		{"do": "assert", "id": "cabinet/vigil", "prop": "killer_kind", "eq": "shot"},
 		{"do": "assert", "id": "cabinet/vigil", "prop": "shooter_id", "gte": 0},
 		{"do": "assert", "id": "cabinet/vigil", "prop": "shooter_alive", "eq": true},
-		{"do": "assert", "id": "cabinet/vigil", "prop": "shooter_on_screen", "eq": false},
 		{"do": "assert", "id": "cabinet/world", "prop": "death_marks", "gte": 1},
 		{"do": "snapshot", "name": "after_death"},
 		{"do": "quit"}

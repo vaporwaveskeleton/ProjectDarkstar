@@ -829,7 +829,7 @@ Community rule: Sable is the only character who speaks outside the game (Discord
 | ending 2 eulogy | attract loop to an empty hall; no text |
 | ending 5 | Theodora Lune's message (§9.5) |
 
-**The Cabinet credits roll** (Act 0 stage clear; Cabinet register; prefix `NARR_CAB_`; the code keys are the existing `CAB_CREDITS_*` in `locale/en.po`, not renamed). Wording approved by the owner 2026-11-18. The stage-1 short roll is the first three lines (`CAB_CREDITS_1`..`3`). The stage-2 full roll (after the entity is unmade) inserts the four stat lines after line 3. Stat lines are **true counts** of what the player did this run (never saved; state counts only, §11.10) and appear only in the stage-2 roll.
+**The Cabinet credits roll** (Act 0 stage clear; Cabinet register; prefix `NARR_CAB_`; the code keys are the existing `CAB_CREDITS_*` in `locale/en.po`, not renamed). Wording approved by the owner 2026-11-18. Since P1b (2026-11-19) mid-shift stage ends show only a banner, no roll (TECH-001 §2.10, Q-T131); the first three lines (`CAB_CREDITS_1`..`3`) open the one full roll after the last stage. The stage-2 full roll (after the entity is unmade) inserts the four stat lines after line 3. Stat lines are **true counts** of what the player did this run (never saved; state counts only, §11.10) and appear only in the stage-2 roll.
 
 | Order | Key (`tr()`) | Text |
 |---|---|---|
