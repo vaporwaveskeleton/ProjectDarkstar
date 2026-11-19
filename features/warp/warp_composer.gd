@@ -164,8 +164,10 @@ func _physics_process(delta: float) -> void:
 func step(delta: float) -> void:
 	t += delta
 	liar.now_s = t
-	if composure:
-		composure.warp_passive(delta, current_tier())   # SYS-001 §1.5 `Warp Tier passive`
+	# SYS-001 §1.5 `Warp Tier passive`, from the end of the entry quiet (WARP-001 §1.4: entry never
+	# costs Composure directly; nothing warp-driven happens in the first entry_quiet_s).
+	if composure and (warp_set == null or t >= warp_set.entry_quiet_s):
+		composure.warp_passive(delta, current_tier())
 		if composure.band == Composure.Band.HOLLOWED and tier.force_hollowed(tier_stats):
 			liar.tier = current_tier()
 			warp_tier_set.emit(current_tier())

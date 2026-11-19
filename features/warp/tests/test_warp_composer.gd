@@ -102,7 +102,7 @@ func test_warp_tier_passive_drains_composure() -> void:
 	var before: float = sector.composure
 	_run(w, 10.0)
 	# SYS-001 §1.5 `Warp Tier passive` −0.1/s × T at T1 (Composure also ticks on its own physics).
-	assert_float(sector.composure).is_less(before - 0.9)
+	assert_float(sector.composure).is_less(before - 0.7)   # 8 s after the 2 s entry quiet
 
 
 func test_frayed_brings_the_chromatic_edge_and_false_chant() -> void:
