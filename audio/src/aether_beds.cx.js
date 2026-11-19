@@ -65,8 +65,8 @@ sfx("aether_bed_t3", { loop: true, dur: LOOP, vol: 0.5, fx: AIR },
   life([3.3, 11.6], 0.02))
 
 // --- one-shots (BUS-AMB, no transient) ----------------------------------------------------------
-
-// Entity presence: the subtraction gradient's last step. A sub swell cresting at ~5 s with no
+// A Presence displacing the medium: a vast thing moving in the far fog (never the entity, which has no
+// sound of its own). A sub swell cresting at ~5 s with no onset; never a hit (§1.1), ramp ≥ 0.35 s (§1.4).
 // onset, the noise above it draining downward. Never a hit (§1.1); ramp far over 0.35 s (§1.4).
 sfx("aether_swell", { vol: 0.12, fx: [reverb({ size: 0.8, damp: 0.7, mix: 0.3 }), limiter({ ceiling: 0.5 })] },
   tone({ wave: "sine", freq: 36.7, dur: 5.5, env: [5, 0, 1, 2.5], vol: 0.45 }),
