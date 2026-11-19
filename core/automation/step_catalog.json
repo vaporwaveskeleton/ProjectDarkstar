@@ -22,6 +22,17 @@
 		"mouse_move": {"args": {"x": "number", "y": "number"}, "comment": "Move the mouse to window coordinates."},
 		"mouse_button": {"args": {"button": "string", "pressed": "bool"}, "comment": "button: left, right or middle."},
 		"reset": {"args": {}, "comment": "Clear all in-memory save slots, reset settings, release input, go to attract and wait for it (240 frames)."},
-		"set_setting": {"dev": true, "args": {"key": "string", "value": "scalar"}, "comment": "SettingsService only; key must be one of the four accessibility settings. Dev profile only (QA refuses it before frame 0)."}
+		"set_setting": {"dev": true, "args": {"key": "string", "value": "scalar"}, "comment": "SettingsService only; key must be one of the four accessibility settings. Dev profile only (QA refuses it before frame 0)."},
+		"snapshot": {"args": {"name": "string"}, "comment": "Write <out>/snapshots/<name>.json: {frame, route, ui[], probe}. Name ^[a-z0-9_]+$; at most 50 per run."},
+		"wait_event": {"args": {"event": "string", "within": "int"}, "optional": {"count": "int"}, "comment": "Wait for count (default 1) occurrences of a probe event that fire after the step starts. Event ids are in caps.json probes.<route>.events."},
+		"perf_sample": {"args": {}, "comment": "Append {frame, fps, process_ms, physics_ms, objects, nodes, orphan_nodes, static_mem_mb} to result.perf (cap 200)."},
+		"set_stage": {"dev": true, "probe_op": true, "route": "cabinet", "args": {"index": "int"}, "comment": "Cabinet: start stage index (state goes to intro; wait for play). Dev only."},
+		"set_lives": {"dev": true, "probe_op": true, "route": "cabinet", "args": {"lives": "int"}, "comment": "Cabinet: set lives 0..9 (emits lives_changed). Dev only."},
+		"teleport": {"dev": true, "probe_op": true, "route": "cabinet", "args": {"x": "number", "y": "number"}, "comment": "Cabinet: put the Vigil at (x, y) wrapped onto the torus, velocity zero. |x|,|y| <= 4000. Dev only."},
+		"spawn": {"dev": true, "probe_op": true, "route": "cabinet", "args": {"kind": "string", "dx": "number", "dy": "number"}, "comment": "Cabinet: spawn kind acolyte|geode|shard at Vigil + (dx, dy), wrapped. |dx|,|dy| <= 4000. Dev only."},
+		"shoot_vigil": {"dev": true, "probe_op": true, "route": "cabinet", "args": {"dx": "number", "dy": "number"}, "comment": "Cabinet: fire one hostile censer shot from Vigil + (dx, dy) straight at the Vigil. (0,0) is rejected. Dev only."},
+		"kill_all": {"dev": true, "probe_op": true, "route": "cabinet", "args": {}, "comment": "Cabinet: remove Acolytes, Grubs and hostile shots (not the ritual, not geodes). Dev only."},
+		"pause_sim": {"dev": true, "probe_op": true, "route": "cabinet", "args": {"on": "bool"}, "comment": "Cabinet: set ArcadeWorld.paused_sim. Dev only."},
+		"step_sim": {"dev": true, "probe_op": true, "route": "cabinet", "args": {"frames": "int"}, "comment": "Cabinet: advance ArcadeWorld.step(1/60) N times (1..3600); needs paused_sim. Does not advance the CabinetGame state machine. Dev only."}
 	}
 }

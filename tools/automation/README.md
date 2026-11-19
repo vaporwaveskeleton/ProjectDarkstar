@@ -54,3 +54,28 @@ Ids: `<route>/ui/<UniqueName>` for controls, plus `cabinet/game` (`state`, `stag
 
 The same runner runs inside GdUnit: `tests/test_scenarios.gd` plays every scenario that is valid for
 the suite (`args == []`, `timeout_frames <= 1200`).
+
+## Phase 2: probes, snapshots, events, dev ops
+
+```
+node tools/automation/darkstar_auto.js caps [--windowed]          # launch with --automation-caps, print steps/profile/probes
+node tools/automation/darkstar_auto.js run-all [--only=<substr>]  # every scenario in turn, summary table, exit 1 if any failed
+```
+
+- **Probes.** Game state ids come from one probe per route (`features/<f>/automation/<f>_probe.gd`, no
+  `class_name`, loaded by path only if present; release builds exclude the folder). The contract is the
+  comment block at the top of `core/automation/scenario_runner.gd`. The cabinet probe exposes
+  `cabinet/game|score|record|vigil|world` and `cabinet/acolyte/<id>`, `cabinet/grub/<id>`,
+  `cabinet/geode/<index>` (see `caps` for the allow-listed props). `assert {id, exists:false}` works for gone entities.
+- **New steps.** `snapshot{name}` writes `<out>/snapshots/<name>.json` (max 50 per run); `wait_event{event, within, count?}`
+  waits for a probe event (the failure names the events seen); `perf_sample{}` appends to `result.perf` (max 200).
+  Cabinet dev steps (dev profile only, refused in QA before frame 0): `set_stage`, `set_lives`, `teleport`, `spawn`
+  (acolyte|geode|shard at Vigil + dx,dy), `shoot_vigil` (a hostile censer shot from Vigil + dx,dy aimed at the Vigil),
+  `kill_all` (Acolytes, Grubs, hostile shots), `pause_sim`, `step_sim` (needs paused_sim; steps ArcadeWorld only, not
+  the CabinetGame state machine, so the death timer and respawn do not advance).
+- **Errors.** Every run captures engine errors and warnings into `result.errors[]`, `error_count`, `warning_count`.
+  Scenario field `"fail_on_errors": true` fails the run on any error-type entry, except messages containing a
+  string from `"allow_errors": [...]`.
+- **result.json** also holds `snapshots[]`, `events[]` (last 256 `{frame,id,args}`) and `perf[]`.
+- **Caps.** `-- --automation-caps --no-save --out=<dir>` writes `caps.json` (`format darkstar.caps`, steps with `dev`,
+  comparators, screenshot targets, probe ids/events/dev ops, approved fixtures, build) and exits 0.
