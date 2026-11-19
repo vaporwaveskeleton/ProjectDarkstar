@@ -1,0 +1,199 @@
+[gd_scene load_steps=17 format=3]
+
+[ext_resource type="Script" path="res://features/aether/aether_backdrop.gd" id="1_bd"]
+[ext_resource type="Script" path="res://features/aether/aether_fog_band.gd" id="2_band"]
+[ext_resource type="Script" path="res://features/aether/crystal_sphere.gd" id="3_sphere"]
+[ext_resource type="Script" path="res://features/aether/aether_shader_rect.gd" id="4_rect"]
+[ext_resource type="Script" path="res://features/aether/leviathan.gd" id="5_lev"]
+[ext_resource type="Script" path="res://features/aether/aether_life.gd" id="6_life"]
+[ext_resource type="Script" path="res://features/aether/entity_presence.gd" id="7_ent"]
+[ext_resource type="Script" path="res://features/aether/orrery_ribs.gd" id="8_ribs"]
+[ext_resource type="Script" path="res://features/aether/still_smudge.gd" id="9_smudge"]
+[ext_resource type="Shader" path="res://shaders/aether/aether_fog_band.gdshader" id="10_fog"]
+[ext_resource type="Shader" path="res://shaders/aether/crystal_sphere.gdshader" id="11_sph"]
+[ext_resource type="Shader" path="res://shaders/aether/sky_crack.gdshader" id="12_crack"]
+[ext_resource type="Shader" path="res://shaders/aether/leviathan.gdshader" id="13_lev"]
+[ext_resource type="Shader" path="res://shaders/aether/light_shafts.gdshader" id="14_shaft"]
+[ext_resource type="Shader" path="res://shaders/aether/aether_grade.gdshader" id="15_grade"]
+[ext_resource type="Shader" path="res://shaders/aether/entity_presence.gdshader" id="16_ent"]
+
+[node name="AetherBackdrop" type="Node2D"]
+script = ExtResource("1_bd")
+
+[node name="FarLayer" type="Parallax2D" parent="."]
+unique_name_in_owner = true
+scroll_scale = Vector2(0.04, 0.04)
+
+[node name="FarFog" type="ColorRect" parent="FarLayer"]
+unique_name_in_owner = true
+script = ExtResource("2_band")
+shader = ExtResource("10_fog")
+lit = true
+
+[node name="SkyLayer" type="Parallax2D" parent="."]
+unique_name_in_owner = true
+scroll_scale = Vector2(0.06, 0.06)
+
+[node name="Sphere" type="ColorRect" parent="SkyLayer"]
+unique_name_in_owner = true
+script = ExtResource("3_sphere")
+shader = ExtResource("11_sph")
+
+[node name="Cracks" type="ColorRect" parent="SkyLayer"]
+unique_name_in_owner = true
+script = ExtResource("4_rect")
+shader = ExtResource("12_crack")
+
+[node name="Smudge" type="Node2D" parent="SkyLayer"]
+unique_name_in_owner = true
+position = Vector2(132, 150)
+script = ExtResource("9_smudge")
+
+[node name="RibLayer" type="Parallax2D" parent="."]
+unique_name_in_owner = true
+scroll_scale = Vector2(0.1, 0.1)
+
+[node name="Ribs" type="Node2D" parent="RibLayer"]
+unique_name_in_owner = true
+script = ExtResource("8_ribs")
+
+[node name="MidLayerA" type="Parallax2D" parent="."]
+unique_name_in_owner = true
+scroll_scale = Vector2(0.15, 0.15)
+
+[node name="MidFogA" type="ColorRect" parent="MidLayerA"]
+unique_name_in_owner = true
+script = ExtResource("2_band")
+shader = ExtResource("10_fog")
+lit = true
+band_index = 1
+
+[node name="MidLayerB" type="Parallax2D" parent="."]
+unique_name_in_owner = true
+scroll_scale = Vector2(0.35, 0.35)
+
+[node name="MidFogB" type="ColorRect" parent="MidLayerB"]
+unique_name_in_owner = true
+script = ExtResource("2_band")
+shader = ExtResource("10_fog")
+lit = true
+band_index = 2
+
+[node name="LeviathanLayer" type="Parallax2D" parent="."]
+unique_name_in_owner = true
+scroll_scale = Vector2(0.25, 0.25)
+
+[node name="Leviathan" type="ColorRect" parent="LeviathanLayer"]
+unique_name_in_owner = true
+script = ExtResource("5_lev")
+shader = ExtResource("13_lev")
+
+[node name="ShaftLayer" type="Parallax2D" parent="."]
+unique_name_in_owner = true
+scroll_scale = Vector2(0, 0)
+
+[node name="Shafts" type="ColorRect" parent="ShaftLayer"]
+unique_name_in_owner = true
+offset_right = 640.0
+offset_bottom = 360.0
+script = ExtResource("4_rect")
+shader = ExtResource("14_shaft")
+
+[node name="LifeLayer" type="Parallax2D" parent="."]
+unique_name_in_owner = true
+scroll_scale = Vector2(0.6, 0.6)
+
+[node name="Motes" type="GPUParticles2D" parent="LifeLayer"]
+unique_name_in_owner = true
+position = Vector2(320, 180)
+script = ExtResource("6_life")
+
+[node name="Spores" type="GPUParticles2D" parent="LifeLayer"]
+unique_name_in_owner = true
+position = Vector2(320, 180)
+script = ExtResource("6_life")
+kind = 2
+
+[node name="School" type="GPUParticles2D" parent="LifeLayer"]
+unique_name_in_owner = true
+position = Vector2(320, 180)
+script = ExtResource("6_life")
+kind = 3
+
+[node name="Jellies" type="GPUParticles2D" parent="LifeLayer"]
+unique_name_in_owner = true
+position = Vector2(320, 180)
+script = ExtResource("6_life")
+kind = 1
+
+[node name="NearLayer" type="Parallax2D" parent="."]
+unique_name_in_owner = true
+scroll_scale = Vector2(0.7, 0.7)
+
+[node name="NearFog" type="ColorRect" parent="NearLayer"]
+unique_name_in_owner = true
+script = ExtResource("2_band")
+shader = ExtResource("10_fog")
+lit = true
+band_index = 3
+
+[node name="VeilLayer" type="Parallax2D" parent="."]
+unique_name_in_owner = true
+scroll_scale = Vector2(1.1, 1.1)
+
+[node name="VeilFog" type="ColorRect" parent="VeilLayer"]
+unique_name_in_owner = true
+script = ExtResource("2_band")
+shader = ExtResource("10_fog")
+lit = true
+band_index = 4
+
+[node name="EntityLayer" type="Parallax2D" parent="."]
+unique_name_in_owner = true
+scroll_scale = Vector2(0.24, 0.24)
+
+[node name="Entity" type="ColorRect" parent="EntityLayer"]
+unique_name_in_owner = true
+script = ExtResource("7_ent")
+shader = ExtResource("16_ent")
+wobble = 0.22
+seed = 0.7
+
+[node name="Hole1" type="ColorRect" parent="EntityLayer"]
+unique_name_in_owner = true
+script = ExtResource("7_ent")
+shader = ExtResource("16_ent")
+max_radius = 40.0
+wobble = 0.22
+seed = 3.1
+
+[node name="Hole2" type="ColorRect" parent="EntityLayer"]
+unique_name_in_owner = true
+script = ExtResource("7_ent")
+shader = ExtResource("16_ent")
+max_radius = 40.0
+wobble = 0.22
+seed = 5.9
+
+[node name="Hole3" type="ColorRect" parent="EntityLayer"]
+unique_name_in_owner = true
+script = ExtResource("7_ent")
+shader = ExtResource("16_ent")
+max_radius = 40.0
+wobble = 0.22
+seed = 8.4
+
+[node name="GradeLayer" type="Parallax2D" parent="."]
+unique_name_in_owner = true
+scroll_scale = Vector2(0, 0)
+
+[node name="GradeCopy" type="BackBufferCopy" parent="GradeLayer"]
+unique_name_in_owner = true
+copy_mode = 2
+
+[node name="Grade" type="ColorRect" parent="GradeLayer"]
+unique_name_in_owner = true
+offset_right = 640.0
+offset_bottom = 360.0
+script = ExtResource("4_rect")
+shader = ExtResource("15_grade")

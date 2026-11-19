@@ -1,0 +1,42 @@
+[gd_resource type="Resource" script_class="AetherLook" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://features/aether/aether_look.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+ds_namespace = "ds_aether.litany_t4"
+source_section = "dev gallery placeholder (ART-001 §15 T4 Litany / Inverted); every value is a placeholder, not a game number"
+tier = 4
+biome = "litany"
+fog_deep = Color(0.2352941, 0.2705882, 0.454902, 1)
+fog_mid = Color(0.1137255, 0.1254902, 0.2509804, 1)
+fog_high = Color(0.0745098, 0.0784314, 0.1568627, 1)
+sphere_glass = Color(0.3843137, 0.8117647, 0.6588235, 1)
+life_glow = Color(0.3843137, 0.8117647, 0.6588235, 1)
+life_secondary = Color(0.8941176, 0.8745098, 0.8196078, 1)
+far_silhouette = Color(0.0745098, 0.0784314, 0.1568627, 1)
+far_band_tint = Color(0.4313725, 0.1647059, 0.3921569, 0.2)
+crack_edge = Color(0.9686275, 0.9568627, 0.9098039, 1)
+behind_a = Color(0.6588235, 0.9411765, 0.8156863, 1)
+behind_b = Color(0.9686275, 0.9568627, 0.9098039, 1)
+shaft_tint = Color(0.8941176, 0.8745098, 0.8196078, 1)
+rib_colour = Color(0.3529412, 0.3607843, 0.4039216, 1)
+rib_accent = Color(0.4196078, 0.2666667, 0.0823529, 1)
+fog_band_count = 4
+sky_cracks = true
+orrery = true
+refraction = true
+mote_count = 90
+crack_amount = 0.75
+refraction_strength = 6.0
+wrong_seam_strength = 0.5
+flow_strength = 0.7
+fog_drift_speed = 0.02
+lantern_energy = 1.8
+lantern_radius = 130.0
+play_fog_ceiling = 0.3
+hatch_strength = 0.3
+glow_threshold = 0.92
+glow_intensity = 0.6
+band_alpha = 0.5
+fog_octaves = 5

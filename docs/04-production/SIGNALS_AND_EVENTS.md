@@ -53,6 +53,9 @@ Rules: signal names are past tense (`hull_breached`, `save_failed`), payloads ar
 | `CoinSlot` | `tape_peeled` | — | `AttractMode` (saves `cabinet_tape_peeled`, reason `cabinet_tape`) | built |
 | `CoinSlot` | `credit_inserted` | — | `AttractMode` (enables New Vigil, marquee text, CREDIT counter) | built |
 | `PowerOnTest` | `finished` | — | `AttractMode` (reveals the attract screen) | built |
+| `AetherBackdrop` (`features/aether`) | `sphere_glinted` | — (the crystal sphere's travelling glint passed; re-emitted by the dev gallery root) | optional audio cue sync (AUDIO-001 §12.12); no listener required | built (gallery pass 1) |
+| `AetherBackdrop` (`features/aether`) | `leviathan_entered` | — (the leviathan silhouette enters the frame; re-emitted by the gallery root) | optional audio cue sync (swell); no listener required | built (gallery pass 1) |
+| `AetherBackdrop` (`features/aether`) | `leviathan_closest` | — (the leviathan's closest point; re-emitted by the gallery root) | optional audio cue sync (`aether_wrong`); no listener required | built (gallery pass 1) |
 | `ScenarioRunner` (dev/QA only, `core/automation`) | `scenario_finished` | `outcome: StringName` (`pass`, `fail`, `timeout`, `invalid`, `refused`) | GdUnit adapter (`tests/test_scenarios.gd`), dev/QA builds only | built |
 
 Add a row before you add a signal. Remove the row when you remove the signal.

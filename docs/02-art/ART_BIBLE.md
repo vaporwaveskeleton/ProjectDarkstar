@@ -1,6 +1,8 @@
 # DARKSTAR — Art Bible
 
-**Doc ID:** ART-001 · **Version:** 1.4 · **Date:** 2026-11-18 · **Owner:** Art · **Status:** complete-draft (§11 typography and §12 UI states are specified; no glyph or UI-kit art is drawn yet) · **Companion:** `SPRITE_MODULARITY_SPEC.md` (ART-002, the technical module system), `ASSET_PIPELINE.md` (ASSET-003, how files are made)
+**Doc ID:** ART-001 · **Version:** 1.5 · **Date:** 2026-11-18 · **Owner:** Art · **Status:** complete-draft (§11 typography and §12 UI states are specified; no glyph or UI-kit art is drawn yet) · **Companion:** `SPRITE_MODULARITY_SPEC.md` (ART-002, the technical module system), `ASSET_PIPELINE.md` (ASSET-003, how files are made)
+
+**Rev 1.5 (2026-11-18, PM under owner autonomy grant): §15.4 the Aether tier language (what each tier should look like, one new technique per tier, three dread registers); §16.5 AETHER palette ramp approved (palette v2, pending implementation); §16.6 implementation record of the Aether gallery pass 1 (layer stack, entity exact-black rule, law checks); §14.8 pxl allowed after Act 0 for non-morphing far set pieces only (TECH-001 Q-T22).**
 
 **Rev 1.4 (2026-11-18, owner direction): §16 the Aether — space is retro-future Victorian (aether, fog, life, crystal spheres, colour), not a black vacuum; the arcade's black is the Pretence and the only true black is the entity. Law 4 amended.**
 
@@ -131,6 +133,8 @@ Five ramps of six, plus two specials. **Value separation between ramps is intent
 | `ds_penitent_ringBroken` | GAS-4 | the cracked ring the Penitent still wears; the strongest visual hint that the Penitent was once one of you (NARR-001) |
 
 These are **trophies, not light sources**. No Choir or entity part may ever carry **GAS-5** (index 29, the lantern core): nothing in the Choir has ever *lit* a lantern, and the lint fails the build if one appears. Any further exception is a new ruling and a new `faction_exceptions` row, never a quiet palette edit. The other direction of law 1 has no exception: CHOIR never appears on player art.
+
+**GASLIGHT exception: the lamp interior (PM under owner autonomy grant, 2026-11-18).** GASLIGHT belongs to the player. In the Aether, brass (orrery rings, meridian bands, lattices, observatory housings) is drawn in BONE and VOID mixes only. **The one exception is the T4 Inverted lamp interior.** At that tier the background *is* the inside of the Vigil's own lamp (WARP-001 W4-01), so those set pieces are the player's art. They may carry a dim **GAS-0 or GAS-1 tarnish**, and only there. They may not carry GAS-2 or higher; the lantern stays the brightest warm light (law 4). They may never carry GAS on Choir or entity art (law 1). Enforced by `features/aether/tests/test_aether_look_table.gd`: GAS is allowed only in an `AetherLook`'s `rib_accent` field, only when `tier == 4`, and only as GAS-0 or GAS-1.
 
 ## 5. Lighting rules
 
@@ -462,7 +466,7 @@ The PNGs under `assets/sprites/` (the v0.1 PowerShell generator pass, ASSET-003)
 | Palette | base colours come from the palette includes: `darkstar_palette.px.js` (Aether, T1+) or `neon_cabinet_palette.px.js` (T0 art, flat: no lighting). From T1, pxl's `lighting()`, `glow()`, `shades()` and true-colour effects are allowed (§15); faction-role laws still hold |
 | Forbidden | `image()`: it pastes an outside PNG (a photo, a reference, a drawing) into the art |
 | Previews | `assets/art/generated/_preview/`: Godot-ignored by pxl, git-ignored here |
-| When to use pxl, when to generate at runtime | **pxl** for things that do not need to morph: set pieces, Ruins props, portraits, Codex illustrations, icons, key art, and **per-tier variants** of a part (render T0…T5 frames from one parametrised source, then swap). **Runtime** (§14.2) for anything that must transform continuously on screen: the Choir under warp, the entity, the Vigil, VFX, the HUD. One part may combine both: a pxl sprite inside a shader that warps it |
+| When to use pxl, when to generate at runtime | **pxl** for things that do not need to morph: set pieces, Ruins props, portraits, Codex illustrations, icons, key art, and **per-tier variants** of a part (render T0…T5 frames from one parametrised source, then swap). **Runtime** (§14.2) for anything that must transform continuously on screen: the Choir under warp, the entity, the Vigil, VFX, the HUD. One part may combine both: a pxl sprite inside a shader that warps it. **After Act 0 (ruling 2026-11-18, TECH-001 Q-T22):** pxl is allowed only for non-morphing far set pieces (orrery arms, telescope housings, engraving plates); fog, spheres, life, the leviathan and the entity stay runtime |
 
 Commands (from the repo root; the tool lives in `.claude/skills/pxl/`, git-ignored, installed per README):
 ```
@@ -527,6 +531,29 @@ Pal entry to register (`pal_map`): VOID-0, VOID-1, CHOIR-0, PHOS-0, GAS-0, NULL 
 ### 15.3 Rendering toolkit from T1 (TECH-001 §5.5)
 2D lights (`PointLight2D` for the lantern, emitters on Shroud, glass and veins), `LightOccluder2D` for shadows, `CanvasModulate` for ambient darkness, normal maps on generated bodies, `GPUParticles2D` with generated textures (no image files: particle sprites come from shaders or pxl renders), fog and volumetric shaders, and the 2D HDR glow/bloom post. Every effect still obeys the readability rules in §15.1 and the frame budget (SYS-001 §9, TECH-001 §8.1). Photosensitivity and Reduced Motion variants are required for every flicker or motion effect (§12, WARP-001 §4.5).
 
+### 15.4 Aether tier language (PM-approved direction, 2026-11-18)
+§15.1 says what rendering *may* do; this says what it *should look like*. One still per tier must be sortable cold (the G-2 review goal), so each tier adds **one new kind of thing**, not just "more". Horror is an undertone from T1 and overt from T3. Scale presences are never hitboxes and they flee the entity. Zero startle: every presence fades in slowly and never cuts in. No gore, and the entity never has a face. Inspiration only (Sunless Sea's dread of the unknown, Returnal's bioluminescent murk): no names, art, characters or content copied.
+
+**The three registers of dread.**
+
+| Register | On screen |
+|---|---|
+| **Vastness** | far shapes (sphere seams, leviathan backs, orrery arms) in 4 to 6 parallax bands at low scroll scale ✱, cropped by the frame edge, never seen whole. Scale comes from parallax ratio and cropping, not camera zoom (TECH-001 Q-T25) |
+| **Wrongness** | a second, slightly offset seam on the crystal sphere; structures one element off-symmetry (§2); refraction showing the fog behind the sphere moving the wrong way; life schools that turn all at once |
+| **Subtraction** | the entity is `#000000` with no rim, glow or outline of its own; the fog around it is drunk (density and saturation → 0), life flees, lights gutter. It has an edge because the world stops |
+
+| Tier | What is new | Cosmic-horror beat | One new technique |
+|---|---|---|---|
+| **T1 Frayed** | the reveal's sky: pearl and violet fog in 3 parallax bands, the sphere's curve and a gold seam at the frame edge, glass motes, the lantern's real light as a warm pool in cool fog | something wrong you cannot name: a faint *second* seam; far off, one dark smudge in the fog that is a little too still | real light (the lantern as key light, fog lit by it) |
+| **T2 Bleeding** | life: jelly-lanterns pulsing PHOS, spore drifts, lit glass veins; bloom on emitters; visible fog currents | life moves in schools that turn together, then scatters from an empty patch of fog: the absence is a tell | living emitters, bloom, flow-advected fog |
+| **T3 Unbound** | depth and scale: god-rays from the lantern and through the sphere seam; a leviathan-scale silhouette crossing the far fog, darker than the fog but **not black** (VOID-1 tone, softened); lensing near the sphere | scale: it is bigger than the sector and does not notice you | refraction through the sphere, god-rays, the leviathan |
+| **T4 Inverted** | inside-out light: fog lit from within (brass ribs, gaslight glass at the far layer); the sphere seen from outside; Choir hues bleed into **far** fog only, never the player | you are the thing in the jar | sky cracks, with the Aether behind the Aether visible through them |
+| **T5 Unmaking** | subtraction: bands peel to chalk strokes, particles run backwards, lights go out one by one, holes of true black with hard edges and no glow open where the entity has eaten; the sphere cracks | the colour goes out like a picture being erased | chromatic subtraction (colour removed channel by channel down to NULL inside the entity mask) |
+
+**Biome weathers** (ZONES-001 §2.1, §16.2) vary palette bias and fog motion, not the tier grammar: Pale Marches (pearl mist, BONE-3/4 frost, slow); Ossuary Belt (dust in still air, bone towers in the far band); The Litany (incense haze, CHOIR banners in the far band only); Green Rot (spore-thick PHOS murk, the most life); Drowned Observatory (tidal currents, VOID-2/3/5, lens rings and telescopes as far silhouettes, GAS-5 the brightest pixel); The Black (fog thinning toward nothing, the most dread, almost no life).
+
+**Budget and fallback (CH-7).** Each technique is one toggleable layer with a measured frame time. The Steam Deck / iGPU `low` preset drops detail, never information (fewer fbm octaves, half-res fog bands, static god-rays, fewer particles) and keeps the sphere curve, the entity's black and the play-band fog cap. Quality ladder and cost status: TECH-001 §8, §11.1 Q-T62.
+
 ## 16. The Aether: retro-future Victorian space (owner direction, 2026-11-18)
 
 **Space in DARKSTAR is not a black vacuum.** It is space as the Victorians imagined it: a luminous **aether**, thick with fog, currents, colour and drifting life, and the skies are **crystal spheres**, nested shells of glass the cosmos turns inside. Think steampunk in space and nineteenth-century astronomy taken literally: orreries, brass and glass, gaslight, observatories, celestial charts. The game is still played top-down in 2D. This is the look the fidelity ladder (§15) climbs toward from T1.
@@ -556,4 +583,28 @@ A rich background must never cost legibility (GDD P5, WARP-001 §5.1 "value befo
 Nineteenth-century astronomical illustration and engraving (lunar and nebular plates, celestial atlases), orreries and armillary spheres, Victorian scientific instruments, aether theory diagrams, gaslit cathedrals and observatories, deep-sea plates of luminous life. Only public-domain sources go in `assets/reference/`, and nothing is traced (RES-001 §5).
 
 ### 16.5 Consequences for the palette
-The 32-entry palette (§4) remains the **base** set for authored art and keeps its roles. The aether's colour fields, fog and lighting derive their colours from it under the fidelity ladder (§15). An art pass may propose an **AETHER** ramp (violet, rose, sea-glass) as a palette v2 change through ASSET-003 §8 versioning. Until then, aether colour is built from VOID, PHOS, CHOIR-free BONE and GAS mixes under lighting.
+The 32-entry palette (§4) remains the **base** set for authored art and keeps its roles. The aether's colour fields, fog and lighting derive their colours from it under the fidelity ladder (§15). An art pass may propose an **AETHER** ramp (violet, rose, sea-glass) as a palette v2 change through ASSET-003 §8 versioning. **Approved 2026-11-18 (PM under owner autonomy grant), pending implementation** (TECH-001 §11.1 Q-T61 holds the six proposed entries and the test rule): the ramp opens on condition that its hues stay distinguishable from CHOIR and SIGNAL, enforced by the palette test; it has no neon role, is never used in Act 0, and lives in `Pal.AETHER`, outside `Pal.ALL` and `Look.NEON`. Until it is implemented, aether colour is built from VOID, PHOS, CHOIR-free BONE and GAS mixes under lighting.
+
+### 16.6 Implementation record: gallery pass 1 (2026-11-18)
+Built in `features/aether/` (TECH-001 §2.9), shaders in `shaders/aether/`, looks in `data/aether/` (`AetherLook`, one per biome × tier), shown in the dev-only `scenes/dev/aether_gallery/` (six exhibits: T1 Pale Marches, T2 Green Rot, T3 Drowned Observatory with leviathan, T4 Inverted (look `litany_t4`), T5 Unmaking (look `the_black_t5`), entity presence). Captures and self-scores are not part of this record.
+
+**Layer stack** (`AetherBackdrop`, back to front; API `set_tier`, `set_drain`, `set_time`, `set_camera`, `apply_look`): far, mid and near fog bands (`aether_fog_band`); crystal sphere (`crystal_sphere`: curve, seam, refraction, glint, second seam by tier); still smudge (T1 "too still" shape); leviathan (`leviathan`, far band, VOID-1/2 tone, never black); light shafts (`light_shafts`, capped below lantern luminance); aether-life particles (`aether_life`, procedural textures, no image files); sky cracks (`sky_crack`, T4); orrery ribs (T4 far set piece, runtime for now); entity presence (`entity_presence`); grade (`aether_grade`). The gallery renders into an HDR SubViewport with `WorldEnvironment` glow, shown through a `TextureRect` at window pixel size, and `aether_present` converts linear to sRGB. Signals (EVT-001): `sphere_glinted`, `leviathan_entered`, `leviathan_closest`.
+
+**Rules as built.**
+- **Entity exact black.** Only nodes in group `entity_presence` output `0,0,0`. Every other layer's colour floor is VOID-0 `#0A0A12` (fog never goes below it). Drained areas go to desaturated thin fog first, then NULL only inside the entity mask.
+- **Lantern in-scatter.** The lantern is the key light; fog near it is lit by it (in-scatter), and no far light or glow exceeds the lantern core luminance.
+- **Colours come from `Pal` through `AetherLook`.** CHOIR entries are allowed only on far bands.
+
+**Law check** (how each law is kept, and where it is checked; "capture" = windowed gallery capture, not yet automated unless noted):
+
+| Law | How the Aether keeps it | Check |
+|---|---|---|
+| 1 Faction hues (GAS never on Choir or entity; CHOIR never on the player) | CHOIR only in far-band tints (Litany, T4); GAS only in the lantern's light and its own glass. Open: GAS-1 on T4 orrery ribs (TECH-001 Q-T63) | `features/aether/tests/test_aether_look_table.gd` (look-table lint; read the test for its exact assertions) |
+| 2 Phosphor = truth | PHOS is glass, life's glow and the sphere's refraction; entity veins, if shown, are PHOS | role review per capture |
+| 3 SIGNAL ≤ 3 | the Aether never uses SIGNAL | capture pixel check (not built) |
+| 4 Lantern brightest | emitters cap below GAS-3 lantern luminance; fog capped in the play band (`play_fog_ceiling`, a design number: owner to set); bloom thresholded | `features/aether/tests/test_aether_lantern_key.gd` (structural); capture luminance check (not built) |
+| Only true black is the entity | see "Entity exact black" | `features/aether/tests/test_aether_black_roles.gd` (structural); capture pixel check after glow not yet done (TECH-001 Q-T64) |
+| Greyscale read | play band keeps the top value band, fog mid-low, entity the bottom | greyscale capture in every review |
+| Photosensitivity / reduced motion | no flicker above 3 Hz; slow glints and pulses; a reduced-motion variant freezes drift and halves parallax (§12 variant per effect) | not verified in this pass |
+
+Dev-route gating tests: `tests/test_dev_routes_gate.gd`. Backdrop and gallery load tests: `features/aether/tests/test_aether_backdrop.gd`, `scenes/dev/aether_gallery/tests/test_aether_gallery_loads.gd`.
