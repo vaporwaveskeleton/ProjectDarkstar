@@ -53,9 +53,14 @@ func test_every_cabinet_message_fits_the_screen_at_its_scale() -> void:
 	]
 	for i in 7:
 		items.append(["CAB_CREDITS_%d" % (i + 1), 2])
+	# S7 service record lines, formatted with a worst-case 3-digit count
+	for key in ["CAB_CREDITS_STAT_GRUBS", "CAB_CREDITS_STAT_MINED", "CAB_CREDITS_STAT_CHARGES", "CAB_CREDITS_STAT_CARRIED"]:
+		items.append([key, 2, 999])
 	for it in items:
 		var s := tr(it[0])
 		assert_str(s).override_failure_message("%s has no translation" % it[0]).is_not_equal(it[0])
+		if it.size() > 2:
+			s = s % int(it[2])
 		assert_bool(_fits(s, it[1], limit)).override_failure_message("%s at x%d does not fit %s px" % [it[0], it[1], limit]).is_true()
 
 

@@ -15,6 +15,11 @@ const DEMO_SECONDS := 45.0         ## ✱ attract demo length (WARP-001 W0-03)
 const CREDIT_KEYS := ["CAB_CREDITS_1", "CAB_CREDITS_2", "CAB_CREDITS_3", "CAB_CREDITS_4",
 	"CAB_CREDITS_5", "CAB_CREDITS_6", "CAB_CREDITS_7"]
 
+## S7 service record: shown after CAB_CREDITS_3, one honest count per line (WORDING PROPOSED, NARR-001).
+const STAT_KEYS := ["CAB_CREDITS_STAT_GRUBS", "CAB_CREDITS_STAT_MINED", "CAB_CREDITS_STAT_CHARGES", "CAB_CREDITS_STAT_CARRIED"]
+const STAT_AFTER := 3             ## stat lines follow the first 3 credit lines
+const STAT_ENTRY_INDICES := [3, 4, 5, 6]   ## their positions in the full roll
+
 @export var stages: Array[CabinetStage] = []
 @export var tuning: CabinetTuning
 
@@ -27,6 +32,7 @@ const CREDIT_KEYS := ["CAB_CREDITS_1", "CAB_CREDITS_2", "CAB_CREDITS_3", "CAB_CR
 @onready var autopilot: CabinetAutopilot = %Autopilot
 
 var score: ScoreKeeper
+var record := ServiceRecord.new()   ## S7 run-wide counts: lives as long as `score`, NOT reset between stages
 var state: int = State.INTRO
 var stage_index := 0
 var _timer := 0.0
@@ -38,6 +44,7 @@ var _demo_t := 0.0
 func _ready() -> void:
 	Look.t = 0.0                       # Act 0 is the neon cabinet (ART-001 §15)
 	score = ScoreKeeper.new(tuning)
+	world.record = record
 	score.score_changed.connect(func(s: int) -> void: hud.score = s)
 	score.lives_changed.connect(func(l: int) -> void: hud.lives = l)
 	score.extra_life_awarded.connect(_on_extra_life)
@@ -55,6 +62,7 @@ func _ready() -> void:
 	world.entity_unmade.connect(_on_entity_unmade)
 	world.entity_line.connect(func(key: String) -> void: messages.entity_line(tr(key)))
 	world.caption.connect(func(key: String) -> void: messages.caption(tr(key)))
+	messages.credits_stat_shown.connect(func(_i: int) -> void: AudioService.play(&"tally_blip"))   # cue owned by AUDIO-001 (unknown id = silent no-op)
 	reveal.finished.connect(_on_reveal_finished)
 	autopilot.enabled = OS.get_cmdline_user_args().has("--autopilot")
 	overlays.emptied.connect(func() -> void: get_tree().paused = false)
@@ -153,8 +161,8 @@ func _on_timer() -> void:
 			messages.roll_credits(_credit_lines(3))
 			_enter(State.CREDITS, CREDITS_SECONDS * 0.6)
 		State.UNMADE:
-			messages.roll_credits(_credit_lines(CREDIT_KEYS.size()))
-			_enter(State.CREDITS, CREDITS_SECONDS)
+			messages.roll_credits(_full_credit_lines(), PackedInt32Array(STAT_ENTRY_INDICES))
+			_enter(State.CREDITS, world.fx_tuning.credits_full_seconds)
 		State.CREDITS:
 			if stage_index + 1 < stages.size() and world.ritual.phase != SepulchreRitual.Phase.UNMADE:
 				start_stage(stage_index + 1)
@@ -166,6 +174,18 @@ func _on_timer() -> void:
 func _credit_lines(n: int) -> PackedStringArray:
 	var out := PackedStringArray()
 	for i in n:
+		out.append(tr(CREDIT_KEYS[i]))
+	return out
+
+
+## The full stage-2 roll: the 7 propaganda lines with the true service record after "YOUR QUOTA IS MET".
+func _full_credit_lines() -> PackedStringArray:
+	var out := PackedStringArray()
+	var vals: Array[int] = [record.grubs_destroyed, record.glass_mined, record.charges_thrown, record.glass_carried]
+	for i in CREDIT_KEYS.size():
+		if i == STAT_AFTER:
+			for k in STAT_KEYS.size():
+				out.append(tr(STAT_KEYS[k]) % vals[k])
 		out.append(tr(CREDIT_KEYS[i]))
 	return out
 

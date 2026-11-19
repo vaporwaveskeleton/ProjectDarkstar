@@ -17,11 +17,16 @@ var _line_t := 0.0
 var credits: PackedStringArray = PackedStringArray()
 var credits_t := -1.0            ## < 0 = no credits roll
 var credits_frozen := false
+var _stat_indices := PackedInt32Array()   ## entries of `credits` that are service-record lines
+var _stats_emitted: Dictionary = {}          ## stat-line index -> true once credits_stat_shown fired
 var glitch := 0.0                ## 0..1 the Pretence Tear corrupts the credits
 var demo := false                ## attract demo: INSERT CREDIT over the field
 var _t := 0.0
 
+signal credits_stat_shown(index: int)       ## stat line `index` (0..3) just scrolled into view
+
 @export var spec: CabinetScreenSpec
+@export var fx_tuning: CabinetFxTuning   ## credits scroll speed (data/cabinet/cabinet_fx_tuning.tres)
 
 const MARGIN := 4.0              ## text keeps this far from the screen edge
 
@@ -57,8 +62,10 @@ func entity_line(text: String, seconds: float = 3.0) -> void:
 	_line_t = seconds
 
 
-func roll_credits(lines: PackedStringArray) -> void:
+func roll_credits(lines: PackedStringArray, stat_indices: PackedInt32Array = PackedInt32Array()) -> void:
 	credits = lines
+	_stat_indices = stat_indices
+	_stats_emitted.clear()
 	credits_t = 0.0
 	credits_frozen = false
 
@@ -69,6 +76,7 @@ func clear() -> void:
 	_caption_t = 0.0
 	_line_t = 0.0
 	credits_t = -1.0
+	_stats_emitted.clear()
 
 
 func _process(delta: float) -> void:
@@ -79,6 +87,7 @@ func _process(delta: float) -> void:
 	_line_t = maxf(0.0, _line_t - delta)
 	if credits_t >= 0.0 and not credits_frozen:
 		credits_t += delta
+		_emit_stat_lines()
 	queue_redraw()
 
 
@@ -124,9 +133,18 @@ func _draw() -> void:
 		_block(top + 8.0, _line, 3, Look.c(Pal.BONE_5))
 
 
+## Top edge (play-view y) of credits entry `i` when the roll has run `t` seconds. One layout for
+## drawing and for `credits_stat_shown`, so they cannot disagree (wrap and pitch match _draw_credits).
+func credit_entry_top(i: int, t: float) -> float:
+	var y := size.y - t * _tuning().credits_scroll_px_per_s
+	for k in mini(i, credits.size()):
+		y += PixelText.wrap(credits[k], 2, size.x - 2.0 * MARGIN).size() * 18.0 + 4.0
+	return y
+
+
 func _draw_credits() -> void:
-	var y := size.y - credits_t * 24.0
 	for i in credits.size():
+		var y := credit_entry_top(i, credits_t)
 		var col := Look.c(Pal.BONE_4) if glitch < 0.5 or i % 2 == 0 else Look.c(Pal.PHOS_4)
 		var x_shift := 0.0
 		if glitch > 0.0 and (i * 7 + int(_t * 8.0)) % 3 == 0:
@@ -135,4 +153,19 @@ func _draw_credits() -> void:
 			if y > -16.0 and y < size.y + 2.0:
 				PixelText.draw_centered(self, size.x * 0.5 + x_shift, y, line, col, 2)
 			y += 18.0
-		y += 4.0
+
+
+## The stat lines announce themselves the first time their top edge scrolls into the view.
+func _emit_stat_lines() -> void:
+	for n in _stat_indices.size():
+		if _stats_emitted.has(n):
+			continue
+		if credit_entry_top(_stat_indices[n], credits_t) < size.y:
+			_stats_emitted[n] = true
+			credits_stat_shown.emit(n)
+
+
+func _tuning() -> CabinetFxTuning:
+	if fx_tuning == null:
+		fx_tuning = load("res://data/cabinet/cabinet_fx_tuning.tres") as CabinetFxTuning
+	return fx_tuning

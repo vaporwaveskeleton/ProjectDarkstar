@@ -87,6 +87,8 @@ func accepts_deposits() -> bool:
 func deposit() -> void:
 	var t := world.tuning
 	shard_points += 1
+	if world.record != null:
+		world.record.glass_carried += 1
 	world.fx.ring(pos, Look.c(Pal.CHOIR_4), world.fx_tuning.ritual_deposit_ring_radius)
 	if shard_points < t.shards_per_segment or segments >= t.segments_total:
 		return

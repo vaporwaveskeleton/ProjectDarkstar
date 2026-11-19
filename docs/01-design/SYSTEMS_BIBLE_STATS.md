@@ -378,6 +378,8 @@ Hunger raises the entity only. It never reduces player currency (GDD P4: progres
 | Hit-stop, modules knocked (`ds_cabinet.fx.hitstop_modules_knocked_frames`) | 2 frames ⚙ | 60 Hz sim frames; owner-approved 2026-11-18 |
 | Hit-stop cap (`ds_cabinet.fx.hitstop_max_frames`) | 10 frames ⚙ | maximum for any single or stacked freeze; owner-approved 2026-11-18 |
 | Hit-stop under Reduced Motion (`ds_cabinet.fx.hitstop_reduced_motion_scale`) | × 0.5 ⚙ | Reduced Motion multiplies the frames by this; 0 disables; owner-approved 2026-11-18 |
+| Credits roll, full (stage 2) length (`ds_cabinet.fx.credits_full_seconds`) | 13.0 s ⚙ | the stage-2 roll with the four service-record lines; owner-approved 2026-11-18 (TECH-001 Q-T45) |
+| Credits roll scroll speed (`ds_cabinet.fx.credits_scroll_px_per_s`) | 24 px/s ⚙ | the original literal; owner-approved 2026-11-18 |
 
 Hit-stop does **not** count toward the 1.5 s "Player agency loss" budget above: it is a presentation freeze with input buffered, not a warp effect.
 
