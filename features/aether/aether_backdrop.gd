@@ -9,7 +9,8 @@ extends Node2D
 ## trades octaves, resolution and particle counts; every rung keeps the sphere curve, the entity's
 ## exact black and the play-band fog cap. Owns no game state; callers drive it with
 ## apply_look / apply_quality / set_tier / set_drain / set_time / set_camera / set_lantern /
-## set_lantern_lit / presence_flee / set_chromatic_edge.
+## set_lantern_lit / presence_flee / set_chromatic_edge / set_travel / reset_travel (long flights:
+## AetherFarTravel, AetherFarLeash).
 
 signal sphere_glinted
 signal leviathan_entered
@@ -40,9 +41,13 @@ const SCHOOL_PERIOD_S := 22.0
 const SCATTER_WINDOW := Vector2(6.0, 10.0)
 const SCATTER_PATCH := Vector2(40.0, -10.0)
 const DEFAULT_QUALITY := "res://data/aether/quality/quality_high.tres"
+## Leash channel for the sphere's own camera drift (refraction, nested shells, cracks): factor 1.
+const DRIFT_CHANNEL := &"drift"
 
 ## Freezes drift and halves parallax (accessibility). Read from SettingsService when present.
 @export var reduced_motion: bool = false
+## Long-flight tuning (Q-T127 option B): landmark leash and fog-band wrap.
+@export var leash: AetherFarLeash = preload("res://data/aether/leash/far_leash.tres")
 
 var look: AetherLook
 var quality: AetherQuality
@@ -65,6 +70,9 @@ var photosensitive := false
 var _enabled: Dictionary = {}
 var _reveal_life_on := false
 var _mats: Array[ShaderMaterial] = []
+## Camera travel beyond the Camera2D (set_travel) with each landmark's leashed displacement.
+var far_travel: AetherFarTravel
+var _life_velocity := Vector2.ZERO
 
 @onready var _far_layer: Parallax2D = %FarLayer
 @onready var _sky_layer: Parallax2D = %SkyLayer
@@ -101,6 +109,7 @@ var _mats: Array[ShaderMaterial] = []
 
 
 func _ready() -> void:
+	_ensure_travel()
 	for l in LAYERS:
 		_enabled[l] = true
 	if SettingsService.DEFAULTS.has(&"reduced_motion"):
@@ -270,6 +279,7 @@ func set_chromatic_edge(on: bool) -> void:
 func advance_clock(delta: float) -> void:
 	var target := 0.0 if lantern_lit else 1.0
 	reveal = move_toward(reveal, target, maxf(delta, 0.0) / REVEAL_FADE_S)
+	step_travel(delta)
 	_presence.step(delta)
 	_presence.set_reveal(reveal)
 	_reveal_life.modulate.a = smoothstep(0.0, 1.0, reveal)
@@ -286,6 +296,89 @@ func set_time(seconds: float) -> void:
 func set_camera(centre: Vector2, zoom: float) -> void:
 	camera_centre = centre
 	camera_zoom = zoom
+
+
+## Camera travel beyond the Camera2D since the sector origin (backdrop px; Q-T127 option B). The fog
+## bands and the near life scroll by it (band offsets wrapped, never raw); the landmarks follow it on a
+## leash. Zero (the default) leaves the plain Parallax2D picture of the Camera2D unchanged.
+func set_travel(d: Vector2) -> void:
+	_ensure_travel()
+	far_travel.set_travel(d)
+
+
+func travel() -> Vector2:
+	_ensure_travel()
+	return far_travel.travel
+
+
+## New sector: travel zero and every landmark back on its authored framing at once.
+func reset_travel() -> void:
+	_ensure_travel()
+	far_travel.reset()
+	_life_velocity = Vector2.ZERO
+	if is_node_ready():
+		_apply_travel()
+
+
+## Step the landmark leash by `delta` seconds (advance_clock calls it each frame).
+func step_travel(delta: float) -> void:
+	_ensure_travel()
+	far_travel.step(delta, _leash_factors())
+	var s_life := _life_layer.scroll_scale.x
+	_life_velocity = far_travel.step_travel * s_life / delta if delta > 0.0 else Vector2.ZERO
+
+
+## Leash channel → its Parallax2D (every landmark layer).
+func landmark_layers() -> Dictionary:
+	return {&"sky": _sky_layer, &"presence": _presence_layer, &"set_pieces_back": _rib_back_layer,
+		&"set_pieces": _rib_layer, &"leviathan": _lev_layer, &"entity": _entity_layer}
+
+
+## A landmark channel's current displacement from its authored framing (logical px).
+func landmark_offset(ch: StringName) -> Vector2:
+	_ensure_travel()
+	return far_travel.displacement(ch)
+
+
+## Fog band i's wrapped parallax offset as passed to its shader (band px, within ±period / 2).
+func band_offset(i: int) -> Vector2:
+	_ensure_travel()
+	return AetherFarTravel.band_offset(far_travel.travel, _band_layers()[i].scroll_scale.x, leash.band_period_px)
+
+
+func _ensure_travel() -> void:
+	if far_travel == null:
+		far_travel = AetherFarTravel.new(leash)
+
+
+func _band_layers() -> Array[Parallax2D]:
+	return [_far_layer, _mid_a_layer, _mid_b_layer, _near_layer, _veil_layer]
+
+
+func _leash_factors() -> Dictionary:
+	var out := {DRIFT_CHANNEL: 1.0}
+	var layers := landmark_layers()
+	for ch: StringName in layers:
+		out[ch] = (layers[ch] as Parallax2D).scroll_scale.x
+	return out
+
+
+## Push the travel state to the layers: landmark scroll offsets, band uniforms, near-life velocity.
+func _apply_travel() -> void:
+	var layers := landmark_layers()
+	for ch: StringName in layers:
+		(layers[ch] as Parallax2D).scroll_offset = far_travel.displacement(ch)
+	var bands := _band_layers()
+	var period := leash.band_period_px
+	for i in _bands.size():
+		var f := bands[i].scroll_scale.x
+		var a := AetherFarTravel.band_offset(far_travel.travel, f, period)
+		_bands[i].set_param(&"scroll_px", a)
+		_bands[i].set_param(&"scroll_px_b", AetherFarTravel.band_offset(far_travel.travel, f, period, period * 0.5))
+		_bands[i].set_param(&"wrap_mix", AetherFarTravel.wrap_mix(a, period, leash.wrap_window_px))
+	for life in _life:
+		if life.get_parent() == _life_layer:
+			life.set_scroll_velocity(_life_velocity)
 
 
 ## Lantern position on screen (logical px), its light radius, colour and energy: the fog pools
@@ -436,7 +529,9 @@ func refresh() -> void:
 	var screen := get_viewport_rect().size
 	var masks: Array[Vector4] = [_entity.screen_mask(), _holes[0].screen_mask(), _holes[1].screen_mask(), _holes[2].screen_mask()]
 	var seeds := Vector4(_entity.seed, _holes[0].seed, _holes[1].seed, _holes[2].seed)
-	var cam_off := camera_centre - screen * 0.5
+	_apply_travel()
+	# the sphere's own drift: the Camera2D's offset plus the leashed travel (never the raw travel)
+	var cam_off := camera_centre - screen * 0.5 - far_travel.displacement(DRIFT_CHANNEL)
 	var sph_xf := _sphere.get_global_transform_with_canvas()
 	var sph := sph_xf * (_sphere.sphere_centre - _sphere.position)
 	var sphere_screen := Vector3(sph.x, sph.y, _sphere.sphere_radius)

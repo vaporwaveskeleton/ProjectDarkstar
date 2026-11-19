@@ -52,6 +52,14 @@ uniform float stars = 0.0;             // far band star field strength
 uniform float deep_k = 0.35;           // brightness of the fog away from the luminous band
 uniform float glow_band_px = 70.0;     // half-width of the luminous band inside the shell
 uniform float glow_band_inset = 55.0;  // how far inside the shell the band peaks
+// Long flights (Q-T127 option B): the band's parallax offset (camera travel x scroll factor) arrives
+// wrapped into +-period/2 per axis, so no uniform ever carries a raw 1e5-range world offset and float32
+// stays sub-pixel. The noise does not tile, so each wrap is hidden: around it `wrap_mix` rises to 1 and
+// the opaque far band crossfades to a second sample half a period out of phase (`scroll_px_b`), while
+// a translucent band fades out and back in (no second sample). Both are 0 / unused away from a wrap.
+uniform vec2 scroll_px = vec2(0.0);
+uniform vec2 scroll_px_b = vec2(0.0);
+uniform float wrap_mix : hint_range(0.0, 1.0) = 0.0;
 
 varying vec2 v_px;
 
@@ -72,12 +80,11 @@ vec3 cold(vec3 c) {
 	return mix(void_lo, void_hi, clamp(a_luma(c) * 2.4, 0.0, 1.0));
 }
 
-void fragment() {
-	vec2 spx = SCREEN_UV * screen_size;
-	vec4 loss = a_loss(spx);
-	vec3 toward = a_toward_entity(spx);
+// The band's colour (rgb) and density (a) at band-local px `vp` (already scrolled), screen px `spx`.
+vec4 fog_eval(vec2 vp, vec2 spx, vec4 loss, vec3 toward) {
+	vec2 suv = spx / screen_size;
 	float t = time_s * drift_speed;
-	vec2 p = v_px / fog_scale + vec2(seed * 7.13, seed * 3.71);
+	vec2 p = vp / fog_scale + vec2(seed * 7.13, seed * 3.71);
 	if (tier == 4) {
 		t = -t;   // the Litany: the medium runs backwards
 	}
@@ -90,7 +97,7 @@ void fragment() {
 	// play core weight (every band; the law-4 cap) and the translucent bands' strip-field weight.
 	// Pass 5 (Q-T94): the strip weight reaches 1 at pw = A_STRIP_FULL, and where it is 1 the free fog
 	// (and its silver-lining sample once the lining has faded) is never computed.
-	float r_scr = length((SCREEN_UV - 0.5) * vec2(screen_size.x / screen_size.y, 1.0));
+	float r_scr = length((suv - 0.5) * vec2(screen_size.x / screen_size.y, 1.0));
 	float pw = 1.0 - smoothstep(A_PLAY_CORE, A_PLAY_RING, r_scr);
 	float play = min(pw * (1.0 - is_far) / A_STRIP_FULL, 1.0);
 	float lining = silver * (1.0 - smoothstep(0.3, 0.5, play));
@@ -171,7 +178,7 @@ void fragment() {
 	col = mix(col, tint.rgb, tint.a * (0.4 + 0.6 * dens));
 	// stars: the far field, hidden by fog, gone near the entity and as the world is drunk
 	if (stars > 0.0) {
-		vec2 g = v_px / 7.0;
+		vec2 g = vp / 7.0;
 		vec2 id = floor(g);
 		float h = a_hash(id + seed * 13.0);
 		if (h > 0.955) {
@@ -204,13 +211,33 @@ void fragment() {
 	// drain: a cold VOID cast everywhere but the lantern pool
 	col = mix(col, cold(col), drain * 0.92 * (1.0 - lp * 0.85));
 	col = max(col, floor_col);
+	return vec4(col, dens);
+}
+
+void fragment() {
+	vec2 spx = SCREEN_UV * screen_size;
+	vec4 loss = a_loss(spx);
+	vec3 toward = a_toward_entity(spx);
+	vec4 fog = fog_eval(v_px + scroll_px, spx, loss, toward);
+	if (is_far > 0.5 && wrap_mix > 0.001) {
+		// the opaque band hides its wrap under a crossfade to the half-period sample
+		fog = mix(fog, fog_eval(v_px + scroll_px_b, spx, loss, toward), wrap_mix);
+	}
+	vec3 col = max(fog.rgb, floor_col);
+	float dens = fog.a;
 	if (is_far > 0.5) {
 		COLOR = vec4(col, 1.0);
 	} else {
+		float r_scr = length((SCREEN_UV - 0.5) * vec2(screen_size.x / screen_size.y, 1.0));
+		float lumb = exp(-pow((a_sphere_d(spx) + glow_band_inset) / glow_band_px, 2.0));
+		float ld2 = length(spx - lantern_px) / max(lantern_r, 1.0);
+		float lp = exp(-ld2 * ld2 * 4.0);
 		float edge = mix(play_fog_ceiling, 1.25, smoothstep(0.2, 0.9, r_scr));
 		float stage = loss_stage > 1.5 ? loss.x : loss.y;
 		float a = dens * alpha_max * edge * min(0.6 + 0.4 * lumb + 0.25 * lp, 1.0);
 		a *= (1.0 - stage) * (1.0 - 0.45 * loss.w) * (1.0 - 0.8 * drain);
+		// a translucent band fades out across its wrap and back in (no second sample)
+		a *= 1.0 - wrap_mix;
 		COLOR = vec4(col, clamp(a, 0.0, 1.0));
 	}
 }

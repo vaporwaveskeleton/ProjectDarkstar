@@ -5,13 +5,26 @@ extends Node
 ## through the forwarders below; it owns no game state, no collision and no input, and it never adds
 ## light to the play layer. Camera and lantern positions are in the backdrop's world space (the
 ## gallery's frame: home centre (320, 180), the 640×360 logical frame).
+## Long flights (Q-T127 option B): SectorHost calls set_field(size) once per sector, then
+## set_camera(continuous_centre, zoom) every frame with its torus rebases accumulated, so the centre
+## is continuous and may run ~1e5 px from where the sector began. The Camera2D inside never leaves the
+## home centre; the travel since the sector origin goes to the backdrop, which wraps it per fog band
+## (never a raw world offset in a uniform) and leashes the landmarks (AetherFarLeash).
+
+const HOME := Vector2(320.0, 180.0)
 
 ## The world's look (biome × tier). Pale Marches T1 until a sector sets one.
 @export var look: AetherLook = preload("res://data/aether/pale_marches_t1.tres")
 
 var time_s := 0.0
-var camera_centre := Vector2(320.0, 180.0)
+## The caller's continuous camera centre (backdrop world px) and zoom.
+var camera_centre := HOME
 var camera_zoom := 1.0
+## The current sector's field size (set_field). Zero until a sector sets one.
+var field_size := Vector2.ZERO
+## The camera centre that maps to the home framing (the sector origin).
+var origin := HOME
+var _rebase := false
 
 @onready var view: AetherView = %View
 @onready var backdrop: AetherBackdrop = %Backdrop
@@ -21,7 +34,12 @@ var camera_zoom := 1.0
 func _ready() -> void:
 	if look != null:
 		apply_look(look)
+	# a set_field before _ready still waits for the caller's first set_camera to be the origin
+	var pending := _rebase
 	set_camera(camera_centre, camera_zoom)
+	_rebase = pending
+	if pending:
+		backdrop.reset_travel()
 
 
 func apply_look(new_look: AetherLook) -> void:
@@ -42,13 +60,28 @@ func set_tier(t: int) -> void:
 	backdrop.set_tier(t)
 
 
-## Camera centre (backdrop world px) and zoom (> 0; anything else counts as 1).
+## New sector: stores its field size and resets the anchors. The next set_camera call becomes the
+## origin (every layer starts as if the camera were at HOME) and the landmarks go back to their
+## authored framing at once.
+func set_field(size: Vector2) -> void:
+	field_size = size
+	_rebase = true
+	if is_node_ready():
+		backdrop.reset_travel()
+
+
+## Continuous camera centre (backdrop world px, torus rebases accumulated) and zoom (> 0; anything
+## else counts as 1). Before any set_field the origin is HOME.
 func set_camera(centre: Vector2, zoom: float) -> void:
+	if _rebase:
+		origin = centre
+		_rebase = false
 	camera_centre = centre
 	camera_zoom = zoom if zoom > 0.0 else 1.0
-	_camera.position = camera_centre
+	_camera.position = HOME
 	_camera.zoom = Vector2(camera_zoom, camera_zoom)
-	backdrop.set_camera(camera_centre, camera_zoom)
+	backdrop.set_camera(HOME, camera_zoom)
+	backdrop.set_travel(camera_centre - origin)
 
 
 ## The lantern at `world_pos` (same space as the camera) with its light radius (world px), up or

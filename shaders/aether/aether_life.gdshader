@@ -27,6 +27,9 @@ uniform vec2 school_spread = vec2(70.0, 24.0);
 uniform float scatter = 0.0;
 uniform float align = 1.0;                     // 1: face the motion; 0: hang and sway (jellies)
 uniform vec2 scatter_pos = vec2(0.0);
+// Long flights (Q-T127 option B): the camera's parallax velocity for this layer (px/s, emitter-local).
+// The field streams past and wraps inside its own box (off-frame), so no world offset ever reaches it.
+uniform vec2 scroll_velocity = vec2(0.0);
 
 float l_rand(inout uint s) {
 	s = s * 747796405u + 2891336453u;
@@ -71,7 +74,7 @@ void process() {
 		float n = l_noise(p / 140.0 + vec2(CUSTOM.y * 0.02, CUSTOM.x));
 		vec2 turb = vec2(cos(n * 6.2831), sin(n * 6.2831)) * swirl;
 		vec2 v = (drift + cur + turb) * speed_scale * life_fade;   // drained life stops
-		p += v * DELTA;
+		p += v * DELTA - scroll_velocity * DELTA;
 		p = mod(p + extents, extents * 2.0) - extents;
 		ang = atan(v.y, v.x);
 	} else {
