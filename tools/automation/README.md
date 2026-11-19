@@ -85,6 +85,34 @@ win a0_3 or a0_5 unaided): coin, Act 0, reveal, Unmaking, Ruins, sector. About 2
 The same runner runs inside GdUnit: `tests/test_scenarios.gd` plays every scenario that is valid for
 the suite (`args == []`, `timeout_frames <= 1200`).
 
+## Frame time, flash rule, settings coverage, the run-all report
+
+```
+node tools/automation/darkstar_auto.js run perf_golden_path --windowed --timeout=1500   # frame-time windows over the golden path
+node tools/automation/darkstar_auto.js run a11y_flash_pass --windowed --timeout=2400    # flash rule with reduced motion + photosensitivity on
+node tools/automation/darkstar_auto.js run ui_settings_capture --windowed               # every settings screen, captured
+node tools/automation/darkstar_auto.js run-all --windowed --only=<substr> --report=<dir> # + <dir>/latest.md (Markdown summary)
+```
+
+- **Frame time.** `perf_begin{name}` / `perf_end{name, budget_ms?}` open and close a window; each process
+  frame's wall-clock time goes in, and `result.perf_windows[]` gets frames, mean, p50, p95, p99, max (ms). Under
+  `--fixed-fps 60` the engine does not sleep, so this is the frame's real cost (CPU and, windowed, GPU wait).
+  `budget_ms` adds `p50_within_budget` (TECH-001 §8.1: median ≤ 8 ms at T2 on minimum spec); it is report
+  only, because this machine is not minimum spec. Headless windows are CPU only.
+- **Flash rule.** `luma_begin{name, target?}` / `luma_end{name, report_only?}` read back every drawn frame
+  (`window` default, or `arcade`) and run `core/automation/luma_watch.gd`: an 8×6 grid of relative-luminance
+  cells; a cell swing ≥ 0.10 with the darker side < 0.80 is a transition, two opposite transitions one cycle;
+  more than 3 cycles in any 60 frames, or a whole-field mean step ≥ 0.10 in one frame, is a violation
+  (WARP-001 L-11, ART-001 §7; thresholds ✱). `luma_end` fails on a violation unless `report_only`. Headless:
+  skipped. The readback costs frame time, so do not trust a perf window that overlaps a luma window
+  (`luma_active` marks it).
+- **Robust to visual changes.** These scenarios wait on routes and probe states (`cabinet/game.state`,
+  `sector/run.seam_index`), never on pixels or frame counts of an animation, so new looks for warp T1, the
+  sector, the reveal or the ship do not break them. Only the flash rule looks at pixels, and that is the point.
+- **Report.** `run-all --report=<dir>` writes `<dir>/automation_report-<stamp>.md` and `<dir>/latest.md`: one table
+  of scenarios (outcome, exit, frames, wall time, ERROR/WARNING lines, screenshots, first failure), one of
+  perf windows against their budget, one of flash-rule windows, and where the screenshots are.
+
 ## Phase 2: probes, snapshots, events, dev ops
 
 ```
