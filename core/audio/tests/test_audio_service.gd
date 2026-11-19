@@ -469,7 +469,7 @@ func test_sizzle_cues_are_listed_rendered_and_have_policy() -> void:
 	var ids: CueIds = load(AudioServiceScript.CUE_IDS_PATH)
 	var pol: CuePolicy = load(AudioServiceScript.CUE_POLICY_PATH)
 	assert_int(ids.entries.size()).is_equal(67)
-	assert_int(pol.entries.size()).is_equal(56)
+	assert_int(pol.entries.size()).is_equal(61)
 	var want := {&"lance_dull": [2, 3, 40], &"tally_blip": [3, 1, 60]}
 	for id: StringName in want:
 		assert_bool(ids.has_id(id)).is_true()
