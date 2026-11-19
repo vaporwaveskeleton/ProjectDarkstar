@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="HandlingNodeEffects" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://features/lantern_tree/handling_node_effects.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+ds_namespace = "ds_lantern_tree.handling"
+source_section = "LOOP-001 §3.3, §3.8 (Aether readings of handling nodes)"
+speed_bonus_cap = 0.12
+effects = {
+"LANTERN-1": [{"field": "surge_charges", "op": "max_to", "value": 2.0}],
+"LANTERN-5": [{"field": "lantern_down_thrust", "op": "max_to", "value": 0.85}],
+"LANTERN-6": [{"field": "surge_impulse", "op": "mul", "value": 1.2}],
+"LANTERN-7": [{"field": "surge_cooldown", "op": "mul", "value": 0.75}],
+"LANTERN-16": [{"field": "surge_cooldown", "op": "mul", "value": 0.8}],
+"LANTERN-9": [{"field": "drag", "op": "mul", "value": 0.8}],
+"LANTERN-10": [{"field": "", "op": "speed_frac", "value": 0.06}, {"field": "hull_turn", "op": "add_base_frac", "value": 0.15}],
+"LANTERN-13": [{"field": "", "op": "speed_frac", "value": 0.06}, {"field": "hull_turn", "op": "add_base_frac", "value": 0.15}],
+"HULL-1": [{"field": "drag", "op": "mul", "value": 1.25}, {"field": "thrust_lateral", "op": "max_to", "value": 0.6}],
+"HULL-7": [{"field": "drag", "op": "mul", "value": 1.3}, {"field": "thrust_lateral", "op": "max_to", "value": 0.75}],
+"HULL-3": [{"field": "brake", "op": "mul", "value": 1.25}],
+"HULL-5": [{"field": "brake", "op": "mul", "value": 1.15}],
+"HULL-15": [{"field": "brake", "op": "mul", "value": 1.25}]
+}

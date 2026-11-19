@@ -216,8 +216,22 @@ func on_route_entered(params: Dictionary) -> void:
 	for key: Variant in ["session", &"session"]:
 		if params.has(key) and params[key] is RunSessionCore:
 			_use_session(params[key] as RunSessionCore, false)
+			_apply_bought_nodes()
 			_bind_warp()
 			return
+
+
+## The Lantern Tree nodes bought in the Ruins shape the Vigil's Aether handling (Q-T191). A `--tree=`
+## tester override (captures) wins; the throwaway core owns nothing, so it leaves the Vigil alone.
+func _apply_bought_nodes() -> void:
+	if throwaway_session or session == null or not is_instance_valid(vigil):
+		return
+	if not HandlingTree.parse_args(OS.get_cmdline_user_args()).is_empty():
+		return
+	var ids := PackedStringArray()
+	for id in session.profile().tree_nodes:
+		ids.append(String(id))
+	vigil.set_tree_nodes(ids)
 
 
 ## New sector for the far layer: its field, then the camera's first centre becomes the origin.
@@ -362,6 +376,11 @@ func _refresh_hud() -> void:
 	var tier := _far.look.tier if _far and _far.look else 0
 	_hud.set_values(score, charges, _magazine.capacity() if _magazine else 0, seam_index, seams, tier,
 		vigil.health.current_hp, vigil.get_hull_max_hp(), _breached)
+	var m := vigil.motor
+	if m.aether_active:
+		_hud.set_handling(m.surge_charges_left, m.aether_stats.surge_charges, vigil.lantern.is_up)
+	else:
+		_hud.set_handling(0, 0, true)
 	if session and session.stats and session.stats.iteration_budget_loop_min > 0.0:
 		_hud.set_hourglass(session.loop_min_left() / session.stats.iteration_budget_loop_min,
 			session.hourglass_visible())

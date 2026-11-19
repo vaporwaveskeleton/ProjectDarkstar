@@ -7,6 +7,8 @@ extends Camera2D
 ## The static helpers are pure so tests can check deadzone, convergence, lookahead and the cap.
 
 @export var stats: SectorCameraStats
+## Aether velocity lead (SYS-001 §1.1a). Null = no lead. Only leads a target that has `get_lead_velocity()`.
+@export var aether_stats: SectorCameraAetherStats
 ## What to follow. If it has `get_aim_dir() -> Vector2` the camera leans toward that direction.
 @export var target: Node2D
 ## The wrapping sector (Q-T58), injected by the sector host. Null = a plain plane. With a torus the
@@ -123,7 +125,11 @@ func _current_lookahead() -> Vector2:
 	if stats == null or not is_instance_valid(target) or not target.has_method("get_aim_dir"):
 		return Vector2.ZERO
 	var aim: Vector2 = target.call("get_aim_dir")
-	return lookahead(aim, visible_size(), stats.aim_lookahead_frac)
+	var lead := lookahead(aim, visible_size(), stats.aim_lookahead_frac)
+	if aether_stats != null and target.has_method("get_lead_velocity"):
+		var vel: Vector2 = target.call("get_lead_velocity")
+		lead += velocity_lead(vel, aether_stats.velocity_lead_s, aether_stats.velocity_lead_max_px)
+	return lead
 
 
 ## The visible world size (viewport size / zoom).
@@ -133,6 +139,11 @@ func visible_size() -> Vector2:
 
 
 # --- pure helpers --------------------------------------------------------------------------------
+
+## Aether camera lead: `lead_s` seconds of velocity, capped at `max_px` (SYS-001 §1.1a ✱).
+static func velocity_lead(vel: Vector2, lead_s: float, max_px: float) -> Vector2:
+	return (vel * lead_s).limit_length(max_px)
+
 
 ## Move `focus` only as far as needed to keep `goal` within `radius` of it (circular deadzone,
 ## accepted reading Q-T57). On a torus the caller passes the goal's nearest image (Torus.delta).

@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=3]
+[gd_scene load_steps=21 format=3]
 
 [ext_resource type="Script" path="res://features/vigil/vigil.gd" id="1"]
 [ext_resource type="Script" path="res://features/vigil/vigil_input.gd" id="2"]
@@ -15,6 +15,9 @@
 [ext_resource type="Resource" path="res://data/arc_lance/arc_lance_fx.tres" id="12"]
 [ext_resource type="Script" path="res://features/composure/cockpit_flame.gd" id="13"]
 [ext_resource type="Resource" path="res://data/composure/cockpit_flame.tres" id="14"]
+[ext_resource type="Resource" path="res://data/vigil/vigil_aether_move.tres" id="15"]
+[ext_resource type="Script" path="res://features/vigil/vigil_lantern.gd" id="16"]
+[ext_resource type="Script" path="res://features/vigil/aether_vigil_rig.gd" id="17"]
 
 [sub_resource type="CircleShape2D" id="body_shape"]
 resource_local_to_scene = true
@@ -27,6 +30,7 @@ radius = 6.0
 [node name="Vigil" type="CharacterBody2D"]
 motion_mode = 1
 script = ExtResource("1")
+aether_stats = ExtResource("15")
 
 [node name="BodyShape" type="CollisionShape2D" parent="."]
 unique_name_in_owner = true
@@ -56,11 +60,12 @@ unique_name_in_owner = true
 process_physics_priority = -10
 script = ExtResource("2")
 
-[node name="VigilMotor" type="Node" parent="." node_paths=PackedStringArray("body", "input", "facing_node")]
+[node name="VigilMotor" type="Node" parent="." node_paths=PackedStringArray("body", "lantern", "input", "facing_node")]
 unique_name_in_owner = true
 script = ExtResource("3")
 body = NodePath("..")
 stats = ExtResource("4")
+lantern = NodePath("../VigilLantern")
 input = NodePath("../VigilInput")
 facing_node = NodePath("../Facing")
 
@@ -97,3 +102,11 @@ health = NodePath("../HealthComponent")
 [node name="HurtShape" type="CollisionShape2D" parent="Hurtbox"]
 unique_name_in_owner = true
 shape = SubResource("hurt_shape")
+
+[node name="VigilLantern" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("16")
+
+[node name="AetherVigilRig" type="Node2D" parent="."]
+unique_name_in_owner = true
+script = ExtResource("17")
