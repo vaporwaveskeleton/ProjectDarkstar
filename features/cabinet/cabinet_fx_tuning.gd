@@ -110,6 +110,10 @@ extends TunableResource
 @export var true_frame_frames: int = 1                    ## drawn frames ✱ PROPOSED: a Charge hit on the costume entity shows its true silhouette this long (GDD §20: silhouette only)
 @export_group("")
 
+@export_group("star spine ✱ PROPOSED (owner approval pending; not SYS-001 yet)")
+@export var spine_hold_pull: float = 0.02                 ## Starfield.pull ✱ PROPOSED: the spine stars brighten and hold below this pull (~1.1 s of the 8 s ease-in quad)
+@export var spine_pull_span: float = 0.25                 ## Starfield.pull ✱ PROPOSED: pull range over which they travel to the vertebrae
+@export_group("")
 
 # --- Hit-stop ⚙ (owner-approved 2026-11-18, SYS-001 §9) ---
 # Sim frames (physics ticks at 60 Hz). Freezes the sim only: audio, CRT, state timers and input keep running.
