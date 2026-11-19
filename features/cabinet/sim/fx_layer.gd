@@ -10,6 +10,7 @@ const DASH_RING_ON := 3.0       ## px ✱ S6 coarse rhythm: only the big silhoue
 const DASH_RING_OFF := 3.0      ## px ✱
 const DASH_SMALL_ON := 2.0      ## px ✱ S6 fine rhythm: hull outline, arrow, leader (small shapes)
 const DASH_SMALL_OFF := 1.0     ## px ✱
+const SOLID_ON_PX := 1.0e9      ## dash_path "on" length that never breaks: a solid line, still drawn on by frac
 const ARROW_HEAD_PX := 4.0      ## px ✱ S6 arrowhead barb length
 const ARROW_TIP_INSET_PX := 4.0 ## px ✱ S6 the arrow tip sits this far inside the outline, on the killer's side
 
@@ -360,6 +361,16 @@ func dash_path(pts: PackedVector2Array, frac: float, on: float = DASH_SMALL_ON, 
 	return out
 
 
+## S6: the coroner's outline is a SOLID closed 1 px line (solid = you; dashed = pointing: the arrow
+## and leader stay dashed). Dashes break a thin hull into a "T"; a closed triangle reads as a ship
+## at any facing (review round 4). Drawn on along its perimeter up to `frac`.
+func death_outline_segments(m: DeathMark, frac: float) -> Array[PackedVector2Array]:
+	var hull := death_outline(m)
+	var closed := PackedVector2Array(hull)
+	closed.append(hull[0])
+	return dash_path(closed, frac, SOLID_ON_PX, 0.0)
+
+
 ## S6: the coroner's chalk, 1 px BONE_4, no alpha. Order: the Vigil's outline draws on, then the
 ## arrow (and tracking leader), then it all holds until respawn. A small killer (a shot) also
 ## gets a ring round its silhouette, drawn on with the outline.
@@ -370,10 +381,7 @@ func _draw_death_marks() -> void:
 		var o := death_outline_frac(m)
 		var a := death_arrow_frac(m)
 		if visible_at(m.vigil_pos, ft.death_arrow_px + 12.0):
-			var hull := death_outline(m)
-			var closed := PackedVector2Array(hull)
-			closed.append(hull[0])
-			for seg in dash_path(closed, o):
+			for seg in death_outline_segments(m, o):
 				draw_line(seg[0], seg[1], col, 1.0)
 			if a > 0.0:
 				var arrow := death_arrow(m)

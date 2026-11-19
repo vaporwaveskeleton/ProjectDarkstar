@@ -281,6 +281,23 @@ func test_a_shot_gets_the_silhouette_ring_as_well_as_the_outline() -> void:
 	assert_int(world.fx.death_outline(m).size()).is_equal(4)
 
 
+func test_the_finished_outline_is_a_solid_closed_hull() -> void:
+	# Review round 4: solid = you, dashed = pointing. The drawn outline covers the whole perimeter
+	# with no gaps and closes on itself.
+	world.vigil.kill(world.vigil.pos + Vector2(80, 0), Vector2.RIGHT, 30.0)
+	var m: Variant = world.fx.death_marks[0]
+	var hull := world.fx.death_outline(m)
+	var segs: Array[PackedVector2Array] = world.fx.death_outline_segments(m, 1.0)
+	assert_int(segs.size()).is_equal(hull.size())          # one unbroken piece per hull edge
+	for i in segs.size():
+		assert_vector(segs[i][0]).is_equal(hull[i])
+		assert_vector(segs[i][1]).is_equal(hull[(i + 1) % hull.size()])
+	# Half drawn on: still unbroken pieces, ending part-way round.
+	var half: Array[PackedVector2Array] = world.fx.death_outline_segments(m, 0.5)
+	assert_int(half.size()).is_less(hull.size() + 1)
+	assert_vector(half[0][0]).is_equal(hull[0])
+
+
 func test_outline_scale_is_two_hull_sizes() -> void:
 	assert_float(fx.death_outline_scale).is_equal(2.0)
 	assert_float(fx.death_arrow_px).is_equal(30.0)
