@@ -19,6 +19,11 @@ var down := false:
 		_configure()
 ## Photosensitivity: the gutter dims without a flicker.
 var steady := false
+## −1…1 walk input: the lantern swings back against the walk and settles when it stops (✱).
+var walk_speed := 0.0
+const SWING_RAD := 0.22
+const SWING_EASE := 5.0
+var _swing := 0.0
 var flame: RuinsLamp
 var _gutter := 0.0
 var _t := 0.0
@@ -53,6 +58,9 @@ func _process(delta: float) -> void:
 		if not steady and int(_t * 14.0) % 3 == 0:
 			flame.level = maxf(0.35, flame.level - 0.1)
 		_configure()
+	_swing = lerpf(_swing, -walk_speed * SWING_RAD, clampf(delta * SWING_EASE, 0.0, 1.0))
+	var bob := sin(_t * 9.0) * 0.6 * absf(walk_speed)
+	flame.position = Vector2(0, -14).rotated(_swing) + Vector2(0, bob)
 	flame.step(delta)
 	queue_redraw()
 
@@ -61,8 +69,10 @@ func _draw() -> void:
 	# a hook on a short pole and the lantern's brass frame round the flame (flame drawn by RuinsLamp)
 	var lit := 0.25 if down else 1.0
 	var brass := Pal.VOID_4.lerp(Pal.BONE_3.lerp(Pal.GAS_3, 0.35), lit)
+	draw_set_transform(Vector2.ZERO, _swing)   # the pole leans against the walk
 	draw_line(Vector2(0, 0), Vector2(0, -6), brass, 1.0)
 	draw_arc(Vector2(0, -8), 2.0, PI * 0.1, PI * 1.9, 8, brass, 0.8)
 	draw_rect(Rect2(-3.5, -19, 7, 10), brass, false, 0.8)
 	draw_line(Vector2(-4.5, -19.5), Vector2(4.5, -19.5), brass, 1.0)
 	draw_line(Vector2(-4, -8.5), Vector2(4, -8.5), brass, 1.0)
+	draw_set_transform(Vector2.ZERO, 0.0)
