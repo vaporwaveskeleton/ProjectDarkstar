@@ -84,6 +84,28 @@ extends TunableResource
 @export var lance_dull_db: float = 0.0                    ## dB ⚙ owner-approved 2026-11-18, SYS-001 §9: lance_dull cue volume
 @export_group("")
 
+@export_group("readable death ⚙ PM-approved 2026-11-18, SYS-001 §9")
+@export var death_ring_pad_px: float = 6.0                ## px ⚙ PM-approved 2026-11-18, SYS-001 §9: dashed chalk gap beyond the killer's outermost drawn part (wider than the entity plate spacing, ~5 px)
+@export var death_big_killer_px: float = 12.0             ## px ✱ engineering (TECH-001, not a SYS-001 row): killers drawn larger than this (the entity) are tracked live by the leader
+@export var death_arrow_px: float = 30.0                  ## px ⚙ PM-approved 2026-11-18, SYS-001 §9: arrow shaft length = VigilShip.HULL_LENGTH x death_outline_scale
+@export var death_outline_scale: float = 2.0              ## x ⚙ PM-approved 2026-11-18, SYS-001 §9: the coroner outline (and arrow, tip inset, head) is this many times the hull size
+@export var death_chalk_delay_s: float = 0.5              ## s sim ⚙ PM-approved 2026-11-18, SYS-001 §9: no chalk until the Vigil's GAS death burst ring has faded (effective delay = max(this, FxLayer.ring_life(vigil_death_ring_radius)) = 0.5); applies under Reduced Motion too
+@export var death_outline_draw_s: float = 0.15            ## s sim ⚙ PM-approved 2026-11-18, SYS-001 §9: the coroner outline draws on first (full at once under Reduced Motion)
+@export var death_arrow_draw_s: float = 0.12              ## s sim ⚙ PM-approved 2026-11-18, SYS-001 §9: then the arrow draws on, then it all holds until respawn
+@export var death_edge_tick_px: float = 5.0               ## px ⚙ PM-approved 2026-11-18, SYS-001 §9: chalk tick on the view edge pointing at an off-view killer
+@export_group("")
+
+@export_group("surge afterimage ⚙ PM-approved 2026-11-18, SYS-001 §9")
+@export var ghost_count: int = 3                          ## ⚙ PM-approved 2026-11-18, SYS-001 §9: hull outlines trailing a Surgelight burst
+@export var ghost_spacing_ticks: int = 3                  ## sim ticks ⚙ PM-approved 2026-11-18, SYS-001 §9: base spacing; ghost k sits spacing*k*(k+1)/2 ticks back (3, 9, 18)
+@export var ghost_hold_s: float = 0.1                     ## s sim ⚙ PM-approved 2026-11-18, SYS-001 §9: ghosts linger this long after the surge ends
+@export var ghost_bracket_frac_1: float = 0.6             ## x edge length ⚙ PM-approved 2026-11-18, SYS-001 §9: corner bracket length, nearest ghost (capped at 0.4 on the two nose edges so no edge closes)
+@export var ghost_bracket_frac_2: float = 0.32            ## x edge length ⚙ PM-approved 2026-11-18, SYS-001 §9
+@export var ghost_bracket_frac_3: float = 0.2             ## x edge length ⚙ PM-approved 2026-11-18, SYS-001 §9: farthest ghost
+@export var wake_dots: int = 6                            ## ⚙ PM-approved 2026-11-18, SYS-001 §9: 1x1 dots trailing a thrusting Vigil
+@export var wake_spacing_ticks: int = 2                   ## sim ticks ⚙ PM-approved 2026-11-18, SYS-001 §9: ticks back between wake dots
+@export_group("")
+
 # --- Hit-stop ⚙ (owner-approved 2026-11-18, SYS-001 §9) ---
 # Sim frames (physics ticks at 60 Hz). Freezes the sim only: audio, CRT, state timers and input keep running.
 @export var hitstop_charge_hits_entity_frames: int = 3    ## frames ⚙ owner-approved 2026-11-18, SYS-001 §9 (_hit_entity)
