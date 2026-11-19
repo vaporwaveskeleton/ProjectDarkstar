@@ -171,7 +171,7 @@ Not covered yet: Composure, the full Ledger Compass and the Litany Ring are not 
 - Q-T29: detonation shard count (3-5 vs 4-6).
 - Q-T30: Act 0 Acolyte engagement range value.
 - Q-T33: spawn distance, scanner and other Act 0 values.
-- Q-T34: attract pages hidden at 200 % text until they move to the bezel.
+- ~~Q-T34: attract pages hidden at 200 % text until they move to the bezel.~~ Resolved 2026-11-19 (TECH-001 §11.1).
 - Q-T35..Q-T43: audio and doc-consistency questions raised by PR #8.
 
 ### M2 — Vertical slice (target 2027-04 ✱)

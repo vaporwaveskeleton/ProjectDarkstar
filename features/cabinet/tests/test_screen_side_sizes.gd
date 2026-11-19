@@ -17,8 +17,8 @@ const SCREEN_SIDE := [
 	"res://features/cabinet/cabinet_messages.gd", "res://features/cabinet/arcade_screen.gd",
 	"res://features/cabinet/hole_fit.gd", "res://scenes/attract/attract_backdrop.gd",
 	"res://scenes/attract/power_on_test.gd", "res://scenes/attract/attract_pages.gd",
-	"res://scenes/attract/attract_logo.gd", "res://scenes/attract/attract_crt.gd",
-	"res://shaders/crt.gdshader", "res://shaders/crt_attract.gdshader", "res://shaders/crt_common.gdshaderinc",
+	"res://scenes/attract/attract_logo.gd", "res://features/cabinet/arcade_button.gd", "res://features/cabinet/control_panel.gd",
+	"res://shaders/crt.gdshader", "res://shaders/crt_common.gdshaderinc",
 ]
 
 
@@ -92,42 +92,46 @@ func _attract() -> Node:
 	return scene
 
 
-## The attract screen is the hole, not the window: backdrop, strip, menu, power-on and CRT are
-## children of the clipped hole; the bezel and the coin door are outside it.
-func test_attract_screen_is_confined_to_the_hole() -> void:
+## The attract screen is the arcade screen, not the window (Q-T80): backdrop, strip, play view, cards and power-on
+## are on the ArcadeScreen's SubViewport under its CRT; the bezel, the control panel and the coin door are outside it.
+func test_attract_screen_is_drawn_in_the_arcade_viewport() -> void:
 	var spec := load(SPEC) as CabinetScreenSpec
 	var scene := _attract()
 	await get_tree().process_frame
-	var hole := scene.get_node("%Hole") as Control
-	assert_object(Rect2(hole.position, hole.size)).is_equal(ScreenFit.hole_rect(spec.grid))
-	assert_bool(hole.clip_contents).is_true()
-	for n in ["Backdrop", "%StripHud", "%Play", "%PowerOn", "Crt"]:
-		var c := (scene.find_child(n.trim_prefix("%"), true, false)) as Control
-		assert_bool(hole.is_ancestor_of(c)).override_failure_message("%s should be inside the hole" % n).is_true()
-		assert_bool(Rect2(Vector2.ZERO, hole.size).encloses(Rect2(c.position, c.size)) or n == "%Play") \
-			.override_failure_message("%s leaves the hole" % n).is_true()
-	for n in ["Frame", "CoinSlot"]:
-		assert_bool(hole.is_ancestor_of(scene.find_child(n, true, false))).override_failure_message("%s must be outside the hole" % n).is_false()
+	var screen := scene.get_node("%ArcadeScreen") as ArcadeScreen
+	var vp := scene.get_node("%ScreenViewport") as SubViewport
+	assert_object(vp.size).is_equal(spec.grid)
+	assert_object(Rect2(screen.position, screen.size)).is_equal(ScreenFit.hole_rect(spec.grid))
+	assert_str(screen.crt_material().shader.resource_path).is_equal("res://shaders/crt.gdshader")
+	assert_float(float(screen.crt_material().get_shader_parameter(&"rows"))).is_equal(float(spec.grid.y))
+	assert_bool(screen.get_children().any(func(n: Node) -> bool: return n is VideoRegisters)).is_true()
+	for n in ["Backdrop", "StripHud", "Play", "PowerOn", "Logo", "Pages"]:
+		var c := scene.find_child(n, true, false)
+		assert_bool(vp.is_ancestor_of(c)).override_failure_message("%s should be on the tube" % n).is_true()
+	for n in ["Frame", "CoinSlot", "ControlPanel", "NewVigil", "Settings", "Quit"]:
+		assert_bool(vp.is_ancestor_of(scene.find_child(n, true, false))).override_failure_message("%s must be outside the tube" % n).is_false()
 	var play := scene.get_node("%Play") as Control
 	assert_object(Rect2(play.position, play.size)).is_equal(spec.play_rect())
-	var crt := scene.find_child("Crt", true, false) as ColorRect
-	assert_float(float((crt.material as ShaderMaterial).get_shader_parameter(&"rows"))).is_equal(float(spec.grid.y))
 	var coin := scene.find_child("CoinSlot", true, false) as Control
-	assert_bool(coin.get_rect().intersects(Rect2(hole.position, hole.size))).is_false()
+	assert_bool(coin.get_rect().intersects(ScreenFit.hole_rect(spec.grid))).is_false()
+	# no focusable Control may live in the screen's viewport: its focus is separate from the root's
+	var stack: Array[Node] = [vp]
+	while not stack.is_empty():
+		var n: Node = stack.pop_back()
+		if n is Control:
+			assert_int((n as Control).focus_mode).override_failure_message("%s is focusable" % n.name).is_equal(Control.FOCUS_NONE)
+		stack.append_array(n.get_children())
 	scene.queue_free()
 
 
-func test_attract_menu_fits_the_play_view_at_100_percent_text() -> void:
+func test_attract_cards_fit_the_play_view_at_100_percent_text() -> void:
 	var spec := load(SPEC) as CabinetScreenSpec
 	var scene := _attract()
 	await get_tree().process_frame
 	await get_tree().process_frame
 	var play := scene.get_node("%Play") as Control
-	var bounds := Rect2(Vector2.ZERO, play.size)
-	for n in ["Logo", "Pages", "NewVigil", "Settings", "Quit"]:
+	for n in ["Logo", "Pages"]:
 		var c := scene.find_child(n, true, false) as Control
-		var r := Rect2(c.global_position - play.global_position, c.size) if play.get_global_transform().get_scale().is_equal_approx(Vector2.ONE) \
-			else play.get_global_transform().affine_inverse() * c.get_global_rect()
-		assert_bool(bounds.encloses(r)).override_failure_message("%s %s outside the play view %s" % [n, r, bounds]).is_true()
+		assert_bool(play.get_global_rect().encloses(c.get_global_rect())).override_failure_message("%s %s outside the play view %s" % [n, c.get_global_rect(), play.get_global_rect()]).is_true()
 	assert_float(float(spec.grid.x)).is_equal(256.0)
 	scene.queue_free()

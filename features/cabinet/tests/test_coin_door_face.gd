@@ -16,6 +16,7 @@ const KEYS := [
 	"recess_width", "tube_corner_radius", "tube_glass", "tube_reflection", "tube_dust", "tube_bloom", "tube_edge_shadow", "tube_max_shift",
 	"tmold_width", "bolt_radius", "marquee_lettering", "marquee_stroke", "marquee_tracking", "marquee_unevenness", "print_dot_gain",
 	"price_cap", "price_stroke", "price_tracking", "glass_band", "glass_screen_reflection",
+	"glass_band_lift", "glass_smear_haze", "glass_smear_idle", "print_uv_fade", "print_uv_edge", "print_grime", "marquee_hot", "marquee_shadow_depth", "marquee_spill", "room_glow",
 ]
 
 

@@ -39,6 +39,9 @@ func _ready() -> void:
 	_mat.set_shader_parameter(&"dust", surface.glass_dust)
 	_mat.set_shader_parameter(&"smudges", surface.glass_smudge)
 	_mat.set_shader_parameter(&"scratch", surface.glass_scratch)
+	_mat.set_shader_parameter(&"band_lift", surface.glass_band_lift)
+	_mat.set_shader_parameter(&"smear_haze", surface.glass_smear_haze)
+	_mat.set_shader_parameter(&"smear_idle", surface.glass_smear_idle)
 	if rig != null:
 		rig.refitted.connect(set_area)
 		set_area(rig.bezel_rect())

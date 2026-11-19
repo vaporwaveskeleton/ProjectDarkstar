@@ -91,6 +91,7 @@ func _ready() -> void:
 	_glass.peel = peel
 	_tube = BezelAssembly.add_tube(self)
 	BezelAssembly.add_light(self, light_source)
+	_parts.append(ControlPanel.add_decorative(self))   # after the glass, like the attract panel; decoration only
 	_left.peel = peel
 	_right.peel = peel
 	_left.crack = crack

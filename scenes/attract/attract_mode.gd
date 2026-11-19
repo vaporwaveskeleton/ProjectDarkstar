@@ -1,17 +1,19 @@
 extends Screen
-## Attract mode — the cabinet's title screen (GDD §10; WARP-001 W0-01/W0-03; owner request
-## 2026-11-18, TECH-001 §11.2). On a cold launch the Cabinet powers on and self-tests first
-## (PowerOnTest). Then the marquee, the instruction cards (AttractPages) and the coin door
-## (CoinSlot) on the bezel: New Vigil stays greyed out until a credit is in. Emits intent only:
-## routing goes through SceneRouter, settings through the local ScreenStack. Left alone with
-## no credit for DEMO_IDLE seconds it plays its own demo.
+## Attract mode — the cabinet's title screen (GDD §10; WARP-001 W0-01/W0-03; owner request 2026-11-18,
+## TECH-001 §11.2). On a cold launch the Cabinet powers on and self-tests first (PowerOnTest). The screen
+## (backdrop, marquee, instruction cards, power-on) is drawn into the arcade screen's own SubViewport, like
+## the game's (Q-T80). The menu is physical (Q-T34): NEW VIGIL, SETTINGS and QUIT are pushbuttons on the
+## control panel under the screen (ArcadeButton), and the coin door (CoinSlot) is on the bezel; all four are
+## one focus domain. New Vigil stays dark until a credit is in. Emits intent only: routing goes through
+## SceneRouter, settings through the local ScreenStack. Left alone with no credit for DEMO_IDLE seconds it
+## plays its own demo.
 
 const SETTINGS_SCENE := preload("res://scenes/settings/settings_screen.tscn")
 const DEMO_IDLE := 30.0          ## s — WARP-001 W0-03 "30 s idle on the title screen"
 
-@onready var _new_vigil: Button = %NewVigil
-@onready var _settings: Button = %Settings
-@onready var _quit: Button = %Quit
+@onready var _new_vigil: ArcadeButton = %NewVigil
+@onready var _settings: ArcadeButton = %Settings
+@onready var _quit: ArcadeButton = %Quit
 @onready var _overlays: ScreenStack = %Overlays
 @onready var _omen: Label = %Omen
 @onready var _logo: AttractLogo = %Logo
@@ -23,6 +25,7 @@ const DEMO_IDLE := 30.0          ## s — WARP-001 W0-03 "30 s idle on the title
 
 var idle := 0.0
 var demo_enabled := true         ## tests turn this off
+var continue_stage := -1         ## CONTINUE offer from GAME OVER (Q-T104): 0-based stage, -1 = none; lasts until the demo
 var _profile: Dictionary = {}
 
 
@@ -42,25 +45,20 @@ func _ready() -> void:
 	_coin.credit_inserted.connect(_on_credit_inserted)
 	_tracker.input_mode_changed.connect(_on_input_mode_changed)
 	_power.finished.connect(_on_power_on_finished)
+	_new_vigil.blinks = true           # the start lamp flashes once a credit is in (steady with photosensitivity)
 	_set_new_vigil_ready(false)
 	default_focus = _coin
 	_wire_focus()
-	_apply_text_scale_layout()
-	SettingsService.setting_changed.connect(func(key: StringName, _v: Variant) -> void:
-		if key == &"text_scale":
-			_apply_text_scale_layout())
+	_pages.continue_stage = continue_stage
 	_coin.hint_armed = true
 	super()
 
 
-## The 240-class screen has no room for the instruction cards beside 200 % buttons (the text is never
-## shrunk): at 200 % the cards give way, the marquee and the menu stay.
-func _apply_text_scale_layout() -> void:
-	_pages.visible = float(SettingsService.get_value(&"text_scale")) < 1.5
-
-
 ## Boot routes the first attract of a launch with {"power_on": true}.
 func on_route_entered(params: Dictionary) -> void:
+	continue_stage = int(params.get("continue_stage", -1))
+	if is_node_ready():
+		_pages.continue_stage = continue_stage
 	if bool(params.get("power_on", false)):
 		power_on()
 
@@ -86,10 +84,16 @@ func _process(delta: float) -> void:
 	idle += delta
 	if idle >= DEMO_IDLE:
 		idle = 0.0
+		clear_continue_offer()          # the offer ends where the attract cycle reaches its demo
 		SceneRouter.go_to(&"cabinet", {"demo": true})
 
 
 func _input(event: InputEvent) -> void:
+	# The power-on test lives inside the arcade screen's viewport, which the bezel's controls never see: while it
+	# runs, any key, button or click skips it and is consumed here, before the coin door or a pushbutton can act on it.
+	if _power.running and _power.handle_input(event):
+		get_viewport().set_input_as_handled()
+		return
 	if event is InputEventKey or event is InputEventMouseButton or event is InputEventJoypadButton \
 			or (event is InputEventMouseMotion and (event as InputEventMouseMotion).relative.length() > 0.0):
 		idle = 0.0
@@ -114,20 +118,24 @@ func _on_credit_inserted() -> void:
 	_new_vigil.grab_focus()
 
 
-## New Vigil keeps its place in the menu; without a credit it is greyed out and skipped by focus.
+## New Vigil keeps its place on the panel; without a credit its lamp is dark, it is disabled and skipped by focus.
 func _set_new_vigil_ready(armed: bool) -> void:
 	_new_vigil.disabled = not armed
+	_new_vigil.lamp_on = armed
 	_new_vigil.focus_mode = Control.FOCUS_ALL if armed else Control.FOCUS_NONE
 	_logo.has_credit = armed
 
 
-## Vertical loop through what can act: [New Vigil] → Settings → Quit → coin door → wrap.
-## The coin door sits on the bezel to the right, so right from any button reaches it too.
+## One focus domain: the pushbuttons on the control panel and the coin door.
+## Up/down loop [New Vigil] → Settings → Quit → coin door → wrap; left/right walk the row of pushbuttons
+## (as they sit on the panel) and leave it for the coin door, which is to the right of the panel.
 func _wire_focus() -> void:
-	var order: Array[Control] = []
+	var row: Array[Control] = []
 	if _new_vigil.focus_mode != Control.FOCUS_NONE:
-		order.append(_new_vigil)
-	order.append_array([_settings, _quit, _coin])
+		row.append(_new_vigil)
+	row.append_array([_settings, _quit])
+	var order: Array[Control] = row.duplicate()
+	order.append(_coin)
 	for i in order.size():
 		var c := order[i]
 		var prev := order[(i - 1 + order.size()) % order.size()]
@@ -136,9 +144,12 @@ func _wire_focus() -> void:
 		c.focus_neighbor_bottom = c.get_path_to(next)
 		c.focus_previous = c.get_path_to(prev)
 		c.focus_next = c.get_path_to(next)
-		if c != _coin:
-			c.focus_neighbor_right = c.get_path_to(_coin)
-	_coin.focus_neighbor_left = _coin.get_path_to(order[0])
+	for i in row.size():
+		var c := row[i]
+		c.focus_neighbor_left = c.get_path_to(row[i - 1] if i > 0 else _coin)
+		c.focus_neighbor_right = c.get_path_to(row[i + 1] if i < row.size() - 1 else _coin)
+	_coin.focus_neighbor_left = _coin.get_path_to(row.back())
+	_coin.focus_neighbor_right = _coin.get_path_to(row[0])
 
 
 func _on_new_vigil() -> void:
@@ -146,10 +157,17 @@ func _on_new_vigil() -> void:
 	if SceneRouter.is_busy or not _coin.has_credit():
 		return
 	set_buttons_disabled(true)
-	if SceneRouter.go_to(&"cabinet"):
+	var params: Dictionary = {"continue_stage": continue_stage} if continue_stage >= 0 else {}
+	if SceneRouter.go_to(&"cabinet", params):
 		_coin.spend()
 	else:
 		set_buttons_disabled(false)
+
+
+func clear_continue_offer() -> void:
+	continue_stage = -1
+	if is_node_ready():
+		_pages.continue_stage = -1
 
 
 func open_settings() -> Screen:
@@ -157,7 +175,7 @@ func open_settings() -> Screen:
 
 
 func set_buttons_disabled(value: bool) -> void:
-	for b: Button in [_new_vigil, _settings, _quit]:
+	for b: ArcadeButton in [_new_vigil, _settings, _quit]:
 		b.disabled = value
 
 

@@ -1,11 +1,11 @@
-[gd_scene load_steps=20 format=3]
+[gd_scene load_steps=22 format=3]
 
 [ext_resource type="Script" path="res://scenes/attract/attract_mode.gd" id="1"]
 [ext_resource type="Script" path="res://core/ui/screen_stack.gd" id="2"]
 [ext_resource type="Script" path="res://core/ui/input_mode_tracker.gd" id="3"]
 [ext_resource type="Script" path="res://scenes/attract/attract_backdrop.gd" id="4"]
 [ext_resource type="Script" path="res://scenes/attract/attract_logo.gd" id="5"]
-[ext_resource type="Shader" path="res://shaders/crt_attract.gdshader" id="6"]
+[ext_resource type="Shader" path="res://shaders/crt.gdshader" id="6"]
 [ext_resource type="Script" path="res://scenes/attract/attract_frame.gd" id="7"]
 [ext_resource type="Script" path="res://features/cabinet/coin_slot.gd" id="8"]
 [ext_resource type="Script" path="res://scenes/attract/attract_pages.gd" id="9"]
@@ -15,13 +15,16 @@
 [ext_resource type="Script" path="res://features/cabinet/screen_rig.gd" id="13"]
 [ext_resource type="Resource" path="res://data/cabinet/cabinet_screen.tres" id="14"]
 [ext_resource type="Script" path="res://features/cabinet/hole_fit.gd" id="15"]
-[ext_resource type="Script" path="res://scenes/attract/attract_crt.gd" id="16"]
+[ext_resource type="Script" path="res://features/cabinet/arcade_screen.gd" id="16"]
 [ext_resource type="Script" path="res://features/cabinet/cabinet_screen_hud.gd" id="17"]
 [ext_resource type="Script" path="res://features/cabinet/bezel_field.gd" id="18"]
 [ext_resource type="Script" path="res://features/cabinet/video_registers.gd" id="vreg_script"]
 [ext_resource type="Resource" path="res://data/cabinet/screen_registers.tres" id="vreg_data"]
+[ext_resource type="Script" path="res://features/cabinet/control_panel.gd" id="19"]
+[ext_resource type="Script" path="res://features/cabinet/arcade_button.gd" id="20"]
 
 [sub_resource type="ShaderMaterial" id="crt_mat"]
+resource_local_to_scene = true
 shader = ExtResource("6")
 shader_parameter/costume = 1.0
 shader_parameter/scanline_strength = 0.22
@@ -53,16 +56,31 @@ mouse_filter = 2
 script = ExtResource("13")
 spec = ExtResource("14")
 
-[node name="Hole" type="Control" parent="Rig"]
+[node name="ArcadeScreen" type="SubViewportContainer" parent="Rig"]
 unique_name_in_owner = true
-layout_mode = 3
-anchors_preset = 0
-mouse_filter = 2
-script = ExtResource("15")
+material = SubResource("crt_mat")
+texture_filter = 1
+layout_mode = 0
+offset_right = 256.0
+offset_bottom = 304.0
+script = ExtResource("16")
 spec = ExtResource("14")
 
-[node name="Backdrop" type="Control" parent="Rig/Hole"]
-layout_mode = 1
+[node name="Registers" type="Node" parent="Rig/ArcadeScreen"]
+unique_name_in_owner = true
+script = ExtResource("vreg_script")
+spec = ExtResource("vreg_data")
+
+[node name="ScreenViewport" type="SubViewport" parent="Rig/ArcadeScreen"]
+unique_name_in_owner = true
+snap_2d_transforms_to_pixel = true
+snap_2d_vertices_to_pixel = true
+canvas_item_default_texture_filter = 0
+size = Vector2i(256, 304)
+render_target_update_mode = 4
+
+[node name="Backdrop" type="Control" parent="Rig/ArcadeScreen/ScreenViewport"]
+layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -71,9 +89,9 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("4")
 
-[node name="StripHud" type="Control" parent="Rig/Hole"]
+[node name="StripHud" type="Control" parent="Rig/ArcadeScreen/ScreenViewport"]
 unique_name_in_owner = true
-layout_mode = 1
+layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -83,7 +101,7 @@ mouse_filter = 2
 script = ExtResource("17")
 attract = true
 
-[node name="Play" type="Control" parent="Rig/Hole"]
+[node name="Play" type="Control" parent="Rig/ArcadeScreen/ScreenViewport"]
 unique_name_in_owner = true
 layout_mode = 3
 anchors_preset = 0
@@ -92,7 +110,7 @@ script = ExtResource("15")
 spec = ExtResource("14")
 play_view = true
 
-[node name="Center" type="CenterContainer" parent="Rig/Hole/Play"]
+[node name="Center" type="CenterContainer" parent="Rig/ArcadeScreen/ScreenViewport/Play"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -101,20 +119,20 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="Menu" type="VBoxContainer" parent="Rig/Hole/Play/Center"]
+[node name="Menu" type="VBoxContainer" parent="Rig/ArcadeScreen/ScreenViewport/Play/Center"]
 layout_mode = 2
-theme_override_constants/separation = 1
+theme_override_constants/separation = 6
 custom_minimum_size = Vector2(160, 0)
 mouse_filter = 2
 
-[node name="Logo" type="Control" parent="Rig/Hole/Play/Center/Menu"]
+[node name="Logo" type="Control" parent="Rig/ArcadeScreen/ScreenViewport/Play/Center/Menu"]
 unique_name_in_owner = true
 layout_mode = 2
 mouse_filter = 2
 script = ExtResource("5")
 spec = ExtResource("14")
 
-[node name="Pages" type="Control" parent="Rig/Hole/Play/Center/Menu"]
+[node name="Pages" type="Control" parent="Rig/ArcadeScreen/ScreenViewport/Play/Center/Menu"]
 unique_name_in_owner = true
 layout_mode = 2
 mouse_filter = 2
@@ -122,44 +140,20 @@ script = ExtResource("9")
 tuning = ExtResource("11")
 scores = ExtResource("12")
 
-[node name="Omen" type="Label" parent="Rig/Hole/Play/Center/Menu"]
+[node name="Omen" type="Label" parent="Rig/ArcadeScreen/ScreenViewport/Play/Center/Menu"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
 theme_type_variation = &"HintLabel"
+custom_minimum_size = Vector2(232, 0)
+autowrap_mode = 3
 text = "ATTRACT_FIRST_SKY_DARK"
 horizontal_alignment = 1
 
-[node name="NewVigil" type="Button" parent="Rig/Hole/Play/Center/Menu"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 4
-custom_minimum_size = Vector2(160, 0)
-text = "MENU_NEW_VIGIL"
-
-[node name="Gap" type="Control" parent="Rig/Hole/Play/Center/Menu"]
-layout_mode = 2
-custom_minimum_size = Vector2(0, 8)
-mouse_filter = 2
-
-[node name="Settings" type="Button" parent="Rig/Hole/Play/Center/Menu"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 4
-custom_minimum_size = Vector2(128, 0)
-text = "MENU_SETTINGS"
-
-[node name="Quit" type="Button" parent="Rig/Hole/Play/Center/Menu"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 4
-custom_minimum_size = Vector2(128, 0)
-text = "MENU_QUIT"
-
-[node name="PowerOn" type="Control" parent="Rig/Hole"]
+[node name="PowerOn" type="Control" parent="Rig/ArcadeScreen/ScreenViewport"]
 unique_name_in_owner = true
 visible = false
-layout_mode = 1
+layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -169,23 +163,7 @@ mouse_filter = 2
 script = ExtResource("10")
 tuning = ExtResource("11")
 
-[node name="Crt" type="ColorRect" parent="Rig/Hole"]
-material = SubResource("crt_mat")
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-script = ExtResource("16")
-spec = ExtResource("14")
-
-[node name="Registers" type="Node" parent="Rig/Hole/Crt"]
-script = ExtResource("vreg_script")
-spec = ExtResource("vreg_data")
-
-[node name="Frame" type="Control" parent="Rig"]
+[node name="Frame" type="Control" parent="Rig" node_paths=PackedStringArray("light_source")]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
@@ -195,6 +173,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("7")
+light_source = NodePath("../ArcadeScreen/ScreenViewport")
 
 [node name="Field" type="Control" parent="Rig/Frame" node_paths=PackedStringArray("rig")]
 layout_mode = 3
@@ -202,6 +181,45 @@ anchors_preset = 0
 mouse_filter = 2
 script = ExtResource("18")
 rig = NodePath("../..")
+
+[node name="ControlPanel" type="Control" parent="Rig"]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 0
+mouse_filter = 2
+script = ExtResource("19")
+
+[node name="NewVigil" type="BaseButton" parent="Rig/ControlPanel"]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 0
+focus_mode = 2
+script = ExtResource("20")
+kind = 0
+slot = 0
+label_key = "MENU_NEW_VIGIL"
+
+[node name="Settings" type="BaseButton" parent="Rig/ControlPanel"]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 0
+focus_mode = 2
+script = ExtResource("20")
+kind = 1
+slot = 1
+label_key = "MENU_SETTINGS"
+variant = 1.0
+
+[node name="Quit" type="BaseButton" parent="Rig/ControlPanel"]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 0
+focus_mode = 2
+script = ExtResource("20")
+kind = 1
+slot = 2
+label_key = "MENU_QUIT"
+variant = 2.0
 
 [node name="CoinSlot" type="Control" parent="Rig"]
 unique_name_in_owner = true

@@ -119,3 +119,22 @@ static func sheet_x() -> Vector2:
 static func marquee() -> Rect2:
 	var h := hole()
 	return Rect2(h.position.x - 4.0, MARQUEE_Y, h.size.x + 8.0, MARQUEE_H)
+
+
+# --- The control panel (Q-T34) ----------------------------------------------------------------------
+## The strip under the screen, across the opening's width: the 28 reference units below the hole (less the
+## key-black tube-mask edge), the cabinet's control-panel lip. The attract menu's pushbuttons sit here, on
+## the print, never over the tube.
+const PANEL_SLOT_X: Array[float] = [56.0, 148.0, 208.0]       ## ✱ art placement: slot centres, panel-local x
+const PANEL_SLOT_W: Array[float] = [36.0, 32.0, 32.0]         ## each slot's width: the button, its ring and its printed label
+
+
+static func control_panel() -> Rect2:
+	var h := hole()
+	return Rect2(h.position.x, h.end.y + EDGE, h.size.x, float(ScreenFit.REF.y) - h.end.y - EDGE)
+
+
+## Slot `i` (0 start, 1 settings, 2 quit) in rig units: full height of the panel, centred on its x.
+static func panel_slot(i: int) -> Rect2:
+	var p := control_panel()
+	return Rect2(p.position.x + PANEL_SLOT_X[i] - PANEL_SLOT_W[i] * 0.5, p.position.y, PANEL_SLOT_W[i], p.size.y)

@@ -26,6 +26,7 @@ func _ready() -> void:
 	var sx := CabinetBezel.sheet_x()
 	_mat.set_shader_parameter(&"sheet_x", sx)
 	_mat.set_shader_parameter(&"trim", surface.tmold_width)
+	_mat.set_shader_parameter(&"room_glow", surface.room_glow)
 	if rig != null:
 		rig.refitted.connect(set_area)
 		set_area(rig.bezel_rect())

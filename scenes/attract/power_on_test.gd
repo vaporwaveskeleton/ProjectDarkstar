@@ -86,14 +86,17 @@ func _finish() -> void:
 	finished.emit()
 
 
-func _input(event: InputEvent) -> void:
+## The attract screen feeds every input event here while the test runs (the test lives inside the arcade
+## screen's viewport, which never sees the bezel's events). Returns true when the event is consumed: anything
+## but motion. A press skips the test.
+func handle_input(event: InputEvent) -> bool:
 	if not running:
-		return
+		return false
 	if event is InputEventMouseMotion or event is InputEventJoypadMotion:
-		return
-	get_viewport().set_input_as_handled()
+		return false
 	if event.is_pressed() and not event.is_echo():
 		skip()
+	return true
 
 
 func _draw() -> void:
