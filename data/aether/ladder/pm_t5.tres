@@ -61,3 +61,4 @@ subtraction_amount = 0.5
 black_holes = true
 sphere_crack = 0.3
 base_drain = 0.15
+missing = 0.85

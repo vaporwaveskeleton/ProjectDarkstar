@@ -36,11 +36,11 @@ func test_focus_loop_reaches_every_button_and_wraps() -> void:
 		seen.append(_focus().name)
 		runner.simulate_action_pressed("ui_down")
 		await runner.await_input_processed()
-	assert_array(seen).is_equal(["CoinSlot", "Settings", "Quit"])
+	assert_array(seen).is_equal(["CoinSlot", "Settings", "Power"])
 	assert_str(_focus().name).is_equal("CoinSlot")
 	runner.simulate_action_pressed("ui_up")
 	await runner.await_input_processed()
-	assert_str(_focus().name).is_equal("Quit")
+	assert_str(_focus().name).is_equal("Power")
 
 
 func test_settings_opens_modal_and_ui_cancel_restores_focus() -> void:
@@ -84,13 +84,15 @@ func test_everything_inside_safe_area_at_200_percent_text() -> void:
 	# the pushbuttons and the coin door are on the bezel, in the window, and the buttons are inside the control panel
 	var to_rig: Transform2D = rig.get_global_transform().affine_inverse()
 	var panel := CabinetBezel.control_panel()
-	for name in ["NewVigil", "Settings", "Quit"]:
+	for name in ["NewVigil", "Settings"]:
 		var c: Control = runner.find_child(name)
 		var r: Rect2 = to_rig * c.get_global_rect()
 		assert_bool(panel.grow(0.01).encloses(r)).override_failure_message("%s outside the control panel %s: %s" % [name, panel, r]).is_true()
 	var coin: Control = runner.find_child("CoinSlot")
 	var coin_rect: Rect2 = to_rig * coin.get_global_rect()
 	assert_bool(view.encloses(coin_rect)).override_failure_message("coin door outside %s: %s" % [view, coin_rect]).is_true()
+	var power_rect: Rect2 = to_rig * (runner.find_child("Power") as Control).get_global_rect()
+	assert_bool(view.encloses(power_rect)).override_failure_message("power rocker outside %s: %s" % [view, power_rect]).is_true()
 	SettingsService.set_value(&"text_scale", 1.0)
 
 
@@ -111,11 +113,12 @@ func test_settings_panel_inside_safe_area_at_200_percent_text() -> void:
 func test_printed_labels_are_never_a_raw_key() -> void:
 	var runner := scene_runner(SCENE)
 	await runner.simulate_frames(2)
-	for name in ["NewVigil", "Settings", "Quit"]:
-		var c := runner.find_child(name) as ArcadeButton
-		var shown := c.label_text()
+	for name in ["NewVigil", "Settings", "Power"]:
+		var c: Control = runner.find_child(name)
+		var shown: String = c.call("label_text")
+		var key: String = c.get("label_key")
 		assert_str(shown).is_not_empty()
-		assert_str(shown).is_not_equal(c.label_key)
+		assert_str(shown).is_not_equal(key)
 		assert_bool(RegEx.create_from_string("^[A-Z][A-Z0-9_]+_[A-Z0-9_]+$").search(shown) == null).override_failure_message("%s prints raw key %s" % [name, shown]).is_true()
 
 
@@ -140,7 +143,7 @@ func test_focus_walks_left_and_right_between_the_buttons_and_the_coin_door() -> 
 		seen.append(_focus().name)
 		runner.simulate_action_pressed("ui_right")
 		await runner.await_input_processed()
-	assert_array(seen).is_equal(["NewVigil", "Settings", "Quit", "CoinSlot"])
+	assert_array(seen).is_equal(["NewVigil", "Settings", "Power", "CoinSlot"])
 	assert_str(_focus().name).is_equal("NewVigil")
 	runner.simulate_action_pressed("ui_left")
 	await runner.await_input_processed()
@@ -232,6 +235,36 @@ func test_the_continue_offer_shows_with_the_param() -> void:
 	await runner.simulate_frames(2)
 
 
+func test_a_relaunch_offers_continue_from_the_saved_stage() -> void:
+	var saved := SaveService.backend
+	SaveService.set_backend(MemorySaveBackend.new())
+	SaveService.save_slot(&"profile", {CabinetGame.KEY_STAGE_REACHED: 1}, &"cabinet_tape")
+	var runner := scene_runner(SCENE)
+	await runner.simulate_frames(2)
+	var want := CabinetGame.saved_continue_stage({CabinetGame.KEY_STAGE_REACHED: 1}, CabinetStageRoster.default_size())
+	assert_int(want).is_equal(1)              # the default shift has at least two stages
+	runner.scene().call("on_route_entered", {"power_on": true})
+	assert_int(int(runner.scene().get("continue_stage"))).is_equal(want)
+	assert_int(int(runner.scene().get("shift_total"))).is_equal(-1)
+	# a route param wins over the save; a non-boot route without the param offers nothing
+	runner.scene().call("on_route_entered", {"continue_stage": 0, "power_on": true})
+	assert_int(int(runner.scene().get("continue_stage"))).is_equal(0)
+	runner.scene().call("on_route_entered", {})
+	assert_int(int(runner.scene().get("continue_stage"))).is_equal(-1)
+	SaveService.set_backend(saved)
+
+
+func test_a_relaunch_after_act0_complete_offers_nothing() -> void:
+	var saved := SaveService.backend
+	SaveService.set_backend(MemorySaveBackend.new())
+	SaveService.save_slot(&"profile", {CabinetGame.KEY_STAGE_REACHED: 1, "act0_complete": true}, &"cabinet_tape")
+	var runner := scene_runner(SCENE)
+	await runner.simulate_frames(2)
+	runner.scene().call("on_route_entered", {"power_on": true})
+	assert_int(int(runner.scene().get("continue_stage"))).is_equal(-1)
+	SaveService.set_backend(saved)
+
+
 func test_no_param_means_no_offer_and_a_fresh_start() -> void:
 	var h := _with_param_host()
 	var runner := scene_runner(SCENE)
@@ -281,3 +314,197 @@ func test_the_offer_clears_when_the_attract_reaches_its_demo() -> void:
 	SceneRouter.unregister_host(h)
 	SceneRouter.is_busy = false
 	host = FakeRouteHost.install(self)
+
+
+# --- shift total handed back with the CONTINUE offer (PM banking ruling; never saved) ----------------------
+
+func test_start_passes_the_shift_total_back_with_the_continue_stage() -> void:
+	var h := _with_param_host()
+	var runner := scene_runner(SCENE)
+	await runner.simulate_frames(2)
+	runner.scene().call("on_route_entered", {"continue_stage": 2, "shift_total": 4200})
+	_credit(runner)
+	await runner.simulate_frames(2)
+	(runner.find_child("NewVigil") as ArcadeButton).pressed.emit()
+	await runner.simulate_frames(5)
+	assert_int(int(h.params[0]["continue_stage"])).is_equal(2)
+	assert_int(int(h.params[0]["shift_total"])).is_equal(4200)
+	SceneRouter.unregister_host(h)
+	SceneRouter.is_busy = false
+	host = FakeRouteHost.install(self)
+
+
+func test_the_shift_total_is_omitted_when_it_was_not_received() -> void:
+	var h := _with_param_host()
+	var runner := scene_runner(SCENE)
+	await runner.simulate_frames(2)
+	runner.scene().call("on_route_entered", {"continue_stage": 1})
+	_credit(runner)
+	await runner.simulate_frames(2)
+	(runner.find_child("NewVigil") as ArcadeButton).pressed.emit()
+	await runner.simulate_frames(5)
+	assert_int(int(h.params[0]["continue_stage"])).is_equal(1)
+	assert_bool(h.params[0].has("shift_total")).is_false()
+	SceneRouter.unregister_host(h)
+	SceneRouter.is_busy = false
+	host = FakeRouteHost.install(self)
+
+
+func test_a_fresh_start_routes_with_no_params_at_all() -> void:
+	var h := _with_param_host()
+	var runner := scene_runner(SCENE)
+	await runner.simulate_frames(2)
+	runner.scene().call("on_route_entered", {})
+	_credit(runner)
+	await runner.simulate_frames(2)
+	(runner.find_child("NewVigil") as ArcadeButton).pressed.emit()
+	await runner.simulate_frames(5)
+	assert_dict(h.params[0]).is_empty()
+	SceneRouter.unregister_host(h)
+	SceneRouter.is_busy = false
+	host = FakeRouteHost.install(self)
+
+
+func test_the_shift_total_clears_with_the_offer() -> void:
+	var runner := scene_runner(SCENE)
+	await runner.simulate_frames(2)
+	runner.scene().call("on_route_entered", {"continue_stage": 1, "shift_total": 90})
+	assert_int(int(runner.scene().get("shift_total"))).is_equal(90)
+	runner.scene().call("clear_continue_offer")
+	assert_int(int(runner.scene().get("shift_total"))).is_equal(-1)
+
+
+# --- POWER: caption, confirmation, collapse, quit (pass 2c) ------------------------------------------
+
+func _quit_counter(runner: GdUnitSceneRunner) -> Array:
+	var quits := [0]
+	runner.scene().set("quit_action", func() -> void: quits[0] += 1)
+	return quits
+
+
+func test_power_shows_its_caption_on_focus_and_on_hover() -> void:
+	var runner := scene_runner(SCENE)
+	await runner.simulate_frames(2)
+	var power := runner.find_child("Power") as PowerRocker
+	assert_bool(power.caption_visible()).is_false()
+	power.grab_focus()
+	await runner.simulate_frames(12)
+	assert_bool(power.caption_visible()).is_true()
+	assert_str(power.caption_text()).is_equal(tr("CAB_PANEL_POWER_HINT"))
+	assert_str(power.caption_text()).is_not_equal("CAB_PANEL_POWER_HINT")
+	(runner.find_child("Settings") as ArcadeButton).grab_focus()
+	await runner.simulate_frames(12)
+	assert_bool(power.caption_visible()).is_false()
+	power.emit_signal("mouse_entered")
+	await runner.simulate_frames(12)
+	assert_bool(power.caption_visible()).is_true()
+	power.emit_signal("mouse_exited")
+	await runner.simulate_frames(12)
+	assert_bool(power.caption_visible()).is_false()
+
+
+func test_service_shows_its_caption_on_focus_and_on_hover() -> void:
+	var runner := scene_runner(SCENE)
+	await runner.simulate_frames(2)
+	var svc := runner.find_child("Settings") as ArcadeButton
+	assert_bool(svc.caption_visible()).is_false()
+	svc.grab_focus()
+	await runner.simulate_frames(12)
+	assert_bool(svc.caption_visible()).is_true()
+	assert_str(svc.caption_text()).is_equal(tr("CAB_PANEL_SERVICE_HINT"))
+	assert_str(svc.caption_text()).is_not_equal("CAB_PANEL_SERVICE_HINT")
+	(runner.find_child("Power") as PowerRocker).grab_focus()
+	await runner.simulate_frames(12)
+	assert_bool(svc.caption_visible()).is_false()
+	svc.emit_signal("mouse_entered")
+	await runner.simulate_frames(12)
+	assert_bool(svc.caption_visible()).is_true()
+
+
+func test_power_asks_first_and_does_not_quit_without_confirmation() -> void:
+	var runner := scene_runner(SCENE)
+	await runner.simulate_frames(2)
+	var quits := _quit_counter(runner)
+	var power := runner.find_child("Power") as PowerRocker
+	power.grab_focus()
+	await runner.simulate_frames(2)
+	runner.simulate_action_pressed("ui_accept")
+	await runner.simulate_frames(3)
+	var stack: ScreenStack = runner.find_child("Overlays")
+	assert_int(stack.depth()).is_equal(1)
+	assert_bool(stack.top() is ConfirmScreen).is_true()
+	assert_bool(runner.scene().call("is_powering_off")).is_false()
+	await runner.simulate_frames(60)
+	assert_int(quits[0]).is_equal(0)
+	assert_bool(power.off).is_false()
+
+
+func test_cancelling_the_quit_confirmation_returns_focus_to_power() -> void:
+	var runner := scene_runner(SCENE)
+	await runner.simulate_frames(2)
+	var quits := _quit_counter(runner)
+	var power := runner.find_child("Power") as PowerRocker
+	power.grab_focus()
+	await runner.simulate_frames(2)
+	power.pressed.emit()
+	await runner.simulate_frames(3)
+	var stack: ScreenStack = runner.find_child("Overlays")
+	assert_int(stack.depth()).is_equal(1)
+	runner.simulate_action_pressed("ui_cancel")
+	await runner.simulate_frames(3)
+	assert_int(stack.depth()).is_equal(0)
+	assert_object(_focus()).is_same(power)
+	assert_int(quits[0]).is_equal(0)
+	assert_bool(runner.scene().call("is_powering_off")).is_false()
+
+
+func test_confirming_collapses_the_picture_then_quits() -> void:
+	var runner := scene_runner(SCENE)
+	await runner.simulate_frames(2)
+	var quits := _quit_counter(runner)
+	var power := runner.find_child("Power") as PowerRocker
+	power.pressed.emit()
+	await runner.simulate_frames(3)
+	var confirm := (runner.find_child("Overlays") as ScreenStack).top() as ConfirmScreen
+	confirm.confirmed.emit()
+	assert_bool(runner.scene().call("is_powering_off")).is_true()
+	assert_bool(power.off).is_true()
+	assert_int(quits[0]).is_equal(0)                       # the collapse plays first
+	var crt := (runner.find_child("ArcadeScreen") as ArcadeScreen).crt_material()
+	for b in ["NewVigil", "Settings", "Power"]:
+		assert_bool((runner.find_child(b) as BaseButton).disabled).is_true()
+	await runner.simulate_frames(10)
+	assert_float(float(crt.get_shader_parameter(&"collapse"))).is_between(0.01, 0.99)
+	await get_tree().create_timer(0.8).timeout
+	await runner.simulate_frames(3)
+	assert_float(float(crt.get_shader_parameter(&"collapse"))).is_equal(1.0)
+	assert_int(quits[0]).is_equal(1)
+
+
+func test_the_collapse_is_a_plain_fade_under_photosensitivity() -> void:
+	SettingsService.set_value(&"photosensitivity", true)
+	var runner := scene_runner(SCENE)
+	await runner.simulate_frames(2)
+	_quit_counter(runner)
+	runner.scene().call("power_off")
+	var crt := (runner.find_child("ArcadeScreen") as ArcadeScreen).crt_material()
+	assert_float(float(crt.get_shader_parameter(&"collapse_fade"))).is_equal(1.0)
+	assert_float((runner.find_child("Power") as PowerRocker).flip_level()).is_equal(1.0)
+	await runner.simulate_frames(60)
+	SettingsService.set_value(&"photosensitivity", false)
+
+
+func test_the_collapse_squeezes_when_motion_is_allowed() -> void:
+	var runner := scene_runner(SCENE)
+	await runner.simulate_frames(2)
+	_quit_counter(runner)
+	runner.scene().call("power_off")
+	var crt := (runner.find_child("ArcadeScreen") as ArcadeScreen).crt_material()
+	assert_float(float(crt.get_shader_parameter(&"collapse_fade"))).is_equal(0.0)
+	await runner.simulate_frames(60)
+
+
+func test_power_off_length_is_tuning_data() -> void:
+	var t := load("res://data/cabinet/cabinet_boot_tuning.tres") as CabinetBootTuning
+	assert_float(t.power_off_seconds).is_greater(0.0)
+	assert_float(t.power_off_seconds).is_less_equal(1.0)

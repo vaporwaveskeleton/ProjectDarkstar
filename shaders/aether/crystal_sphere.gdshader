@@ -34,6 +34,7 @@ uniform vec2 camera_offset = vec2(0.0);       // camera drift, px
 uniform float time_s = 0.0;
 uniform float drain = 0.0;
 uniform float sky_tint = 0.07;
+uniform float missing = 0.0;                  // pass 6: the look's monotonic "missing" cue
 uniform int numerals = 1;                     // 1 = engraved I..XII on the meridian band, 0 = none
 
 // ✱ numeral cap height and its row centre (|d| px inside the seam): the outer half of the band
@@ -144,7 +145,7 @@ void fragment() {
 	float d = r - radius;                      // < 0 inside the sphere (where we are)
 	// near the entity the seam's ends are displaced before the line stops
 	d += 10.0 * loss.w * loss.w;
-	float keep = 1.0 - loss.y;                  // crisp gap: the line just... stops
+	float keep = (1.0 - loss.y) * (1.0 - a_missing(spx, missing));   // crisp gap: the line just... stops
 	vec2 nrm = rel / max(r, 1.0);
 	float fw = max(fwidth(v_px.x), 0.2);
 	float band = exp(-abs(d) / band_px);
@@ -221,7 +222,7 @@ void fragment() {
 	}
 	col = mix(col, crack_col, crack);
 	a = max(a, crack);
-	col = mix(col, vec3(a_luma(col)), drain * 0.6);
+	col = mix(col, vec3(a_luma(col)), max(drain * 0.6, missing * A_MISS_DESAT));
 	col = max(col, floor_col);
 	COLOR = vec4(col, clamp(a, 0.0, 1.0));
 }

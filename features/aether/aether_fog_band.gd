@@ -42,6 +42,7 @@ func configure(look: AetherLook, quality: AetherQuality = null) -> void:
 	set_param(&"lift", 0.45 if far else 0.25)
 	set_param(&"scatter", look.lantern_scatter * (1.0 if far else 1.4))
 	set_param(&"tier", look.tier)
+	set_param(&"missing", look.missing)
 
 
 ## Colour uniforms this band holds (tests check the floor).

@@ -13,6 +13,9 @@ extends Node2D
 
 enum Half { BOTH, BACK, FRONT }
 
+## ✱ pass 6: the T1 armillary's contrast (ring, bead and axis alpha multiplier; calmer than pass 5).
+const ORRERY_CALM := 0.72
+
 ## Which halves of the armillary rings this copy draws (BACK sits below the sphere layer).
 @export var half: Half = Half.BOTH
 ## ✱ orrery centre (layer px), ring radii, ellipse squash and tilt.
@@ -33,6 +36,9 @@ enum Half { BOTH, BACK, FRONT }
 var brass: Color = Pal.BONE_2
 var brass_hi: Color = Pal.BONE_4
 var brass_shadow: Color = Pal.VOID_3
+## The T1 sun at the armillary's heart (pass 6): lit brass, never a dark disc.
+var sun_body: Color = Pal.BONE_3
+var sun_hi: Color = Pal.BONE_4
 var silhouette: Color = Pal.VOID_2
 var window: Color = Pal.BONE_4
 var overgrowth: Color = Pal.PHOS_2
@@ -86,7 +92,7 @@ func any_shown() -> bool:
 
 ## Every colour this copy can draw with (tests: no GAS on the set pieces).
 func colours_used() -> Array[Color]:
-	return [brass, brass_hi, brass_shadow, silhouette, window, overgrowth]
+	return [brass, brass_hi, brass_shadow, silhouette, window, overgrowth, sun_body, sun_hi]
 
 
 func set_time(t: float) -> void:
@@ -126,14 +132,19 @@ func _ellipse_arc(c: Vector2, rx: float, ry: float, tilt: float, a0: float, a1: 
 
 
 ## One brass band along an elliptical arc: body, highlight edge (outer), engraved shadow (inner).
-func _brass_arc(c: Vector2, rx: float, ry: float, tilt: float, a0: float, a1: float, w: float, alpha: float) -> void:
+## `shadow` scales the dark engraved edge (0 = none: pass 6, T1 has nothing darker than its fog).
+func _brass_arc(c: Vector2, rx: float, ry: float, tilt: float, a0: float, a1: float, w: float, alpha: float, shadow: float = 1.0) -> void:
 	var n := maxi(int(absf(a1 - a0) * 40.0), 6)
 	draw_polyline(_ellipse_arc(c, rx, ry, tilt, a0, a1, n), _c(brass, alpha), w, true)
 	draw_polyline(_ellipse_arc(c, rx + w * 0.5, ry + w * 0.5 * (ry / maxf(rx, 1.0)), tilt, a0, a1, n), _c(brass_hi, alpha * 1.2), 1.0, true)
-	draw_polyline(_ellipse_arc(c, rx - w * 0.5, ry - w * 0.5 * (ry / maxf(rx, 1.0)), tilt, a0, a1, n), _c(brass_shadow, alpha * 1.4), 1.0, true)
+	if shadow > 0.0:
+		draw_polyline(_ellipse_arc(c, rx - w * 0.5, ry - w * 0.5 * (ry / maxf(rx, 1.0)), tilt, a0, a1, n), _c(brass_shadow, alpha * 1.4 * shadow), 1.0, true)
 
 
 ## The armillary. Ring i: angles 0..PI are the near half (lower on screen), PI..TAU the far half.
+## Pass 6 (G-2 tier sort): T1 must read as the most intact, and nothing in it is darker than the
+## fog — a dark round centred object read as "something is watching". The globe is a LIT brass sun
+## (BONE_3 body, BONE_4 soft highlight) and the rings are calmer (lower contrast, no dark edge).
 func _draw_orrery() -> void:
 	var rot := Transform2D(orrery_tilt, Vector2.ZERO)
 	var back := half != Half.FRONT
@@ -146,15 +157,17 @@ func _draw_orrery() -> void:
 			var rc := orrery_centre + (Vector2(0.0, STALL_SAG) if st else Vector2.ZERO)
 			# far halves: thinner, more fogged (the fog sits between us and them)
 			_brass_arc(rc, r, r * orrery_squash, orrery_tilt + (STALL_TILT if st else 0.0), PI, TAU,
-				ring_width * (1.0 - 0.45 * depth) * 0.8, (0.75 - 0.35 * depth) * 0.6)
+				ring_width * (1.0 - 0.45 * depth) * 0.8, (0.75 - 0.35 * depth) * 0.6 * ORRERY_CALM, 0.0)
 	if not front:
 		return
 	# the axis and the globe the rings turn round
-	draw_line(orrery_centre + rot * Vector2(0, -150), orrery_centre + rot * Vector2(0, 150), _c(brass, 0.6), 1.5, true)
-	# a small brass globe (fogged): shadowed body, a lit crescent, an engraved equator
-	draw_circle(orrery_centre, 14.0, _c(brass_shadow, 1.6))
-	draw_arc(orrery_centre, 11.5, PI * 1.05, PI * 1.75, 24, _c(brass, 1.2), 4.0, true)
-	draw_arc(orrery_centre, 14.0, PI * 1.1, PI * 1.6, 24, _c(brass_hi, 1.2), 1.2, true)
+	draw_line(orrery_centre + rot * Vector2(0, -150), orrery_centre + rot * Vector2(0, 150), _c(brass, 0.6 * ORRERY_CALM), 1.5, true)
+	# a small LIT brass sun (fogged): a soft BONE_4 bloom round a BONE_3 body, a lit cap, an
+	# engraved equator in the body's own brass (never a dark disc)
+	for k in 5:
+		draw_circle(orrery_centre, 14.0 + 2.0 * float(5 - k), _c(sun_hi, 0.1))
+	draw_circle(orrery_centre, 14.0, _c(sun_body, 1.0))
+	draw_circle(orrery_centre + Vector2(-3.0, -3.5), 7.0, _c(sun_hi, 0.6))
 	draw_polyline(_ellipse_arc(orrery_centre, 14.0, 4.0, orrery_tilt, 0.0, PI, 16), _c(brass, 0.9), 1.0, true)
 	for i in orrery_radii.size():
 		var r: float = orrery_radii[i]
@@ -166,26 +179,26 @@ func _draw_orrery() -> void:
 		var w := ring_width * (1.0 - 0.45 * depth)
 		var al := 0.95 - 0.35 * depth
 		if _ring_broken(i):
-			_draw_broken_near_half(rc, r, ry, tilt, w, al)
+			_draw_broken_near_half(rc, r, ry, tilt, w, al * ORRERY_CALM)
 		else:
-			_brass_arc(rc, r, ry, tilt, 0.0, PI, w, al)
+			_brass_arc(rc, r, ry, tilt, 0.0, PI, w, al * ORRERY_CALM, 0.0)
 		# the planet bead rides the ring; drawn only while on the near half (a stalled bead stops)
 		var bt := 0.0 if st else _t
 		var a := fposmod(bt * orrery_speed / (1.0 + float(i)) + float(i) * 1.7, TAU)
 		if a < PI and not (_ring_broken(i) and a > BREAK_GAP.x and a < BREAK_GAP.y + BREAK_PIECE):
 			var bead := rc + Transform2D(tilt, Vector2.ZERO) * Vector2(cos(a) * r, sin(a) * ry)
-			draw_circle(bead, 3.0 + float(i), _c(brass, 1.0))
-			draw_arc(bead, 3.0 + float(i), PI * 1.1, PI * 1.7, 12, _c(brass_hi, 1.2), 1.0, true)
+			draw_circle(bead, 3.0 + float(i), _c(brass, ORRERY_CALM))
+			draw_arc(bead, 3.0 + float(i), PI * 1.1, PI * 1.7, 12, _c(brass_hi, 1.2 * ORRERY_CALM), 1.0, true)
 
 
 ## A ring snapped open (ladder T4+): its near half with a gap, the snapped piece drifted outward and
 ## turned a little, each torn end cut straight across the band.
 func _draw_broken_near_half(c: Vector2, r: float, ry: float, tilt: float, w: float, alpha: float) -> void:
-	_brass_arc(c, r, ry, tilt, 0.0, BREAK_GAP.x, w, alpha)
-	_brass_arc(c, r, ry, tilt, BREAK_GAP.y + BREAK_PIECE, PI, w, alpha)
+	_brass_arc(c, r, ry, tilt, 0.0, BREAK_GAP.x, w, alpha, 0.0)
+	_brass_arc(c, r, ry, tilt, BREAK_GAP.y + BREAK_PIECE, PI, w, alpha, 0.0)
 	var mid := (BREAK_GAP.y + BREAK_GAP.y + BREAK_PIECE) * 0.5
 	var away := Transform2D(tilt, Vector2.ZERO) * Vector2(cos(mid), sin(mid)).normalized() * BREAK_DRIFT
-	_brass_arc(c + away, r, ry, tilt + BREAK_TURN, BREAK_GAP.y, BREAK_GAP.y + BREAK_PIECE, w * 0.9, alpha * 0.85)
+	_brass_arc(c + away, r, ry, tilt + BREAK_TURN, BREAK_GAP.y, BREAK_GAP.y + BREAK_PIECE, w * 0.9, alpha * 0.85, 0.0)
 	var rot := Transform2D(tilt, Vector2.ZERO)
 	for a: float in [BREAK_GAP.x, BREAK_GAP.y + BREAK_PIECE]:
 		var e := c + rot * Vector2(cos(a) * r, sin(a) * ry)

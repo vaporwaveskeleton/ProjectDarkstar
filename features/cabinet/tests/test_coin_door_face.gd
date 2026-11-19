@@ -17,6 +17,8 @@ const KEYS := [
 	"tmold_width", "bolt_radius", "marquee_lettering", "marquee_stroke", "marquee_tracking", "marquee_unevenness", "print_dot_gain",
 	"price_cap", "price_stroke", "price_tracking", "glass_band", "glass_screen_reflection",
 	"glass_band_lift", "glass_smear_haze", "glass_smear_idle", "print_uv_fade", "print_uv_edge", "print_grime", "marquee_hot", "marquee_shadow_depth", "marquee_spill", "room_glow",
+	"panel_lip", "panel_lip_width", "panel_front_shadow", "panel_front_width", "panel_contact", "panel_palm_polish", "panel_grain", "panel_color", "start_decal_rub", "decal_rub",
+	"caption_cap", "caption_stroke", "caption_tracking", "caption_pad", "tape_sheen", "tape_misregister", "tape_lift", "tape_dirt", "tape_crease", "tape_yellow", "tape_black", "rocker_lamp_color",
 ]
 
 

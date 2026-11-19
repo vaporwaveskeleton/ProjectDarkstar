@@ -10,6 +10,8 @@ const PAUSE_SCENE := preload("res://scenes/sector/pause_screen.tscn")
 @export var vigil_scene: PackedScene
 ## Where the arena size comes from: the Cabinet stage resource (its `field_size`, 1920×720 ✱).
 @export var arena_source: CabinetStage
+## Stats for the throwaway run core built when no `session` route param is handed in (§4.2a).
+@export var session_stats: RunSessionStats
 
 @onready var _spawn: Marker2D = %VigilSpawn
 @onready var _actors: Node2D = %Actors
@@ -33,6 +35,14 @@ var vigil: Vigil
 ## from here (injected; never built twice): SectorWrap, SectorCamera, ShardField, GeodeSandbox,
 ## LedgerCompass, ProcessionSandbox (Sepulchre + Grubs), ChargeLauncher.
 var torus: Torus
+## The run this sector plays a Seam of (TECH-001 §4.2a). Route param `session`; absent (dev
+## `--route=sector`, M1 sandboxes, tests) = a throwaway core with the dev seed and no saver, so
+## nothing is ever saved. Sector code reaches the run only through this reference.
+var session: RunSessionCore
+## True when `session` is the throwaway core (no session was handed in).
+var throwaway_session := true
+## The clock-pause reason this sector holds on `session` while the pause menu is open.
+var _menu_paused := false
 
 ## Read-only scalars for the automation id `sector/vigil` (core/automation/ui_view.gd). Dev/QA reads.
 var vigil_x: float:
@@ -136,10 +146,47 @@ func _ready() -> void:
 	vigil.health.damaged.connect(func(_a, _r): _refresh_hud())
 	vigil.hull_breached.connect(_on_hull_breached)
 	_overlays.emptied.connect(_on_overlays_emptied)
+	_use_session(_throwaway_session(), true)
 	_refresh_hud()
 
 
+## Route entry: a handed-in `session` replaces the throwaway core and seeds Composure and Charges.
+func on_route_entered(params: Dictionary) -> void:
+	for key: Variant in ["session", &"session"]:
+		if params.has(key) and params[key] is RunSessionCore:
+			_use_session(params[key] as RunSessionCore, false)
+			return
+
+
+func _throwaway_session() -> RunSessionCore:
+	var core := RunSessionCore.new(session_stats, null)
+	core.start_run(session_stats.dev_seed if session_stats else 0)
+	core.enter_seam()
+	return core
+
+
+func _use_session(s: RunSessionCore, throwaway: bool) -> void:
+	_release_menu_pause()
+	session = s
+	throwaway_session = throwaway
+	_composure.load_from(session.run())
+	_magazine.load_from(session.run())
+	_refresh_hud()
+
+
+## Seam clear (TECH-001 §4.2a): the only write-back, a SeamReport built from the live nodes.
+## The M1 sandbox has no exit yet, so nothing in the sector calls this; tests and tools do.
+func clear_seam() -> bool:
+	var report := SeamReport.new()
+	_composure.report_into(report)
+	_magazine.report_into(report)
+	var per_ember := maxi(1, session.stats.score_per_ember) if session and session.stats else 1
+	report.ember_earned = floori(float(score) / float(per_ember))
+	return session.end_seam(report)
+
+
 func _exit_tree() -> void:
+	_release_menu_pause()
 	get_tree().paused = false
 
 
@@ -151,6 +198,9 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func open_pause() -> Screen:
 	get_tree().paused = true
+	if session and not _menu_paused:
+		session.pause_clock(RunSessionCore.PAUSE_MENU)   # Q-T138: the pause menu stops the clock
+		_menu_paused = true
 	var pause := PAUSE_SCENE.instantiate()
 	pause.abandon_requested.connect(_on_abandon_requested)
 	return _overlays.push(pause)
@@ -158,6 +208,13 @@ func open_pause() -> Screen:
 
 func _on_overlays_emptied() -> void:
 	get_tree().paused = false
+	_release_menu_pause()
+
+
+func _release_menu_pause() -> void:
+	if _menu_paused and session:
+		session.resume_clock(RunSessionCore.PAUSE_MENU)
+	_menu_paused = false
 
 
 func _on_abandon_requested() -> void:
@@ -171,3 +228,5 @@ func _refresh_hud() -> void:
 
 func _on_hull_breached() -> void:
 	_hull_label.text = tr("HUD_HULL_BREACHED")
+	if session:
+		session.die()   # §4.2a: on death the sector calls session.die(); the core saves at run_end
