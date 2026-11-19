@@ -120,3 +120,15 @@ func test_the_far_centre_is_continuous_across_a_rebase() -> void:
 	cam.global_position -= Vector2(torus.size.x, 0)   # a whole-field rebase: no travel
 	sector._step_far()
 	assert_vector(sector.far_centre).is_equal_approx(start + Vector2(10, 0), Vector2(0.01, 0.01))
+
+
+func test_the_ruins_wear_ruins_look_and_open_cold_on_first_visit() -> void:
+	var ruins := _ruins(RunSessionCore.new(STATS, saver), RouterSpy.new())
+	var look: RuinsLook = ruins.get("look")
+	assert_object(look).is_not_null()
+	assert_bool(look.first_visit).is_false()                  # a later visit until the route says so
+	assert_bool((ruins.get_node("%Aether") as CanvasItem).visible).is_false()
+	ruins.on_route_entered({"first_visit": true})              # from the Unmaking (AetherArrival)
+	assert_bool(look.first_visit).is_true()
+	ruins.on_route_entered({"first_visit": "yes"})             # mistyped counts as false
+	assert_bool(look.first_visit).is_false()

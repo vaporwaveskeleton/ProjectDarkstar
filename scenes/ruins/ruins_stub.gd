@@ -10,9 +10,11 @@ extends Control
 ## TODO(M2 onboarding, beats 7–16): the cold open, Chalk Desk, ticket pay-out, Codex desk, Lantern Tree
 ## and the physical hangar-mouth launch (research/act1_vertical_slice.md §2) replace this prompt;
 ## keep `launch()` as the one place a run starts from the Ruins.
-## TODO(#73 RuinsLook): the Ruins first-visit look (a child scene this Ruins instances through an
-## exported reference; the look only, no input) replaces the dimmed %Aether rect below. `_apply_look()`
-## is the hook; TECH-001 §2.9 part C.
+## The look is RuinsLook (TECH-001 §2.9 part C; ART-001 §16.6g), instanced from `look_scene` on a canvas
+## layer behind this stub's text; route param `first_visit` (bool, from the Unmaking) runs its cold open.
+## Look only: it takes no input, so launch and cancel stay here. Without `look_scene` the dimmed %Aether
+## rect and the drawn sapling stand in. TODO(M2 onboarding): forward the Lantern Tree's lit nodes to
+## `look.light_lamp` and mirror props with `look.add_prop` (Q-T158).
 
 var _t := 0.0
 var _font: Font
@@ -25,6 +27,10 @@ var router: Object
 var session: RunSessionCore
 ## True once a launch has been requested: one launch per visit.
 var launched := false
+## The Ruins first-visit look (features/aether/ruins_look.tscn). Null = the old dimmed-aether stand-in.
+@export var look_scene: PackedScene
+## The instanced look, or null.
+var look: RuinsLook
 
 const SECTOR_ROUTE := &"sector"
 const TITLE_ROUTE := &"attract"
@@ -50,6 +56,16 @@ func _ready() -> void:
 
 func on_route_entered(params: Dictionary) -> void:
 	_params = params
+	if look != null:
+		look.set_first_visit(_bool_param(params, "first_visit"))
+
+
+static func _bool_param(params: Dictionary, key: String) -> bool:
+	for k: Variant in [key, StringName(key)]:
+		if params.has(k):
+			var v: Variant = params[k]
+			return typeof(v) == TYPE_BOOL and bool(v)
+	return false
 
 
 func _arrive() -> void:
@@ -57,9 +73,20 @@ func _arrive() -> void:
 		session.arrive_at_ruins(_params)
 
 
-## Hook for #73 (RuinsLook): today the dimmed aether rect is the whole look.
+## Instance RuinsLook behind the text (a later visit by default; on_route_entered sets the cold open).
 func _apply_look() -> void:
-	pass
+	if look_scene == null:
+		return
+	look = look_scene.instantiate() as RuinsLook
+	if look == null:
+		return
+	look.set_first_visit(false)
+	var layer := CanvasLayer.new()
+	layer.name = "LookLayer"
+	layer.layer = -1
+	add_child(layer)
+	layer.add_child(look)
+	(%Aether as CanvasItem).visible = false
 
 
 ## Start a run at Seam 1 and enter it: PM-01 "First Vigil" in the sector (beat 12). Returns false when
@@ -83,7 +110,8 @@ func _exit_tree() -> void:
 func _process(delta: float) -> void:
 	_t += delta
 	# the aether, dimmed: the first sky has gone dark (ART-001 §16)
-	((%Aether as ColorRect).material as ShaderMaterial).set_shader_parameter(&"time_s", _t)
+	if look == null:
+		((%Aether as ColorRect).material as ShaderMaterial).set_shader_parameter(&"time_s", _t)
 	queue_redraw()
 
 
@@ -105,6 +133,18 @@ func _centered(y: float, s: String, size: int, col: Color) -> void:
 
 
 func _draw() -> void:
+	if look == null:
+		_draw_sapling()
+	if _t > 1.0:
+		_centered(90, tr("RUINS_TITLE"), 14, Pal.BONE_4)
+	if _t > 2.5:
+		_centered(290, tr("RUINS_LINE_1"), 8, Pal.BONE_2)
+	if _ready_for_input and int(_t * 1.5) % 2 == 0:
+		_centered(330, tr("RUINS_LAUNCH"), 8, Pal.BONE_1)
+
+
+## The stand-in look without RuinsLook: the Lantern Tree as a sapling.
+func _draw_sapling() -> void:
 	var k := clampf(_t / 4.0, 0.0, 1.0)
 	# the Lantern Tree as a sapling: one brass stem, one lamp, in the only light there is
 	var base := Vector2(320, 250)
@@ -119,9 +159,3 @@ func _draw() -> void:
 	var flicker := 1.0 if int(_t * 7.0) % 9 != 0 else 0.0
 	draw_circle(top.round(), 4.0, Pal.GAS_3)
 	draw_circle(top.round(), 2.0 if flicker > 0.0 else 1.0, Pal.GAS_5)
-	if _t > 1.0:
-		_centered(90, tr("RUINS_TITLE"), 14, Pal.BONE_4)
-	if _t > 2.5:
-		_centered(290, tr("RUINS_LINE_1"), 8, Pal.BONE_2)
-	if _ready_for_input and int(_t * 1.5) % 2 == 0:
-		_centered(330, tr("RUINS_LAUNCH"), 8, Pal.BONE_1)

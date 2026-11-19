@@ -77,7 +77,8 @@ follow-up). Fixtures: `{"profile": "<name>"}` loads
 
 `a1_golden_path` is long (`timeout_frames` 150000, so outside the suite), profile `dev` (dev build only), `fail_on_errors`,
 args `--segments=20 --hits=1` and `set_lives 9` per stage so the demo autopilot can finish Act 0 (it cannot
-win a0_3 or a0_5 unaided): coin, Act 0, reveal, Unmaking, Ruins, sector. About 20600 frames. Run it with `run a1_golden_path`
+win a0_3 or a0_5 unaided): coin, Act 0, reveal, Unmaking, Ruins, sector. About 20600 frames. Listed in `LONG_SCENARIOS` in
+`core/automation/tests/test_scenario_schema.gd` (every other shipped scenario must be suite-valid). Run it with `run a1_golden_path`
 (`--windowed` for the seven stills).
 
 The same runner runs inside GdUnit: `tests/test_scenarios.gd` plays every scenario that is valid for
