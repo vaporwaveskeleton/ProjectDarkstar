@@ -123,3 +123,81 @@ func test_spine_stars_arrive_before_the_maw_shows_its_first_vertebra() -> void:
 	var pull_when_reveal_starts := pow(2.5 / 8.0, 2.0)
 	var arrival_pull := world.fx_tuning.spine_hold_pull + world.fx_tuning.spine_pull_span
 	assert_float(arrival_pull).is_less(pull_when_reveal_starts)
+
+
+func _arrival_pull() -> float:
+	return world.fx_tuning.spine_hold_pull + world.fx_tuning.spine_pull_span
+
+
+func test_stars_sit_on_the_shared_curve_identically_across_resets() -> void:
+	_start(true)
+	var want := MawView.spine_place(MawView.spine_points(Starfield.SPINE_COUNT),
+		Vector2(world.view_size.x * Starfield.SPINE_X_FRAC, world.view_size.y * Starfield.SPINE_TOP_FRAC),
+		Vector2.DOWN, world.view_size.y * Starfield.SPINE_LENGTH_FRAC)
+	for i in 20:
+		assert_vector(stars._spine[i]).is_equal_approx(want[i], Vector2(0.001, 0.001))
+	var first: PackedVector2Array = stars._spine.duplicate()
+	_start(true)
+	assert_array(stars._spine).is_equal(first)
+
+
+func test_formed_beat_is_bone_5_two_by_two_while_play_stars_stay_faint_pixels() -> void:
+	_start(true)
+	assert_vector(stars.spine_star_size()).is_equal(Vector2.ONE)
+	assert_object(stars.spine_star_color()).is_equal(Look.c(Pal.BONE_2))
+	stars.pull = world.fx_tuning.spine_hold_pull * 0.5
+	assert_vector(stars.spine_star_size()).is_equal(Vector2(2, 2))
+	assert_object(stars.spine_star_color()).is_equal(Look.c(Pal.BONE_5))
+	for i in 20:
+		assert_bool(stars.spine_star_drawn(i)).is_true()
+
+
+func test_hand_off_the_starfield_stops_and_the_maw_draws_until_the_vertebra_shows() -> void:
+	_start(true)
+	maw.stars = stars
+	maw.reveal = 0.0
+	stars.pull = _arrival_pull() * 0.5
+	assert_bool(stars.spine_star_arrived()).is_false()
+	assert_int(maw.spine_star_rects().size()).is_equal(0)
+	for i in 20:
+		assert_bool(stars.spine_star_drawn(i)).is_true()
+	stars.pull = _arrival_pull()
+	assert_bool(stars.spine_star_arrived()).is_true()
+	for i in 20:
+		assert_bool(stars.spine_star_drawn(i)).is_false()
+	assert_int(maw.spine_star_rects().size()).is_equal(20)
+	for i in 20:
+		var r := maw.spine_star_rects()[i]
+		assert_vector(r.position).is_equal(maw.vertebra_screen_pos(i).round())
+		assert_vector(r.size).is_equal(Vector2(2, 2))
+	# vertebra i shown: MawView stops drawing star i (the vertebra is drawn instead)
+	maw.reveal = 0.26      # ceil(5.2) = 6 vertebrae
+	var rects := maw.spine_star_rects()
+	assert_int(rects.size()).is_equal(14)
+	assert_vector(rects[0].position).is_equal(maw.vertebra_screen_pos(6).round())
+	maw.reveal = 1.0
+	assert_int(maw.spine_star_rects().size()).is_equal(0)
+
+
+func test_coordinate_spaces_match_at_arrival() -> void:
+	_start(true)
+	maw.stars = stars
+	stars.pull = _arrival_pull()
+	assert_vector(maw.centre).is_equal_approx(stars.pull_target, Vector2(1, 1))
+	var to_canvas_stars := stars.get_global_transform_with_canvas()
+	var to_canvas_maw := maw.get_global_transform_with_canvas()
+	for i in 20:
+		var s := to_canvas_stars * stars.spine_star_pos(i)
+		var m := to_canvas_maw * maw.vertebra_screen_pos(i)
+		assert_vector(s).is_equal_approx(m, Vector2(1, 1))
+
+
+func test_hand_off_draws_no_rng() -> void:
+	_start(true)
+	maw.stars = stars
+	stars.pull = _arrival_pull()
+	var before := world.rng.state
+	maw.spine_star_rects()
+	for i in 20:
+		stars.spine_star_drawn(i)
+	assert_int(world.rng.state).is_equal(before)

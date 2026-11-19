@@ -3,7 +3,7 @@ extends ArcadeLayer
 ## Three parallax star layers plus the chalk seam of the torus (WARP-001 W0-09 "Honest Seam").
 ## `pull` > 0 drags every star toward a point: the Unmaking eats the sky (W0-07, the reveal).
 ## S8 (THE LAST NORMAL DAY only, `CabinetStage.spine_stars`): 20 extra faint stars trace the entity's
-## spine as an S-curved column. When the reveal's pull begins they brighten and hold, then travel to
+## spine along the SAME curve the S2 impact frame draws (MawView.spine_points). When the reveal's pull begins they brighten and hold, then travel to
 ## the maw's 20 vertebrae and vanish as each one is shown: the stars become the vertebrae.
 
 const LAYERS := [
@@ -17,8 +17,6 @@ const SPINE_PARALLAX := 0.8        ## ✱ the far layer's parallax and look
 const SPINE_X_FRAC := 0.7          ## ✱ column centre, fraction of the star tile width
 const SPINE_TOP_FRAC := 0.15       ## ✱ first star, fraction of the tile height
 const SPINE_LENGTH_FRAC := 0.7     ## ✱ column length, fraction of the tile height
-const SPINE_SWAY_PX := 14.0        ## ✱ half-width of the S curve
-const SPINE_WAVES := 1.0           ## ✱ full sine periods along the column (1 = a gentle S)
 
 var _stars: Array[PackedVector2Array] = []
 var _spine: PackedVector2Array = PackedVector2Array()   ## tile-space spine star positions (formula, no RNG)
@@ -43,11 +41,9 @@ func reset() -> void:
 			pts.append(Vector2(r.randf() * world.view_size.x, r.randf() * world.view_size.y))
 		_stars.append(pts)
 	if spine_stars:
-		for i in SPINE_COUNT:
-			var u := float(i) / (SPINE_COUNT - 1)
-			_spine.append(Vector2(
-				world.view_size.x * SPINE_X_FRAC + SPINE_SWAY_PX * sin(u * TAU * SPINE_WAVES),
-				world.view_size.y * (SPINE_TOP_FRAC + SPINE_LENGTH_FRAC * u)))
+		var length := world.view_size.y * SPINE_LENGTH_FRAC
+		var head := Vector2(world.view_size.x * SPINE_X_FRAC, world.view_size.y * SPINE_TOP_FRAC)
+		_spine = MawView.spine_place(MawView.spine_points(SPINE_COUNT), head, Vector2.DOWN, length)
 
 
 ## Where a tile-space star sits on screen for a parallax factor (no pull).
@@ -70,6 +66,21 @@ func spine_travel() -> float:
 ## Has the maw shown vertebra `i` yet? Then the star has become it.
 func spine_star_hidden(i: int) -> bool:
 	return maw != null and i < ceili(clampf(maw.reveal, 0.0, 1.0) * MawView.SEGMENTS)
+
+
+## Has the star arrived at its slot? From then on MawView draws it (S8 hand-off), not the starfield.
+func spine_star_arrived() -> bool:
+	return maw != null and pull > 0.0 and spine_travel() >= 1.0
+
+
+## Does the starfield itself draw spine star i this frame?
+func spine_star_drawn(i: int) -> bool:
+	return not spine_star_hidden(i) and not spine_star_arrived()
+
+
+## 1 px in play; a 2x2 dot once the pull begins, so the column reads in a clip.
+func spine_star_size() -> Vector2:
+	return Vector2(2, 2) if pull > 0.0 else Vector2.ONE
 
 
 func spine_star_pos(i: int) -> Vector2:
@@ -109,8 +120,8 @@ func _draw() -> void:
 			var twinkle := (i * 7 + int(world.time * 3.0)) % 23 == 0
 			draw_rect(Rect2(p.round(), Vector2.ONE), Look.c(Pal.BONE_5) if twinkle else col)
 	for i in _spine.size():
-		if not spine_star_hidden(i):
-			draw_rect(Rect2(spine_star_pos(i).round(), Vector2.ONE), spine_star_color())
+		if spine_star_drawn(i):
+			draw_rect(Rect2(spine_star_pos(i).round(), spine_star_size()), spine_star_color())
 	if show_seams and pull <= 0.0:
 		_draw_seams()
 

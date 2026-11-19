@@ -22,6 +22,7 @@ var reveal := 0.0:
 		reveal = v
 		queue_redraw()
 var _t := 0.0
+var stars: Starfield                 ## wired by CabinetGame: S8 hand-off, the arrived spine stars are drawn here
 
 
 func _ready() -> void:
@@ -46,8 +47,32 @@ func _draw() -> void:
 		var p1 := centre + Vector2.from_angle(a + 0.12) * (radius + 10.0 + 6.0 * sin(_t * 2.0 + k))
 		draw_line(p0.round(), p1.round(), Pal.PHOS_2, 1.0)
 	draw_arc(centre, radius, 0.0, TAU, 64, Pal.VOID_5, 1.0)
+	_draw_arrived_spine_stars()
 	if reveal > 0.0 and radius > 40.0:
 		_draw_true_body(clampf(reveal, 0.0, 1.0))
+
+
+## S8 hand-off: the starfield's spine stars sit on MawView's own layer once they have arrived (so the
+## maw's disc cannot occlude them), each at its own vertebra slot, until that vertebra is revealed.
+func _draw_arrived_spine_stars() -> void:
+	for r in spine_star_rects():
+		draw_rect(r, Pal.BONE_5)
+
+
+## The 2x2 dots MawView draws for arrived spine stars: one per vertebra not yet revealed, at that
+## vertebra's own slot. Empty until the stars have arrived.
+func spine_star_rects() -> Array[Rect2]:
+	var out: Array[Rect2] = []
+	if stars == null or not stars.spine_star_arrived():
+		return out
+	for i in range(spine_stars_hidden_from(), SEGMENTS):
+		out.append(Rect2(vertebra_screen_pos(i).round(), Vector2(2, 2)))
+	return out
+
+
+## Vertebrae below this index are drawn (their star has become them).
+func spine_stars_hidden_from() -> int:
+	return ceili(clampf(reveal, 0.0, 1.0) * SEGMENTS)
 
 
 ## The entity as it is: generated from the same parameters as the costume, with the horror dial up.
@@ -135,33 +160,69 @@ func vertebra_screen_pos(i: int) -> Vector2:
 	return centre + Vector2.from_angle(vertebra_angle(i, _t)) * vertebra_radius(i, _t)
 
 
-const SIL_TIP := 16.0        ## ✱ spinous process reach beyond the vertebra centre (h + 9, as _draw_vertebra)
-const SIL_SHOULDER := 4.2    ## ✱ body outer face beyond the centre (h * 0.6)
-const SIL_NOTCH := 7.0       ## ✱ body inner face behind the centre (h): the notch between two vertebrae sits here
-const SIL_HALF_STEP := 0.3   ## fraction of the angular step each vertebra's shoulders span
+# --- the entity's spine: ONE curve shared by the S2 impact frame and the S8 star constellation ---
+
+const SPINE_SWAY := 0.075         ## ✱ S-curve amplitude, fraction of the column length
+const SPINE_TAPER := 0.7          ## ✱ vertebra spacing falls toward the tail (head step : tail step is e^0.7, about 2 : 1)
+const SPINE_HEAD_HALF := 8.5      ## px ✱ silhouette half-width at the head (S2)
+const SPINE_TAIL_RATIO := 0.4     ## ✱ half-width at the tail as a fraction of the head's
+const SPINE_NOTCH := 0.68         ## ✱ lobe edge width where two vertebrae meet, fraction of the lobe's peak
+const SPINE_LOBE_REACH := 0.4     ## ✱ lobe edge points sit this fraction of a step either side of the vertebra
+const SPINE_CAP := 0.35           ## ✱ head and tail caps reach this fraction of a step past the end vertebrae
 
 
-## The farthest reach of the true ring at time `t` (before scaling): the ritual scales by
-## BODY_DRAWN_RADIUS / this, so the silhouette always touches the costume's drawn radius.
-static func true_peak_radius(t: float) -> float:
-	var m := 0.0
-	for i in SEGMENTS:
-		m = maxf(m, vertebra_radius(i, t) + SIL_TIP)
-	return m
+## The vertebral column in unit space: `n` points along a gentle asymmetric S, head at (0, 0), running
+## toward +x to about (1, y). Spacing tapers toward the tail so it reads as a spine, not an even arc.
+## Pure formula, no rng.
+static func spine_points(n: int = SEGMENTS) -> PackedVector2Array:
+	var pts := PackedVector2Array()
+	var k := SPINE_TAPER
+	var span := 1.0 - exp(-k)
+	for i in n:
+		var t := float(i) / float(maxi(1, n - 1))
+		var u := (1.0 - exp(-k * t)) / span
+		pts.append(Vector2(u, SPINE_SWAY * (0.55 + 0.9 * u) * sin(TAU * (u + 0.08 * u * u))))
+	return pts
 
 
-## S2: the outer envelope of the true body's vertebra ring as one closed, simple polygon (no interior
-## detail: GDD §20 silhouette only, NARR-001 §3.4 no face). Per vertebra: shoulder, spinous tip,
-## shoulder; then one notch between it and the next (SEGMENTS notches). `scale` applies about `centre`.
-static func true_silhouette(centre: Vector2, t: float, scale: float) -> PackedVector2Array:
+## The unit spine placed on screen: head at `origin`, the column running along `dir`, `length` px long.
+static func spine_place(unit: PackedVector2Array, origin: Vector2, dir: Vector2, length: float) -> PackedVector2Array:
 	var out := PackedVector2Array()
-	var step := TAU / SEGMENTS
-	for i in SEGMENTS:
-		var a := vertebra_angle(i, t)
-		var r := vertebra_radius(i, t)
-		var r_next := vertebra_radius((i + 1) % SEGMENTS, t)
-		out.append(centre + Vector2.from_angle(a - step * SIL_HALF_STEP) * (r + SIL_SHOULDER) * scale)
-		out.append(centre + Vector2.from_angle(a) * (r + SIL_TIP) * scale)
-		out.append(centre + Vector2.from_angle(a + step * SIL_HALF_STEP) * (r + SIL_SHOULDER) * scale)
-		out.append(centre + Vector2.from_angle(a + step * 0.5) * ((r + r_next) * 0.5 - SIL_NOTCH) * scale)
+	var a := dir.angle()
+	for p in unit:
+		out.append(origin + (p * length).rotated(a))
+	return out
+
+
+## Half-width of the silhouette at vertebra `i` of `n`.
+static func spine_half_width(i: int, n: int = SEGMENTS) -> float:
+	return SPINE_HEAD_HALF * lerpf(1.0, SPINE_TAIL_RATIO, float(i) / float(maxi(1, n - 1)))
+
+
+## S2: the entity's true body as one closed, simple polygon (no interior detail: GDD §20 silhouette only,
+## NARR-001 §3.4 no face): the vertebral column along the shared curve, one rounded lobe per vertebra on
+## each edge, a body that narrows toward the tail. Head at `origin`, column along `dir` (unit), `length` px.
+static func spine_silhouette(origin: Vector2, dir: Vector2, length: float) -> PackedVector2Array:
+	var c := spine_place(spine_points(), origin, dir, length)
+	var n := c.size()
+	var side_a := PackedVector2Array()
+	var side_b := PackedVector2Array()
+	for i in n:
+		var w := spine_half_width(i, n)
+		var to_head := (c[i] - c[i + 1]) if i == 0 else (c[i - 1] - c[i])
+		var to_tail := (c[i] - c[i - 1]) if i == n - 1 else (c[i + 1] - c[i])
+		var nor := (to_tail.normalized() + (-to_head).normalized()).normalized().orthogonal()
+		var offs := [-SPINE_LOBE_REACH, 0.0, SPINE_LOBE_REACH]
+		for f: float in offs:
+			var reach := 0.0 if (i == 0 and f < 0.0) or (i == n - 1 and f > 0.0) else absf(f)    # the end vertebrae are capped, not extended
+			var at := c[i] + (to_tail if f > 0.0 else to_head) * reach
+			var wf := w * (1.0 if f == 0.0 else SPINE_NOTCH)
+			side_a.append(at + nor * wf)
+			side_b.append(at - nor * wf)
+	var out := PackedVector2Array()
+	out.append_array(side_a)
+	out.append(c[n - 1] + (c[n - 1] - c[n - 2]) * SPINE_CAP)
+	side_b.reverse()
+	out.append_array(side_b)
+	out.append(c[0] + (c[0] - c[1]) * SPINE_CAP)
 	return out

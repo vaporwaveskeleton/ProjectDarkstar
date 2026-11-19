@@ -13,6 +13,8 @@ const BODY_RADIUS := 30.0        ## ✱ costume scale
 const BODY_DRAWN_RADIUS := BODY_RADIUS + 4.0   ## px ✱ body ring + vertebra plate reach: the silhouette the S6 chalk ring encloses
 const TRUE_FRAME_FILL: Color = Pal.NULL    ## the costume disc's colour
 const TRUE_FRAME_LINE: Color = Pal.BONE_3  ## the costume plates' colour
+const TRUE_LENGTH_MULT := 3.5     ## x BODY_DRAWN_RADIUS ✱ S2: the column's length, head to tail
+const TRUE_POPUP_GAP := 3.0      ## px ✱ S2: clearance between the silhouette and the hit's score popup
 const CONTACT_INSET := 4.0       ## ✱ SYS-001 §2.1's 16 px inset at the 64 px module scale, ÷4 for the costume
 const SEPULCHRE_RADIUS := 26.0   ## ✱ deposit / Charge contact radius of the altar
 const ENTITY_TURN := 2.2         ## ✱ rad/s steering: kite-able, never twitchy
@@ -37,6 +39,7 @@ var _restores := 0
 var _twitch := 0.0
 var _rot := 0.0
 var _line_said := false
+var _true_dir := Vector2.DOWN        ## which way the S2 column trails, fixed at the hit
 var _true_frames_left := 0       ## DRAWN frames of the S2 true-body silhouette still to show (counts in _draw, so it survives hit-stop)
 
 
@@ -163,7 +166,11 @@ func _hit_entity(at: Vector2) -> void:
 	var t := world.tuning
 	hits_left -= 1
 	world.end_slowmo()                                   # scale must be exactly 1.0 when hit-stop starts
+	var head := world.to_screen(entity_pos).round()
+	_true_dir = true_frame_dir_for(head)
 	world.award(t.score_module, entity_pos)              # a piece of the entity (SYS-001 §7.1)
+	var popup := true_frame_popup_pos(head, str(t.score_module))
+	world.fx.place_last_text(entity_pos + (popup - head))   # S2: the popup stays out of the silhouette
 	world.sfx(&"charge_hit")
 	world.fx.burst(at, Look.c(Pal.BONE_4), world.fx_tuning.entity_hit_burst_count, world.fx_tuning.entity_hit_burst_speed)
 	world.fx.ring(at, Look.c(Pal.PHOS_5), world.fx_tuning.entity_hit_ring_radius)
@@ -302,8 +309,10 @@ func showing_true_frame() -> bool:
 
 
 ## S2 impact frame. GDD §20 (closed 2026-11-17): in Act 0 the entity is seen only as a silhouette;
-## NARR-001 §3.4: no face. So one filled polygon (the costume disc's NULL) with a closed 1 px outline
-## (the plates' BONE_3): same registers, a different shape, not a flash. No teeth, eye, veins.
+## NARR-001 §3.4: no face. The costume is replaced by the true body, a spine: one filled polygon (the
+## costume disc's NULL, so it hides the stars behind it) with a closed 1 px outline (the plates' BONE_3),
+## head on the costume centre, the column running on past the costume's bounds: the disc was only the
+## end of something longer. No eye, veins or interior.
 func _draw_true_frame() -> void:
 	if not visible_at(entity_pos, BODY_RADIUS + 8.0):
 		return
@@ -313,20 +322,55 @@ func _draw_true_frame() -> void:
 	var poly := true_frame_polygon(c)
 	draw_colored_polygon(poly, Look.c(TRUE_FRAME_FILL))
 	var outline := PackedVector2Array()
-	for p in poly:
-		outline.append(p + Vector2(0.5, 0.5))      # pixel-centred 1 px line (TECH-001 §1.3)
+	for q in poly:
+		outline.append(q + Vector2(0.5, 0.5))      # pixel-centred 1 px line (TECH-001 §1.3)
 	outline.append(outline[0])
 	draw_polyline(outline, Look.c(TRUE_FRAME_LINE), 1.0)
 
 
-## The silhouette about screen point `c`, scaled so its farthest reach is BODY_DRAWN_RADIUS. Driven by
-## world.time (freezes with the sim).
+## Which way the column trails from the head: toward the middle of the screen's height, so it stays on screen.
+func true_frame_dir_for(screen_pos: Vector2) -> Vector2:
+	return Vector2.DOWN if screen_pos.y < world.screen_centre.y else Vector2.UP
+
+
+## The silhouette with its head at screen point `c`: integer vertices (they pixel-centre exactly).
 func true_frame_polygon(c: Vector2) -> PackedVector2Array:
-	return true_frame_polygon_at(c, world.time)
+	var poly := MawView.spine_silhouette(c, _true_dir, TRUE_LENGTH_MULT * BODY_DRAWN_RADIUS)
+	for i in poly.size():
+		poly[i] = poly[i].round()
+	return poly
 
 
-func true_frame_polygon_at(c: Vector2, t: float) -> PackedVector2Array:
-	return MawView.true_silhouette(c, t, BODY_DRAWN_RADIUS / MawView.true_peak_radius(t))
+## Screen-space bounds of the silhouette with its head at `c` (outline included).
+func true_frame_box(c: Vector2) -> Rect2:
+	var poly := true_frame_polygon(c)
+	var r := Rect2(poly[0], Vector2.ZERO)
+	for q in poly:
+		r = r.expand(q)
+	return r.grow(1.0)
+
+
+## Screen rect a score popup placed at screen point `p` covers (FxLayer draws it at p + (-w/2, -12)).
+func popup_rect(p: Vector2, text: String) -> Rect2:
+	return Rect2(p + Vector2(-PixelText.width(text) * 0.5, -12.0), Vector2(PixelText.width(text), PixelText.H))
+
+
+## The hit's "500" must not sit inside the silhouette: put it just past the head (or, if that is off
+## screen, beside the column). Returns a screen point; deterministic, no rng.
+func true_frame_popup_pos(c: Vector2, text: String) -> Vector2:
+	var box := true_frame_box(c).grow(TRUE_POPUP_GAP)
+	var w := float(PixelText.width(text))
+	var cands: Array[Vector2] = []
+	if _true_dir.y > 0.0:
+		cands.append(Vector2(c.x, box.position.y + 12.0 - float(PixelText.H)))
+	else:
+		cands.append(Vector2(c.x, box.end.y + 12.0))
+	cands.append(Vector2(box.end.x + w * 0.5, c.y))
+	cands.append(Vector2(box.position.x - w * 0.5, c.y))
+	for p in cands:
+		if world.view_rect.encloses(popup_rect(p, text)):
+			return p
+	return cands[0]
 
 
 func _draw_sepulchre() -> void:

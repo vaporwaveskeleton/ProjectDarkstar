@@ -1,7 +1,7 @@
 extends GdUnitTestSuite
-## S2 true-body impact frame: a Charge hit on the costume entity swaps the costume for the entity's
-## silhouette for `true_frame_frames` DRAWN frames. GDD §20 (closed 2026-11-17): in Act 0 the entity is
-## seen only as a silhouette; NARR-001 §3.4: no face. Deterministic (no world.rng).
+## S2 true-body impact frame: a Charge hit on the costume entity swaps the costume for the entity's true
+## body for `true_frame_frames` DRAWN frames: a spine (the shared vertebral curve, MawView.spine_points),
+## not a disc. GDD §20 (closed 2026-11-17): silhouette only; NARR-001 §3.4: no face. Deterministic (no rng).
 
 const SCENE := preload("res://features/cabinet/cabinet_game.tscn")
 const DT := 1.0 / 60.0
@@ -51,6 +51,18 @@ func _awake() -> void:
 			return
 
 
+func _length() -> float:
+	return SepulchreRitual.TRUE_LENGTH_MULT * SepulchreRitual.BODY_DRAWN_RADIUS
+
+
+## Distance from `p` to the polyline `curve`.
+func _dist_to(curve: PackedVector2Array, p: Vector2) -> float:
+	var best := INF
+	for i in curve.size() - 1:
+		best = minf(best, p.distance_to(Geometry2D.get_closest_point_to_segment(p, curve[i], curve[i + 1])))
+	return best
+
+
 func test_a_hit_sets_the_counter_and_it_counts_drawn_frames() -> void:
 	_awake()
 	assert_bool(ritual.awake).is_true()
@@ -90,27 +102,75 @@ func test_a_real_draw_consumes_the_frame() -> void:
 	assert_bool(ritual.showing_true_frame()).is_false()
 
 
-func test_silhouette_is_a_closed_polygon_with_twenty_notches() -> void:
-	_awake()
+func test_the_shared_curve_is_twenty_tapering_deterministic_points() -> void:
+	var a := MawView.spine_points()
+	assert_int(a.size()).is_equal(20)
+	assert_array(a).is_equal(MawView.spine_points())
+	assert_vector(a[0]).is_equal(Vector2.ZERO)
+	var first := a[1].distance_to(a[0])
+	var last := a[19].distance_to(a[18])
+	assert_float(first).is_greater(last * 1.5)       # vertebra spacing tapers toward the tail
+	# an asymmetric S: it swings both ways, and the halves differ
+	var above := 0
+	var below := 0
+	for p in a:
+		if p.y > 0.005:
+			above += 1
+		elif p.y < -0.005:
+			below += 1
+	assert_int(above).is_greater(2)
+	assert_int(below).is_greater(2)
+	assert_float(absf(a[3].y + a[16].y)).is_greater(0.002)
+
+
+func test_silhouette_is_a_simple_polygon_with_twenty_bumps_per_edge() -> void:
 	var c := Vector2(100, 80)
-	for t in [0.0, 1.3, 7.9]:
-		var poly := ritual.true_frame_polygon_at(c, t)
-		var n := poly.size()
-		assert_int(n).is_greater(MawView.SEGMENTS * 2)
-		var rad: Array[float] = []
-		for p in poly:
-			rad.append(p.distance_to(c))
-		var minima := 0
-		for i in n:
-			if rad[i] < rad[(i + n - 1) % n] and rad[i] < rad[(i + 1) % n]:
-				minima += 1
-		assert_int(minima).is_equal(MawView.SEGMENTS)
-		var top := 0.0
-		for r in rad:
-			top = maxf(top, r)
-		assert_float(top).is_equal_approx(SepulchreRitual.BODY_DRAWN_RADIUS, 1.0)
-		# a simple (non self-overlapping) polygon: it triangulates
+	for d in [Vector2.DOWN, Vector2.UP]:
+		var poly := MawView.spine_silhouette(c, d, _length())
+		var curve := MawView.spine_place(MawView.spine_points(), c, d, _length())
 		assert_bool(Geometry2D.triangulate_polygon(poly).size() > 0).is_true()
+		var n := poly.size()
+		var dist: Array[float] = []
+		for p in poly:
+			dist.append(_dist_to(curve, p))
+		var maxima := 0
+		for i in n:
+			if dist[i] > 2.0 and dist[i] > dist[(i + n - 1) % n] and dist[i] > dist[(i + 1) % n]:
+				maxima += 1
+		assert_int(maxima).is_equal(MawView.SEGMENTS * 2)      # one rounded lobe per vertebra per edge
+		# narrower at the tail than at the head
+		assert_float(MawView.spine_half_width(19)).is_less(MawView.spine_half_width(0) * 0.6)
+
+
+func test_it_is_a_column_not_a_ring() -> void:
+	_awake()
+	var c := Vector2(160, 60)
+	ritual._true_dir = Vector2.DOWN
+	var poly := ritual.true_frame_polygon(c)
+	# head on the costume centre, inside the body
+	assert_bool(Geometry2D.is_point_in_polygon(c, poly)).is_true()
+	# overruns the costume's drawn bounds on one side, by a lot
+	var top := 0.0
+	var ext_fwd := 0.0
+	var ext_back := 0.0
+	for p in poly:
+		top = maxf(top, p.distance_to(c))
+		ext_fwd = maxf(ext_fwd, (p - c).y)
+		ext_back = maxf(ext_back, -(p - c).y)
+	assert_float(top).is_greater(SepulchreRitual.BODY_DRAWN_RADIUS * 3.0)
+	assert_float(ext_fwd).is_greater(ext_back * 2.0)
+	# no radial symmetry: the centroid is far from the head
+	var sum := Vector2.ZERO
+	for p in poly:
+		sum += p
+	assert_float((sum / poly.size()).distance_to(c)).is_greater(SepulchreRitual.BODY_DRAWN_RADIUS)
+
+
+func test_the_column_trails_toward_the_middle_of_the_screen() -> void:
+	_awake()
+	var mid := world.screen_centre
+	assert_vector(ritual.true_frame_dir_for(mid - Vector2(0, 40))).is_equal(Vector2.DOWN)
+	assert_vector(ritual.true_frame_dir_for(mid + Vector2(0, 40))).is_equal(Vector2.UP)
 
 
 func test_only_null_and_bone_3_are_used() -> void:
@@ -118,7 +178,7 @@ func test_only_null_and_bone_3_are_used() -> void:
 	assert_object(SepulchreRitual.TRUE_FRAME_LINE).is_equal(Pal.BONE_3)
 	var src := FileAccess.get_file_as_string("res://features/cabinet/sim/sepulchre_ritual.gd")
 	var start := src.find("func _draw_true_frame")
-	var end := src.find("func true_frame_polygon")
+	var end := src.find("func true_frame_dir_for")
 	var body := src.substr(start, end - start)
 	assert_int(body.find("Pal.")).is_equal(-1)          # colours only via the two constants
 	assert_int(body.count("TRUE_FRAME_FILL")).is_equal(1)
@@ -126,11 +186,34 @@ func test_only_null_and_bone_3_are_used() -> void:
 	assert_int(body.find("PHOS")).is_equal(-1)          # no eye, veins
 
 
+func test_the_score_popup_stays_outside_the_silhouette() -> void:
+	_awake()
+	var text := "500"
+	var view := world.view_rect
+	var spots: Array[Vector2] = [
+		Vector2(view.position.x + 200, view.position.y + 30),       # near the top: column trails down
+		Vector2(view.position.x + 200, view.end.y - 30),            # near the bottom: column trails up
+		Vector2(view.position.x + 14, view.get_center().y - 5),     # at the left edge
+		view.get_center()]
+	for c in spots:
+		ritual._true_dir = ritual.true_frame_dir_for(c)
+		var p := ritual.true_frame_popup_pos(c, text)
+		var box := ritual.true_frame_box(c)
+		assert_bool(box.intersects(ritual.popup_rect(p, text))).is_false()
+	# and the real hit's popup, as FxLayer will draw it
+	ritual._hit_entity(ritual.entity_pos)
+	var ft: FxLayer.FloatText = world.fx.texts[world.fx.texts.size() - 1]
+	var head := world.to_screen(ritual.entity_pos).round()
+	var rect := ritual.popup_rect(world.to_screen(ft.pos).round(), ft.text)
+	assert_bool(ritual.true_frame_box(head).intersects(rect)).is_false()
+
+
 func test_no_rng_is_consumed() -> void:
 	_awake()
 	ritual._hit_entity(ritual.entity_pos)     # the hit's own bursts use fx rng; the true frame adds none
 	var before := world.rng.state
 	ritual.true_frame_polygon(Vector2(50, 50))
+	ritual.true_frame_popup_pos(Vector2(50, 50), "500")
 	ritual.advance_draw_frame()
 	ritual.queue_redraw()
 	await get_tree().process_frame

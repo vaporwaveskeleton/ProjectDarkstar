@@ -66,6 +66,7 @@ func _ready() -> void:
 	messages.credits_stat_shown.connect(func(_i: int) -> void: AudioService.play(&"tally_blip"))   # cue owned by AUDIO-001 (unknown id = silent no-op)
 	reveal.finished.connect(_on_reveal_finished)
 	world.stars.maw = reveal.maw        # S8: the star spine reads the live vertebra positions
+	reveal.maw.stars = world.stars      # ... and the maw draws the arrived stars on its own layer
 	autopilot.enabled = OS.get_cmdline_user_args().has("--autopilot")
 	overlays.emptied.connect(func() -> void: get_tree().paused = false)
 	start_stage(0)
