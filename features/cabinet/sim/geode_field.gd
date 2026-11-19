@@ -22,11 +22,17 @@ class Geode:
 	var shards_freed: int = 0
 	var alive: bool = true
 
+const SIZE_RADII: Array[float] = [10.0, 15.0, 21.0]   ## px by size class 0..2
+const DRAW_MARGIN := 4.0                              ## px a geode's glow reaches past its radius (_draw cull)
+const DRIFT_TRIES := 30                               ## placement attempts per drift-in tick (search bound, like random_point's)
+
 var items: Array[Geode] = []
+var _drift_clock := 0.0               ## P2 drift-in: sim s spent below the floor since the last arrival
 
 
 func reset() -> void:
 	items.clear()
+	_drift_clock = 0.0
 	var avoid := world.torus.size * 0.5
 	for i in world.stage.geodes:
 		var size_class := world.rng.randi_range(0, 2)
@@ -42,7 +48,7 @@ func add_geode(at: Vector2, size_class: int) -> Geode:
 	g.spin = world.rng.randf_range(-0.4, 0.4)
 	g.faces = size_class + 1
 	g.faces_left = g.faces
-	g.radius = [10.0, 15.0, 21.0][size_class]
+	g.radius = SIZE_RADII[size_class]
 	var n := 8 + size_class * 2
 	for k in n:
 		var ang := TAU * k / n
@@ -59,6 +65,34 @@ func tick(delta: float) -> void:
 		g.rot += g.spin * delta
 		g.flash = maxf(0.0, g.flash - delta * 4.0)
 	items.assign(items.filter(func(g: Geode) -> bool: return g.alive))
+	_tick_drift(delta)
+
+
+## P2 drift-in (CabinetStage.geode_drift_s; 0 = off): once fewer than floor(geodes × geode_drift_floor)
+## remain, one new geode drifts in off-view every geode_drift_s of sim time. Never above stage.geodes.
+func _tick_drift(delta: float) -> void:
+	var st := world.stage
+	if st.geode_drift_s <= 0.0:
+		return
+	if items.size() >= mini(st.geodes, floori(st.geodes * world.tuning.geode_drift_floor)):
+		_drift_clock = 0.0
+		return
+	_drift_clock += delta
+	if _drift_clock >= st.geode_drift_s and drift_in() != null:
+		_drift_clock = 0.0
+
+
+## One geode placed like the stage's own (random point, random size class, world.rng), at least
+## geode_drift_clear_px from the Vigil and wholly outside the view. Null if no spot was found this
+## time (the caller tries again next tick).
+func drift_in() -> Geode:
+	var size_class := world.rng.randi_range(0, 2)
+	var margin := SIZE_RADII[size_class] + DRAW_MARGIN
+	for i in DRIFT_TRIES:
+		var p := world.random_point(world.vigil.pos, world.tuning.geode_drift_clear_px)
+		if world.torus.distance(p, world.vigil.pos) >= world.tuning.geode_drift_clear_px and not world.on_screen(p, margin):
+			return add_geode(p, size_class)
+	return null
 
 
 ## The first live geode overlapping a circle, or null.

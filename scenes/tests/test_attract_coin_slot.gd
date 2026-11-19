@@ -65,7 +65,7 @@ func test_focus_loop_without_credit_wraps_through_the_coin_door() -> void:
 		seen.append(_focus().name)
 		runner.simulate_action_pressed("ui_down")
 		await runner.await_input_processed()
-	assert_array(seen).is_equal(["CoinSlot", "Settings", "Quit"])
+	assert_array(seen).is_equal(["CoinSlot", "Settings", "Power"])
 	assert_str(_focus().name).is_equal("CoinSlot")
 
 

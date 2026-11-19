@@ -62,6 +62,7 @@ var _shift_open := false          ## true once fresh-or-continue is decided; pro
 ## The service record (STAT_KEYS order) when this stage started, for the P3 tally card (Sizzle:
 ## messages.show_tally replaces the mid-shift banner): tally_lines(stage_index + 1, <now>, stage_record_start).
 var stage_record_start: Array[int] = [0, 0, 0, 0]
+var _end_charges := -1             ## P2 carry-over: Charges held when this stage ended (cleared/unmade); -1 = not ended
 
 
 func _ready() -> void:
@@ -215,8 +216,12 @@ func _exit_tree() -> void:
 	AudioService.stop_all()
 
 
-func start_stage(i: int) -> void:
+## `carried`: the Charges the Vigil brings from the previous stage of a running shift (only the
+## credits → next stage hand-off passes it); -1 = a fresh start (new game, CONTINUE, capture).
+## Used only when the stage has carry_charges_in (P2), capped at the magazine.
+func start_stage(i: int, carried: int = -1) -> void:
 	stage_index = i
+	_end_charges = -1
 	var st := stages[i]
 	var forced := _forced_stage()
 	if forced >= 0 and i == 0:
@@ -232,6 +237,8 @@ func start_stage(i: int) -> void:
 		st = st.duplicate() as CabinetStage
 		st.sepulchre_start_segments = seg
 	world.start(st)
+	if st.carry_charges_in and carried > 0:
+		world.glass.set_charges(mini(carried, world.tuning.magazine))
 	AudioService.set_bed_pitch_scale(1.0)
 	world.vigil.input_enabled = false
 	messages.clear()
@@ -333,7 +340,7 @@ func _on_timer() -> void:
 		State.CREDITS:
 			var next := next_stage_index()
 			if next >= 0:
-				start_stage(next)
+				start_stage(next, _end_charges if _end_charges >= 0 else world.glass.charges)
 			else:
 				_enter(State.REVEAL)
 				reveal.play(self, bool(_profile.get("pretence_seen", false)))
@@ -369,6 +376,7 @@ func _on_sepulchre_cleared() -> void:
 	if state != State.PLAY:
 		return
 	world.vigil.input_enabled = false
+	_end_charges = world.glass.charges
 	messages.banner(tr("CAB_VIGIL_COMPLETE"), CLEAR_SECONDS)
 	AudioService.play(&"quota")
 	_enter(State.CLEARED, CLEAR_SECONDS)
@@ -376,6 +384,7 @@ func _on_sepulchre_cleared() -> void:
 
 func _on_entity_unmade() -> void:
 	world.vigil.input_enabled = false
+	_end_charges = world.glass.charges
 	messages.banner(tr("CAB_ENTITY_DOWN"), UNMADE_SECONDS)
 	_enter(State.UNMADE, UNMADE_SECONDS)
 
