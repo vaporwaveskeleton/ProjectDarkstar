@@ -410,6 +410,21 @@ Hunger raises the entity only. It never reduces player currency (GDD P4: progres
 | Lance bite, chalk tick length (`ds_cabinet.fx.tick_len_px`; M1 `ds_arc_lance.fx.tick_len_px`) | 3 px ⚙ | the tick where the lance cannot bite (Sepulchre, entity; in M1 any hurtbox with `bites` off); owner-approved 2026-11-18 |
 | Lance bite, chalk tick life (`ds_cabinet.fx.tick_life_s`; M1 `ds_arc_lance.fx.tick_life_s`) | 0.15 s ⚙ | owner-approved 2026-11-18 |
 | Lance bite, `lance_dull` cue volume (`ds_cabinet.fx.lance_dull_db`; M1 `ds_arc_lance.fx.lance_dull_db`) | 0.0 dB ⚙ | offset on the cue's own level (AUDIO-001 §12.11); owner-approved 2026-11-18 |
+| Readable death, dashed ring gap (`ds_cabinet.fx.death_ring_pad_px`) | 6 px ⚙ | chalk gap beyond a shot-killer's drawn silhouette; PM-approved 2026-11-18 (owner authority; TECH-001 Q-T73) |
+| Readable death, arrow length (`ds_cabinet.fx.death_arrow_px`) | 30 px ⚙ | = hull length 15 × outline scale; PM-approved 2026-11-18 (owner authority) |
+| Readable death, outline scale (`ds_cabinet.fx.death_outline_scale`) | 2.0 × ⚙ | the coroner outline (and arrow) is this many times the hull size; PM-approved 2026-11-18 (owner authority) |
+| Readable death, outline draw-on time (`ds_cabinet.fx.death_outline_draw_s`) | 0.15 s ⚙ | PM-approved 2026-11-18 (owner authority) |
+| Readable death, arrow draw-on time (`ds_cabinet.fx.death_arrow_draw_s`) | 0.12 s ⚙ | PM-approved 2026-11-18 (owner authority) |
+| Readable death, chalk delay (`ds_cabinet.fx.death_chalk_delay_s`) | 0.5 s ⚙ | no chalk until the death burst ring has faded; effective delay = max(this, the death burst ring's life); PM-approved 2026-11-18 (owner authority) |
+| Readable death, edge tick length (`ds_cabinet.fx.death_edge_tick_px`) | 5 px ⚙ | chalk tick on the view edge pointing at an off-view killer; PM-approved 2026-11-18 (owner authority) |
+| Surge afterimage, ghost count (`ds_cabinet.fx.ghost_count`) | 3 ⚙ | hull-outline ghosts trailing a Surgelight burst; PM-approved 2026-11-18 (owner authority) |
+| Surge afterimage, ghost spacing (`ds_cabinet.fx.ghost_spacing_ticks`) | 3 ticks ⚙ | base spacing; ghost k sits spacing × k(k+1)/2 ticks back = 3, 9, 18; PM-approved 2026-11-18 (owner authority) |
+| Surge afterimage, ghost hold (`ds_cabinet.fx.ghost_hold_s`) | 0.1 s ⚙ | ghosts linger this long after the surge ends; PM-approved 2026-11-18 (owner authority) |
+| Surge afterimage, bracket length, nearest ghost (`ds_cabinet.fx.ghost_bracket_frac_1`) | 0.6 × edge ⚙ | PM-approved 2026-11-18 (owner authority) |
+| Surge afterimage, bracket length, middle ghost (`ds_cabinet.fx.ghost_bracket_frac_2`) | 0.32 × edge ⚙ | PM-approved 2026-11-18 (owner authority) |
+| Surge afterimage, bracket length, farthest ghost (`ds_cabinet.fx.ghost_bracket_frac_3`) | 0.2 × edge ⚙ | PM-approved 2026-11-18 (owner authority) |
+| Thrust wake, dot count (`ds_cabinet.fx.wake_dots`) | 6 ⚙ | 1 px dots trailing a thrusting Vigil; PM-approved 2026-11-18 (owner authority) |
+| Thrust wake, dot spacing (`ds_cabinet.fx.wake_spacing_ticks`) | 2 ticks ⚙ | PM-approved 2026-11-18 (owner authority) |
 
 Hit-stop does **not** count toward the 1.5 s "Player agency loss" budget above: it is a presentation freeze with input buffered, not a warp effect. The last-Charge slow-mo is likewise not a warp effect and is not counted in that budget: it slows the sim only and the player keeps control (the Vigil runs at real speed).
 
