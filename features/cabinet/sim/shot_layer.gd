@@ -12,6 +12,7 @@ class Shot:
 	var life: float
 	var hostile: bool
 	var alive: bool = true
+	var shooter_id: int = -1   ## hostile only: the firing Acolyte's stable id (-1 = none, e.g. a dev-op shot); S6 rings the shooter
 
 var shots: Array[Shot] = []
 
@@ -32,7 +33,7 @@ func fire_lance(from: Vector2, dir: Vector2, carrier_vel: Vector2) -> void:
 	world.sfx(&"lance", -10.0)
 
 
-func fire_censer(from: Vector2, dir: Vector2) -> void:
+func fire_censer(from: Vector2, dir: Vector2, shooter_id: int = -1) -> void:
 	if shots.size() >= MAX_SHOTS:
 		return
 	var s := Shot.new()
@@ -40,6 +41,7 @@ func fire_censer(from: Vector2, dir: Vector2) -> void:
 	s.vel = dir.normalized() * world.tuning.acolyte_shot_speed
 	s.life = world.tuning.acolyte_shot_life
 	s.hostile = true
+	s.shooter_id = shooter_id
 	shots.append(s)
 	if world.on_screen(from, 32.0):
 		world.sfx(&"acolyte_fire", -8.0)
@@ -73,7 +75,7 @@ func _resolve(s: Shot) -> bool:
 			var away := world.torus.delta(v.pos, s.pos)   # toward the shot
 			if s.vel.length() > 0.0:
 				away = -s.vel.normalized()
-			v.kill(s.pos, away, HOSTILE_SHOT_RADIUS)
+			v.kill(s.pos, away, HOSTILE_SHOT_RADIUS, s.shooter_id)
 			return true
 		return false
 	var dir := s.vel.normalized()

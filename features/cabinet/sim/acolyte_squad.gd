@@ -7,6 +7,7 @@ extends ArcadeLayer
 
 const RADIUS := 7.0
 const HOLD_DISTANCE := 170.0   ## ✱ preferred range when engaging
+const DRAWN_RADIUS := 11.0    ## px ✱ the Acolyte's outermost drawn part (spike tip / censer): sizes the S6 shooter ring
 const GUARD_ORBIT := 110.0     ## ✱ Litany Ring radius around the Sepulchre
 
 class Acolyte:
@@ -90,7 +91,7 @@ func tick(delta: float) -> void:
 				a.cycle -= delta
 				if a.cycle <= 0.0:
 					a.cycle = t.acolyte_cycle
-					world.shots.fire_censer(a.pos + Vector2.from_angle(a.turret) * 8.0, Vector2.from_angle(a.turret))
+					world.shots.fire_censer(a.pos + Vector2.from_angle(a.turret) * 8.0, Vector2.from_angle(a.turret), a.id)
 		else:
 			_mine(a, delta)
 	items.assign(items.filter(func(a: Acolyte) -> bool: return a.alive))
@@ -109,6 +110,16 @@ func _mine(a: Acolyte, delta: float) -> void:
 
 func telling(a: Acolyte) -> bool:
 	return a.cycle <= world.tuning.acolyte_tell
+
+
+## The live Acolyte with this id, or null (killed, despawned, never existed, or id < 0).
+func find_by_id(id: int) -> Acolyte:
+	if id < 0:
+		return null
+	for a in items:
+		if a.alive and a.id == id:
+			return a
+	return null
 
 
 func hit_test(p: Vector2, r: float) -> Acolyte:

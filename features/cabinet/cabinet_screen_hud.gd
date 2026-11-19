@@ -29,7 +29,7 @@ const SEPULCHRE_END_X := 202.0       ## right-aligned value ends 4 px clear of t
 const SEPARATOR_Y := 39.0
 const TEXT_H := 7.0                  ## PixelText glyph height at 1×
 const CREDIT_ABOVE_FOOT := 22.0      ## the credit line's top, measured up from the grid's bottom
-const MAKER_ABOVE_FOOT := 10.0
+const MAKER_ABOVE_FOOT := CabinetScreenSpec.MAKER_BAND_PX
 
 var world: ArcadeWorld
 var score := 0

@@ -132,7 +132,8 @@ func test_marks_clear_on_respawn_and_on_world_start() -> void:
 
 func test_off_view_killer_gets_an_edge_tick_toward_it() -> void:
 	var v := world.vigil.pos
-	world.fx.death_mark(world.torus.wrap(v + Vector2(0, world.view_size.y)), 3.0, Vector2.DOWN, v)
+	var ac := world.acolytes.spawn(world.torus.wrap(v + Vector2(0, world.view_size.y)))
+	world.fx.death_mark(ac.pos, 3.0, Vector2.DOWN, v, INF, ac.id)
 	var tick := world.fx.death_edge_tick(world.fx.death_marks[0])
 	assert_int(tick.size()).is_equal(2)
 	assert_bool(world.view_rect.has_point(tick[0])).is_true()
@@ -140,12 +141,32 @@ func test_off_view_killer_gets_an_edge_tick_toward_it() -> void:
 	assert_float(tick[1].y).is_less(tick[0].y)                    # tick points back inward
 
 
+func test_chalk_stays_inside_the_playfield_above_the_footer() -> void:
+	var v := world.vigil.pos
+	var footer_top := world.view_rect.end.y - CabinetScreenSpec.MAKER_BAND_PX
+	for off: Vector2 in [Vector2(0, 1), Vector2(0, -1), Vector2(1, 0), Vector2(-1, 0), Vector2(1, 1), Vector2(-1, 1)]:
+		var ac := world.acolytes.spawn(world.torus.wrap(v + off * world.view_size * 1.2))
+		world.fx.death_marks.clear()
+		world.fx.death_mark(ac.pos, 3.0, off, v, INF, ac.id)
+		var m: FxLayer.DeathMark = world.fx.death_marks[0]
+		var tick := world.fx.death_edge_tick(m)
+		assert_int(tick.size()).is_equal(2)
+		var leader := world.fx.death_leader(m)
+		var pts: Array[Vector2] = [tick[0], tick[1]]
+		if leader.size() == 2:
+			pts.append(leader[1])
+		for p in pts:
+			assert_bool(world.playfield_rect.has_point(p)).override_failure_message("%s %s outside playfield" % [off, p]).is_true()
+			assert_float(p.y).is_less(footer_top)
+
+
 func test_off_view_tick_follows_the_short_way_across_the_wrap() -> void:
 	var size := world.torus.size
 	var v := Vector2(8.0, size.y * 0.5)
-	world.fx.death_mark(Vector2(size.x - 2.0 * world.view_size.x, v.y), 3.0, Vector2.LEFT, v)
+	var ac := world.acolytes.spawn(Vector2(size.x - 2.0 * world.view_size.x, v.y))
+	world.fx.death_mark(ac.pos, 3.0, Vector2.LEFT, v, INF, ac.id)
 	# the long way round is to the right; the torus delta says the killer is to the LEFT or nearer wrap
-	var d := world.torus.delta(v, world.fx.death_marks[0].killer_pos)
+	var d := world.torus.delta(v, ac.pos)
 	var tick := world.fx.death_edge_tick(world.fx.death_marks[0])
 	assert_int(tick.size()).is_equal(2)
 	assert_bool(signf(tick[0].x - world.screen_centre.x) == signf(d.x)).is_true()
@@ -248,14 +269,14 @@ func test_leader_only_when_the_killer_is_far_and_it_tracks_the_live_entity() -> 
 	var b := world.fx.death_leader(m)
 	assert_float(b[1].x - a[1].x).is_equal_approx(20.0, 1.0)
 	assert_vector(m.killer_pos).is_equal(v0 + Vector2(40, 0))        # the death-time anchor is untouched
-	# a shot never tracks: it stays where it killed
+	# a shot with no shooter: nothing live to point at (the arrow alone)
 	var s0 := FxLayer.DeathMark.new()
 	s0.killer_pos = v0 + Vector2(5, 0)
 	s0.vigil_pos = v0
 	s0.from_dir = Vector2.RIGHT
 	s0.killer_radius = ShotLayer.HOSTILE_SHOT_RADIUS
 	world.ritual.entity_pos = v0 + Vector2(500, 500)
-	assert_vector(world.fx.death_killer_pos(s0)).is_equal(v0 + Vector2(5, 0))
+	assert_bool(world.fx.death_killer_pos(s0).is_finite()).is_false()
 	assert_int(world.fx.death_leader(s0).size()).is_equal(0)
 
 
@@ -291,13 +312,133 @@ func test_off_view_entity_ends_the_leader_at_the_edge_tick() -> void:
 	assert_vector(lead[1]).is_equal(tick[1])
 
 
-func test_a_shot_gets_the_silhouette_ring_as_well_as_the_outline() -> void:
+func _shot_death(shooter_pos: Vector2, with_shooter: bool = true) -> FxLayer.DeathMark:
+	## A hostile shot from `shooter_pos` (a real Acolyte) kills the Vigil; returns the death mark.
 	var v0 := world.vigil.pos
-	world.fx.death_mark(v0 + Vector2(10, 0), ShotLayer.HOSTILE_SHOT_RADIUS, Vector2.RIGHT, v0)
-	var m: FxLayer.DeathMark = world.fx.death_marks[0]
+	var ac := world.acolytes.spawn(shooter_pos)
+	world.vigil.kill(v0 + Vector2(10, 0), Vector2.RIGHT, ShotLayer.HOSTILE_SHOT_RADIUS, ac.id if with_shooter else -1)
+	return world.fx.death_marks[0]
+
+
+func test_fire_censer_stamps_the_shooter_id_and_the_squad_passes_its_own() -> void:
+	world.shots.fire_censer(Vector2(50, 50), Vector2.RIGHT)
+	assert_int(world.shots.shots[0].shooter_id).is_equal(-1)
+	world.shots.fire_censer(Vector2(50, 50), Vector2.RIGHT, 7)
+	assert_int(world.shots.shots[1].shooter_id).is_equal(7)
+	# the squad fires with its own id
+	world.shots.reset()
+	var ac := world.acolytes.spawn(world.vigil.pos + Vector2(100, 0))
+	ac.cycle = 0.0
+	world.ritual.awake = false
+	world.acolytes.tick(DT)
+	assert_int(world.shots.shots.size()).is_equal(1)
+	assert_int(world.shots.shots[0].shooter_id).is_equal(ac.id)
+	# and the kill carries it into the mark
+	world.shots.shots[0].pos = world.vigil.pos + Vector2(3, 0)
+	world.shots.shots[0].vel = Vector2.LEFT * 10.0
+	world.shots.tick(DT)
+	assert_bool(world.vigil.alive).is_false()
+	assert_int((world.fx.death_marks[0] as FxLayer.DeathMark).shooter_id).is_equal(ac.id)
+
+
+func test_a_shot_death_rings_the_live_on_view_shooter_not_the_spent_shot() -> void:
+	var v0 := world.vigil.pos
+	var m := _shot_death(v0 + Vector2(90, 0))
 	assert_bool(world.fx.death_is_big(m)).is_false()
-	assert_float(world.fx.death_ring_radius(m)).is_equal(ShotLayer.HOSTILE_SHOT_RADIUS + fx.death_ring_pad_px)
-	assert_int(world.fx.death_outline(m).size()).is_equal(4)
+	var kp := world.fx.death_killer_pos(m)
+	assert_vector(kp).is_equal(v0 + Vector2(90, 0))
+	var rr := world.fx.death_ring_radius(m)
+	assert_float(rr).is_equal(AcolyteSquad.DRAWN_RADIUS + fx.death_ring_pad_px)
+	var segs := world.fx.death_ring_segments(m, 1.0)
+	assert_int(segs.size()).is_greater(3)
+	var centre := world.to_screen(kp).round()
+	var shot_centre := world.to_screen(m.killer_pos).round()
+	for seg in segs:
+		for p in seg:
+			assert_float(p.distance_to(centre)).is_equal_approx(rr, 1.0)       # round the shooter
+			assert_float(p.distance_to(shot_centre)).is_greater(3.0 + 2.0)    # never round the spent shot
+			assert_float(p.x - floorf(p.x)).is_equal(0.0)                     # integer ends -> pixel-centred lines
+	# the leader runs from the arrow's tail to the shooter's near edge
+	var lead := world.fx.death_leader(m)
+	assert_int(lead.size()).is_equal(2)
+	assert_vector(lead[0]).is_equal(world.fx.death_arrow(m)[0])
+	assert_float(lead[1].x).is_equal_approx(centre.x - rr, 1.0)
+	assert_float(lead[1].y).is_equal_approx(centre.y, 1.0)
+
+
+func test_the_shooter_ring_and_leader_track_its_movement_through_dead() -> void:
+	var v0 := world.vigil.pos
+	var m := _shot_death(v0 + Vector2(90, 0))
+	var ac := world.acolytes.find_by_id(m.shooter_id)
+	var lead_a := world.fx.death_leader(m)
+	var ring_a := world.fx.death_ring_segments(m, 1.0)
+	ac.pos = v0 + Vector2(90, 30)
+	var lead_b := world.fx.death_leader(m)
+	var ring_b := world.fx.death_ring_segments(m, 1.0)
+	assert_float(lead_b[1].y - lead_a[1].y).is_greater(20.0)   # the leader's end followed the shooter down
+	assert_float(ring_b[0][0].y - ring_a[0][0].y).is_equal_approx(30.0, 1.0)
+	assert_vector(m.killer_pos).is_equal(v0 + Vector2(10, 0))   # the contact anchor is untouched
+
+
+func test_off_view_shooter_ends_the_leader_at_the_edge_tick_and_has_no_ring() -> void:
+	var v0 := world.vigil.pos
+	var m := _shot_death(world.torus.wrap(v0 + Vector2(0, world.view_size.y)))
+	var tick := world.fx.death_edge_tick(m)
+	assert_int(tick.size()).is_equal(2)
+	var lead := world.fx.death_leader(m)
+	assert_int(lead.size()).is_equal(2)
+	assert_vector(lead[1]).is_equal(tick[1])
+	assert_int(world.fx.death_ring_segments(m, 1.0).size()).is_equal(0)
+
+
+func test_a_dead_or_absent_shooter_leaves_the_arrow_only() -> void:
+	var v0 := world.vigil.pos
+	var m := _shot_death(v0 + Vector2(90, 0))
+	world.acolytes.kill(world.acolytes.find_by_id(m.shooter_id))
+	assert_bool(world.fx.death_killer_gone(m)).is_true()
+	assert_int(world.fx.death_leader(m).size()).is_equal(0)
+	assert_int(world.fx.death_ring_segments(m, 1.0).size()).is_equal(0)
+	assert_int(world.fx.death_edge_tick(m).size()).is_equal(0)
+	assert_int(world.fx.death_arrow(m).size()).is_equal(4)
+	world.fx.clear_death_marks()
+	world.vigil.alive = true
+	var m2 := _shot_death(v0 + Vector2(90, 0), false)   # shooter_id -1
+	assert_int(m2.shooter_id).is_equal(-1)
+	assert_int(world.fx.death_leader(m2).size()).is_equal(0)
+	assert_int(world.fx.death_ring_segments(m2, 1.0).size()).is_equal(0)
+	# ids are never reused: a later Acolyte does not inherit the dead shooter's mark
+	var later := world.acolytes.spawn(v0 + Vector2(90, 0))
+	assert_bool(later.id != m.shooter_id).is_true()
+	assert_int(world.fx.death_ring_segments(m, 1.0).size()).is_equal(0)
+
+
+func test_the_entity_never_gets_a_shooter_ring() -> void:
+	var v0 := world.vigil.pos
+	world.ritual.entity_pos = v0 + Vector2(100, 0)
+	world.fx.death_mark(world.ritual.entity_pos, SepulchreRitual.BODY_DRAWN_RADIUS, Vector2.RIGHT, v0)
+	var m: FxLayer.DeathMark = world.fx.death_marks[0]
+	assert_int(world.fx.death_ring_segments(m, 1.0).size()).is_equal(0)
+	assert_vector(world.fx.death_killer_pos(m)).is_equal(world.ritual.entity_pos)
+	assert_float(world.fx.death_killer_radius(m)).is_equal(SepulchreRitual.BODY_DRAWN_RADIUS)
+
+
+func test_the_ring_segments_are_pixel_centred_when_drawn_in_the_real_stage() -> void:
+	# draw_arc through integer centres vanished in real renders (TECH-001 §1.3): every ring piece goes
+	# through chalk_line_ends, so each end is an integer point + 0.5.
+	var v0 := world.vigil.pos
+	var m := _shot_death(v0 + Vector2(90, 0))
+	for i in 75:
+		world.fx.tick(DT)
+	var o := world.fx.death_outline_frac(m)
+	assert_float(o).is_equal(1.0)
+	var segs := world.fx.death_ring_segments(m, o)
+	assert_int(segs.size()).is_greater(0)
+	for seg in segs:
+		assert_float(seg[0].x).is_equal(roundf(seg[0].x))
+		assert_float(seg[0].y).is_equal(roundf(seg[0].y))
+		for pt in world.fx.chalk_line_ends(seg[0], seg[1]):
+			assert_float(pt.x - floorf(pt.x)).is_equal(0.5)
+			assert_float(pt.y - floorf(pt.y)).is_equal(0.5)
 
 
 func test_the_finished_outline_is_a_solid_closed_hull() -> void:

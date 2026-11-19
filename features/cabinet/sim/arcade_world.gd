@@ -32,6 +32,7 @@ var rng := RandomNumberGenerator.new()
 var view_centre := Vector2.ZERO
 var view_rect := Rect2()              ## the play view in screen (grid) coordinates: the grid below the HUD strip
 var view_size := Vector2.ZERO         ## its size: what the player sees of the field
+var playfield_rect := Rect2()         ## view_rect minus the footer band: chalk clips here, never over cabinet text
 var screen_centre := Vector2.ZERO     ## where the Vigil is drawn: the centre of the play view
 var paused_sim := false
 var time := 0.0
@@ -64,6 +65,7 @@ func _ready() -> void:
 	if screen_spec == null:
 		screen_spec = load("res://data/cabinet/cabinet_screen.tres") as CabinetScreenSpec
 	view_rect = screen_spec.play_rect()
+	playfield_rect = screen_spec.playfield_rect()
 	view_size = view_rect.size
 	screen_centre = view_rect.get_center()
 
