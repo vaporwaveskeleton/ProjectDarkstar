@@ -310,6 +310,10 @@ func _end(id: StringName) -> void:
 func _exit_tree() -> void:
 	if live.has(&"W1-08"):
 		AudioService.set_chant(0.0)
+	# W1-07: a cue still sounding when the sector goes away must not hold its playback past exit.
+	if _chant_player:
+		_chant_player.stop()
+		_chant_player.stream = null
 
 
 func _reduced() -> bool:
