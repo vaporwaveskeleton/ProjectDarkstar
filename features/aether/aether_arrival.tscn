@@ -1,0 +1,25 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://features/aether/aether_arrival.gd" id="1_arr"]
+[ext_resource type="PackedScene" path="res://features/aether/aether_view.tscn" id="2_view"]
+[ext_resource type="PackedScene" path="res://features/aether/aether_backdrop.tscn" id="3_bd"]
+[ext_resource type="PackedScene" path="res://features/aether/lantern_marker.tscn" id="4_lm"]
+[ext_resource type="Resource" path="res://data/aether/pale_marches_t1.tres" id="5_look"]
+
+[node name="AetherArrival" type="Node"]
+script = ExtResource("1_arr")
+look = ExtResource("5_look")
+
+[node name="View" parent="." instance=ExtResource("2_view")]
+unique_name_in_owner = true
+
+[node name="Backdrop" parent="View/World" instance=ExtResource("3_bd")]
+unique_name_in_owner = true
+
+[node name="Lantern" parent="View/World" instance=ExtResource("4_lm")]
+unique_name_in_owner = true
+position = Vector2(320, 180)
+
+[node name="Camera" type="Camera2D" parent="View/World"]
+unique_name_in_owner = true
+position = Vector2(320, 180)

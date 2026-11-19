@@ -82,7 +82,8 @@ func _exit_tree() -> void:
 	SceneRouter.unregister_host(self)
 
 
-## Replace the current top-level scene.
+## Replace the current top-level scene. Removes the old scene and adds the new one in one call, so
+## a `skip_curtain` route change (SceneRouter.go_to) swaps them within a single frame.
 func mount(scene: Node) -> void:
 	for child in _route_host.get_children():
 		_route_host.remove_child(child)

@@ -260,7 +260,15 @@ func _set_scroll(layer: Parallax2D, s: float) -> void:
 
 
 func _process(_delta: float) -> void:
-	if look == null:
+	refresh()
+
+
+## Upload the current time, camera, screen-size, drain and lantern state to every layer now, without
+## advancing time. _process calls it each frame; a caller that sets state outside _process (e.g. a
+## route entered by a deferred call, after this frame's _process) calls it so the first drawn frame
+## is already correct.
+func refresh() -> void:
+	if look == null or not is_node_ready():
 		return
 	var t := 0.0 if reduced_motion else time_s
 	var screen := get_viewport_rect().size
