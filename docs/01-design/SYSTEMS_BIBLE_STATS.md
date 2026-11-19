@@ -371,6 +371,15 @@ Hunger raises the entity only. It never reduces player currency (GDD P4: progres
 | Active shots, both sides | ≤ 180 ✱ | the bullet-layer ceiling TECH-001 §2.6 and §8 measure against; Run Sigils that multiply shots respect it (LOOP-001 §4.3 ceiling lint) |
 | Colliders per sector | ≤ 96 ✱ | static + kinematic + area shapes, excluding shots; TECH-001 §8.3 profiles at this ceiling |
 | Audio occlusion | chant audible through geometry ≤ 420 px | the Choir is a sound mechanic |
+| Hit-stop, Charge hits the entity (`ds_cabinet.fx.hitstop_charge_hits_entity_frames`) | 3 frames ⚙ | 60 Hz sim frames; owner-approved 2026-11-18 (TECH-001 Q-T44) |
+| Hit-stop, entity unmade (`ds_cabinet.fx.hitstop_entity_unmade_frames`) | 8 frames ⚙ | 60 Hz sim frames; owner-approved 2026-11-18 |
+| Hit-stop, Vigil death (`ds_cabinet.fx.hitstop_vigil_death_frames`) | 6 frames ⚙ | 60 Hz sim frames; owner-approved 2026-11-18 |
+| Hit-stop, "IT WAKES" (`ds_cabinet.fx.hitstop_it_wakes_frames`) | 4 frames ⚙ | 60 Hz sim frames; owner-approved 2026-11-18 |
+| Hit-stop, modules knocked (`ds_cabinet.fx.hitstop_modules_knocked_frames`) | 2 frames ⚙ | 60 Hz sim frames; owner-approved 2026-11-18 |
+| Hit-stop cap (`ds_cabinet.fx.hitstop_max_frames`) | 10 frames ⚙ | maximum for any single or stacked freeze; owner-approved 2026-11-18 |
+| Hit-stop under Reduced Motion (`ds_cabinet.fx.hitstop_reduced_motion_scale`) | × 0.5 ⚙ | Reduced Motion multiplies the frames by this; 0 disables; owner-approved 2026-11-18 |
+
+Hit-stop does **not** count toward the 1.5 s "Player agency loss" budget above: it is a presentation freeze with input buffered, not a warp effect.
 
 ---
 

@@ -74,15 +74,15 @@ extends TunableResource
 @export var vigil_death_shake_dur: float = 0.25           ## s ✱ (≤ 0.25 cap)
 
 
-# --- Hit-stop ✱ PROPOSED (owner approval pending; not SYS-001 yet) ---
+# --- Hit-stop ⚙ (owner-approved 2026-11-18, SYS-001 §9) ---
 # Sim frames (physics ticks at 60 Hz). Freezes the sim only: audio, CRT, state timers and input keep running.
-@export var hitstop_charge_hits_entity_frames: int = 3    ## frames ✱ PROPOSED (_hit_entity)
-@export var hitstop_entity_unmade_frames: int = 8         ## frames ✱ PROPOSED (_unmake)
-@export var hitstop_vigil_death_frames: int = 6           ## frames ✱ PROPOSED (VigilShip.kill)
-@export var hitstop_it_wakes_frames: int = 4              ## frames ✱ PROPOSED (AWAKENING "IT WAKES")
-@export var hitstop_modules_knocked_frames: int = 2       ## frames ✱ PROPOSED (_knock_modules)
-@export var hitstop_max_frames: int = 10                  ## frames ✱ PROPOSED hard cap on any freeze or stack
-@export var hitstop_reduced_motion_scale: float = 0.5     ## ✱ PROPOSED frames x this under Reduced Motion; 0 disables
+@export var hitstop_charge_hits_entity_frames: int = 3    ## frames ⚙ owner-approved 2026-11-18, SYS-001 §9 (_hit_entity)
+@export var hitstop_entity_unmade_frames: int = 8         ## frames ⚙ owner-approved 2026-11-18, SYS-001 §9 (_unmake)
+@export var hitstop_vigil_death_frames: int = 6           ## frames ⚙ owner-approved 2026-11-18, SYS-001 §9 (VigilShip.kill)
+@export var hitstop_it_wakes_frames: int = 4              ## frames ⚙ owner-approved 2026-11-18, SYS-001 §9 (AWAKENING "IT WAKES")
+@export var hitstop_modules_knocked_frames: int = 2       ## frames ⚙ owner-approved 2026-11-18, SYS-001 §9 (_knock_modules)
+@export var hitstop_max_frames: int = 10                  ## frames ⚙ owner-approved 2026-11-18, SYS-001 §9: hard cap on any freeze or stack
+@export var hitstop_reduced_motion_scale: float = 0.5     ## ⚙ owner-approved 2026-11-18, SYS-001 §9: frames x this under Reduced Motion; 0 disables
 
 
 func tunable_properties() -> PackedStringArray:
