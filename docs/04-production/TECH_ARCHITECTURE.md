@@ -303,7 +303,7 @@ An autoload exists only when the service genuinely needs a global lifetime. Addi
 | `SettingsService` | `autoload/settings_service.gd` | text scale and accessibility apply before the first frame and across scenes (English only; no language setting) | hold game state; read saves | built |
 | `SaveService` | `autoload/save_service.gd` | slots outlive scenes; one place enforces SYS-001 §8 cadence | decide *when* to save (callers do); store display text | built |
 | `SceneRouter` | `autoload/scene_router.gd` | one top-level scene at a time; any screen may request a change. `merge_routes(table)` (2026-11-18) adds a second route table (the dev table, §2.1) and refuses to overwrite an existing id. Route param `skip_curtain` (2026-11-18, §2.1): a bool `true` skips the host's curtain both ways (`skips_curtain(params)`). Route param `continue_stage` (2026-11-19, §2.10): an int, 0-based stage, on `&"attract"` and `&"cabinet"`; absent or −1 = no CONTINUE offer | own overlays/modals or UI state | built |
-| `RunSession` | `autoload/run_session.gd` | run and Iteration state (LOOP-001 §2) outlive every sector scene across 5 Seams and must be readable by the Ruins and `SaveService`; owns the Hourglass Clock tick (§4.1) | own sector nodes; write saves itself (it hands payloads to `SaveService` at allowed reasons) | **planned** (approved 2026-11-17) |
+| `RunSession` | `autoload/run_session.gd` | run and Iteration state (LOOP-001 §2) outlive every sector scene across 5 Seams and must be readable by the Ruins and `SaveService`; owns the Hourglass Clock tick (§4.1) | own sector nodes; write saves itself (it hands payloads to `SaveService` at allowed reasons) | **planned** (approved 2026-11-17); contract **§4.2a** (proposed 2026-11-19, pending PM) |
 | `AudioService` | `autoload/audio_service.gd` | music stems, the chant and the entity voice cross scene changes; owns ducking (AUDIO-001 §7.2) | decide *when* a line plays (gameplay signals do) | **built** 2026-11-18: one-shot pool of 24 with priority stealing and per-cue policy (§2.7), chant bed (`set_chant(level)`; `set_bed_pitch_scale(scale)` bends its pitch for the slow-mo, AUDIO-001 §12.11; the autoload never connects to `ArcadeWorld`; `set_ambience(id, level)` drives one Aether ambience slot of two crossfading players on `BUS-AMB`, AUDIO-001 §12.12; `set_subtraction(amount, ramp_s)` / `subtraction()` drive the Passing's low-pass and cut on `BUS-AMB` and `BUS-MUS` only, AUDIO-001 §12.14 (b); the Passing is PM-approved 2026-11-18, no caller = no effect until WARP wires it), silence budget; plays the chirp render of each id in `data/audio/cue_ids.tres` and builds an `SfxSynth` fallback (`core/audio/sfx_synth.gd`) only for a listed cue whose render is missing (§6.5, D-14 amended: no recorded audio, ever) |
 | `_mcp_game_helper` | `addons/godot_ai/runtime/game_helper.gd` | editor tooling: lets the godot-ai MCP inspect and drive the game launched from the editor (talks only over Godot's debugger link; returns early in the editor; never consumes input) | hold game state; be referenced by game code; ship in an export (the addon's export plugin strips it; the release preset also excludes `addons/godot_ai/*`) | **built** 2026-11-18 (vendored v4.4.1) |
 
@@ -548,7 +548,72 @@ Rule: a stage may read anything earlier in the same tick and anything from the p
 | Lantern Tree, banked currency, Codex, endings, bests | Anchored | `SaveService` profile slot, loaded into a `ProfileState` resource at boot | forever |
 | Per-sector actors, shards, Sepulchre, warp effects | none (rebuilt from seed) | `SectorHost` children | one sector |
 
-Sector scenes never own run state; they receive a `RunState` reference in `on_route_entered(params)` and write back through its methods. That is why a crash costs at most one Seam (LOOP-001 §2).
+Sector scenes never own run state; they receive a `RunState` reference in `on_route_entered(params)` and write back through its methods. That is why a crash costs at most one Seam (LOOP-001 §2). The `RunSession` contract (API, hand-off, Hourglass, Act 0 bank) is §4.2a.
+
+### 4.2a RunSession contract — proposed, pending PM (architect, 2026-11-19)
+
+**Status: designed, not built.** Sources: §2.8 row; §4.1 (stage −20); §4.2; §4.9; §7.2; LOOP-001 §2, §6.5; SYS-001 §6, §7.1, §7.2, §8; GDD §6.2. Open items: Q-T136…Q-T145 (§11.1).
+
+**Shape (testing seam first).** All rules live in `RunSessionCore` (`features/run/run_session_core.gd`, `RefCounted`, no node, no autoload reads). The autoload `autoload/run_session.gd` is a thin `Node`: it owns one `core`, sets `process_physics_priority = −20` (§4.1), calls `core.tick(delta)` in `_physics_process`, and injects `SaveService` as the core's saver. Tests build a fresh `RunSessionCore.new(stats, saver)` with a `MemorySaveBackend`-backed saver (§7.4) and drive `tick()` by hand; no test reads or mutates the `RunSession` autoload's state.
+
+**State objects** (`features/run/`). Plain `RefCounted` with `to_payload() -> Dictionary` / `static from_payload(d) -> X`; never `Resource` (never saved as `.tres`, never shared by the `ResourceLoader` cache). Payloads hold ids and numbers only (§7.2).
+
+| Class | Fields (LOOP-001 §2) | Lifetime | Slot |
+|---|---|---|---|
+| `RunState` | `seam_index` int (0 = no run, 1–5), `seed` int, `sigils`/`relics` Array[StringName], `pact` StringName, `charges` int, `composure` float, `ember_in_run` int | `start_run` → `run_ended` | `run` |
+| `IterationState` | `started` bool, `loop_min_left` float, `skies_dark` int 0–9, `hunger` float, `corruption` Dictionary[StringName, int] | first Ruins visit → ninth sky | `iteration` |
+| `ProfileState` | `ember_banked` int, `act0_banked` bool (new flag, Q-T101), existing Act 0 keys (§7.2); loaded once at boot and held by the core (single profile writer from the Ruins on, Q-T142) | forever | `profile` |
+
+Tunables: `RunSessionStats` (`TunableResource`, `ds_run.session.*`, `data/run/run_session.tres`) mirrors SYS-001 §6/§7 rows by key (budget, skies, death base/step, win refund, show threshold, Seam clear Ember, Act 0 divisor, Seam count). No value is set here; the loop-minute rate is owed (Q-T136).
+
+**Public API** (on `core`; the autoload exposes `RunSession.core`).
+
+| Call | Effect | Save (reason) |
+|---|---|---|
+| `arrive_at_ruins(params)` | Act 0 bank (below), `begin_iteration_if_needed()`, then one profile + one iteration write | `profile`, `iteration` (`ruins_entry`) |
+| `start_run(seed := -1) -> RunState` | new `RunState`, `seam_index = 1`; −1 = fresh seed via `RunSeed` (§4.9), else typed `SeedCode` | none |
+| `enter_seam() -> Dictionary` | emits `seam_entered`; returns `{session: core, seam_index, seam_seed}` for `SceneRouter.go_to(&"sector", …)` | none |
+| `end_seam(report: SeamReport)` | write-back (Composure, Charges, Ember +Seam clear per SYS-001 §7.2), `seam_index += 1` | `run` (`seam_boundary`) |
+| `die()` / `win()` / `abandon()` | end run; death lump / win refund (Hourglass table); emit `run_ended` | none here (Q-T139) |
+| `tick(delta_s)` | spend clock unless paused or not started | never |
+| `pause_clock(reason)` / `resume_clock(reason)` | reason-counted set (`&"pause"`, `&"codex"`, `&"cinematic"`, `&"attract"`) | never |
+| `consume_clock(loop_min, cause: StringName)` | lump spend, clamps at 0, emits each sky crossed | never |
+| reads: `run()`, `iteration()`, `profile()`, `loop_min_left()`, `skies_dark()`, `hourglass_visible()` | Ruins and HUD poll; callers never mutate returned objects | — |
+| `snapshot(slot) -> Dictionary` / `restore(slot, payload) -> bool` | serialise / load one slot; `restore` rejects unknown keys and non-number/id values | — |
+
+The core calls `saver.save_slot(slot, snapshot(slot), reason)` only from the rows marked; any other call site is a bug (test below). It never touches files.
+
+**Must not:** own or find sector nodes; save from `tick`, `enter_seam`, `die` or any mid-run moment; hold display text; read input; be reached by sector code except through the `session` route param.
+
+**Sector hand-off.** `SectorHost.on_route_entered(params)` reads typed `session: RunSessionCore`. Absent (dev `--route=sector`, M1 sandboxes, tests) → a throwaway core with a dev seed and a null saver, so nothing saves. At entry `Composure.load_from(session.run())` and `ChargeMagazine.load_from(session.run())` copy the values in; during the Seam the sector nodes are the live authority (stages 0–30 write them, §4.1). At Seam clear `SectorHost` builds a `SeamReport` (`composure`, `charges`, `ember_earned`, ids only) and calls `session.end_seam(report)`; on death it calls `session.die()`. `RunState` never changes mid-Seam, so the `run` save stays seam-boundary only. M1's sector-scoped `%Composure` and `ChargeMagazine` keep their APIs and gain `load_from` / `report_into` only.
+
+**Proposed signals (on `RunSessionCore`; each needs an EVT-001 row before it is built):** `iteration_started()`, `run_started(seed: int)`, `seam_entered(seam_index: int)`, `seam_cleared(seam_index: int)`, `run_ended(outcome: StringName)` (`&"died"`, `&"won"`, `&"abandoned"`, `&"ninth_sky"`), `sky_darkened(skies_dark: int)`, `iteration_ended()`. HUD readouts poll (§5.2), never listen.
+
+**Act 0 → Ruins hand-off (Q-T101 proposal).**
+
+| Step | Owner | Rule |
+|---|---|---|
+| 1 | Cabinet (Arcade layer) | on Act 0 completion: `SceneRouter.go_to(&"ruins", {act0_vigil_index: int})`; absent = no bank |
+| 2 | Ruins `on_route_entered` | calls `RunSession.core.arrive_at_ruins(params)`; nothing else touches Ember |
+| 3 | core | if `act0_vigil_index` present **and** `profile.act0_banked == false`: `ember_banked += floor(vi / divisor)` (SYS-001 §7.1 formula, divisor from data) and `act0_banked = true` in the same `ProfileState` |
+| 4 | core | one `profile` write, reason `ruins_entry`: pay and flag commit together or not at all |
+| Replay | — | a later Cabinet replay may pass the param again; the flag blocks it (wall Cabinet pays tickets, §11.2 2026-11-18) |
+| `--no-save` | `SaveService` | pay happens in memory, no write; the next real session still pays once |
+
+**Hourglass mapped to code** (numbers cited, not copied).
+
+| Rule | Source | Code |
+|---|---|---|
+| 120 loop-min per Iteration at Entropy 0 🔒 | SYS-001 §6; LOOP-001 §6.5 | `IterationState.loop_min_left` set from stats in `begin_iteration_if_needed`; Entropy scaling Q-T137 |
+| Starts on the first Ruins visit; Act 0 never ticks | SYS-001 §6; GDD §6.2 exception | `started` false until `arrive_at_ruins`; `tick` no-ops while false |
+| Real time in runs and the Ruins spends it | LOOP-001 §6.5 | `tick(delta)` × rate (Q-T136); stage −20; unscaled vs `Engine.time_scale` Q-T138 |
+| Never during pause, Codex 🔒, cinematics, attract | LOOP-001 §6.5; WARP-001 §6.1 D-01 | any active `pause_clock` reason → no spend; autoload `process_mode` pausable, so `SceneTree.paused` also stops it |
+| Death lump `10 + 2 × (Seam − 1)` ✱ | SYS-001 §6 | `die()` → `consume_clock(…, &"death")` |
+| Win refund +15 ✱, cap 120 | SYS-001 §6; LOOP-001 LR-09 | `win()` adds, clamps to budget; skies never re-light (Q-T143) |
+| A sky per ninth of the budget; only the ninth ends the run | SYS-001 §6; LOOP-001 §6.5 | `skies_dark = floor(spent / (budget / 9))`; one `sky_darkened` per sky crossed (a lump can cross two); at 9: `run_ended(&"ninth_sky")` if in a run, then `iteration_ended()` |
+| In-run show at ≤ 15 loop-min | SYS-001 §6; WARP-001 §4.1 | `hourglass_visible()`; Steady Ledger readout reads `loop_min_left()` honestly |
+
+**Tests that prove it** (planned): `features/run/tests/test_run_session_core.gd` (start_run seeding and Seam 1–5; end_seam write-back and Seam Ember; die lump per Seam; win refund clamp; multi-sky lump emits each sky; ninth sky ends the run; reason-counted pause; no tick before first Ruins); `test_run_session_saves.gd` (spy saver: only the marked calls and reasons, none from `tick`/`die`/mid-Seam; `snapshot`/`restore` round trip; payload values are numbers/bools/ids only); `test_act0_bank.gd` (pays once; replay pays 0; absent param pays 0; `--no-save` writes nothing; pay and flag in one write); `features/sector/tests/test_sector_session_handoff.gd` (injected core seeds Composure/Charges; write-back at Seam clear; no `session` → throwaway core, no save); a new `tests/test_run_session_autoload.gd` (autoload registered as §2.8, priority −20, owns exactly one core).
 
 ### 4.3 Shard field and the magnet loop
 Shards are the one place a naive implementation scans N×M per frame (the Vigil's magnet plus every Grub looking for glass). **Built in M1 slice 3 PR 3** (`features/charges/shard_field.gd` + `.tscn`, `ShardFieldStats`, `data/charges/shard_field.tres`, keys in §3.4). Numbers are cited from SYS-001 §1.4, not copied:
@@ -1065,6 +1130,16 @@ Actions (checkout, cache, upload-artifact) are pinned to full commit SHAs (tags 
 | Q-T92 | ~~**Brass engraving mark groups loosely suggest Roman numerals (2026-11-19).** Decide: keep as Victorian decoration (no text, no `tr()`) or break them up further~~ **Resolved 2026-11-19 (PM under owner autonomy grant):** crisp engraved Roman numerals I to XII on the meridian majors are approved as diegetic decorative art (period engraving), exempt from the `tr()` rule because they are art, not player text. Narrow exemption: numerals only, never words. Built behind `AetherLook.meridian_numerals` (default true); tested. Recorded in ART-001 §16.6c | ART-001 §16.6b, §16.6c | closed |
 | Q-T93 | ~~**T5 (`the_black_t5`) pass-2 chalk fog blobs beside the lantern can read as a ghost or skull (2026-11-19).**~~ **Resolved 2026-11-19 (PM under owner autonomy grant):** by the pareidolia rule (ART-001 §16.6c: no closed holes in organic shapes near the play centre, no thin appendages hanging from the entity), enforced by `test_aether_pass4.gd` (§9.1); the skull read is gone in captures | ART-001 §16.6c | closed |
 | Q-T94 | **Aether pass 4 high cost rose to 4.38 ms on the entity exhibit (1080p, 2026-11-19);** trim the loss mask and the play-centre strand field before M3 (CH-7). Figures in §8.5; low and medium not re-measured | §8.5; ART-001 §16.6c; Q-T62 | trim, then re-sweep with a same-session baseline |
+| Q-T136 | **Loop-minute to real-time rate is not stated (2026-11-19).** LOOP-001 §6.5 says real time spends the clock (reads as 1:1) but its LR-04 text says "3.5–6 loop-hours" beside "≈2–3.5 real hours" | SYS-001 §6; LOOP-001 §6.5; GDD §6.2; §4.2a | design states the rate as a SYS-001 §6 row |
+| Q-T137 | **Hourglass budget at Entropy > 0:** only Entropy 0 is 🔒 (120) | SYS-001 §6; LOOP-001 §6.3 | design |
+| Q-T138 | **What else stops the clock:** slow-mo / hitstop (`Engine.time_scale`), route curtains and loads, Ruins menus (Lantern Tree, Chalk Desk) | LOOP-001 §6.5; WARP-001 §6.1 D-01 | design; engineering then picks scaled vs unscaled delta |
+| Q-T139 | **Death-scum gap:** the `run` slot holds the last Seam boundary; quitting after a death but before `ruins_entry` could resume the dead run and skip the lump. Proposal: a `run_end` reason on `run` (clear) and `iteration` (lump) written at `die`/`win`/`abandon` | §7.2; SYS-001 §8 | PM approves a new reason or accepts the gap |
+| Q-T140 | **Composure and Charges between Seams:** carry as-is, reset, or partial refill | SYS-001 §1.4, §1.5; LOOP-001 §2 | design (SYS-001) |
+| Q-T141 | **Act 0 bank lost on a crash** between Act 0's end and the first `ruins_entry` write (the route param is transient). Accept, or have the `cabinet_score` write also store a pending index | SYS-001 §7.1; §7.2 | PM |
+| Q-T142 | **One profile writer:** the Cabinet writes `profile` directly today; `RunSession` will too (lost-update risk). Proposal: Cabinet writes go through the core's `ProfileState` in M2 | §7.2; §2.10 | PM / Arcade layer |
+| Q-T143 | **Ninth sky mid-run "banks what it earned":** what is banked (in-run Ember, Seam clears) and where the Hard Unmaking routes | LOOP-001 §6.5, §10.3 | design |
+| Q-T144 | **Abandon:** allowed anytime or only at a Seam boundary, and does it cost clock like a death | LOOP-001 §6.1; SYS-001 §6 | design |
+| Q-T145 | **In-run Ember on death / abandon / win:** banked in full, in part or lost; does the Seam 5 clear pay its Seam Ember on top of the win refund | SYS-001 §7.2; LOOP-001 §2 | design (SYS-001 §7) |
 
 ### 11.1a Resolved questions
 
@@ -1245,3 +1320,4 @@ Rows R-01…R-19 are the owner-delegated rulings of 2026-11-17; later rows carry
 | 2026-11-19 | **M1 Composure built (Q-T118, Q-T119).** `Composure` + `ComposureStats` (`ds_composure.*`): 0–10, starts 10 (Clear), clamped, no passive regen, the full SYS-001 §1.5 event API; fractional bands Clear ≥ 7, Frayed ≥ 4, Unmoored > 0, Hollowed = 0; requests `wick_frayed` / `wick_unmoored` / `wick_hollowed` / `wick_recovery` (AUDIO-001 E01–E04) on band change, silent no-ops until `data/audio/cue_ids.tres` has rows and renders. **Sector-scoped** (`%Composure` in `SectorStub`), moves to `RunSession` (§2.8) later. Only wired source: `ChargeLauncher.prune` applies −0.5 per Charge lost to an interceptor (0 on target); all other rows inert in the sandbox. `CockpitFlame` + `CockpitFlameStats` (`ds_composure.flame.*`, ✱) under the Vigil's `Facing/Visual`: band by shape only (steady, flickering, guttering, hollow), one PHOS-4 colour, time-phase motion ≤ 3 Hz, frozen under reduced motion. `ComposureWick` + `ComposureWickStats` (`ds_hud.wick.*`, ✱ heights 11/8/5/3) bottom-right of the sector `Hud`. Readers poll; no new signals (EVT-001 unchanged). Band effects not built. Probe `sector/vigil` gains `composure`, `composure_band`; `m1_charge_intercept` asserts 10 → 9.5. D-08 note: `--hull` is honoured in release exports (§3.4). Suite 817 cases, 0 failures; 20 scenarios pass; smoke and `--route=sector` clean (as reported by the run). Not verified: the flame and wick by eye, human feel | PM under owner autonomy grant 2026-11-19; built by Claude |
 | 2026-11-19 | **Composure wick band-change cues added (AUDIO-001 §12.17), UNAUDITIONED.** Four mono chirp renders in `audio/src/composure.cx.js` (`wick_frayed`, `wick_unmoored`, `wick_hollowed`, `wick_recovery`; E01 to E04), each `BUS-FLY`, P2, 1 voice, 500 ms gate; cue ids 78, policy entries 72 (counted). M1's Composure (PR #60) plays them on band changes; the continuous wick layer (§6.5) is not built | PM under owner autonomy grant 2026-11-19 |
 | 2026-11-19 | **Cue `zone_hollow` renamed `zone_stillwater`** (AUDIO-001 §12.16), following the PM ruling that renames the zone Hollow to Stillwater (clash with the Hollow faction state and the Hollowed Composure band). The render is unchanged (byte-identical); the Arcade layer switches its `zone_cue` line | PM; audio session edited |
+| 2026-11-19 | **RunSession contract (§4.2a), proposed, pending PM.** Rules in a `RefCounted` `RunSessionCore` (injected saver; tests never touch the autoload), thin autoload at stage −20; `RunState`/`IterationState`/`ProfileState` are `RefCounted` with id-and-number payloads, not `Resource` (amends §4.2's "resource" wording); the core holds the profile and is its single writer from the Ruins on (Q-T142); sectors get the core as route param `session`, copy Composure/Charges in at entry, write back by `SeamReport` at Seam clear only; Act 0 bank via route param `act0_vigil_index` on `&"ruins"`, paid in `arrive_at_ruins` behind profile flag `act0_banked`, committed in one `ruins_entry` write (Q-T101 proposal); seven proposed signals need EVT-001 rows. Open: Q-T136…Q-T145 | proposed, pending PM (architect, 2026-11-19) |
