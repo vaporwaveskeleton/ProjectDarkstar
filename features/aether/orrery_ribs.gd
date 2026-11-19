@@ -31,8 +31,12 @@ func _draw() -> void:
 		var r: float = radii[i]
 		var a0 := PI + 0.25 + _angle * (1.0 if i % 2 == 0 else -1.3)
 		var c := rib_colour
-		c.a = 0.3 - 0.05 * float(i)
-		draw_arc(cage_centre, r, a0, a0 + PI - 0.5, 96, c, 2.0, true)
+		c.a = 0.45 - 0.07 * float(i)
+		draw_arc(cage_centre, r, a0, a0 + PI - 0.5, 96, c, 3.0, true)
+		# pass 3: two-tone metal — a thin lit edge on the inner side of each rib
+		var hi := Pal.BONE_3
+		hi.a = c.a * 0.6
+		draw_arc(cage_centre, r - 1.5, a0, a0 + PI - 0.5, 96, hi, 1.0, true)
 		var acc := accent
 		acc.a = 0.25 - 0.04 * float(i)
 		draw_arc(cage_centre, r - 4.0, a0 + 0.3, a0 + 0.9, 32, acc, 1.0, true)

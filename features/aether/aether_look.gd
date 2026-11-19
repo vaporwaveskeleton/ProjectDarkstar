@@ -65,12 +65,17 @@ extends TunableResource
 @export var orrery: bool = false
 ## A far smudge that does not move with the fog (T1 wrongness).
 @export var still_smudge: bool = false
-## Far set pieces (runtime vector, far band, fogged): brass orrery rings (T1/T4).
+## Far set pieces (runtime vector, far band, fogged), one silhouette family per tier (pass 3):
+## brass orrery armillary rings (T1).
 @export var set_orrery_rings: bool = false
-## Gaslit lattice fragments: riveted girders with tiny warm windows (T2/T3).
+## Gaslit lattice fragments: riveted girders with tiny warm windows (unused since pass 3).
 @export var set_lattice: bool = false
 ## A drowned observatory dome and telescope housing (T3).
 @export var set_dome: bool = false
+## A gaslit greenhouse: pointed glasshouse ribs overgrown with spore fuzz (T2).
+@export var set_greenhouse: bool = false
+## Broken armillary ring fragments drifting apart (T5).
+@export var set_ring_fragments: bool = false
 ## Holes of true black in the far field (T5).
 @export var black_holes: bool = false
 

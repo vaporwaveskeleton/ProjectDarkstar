@@ -44,7 +44,6 @@ fog_glow = Color(0.5882353, 0.5568628, 0.8235294, 1)
 star_colour = Color(0.9098039, 0.8627451, 0.8470588, 1)
 brass = Color(0.7254902, 0.7215686, 0.6823529, 1)
 accent = Color(0.9098039, 0.8627451, 0.8470588, 1)
-set_orrery_rings = true
 value_deep = 0.32
 star_strength = 0.7
 lantern_scatter = 0.34

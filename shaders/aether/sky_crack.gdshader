@@ -42,6 +42,8 @@ void fragment() {
 	vec2 spx = SCREEN_UV * screen_size;
 	float fw = max(fwidth(v_px.x), 0.2);
 	vec4 imps[3] = vec4[3](impact_a, impact_b, impact_c);
+	// pass 3: two impacts open WIDE gaps so the content behind reads clearly; one stays a hairline
+	float gap_ws[3] = float[3](10.0, 8.0, 3.4);
 	float line = 1e4;
 	float gap = 0.0;
 	vec2 shard = vec2(0.0);
@@ -49,7 +51,7 @@ void fragment() {
 	for (int i = 0; i < 3; i++) {
 		vec4 im = imps[i];
 		float reach = im.z * amount;
-		vec2 g = a_glass(v_px, im.xy, reach, im.w, tang_at(im.xy), 0.45);
+		vec2 g = a_glass(v_px, im.xy, reach, im.w, tang_at(im.xy), 0.45, gap_ws[i]);
 		line = min(line, g.x);
 		gap = max(gap, g.y);
 		vec2 dd = v_px - im.xy;
@@ -65,15 +67,17 @@ void fragment() {
 	}
 	float hair = 1.0 - smoothstep(0.5 * fw, 1.6 * fw, line);
 	// the Aether behind the Aether: other hue, other parallax, its own stars, a reversed seam
-	vec2 bp = v_px * 0.82 + camera_offset * 0.4;
+	// its parallax runs AGAINST ours (camera_offset * -0.9) and it drifts on its own, the other way
+	vec2 bp = v_px * 0.82 - camera_offset * 0.9 + vec2(time_s * 2.4, -time_s * 0.9);
 	vec2 q = bp / 46.0 + vec2(-time_s * 0.05, time_s * 0.02);
 	float c = a_fbm(q + 1.8 * vec2(a_fbm(q + time_s * 0.03, 3), a_fbm(q - 5.0, 3)), 4);
-	vec3 inner = mix(behind_a, behind_b, smoothstep(0.35, 0.8, c));
-	vec2 sg = bp / 5.0;
+	vec3 inner = mix(behind_a, behind_b, smoothstep(0.3, 0.75, c));
+	// its own stars, denser and faster than ours (a nearer sky behind the sky)
+	vec2 sg = (bp + vec2(time_s * 4.0, 0.0)) / 4.0;
 	vec2 sid = floor(sg);
 	float sh = a_hash(sid + 4.2);
-	inner += behind_b * step(0.9, sh) * exp(-pow(length(sg - sid - 0.5) * 5.0, 2.0) * 1.5) * 0.9;
-	vec2 rev_c = sphere_c - vec2(0.0, 2.0 * sphere_r) + vec2(90.0, 70.0) + camera_offset * 0.4;
+	inner += behind_b * step(0.86, sh) * exp(-pow(length(sg - sid - 0.5) * 4.0, 2.0) * 1.5) * 1.1;
+	vec2 rev_c = sphere_c - vec2(0.0, 2.0 * sphere_r) + vec2(90.0, 70.0) - camera_offset * 0.9;
 	float d2 = length(bp - rev_c) - sphere_r;
 	inner += seam_col * exp(-abs(d2) / 1.2) * 0.8;
 	// the broken pane: fog behind each shard, displaced by that shard's offset

@@ -9,6 +9,11 @@ extends Node
 ##   --aether-quality=high|medium|low   start on that quality rung (default high)
 ##   --aether-sweep                     per-layer GPU cost sweep: prints AETHER_LAYER_COST lines,
 ##                                      then quits (every rung, or only the --aether-quality rung)
+##   --aether-exhibit=N                 start on exhibit N (0–5)
+##   --aether-measure                   clean isolated cost: one exhibit (--aether-exhibit) in this
+##                                      fresh process, MEASURE_WARMUP frames, then AETHER_COST over
+##                                      MEASURE_FRAMES frames, then quits (entity exhibit holds
+##                                      SWEEP_DRAIN)
 ## No class_name: scenes/dev is excluded from release builds.
 
 signal sphere_glinted
@@ -36,10 +41,14 @@ const SWEEP_SETTLE := 24       ## ✱ frames after a layer toggle before the swe
 const SWEEP_FIRST_SETTLE := 40 ## ✱ settle frames after an exhibit / quality switch
 const SWEEP_FRAMES := 60       ## ✱ frames averaged per sweep sample
 const SWEEP_DRAIN := 0.6       ## ✱ entity exhibit drain held during the sweep
+const MEASURE_WARMUP := 120    ## ✱ --aether-measure: warm-up frames before averaging
+const MEASURE_FRAMES := 120    ## ✱ --aether-measure: frames averaged
 const CAMERA_HOME := Vector2(320.0, 180.0)
 const LANTERN_OFFSET := Vector2(0.0, 22.0)   ## ✱ lantern below frame centre
 const ARG_QUALITY := "--aether-quality="
 const ARG_SWEEP := "--aether-sweep"
+const ARG_EXHIBIT := "--aether-exhibit="
+const ARG_MEASURE := "--aether-measure"
 
 var exhibit := 0
 var exhibit_time := 0.0
@@ -62,6 +71,7 @@ var _sweep_acc := 0.0
 var _sweep_base := 0.0
 var _sweep_off_layer: StringName = &""
 var _sweep_off_ms := 0.0
+var _measure_on := false
 
 @onready var _world: SubViewport = %World
 @onready var _screen: TextureRect = %Screen
@@ -84,11 +94,17 @@ func _ready() -> void:
 	_backdrop.leviathan_closest.connect(_on_leviathan_closest)
 	var args := OS.get_cmdline_user_args()
 	var asked := ""
+	var start := 0
 	for a in args:
 		if a.begins_with(ARG_QUALITY):
 			asked = a.trim_prefix(ARG_QUALITY)
+		elif a.begins_with(ARG_EXHIBIT):
+			start = clampi(a.trim_prefix(ARG_EXHIBIT).to_int(), 0, LOOKS.size() - 1)
 	set_quality(asked if asked in AetherQuality.LEVELS else "high")
-	_show(0)
+	_measure_on = args.has(ARG_MEASURE)
+	_show(start)
+	if _measure_on:
+		print("AETHER_MEASURE_START exhibit=%d quality=%s warmup=%d frames=%d" % [exhibit, quality_level, MEASURE_WARMUP, MEASURE_FRAMES])
 	if args.has(ARG_SWEEP):
 		var levels: Array[String] = []
 		if asked in AetherQuality.LEVELS:
@@ -179,7 +195,7 @@ func _process(delta: float) -> void:
 	_backdrop.set_time(exhibit_time)
 	_backdrop.set_lantern(CAMERA_HOME + LANTERN_OFFSET, look.lantern_radius, _lantern.light.color, _lantern.light.energy)
 	if exhibit == ENTITY_EXHIBIT:
-		if _sweep_on:
+		if _sweep_on or _measure_on:
 			drain = SWEEP_DRAIN
 			_backdrop.set_drain(drain)
 		else:
@@ -210,14 +226,19 @@ func _gpu_now() -> float:
 
 
 func _measure_cost() -> void:
-	if _cost_logged or _frames <= COST_WARMUP:
+	var warm := MEASURE_WARMUP if _measure_on else COST_WARMUP
+	var n := MEASURE_FRAMES if _measure_on else COST_FRAMES
+	if _cost_logged or _frames <= warm:
 		return
 	_gpu_sum += _gpu_now()
 	_cpu_sum += RenderingServer.viewport_get_measured_render_time_cpu(_world.get_viewport_rid())
-	if _frames >= COST_WARMUP + COST_FRAMES:
+	if _frames >= warm + n:
 		_cost_logged = true
-		print("AETHER_COST exhibit=%d quality=%s gpu_ms=%.3f cpu_ms=%.3f px=%dx%d layers=%s" % [exhibit, quality_level,
-			_gpu_sum / COST_FRAMES, _cpu_sum / COST_FRAMES, _world.size.x, _world.size.y, ",".join(_backdrop.active_layers())])
+		print("AETHER_COST exhibit=%d quality=%s gpu_ms=%.3f cpu_ms=%.3f px=%dx%d frames=%d clean=%s layers=%s" % [exhibit,
+			quality_level, _gpu_sum / n, _cpu_sum / n, _world.size.x, _world.size.y, n, str(_measure_on),
+			",".join(_backdrop.active_layers())])
+		if _measure_on:
+			get_tree().quit()
 
 
 func _start_sweep(levels: Array[String]) -> void:
