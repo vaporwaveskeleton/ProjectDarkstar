@@ -310,9 +310,13 @@ func death_edge_tick(m: DeathMark) -> PackedVector2Array:
 	if d.length() < 0.001:
 		return PackedVector2Array()
 	d = d.normalized()
-	var half := world.view_rect.size * 0.5 - Vector2(MIN_RING_GAP_PX + 1.0, MIN_RING_GAP_PX + 1.0)
-	var t := minf(half.x / maxf(absf(d.x), 0.0001), half.y / maxf(absf(d.y), 0.0001))
-	var edge := (world.screen_centre + d * t).round()
+	# Clip to the playfield (play view minus the footer band), not the whole view: the chalk must
+	# never cross cabinet text. The Vigil is not centred in it, so each side has its own reach.
+	var inner := world.playfield_rect.grow(-(MIN_RING_GAP_PX + 1.0))
+	var c := world.screen_centre
+	var tx := (inner.end.x - c.x if d.x > 0.0 else c.x - inner.position.x) / maxf(absf(d.x), 0.0001)
+	var ty := (inner.end.y - c.y if d.y > 0.0 else c.y - inner.position.y) / maxf(absf(d.y), 0.0001)
+	var edge := (c + d * minf(tx, ty)).round()
 	return PackedVector2Array([edge, (edge - d * world.fx_tuning.death_edge_tick_px).round()])
 
 

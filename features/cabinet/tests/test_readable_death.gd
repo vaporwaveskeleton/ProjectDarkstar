@@ -141,6 +141,25 @@ func test_off_view_killer_gets_an_edge_tick_toward_it() -> void:
 	assert_float(tick[1].y).is_less(tick[0].y)                    # tick points back inward
 
 
+func test_chalk_stays_inside_the_playfield_above_the_footer() -> void:
+	var v := world.vigil.pos
+	var footer_top := world.view_rect.end.y - CabinetScreenSpec.MAKER_BAND_PX
+	for off: Vector2 in [Vector2(0, 1), Vector2(0, -1), Vector2(1, 0), Vector2(-1, 0), Vector2(1, 1), Vector2(-1, 1)]:
+		var ac := world.acolytes.spawn(world.torus.wrap(v + off * world.view_size * 1.2))
+		world.fx.death_marks.clear()
+		world.fx.death_mark(ac.pos, 3.0, off, v, INF, ac.id)
+		var m: FxLayer.DeathMark = world.fx.death_marks[0]
+		var tick := world.fx.death_edge_tick(m)
+		assert_int(tick.size()).is_equal(2)
+		var leader := world.fx.death_leader(m)
+		var pts: Array[Vector2] = [tick[0], tick[1]]
+		if leader.size() == 2:
+			pts.append(leader[1])
+		for p in pts:
+			assert_bool(world.playfield_rect.has_point(p)).override_failure_message("%s %s outside playfield" % [off, p]).is_true()
+			assert_float(p.y).is_less(footer_top)
+
+
 func test_off_view_tick_follows_the_short_way_across_the_wrap() -> void:
 	var size := world.torus.size
 	var v := Vector2(8.0, size.y * 0.5)
