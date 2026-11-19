@@ -1,6 +1,6 @@
 # DARKSTAR — Systems Bible (Numbers)
 
-**Doc ID:** SYS-001 · **Version:** 1.6 · **Status:** Authoritative for all numbers · **Last updated:** 2026-11-19
+**Doc ID:** SYS-001 · **Version:** 1.7 · **Status:** Authoritative for all numbers · **Last updated:** 2026-11-19
 **Owner:** Design (systems) · **Upstream:** `GDD_DARKSTAR_v0.2.md` (GDD-001) · **Downstream:** every other doc in this set
 **Data target:** `docs/04-production/TECH_ARCHITECTURE.md` §6 (data-driven tables) — every table below maps 1:1 to a `.tres`/JSON resource.
 **Rev 1.1 (2026-11-17):** the Anchor field rows in §1.1 (owner decision D-11 of GDD-001 §18); **rev 1.2 (2026-11-17, owner-delegated rulings R-01, R-04, R-10, R-11, R-14):** §1.2 post-hit grace, §9 resolution closed to 640×360, hitbox diameter and entity exception, on-screen caps; §2.2 ninth-sky Hunger as one +2 row, §6 Hourglass budget/death cost/refund, §7.2 Codex stamp note, §7.5 Fragments and Threads (LOOP-001 LR-09…LR-13); the warp-owned numbers WARP-001 asked for in its §8 R-01 to R-05, added to §6, §9 and §10; and the §2.2 eaten-rule pointer corrected from WARP-001 §6 to §3. **No pre-existing number in this doc was changed by that revision.**
@@ -8,6 +8,7 @@
 **Rev 1.4 (2026-11-18, Act 1 vertical slice; PM ruling 2026-11-18 (owner grant)):** §7.1 new row "Act 0 bank (first Ruins visit, once)" (the existing Ember formula applied once; PM-approved 2026-11-18 under owner grant; retune at playtest); §6 Hourglass Clock budget row notes the first-visit start at the first launch (GDD §6.2 exception). **No pre-existing number was changed.** Open: the bank's save reason (TECH-001 §11.1 Q-T101).
 **Rev 1.5 (2026-11-19, M1 slice 3 PR 4; PM under owner autonomy grant 2026-11-19):** §1.4 turn-authority reading (time for a 180° turn), Charge contact radius, trail and hits on target; §2 phase-0 row: "Sepulchre HP per segment 8 ✱" **dropped for phases 0–1** (1 Charge hit = 1 segment; TECH-001 Q-T110), new Sepulchre and sandbox procession rows; §3 Grub flee-while-carrying (never, Q-T112), body/steering and idle-orbit rows. All new values are the Cabinet's or M1 engineering values, ✱.
 **Rev 1.6 (2026-11-19, Act 0 arcade expansion P1, "the shift"; PM (delegated owner authority)):** new §1.6 Act 0 stage table (five stages); §7.1 rows for lives at start, lives cap and the extra-life schedule (schedule approved, built in P2). No Vigil number was changed.
+**Rev 1.7 (2026-11-19, M2 RunSession; PM under owner autonomy grant 2026-11-19, TECH-001 §11.1a Q-T136, Q-T138, Q-T144–Q-T147, Q-T149):** §6 new rows Hourglass Clock rate (1:1), Hourglass Clock pauses, Abandon (costs the death clock cost); §7.1 `Act 0 bank` gains a floor of 40 Ember (`max(floor(VI / 200), 40)`); §7.2 Seam clears pay 40 each **including Seam 5** (won-run row 160 → 200) and in-run Ember banks on a win and on a death; §7.2 Run-Sigil picks timing stated (after Seams 1–3); new §7.7 Lantern Tree node prices by tier and the Run Sigil reroll ladder, moved from LOOP-001 with no value change.
 
 ---
 
@@ -373,7 +374,10 @@ Cosmic horror design rev 3 (PM ruling 2026-11-18 (owner grant)). The rules are Z
 | Seams per run | 5 🔒 |
 | Hourglass Clock budget | 120 loop-minutes per **Iteration** at Entropy 0 🔒 (GDD §6.2); a sky darkens each time one ninth is spent (13⅓ loop-min, derived); only the ninth ends the run (LOOP-001 §6.5). Starts at the first launch on the first Ruins visit (GDD §6.2 exception; PM ruling 2026-11-18 (owner grant), Act 1 vertical slice) |
 | Hourglass in-run show threshold | ≤ 15 loop-minutes remaining in the Iteration's budget. The default HUD drops the constant Hourglass; in-run it shows as the sand vignette from this point (it also shows at Seam boundaries, on death and in the Ruins). In Act 4 it shows constantly; with Steady Ledger on it is always an honest number (WARP-001 §4.1, §4.4). PM-approved 2026-11-18 under owner grant; retune at playtest |
+| Hourglass Clock rate (loop-minute to real time) | 1 loop-minute = 1 real minute (1:1). PM under owner grant 2026-11-19 (TECH-001 §11.1a Q-T136) |
+| Hourglass Clock pauses | the clock stops only for: the Codex, scripted cinematics, attract mode, a route curtain or loading, the pause menu, and the Ruins menus (Lantern Tree, Chalk Desk). Slow-motion and hit-stop do **not** pause it. Route curtains/loading and the Ruins menus were added to the GDD §20 Q1 list the same day. PM under owner grant 2026-11-19 (TECH-001 §11.1a Q-T138) |
 | Death clock cost | `10 + 2 × (Seam index − 1)` loop-minutes ✱ (Seam 1 = 10, Seam 5 = 18; GDD §6.2 range) |
+| Abandon | allowed only in the Ruins or at a Seam boundary; costs the `Death clock cost` row. PM under owner grant 2026-11-19 (TECH-001 §11.1a Q-T144) |
 | Run-won refund | +15 loop-minutes ✱, never above the 120 budget (LOOP-001 LR-09) |
 | Run length target | 25–35 min 🔒 |
 | Seam clear time | 4–6 min ✱ |
@@ -407,7 +411,7 @@ Cosmic horror design rev 3 (PM ruling 2026-11-18 (owner grant)). The rules are Z
 | Lives at start (Act 0) | 3 ✱ | — | arcade convention; `CabinetTuning.lives_start` 3. PM-approved 2026-11-19 (Q-T107); built |
 | Lives cap (Act 0) | 5 ✱ | — | `CabinetTuning.lives_cap` 5. PM-approved 2026-11-19 (Q-T107); built |
 | Extra life (Act 0) | at 10,000, then 30,000, then every +40,000 | — | PM-approved 2026-11-19 (Q-T107); **built (P2)**: `extra_life_first` 10,000, `extra_life_second` 30,000, `extra_life_every` 40,000, cap `lives_cap`. GDD §9.4 owns the rule |
-| Act 0 bank (first Ruins visit, once) | Ember = `floor(Act 0 Vigil Index / 200)` | — | the existing Ember formula below, applied once, at the first Ruins visit; the wall Cabinet pays it out in tickets (GDD §7.1; NARR-001 §5.7). A Cabinet replay never banks again (LOOP-001 §11.6; save reason open, TECH-001 §11.1 Q-T101). PM-approved 2026-11-18 under owner grant; retune at playtest |
+| Act 0 bank (first Ruins visit, once) | Ember = `max(floor(Act 0 Vigil Index / 200), 40)` | — | the existing Ember formula below, applied once, at the first Ruins visit, with a **floor of 40** = the tier-1 node price (§7.7), so a first T1 node is always affordable and the first launch cannot soft-lock; one rule, no special cases (PM under owner autonomy grant 2026-11-19, TECH-001 §11.1a Q-T146). The wall Cabinet pays it out in tickets, 1 ticket = 1 Ember (GDD §7.1; NARR-001 §5.7; Q-T148). A Cabinet replay never banks again (LOOP-001 §11.6; save reason open, TECH-001 §11.1 Q-T101). PM-approved 2026-11-18 under owner grant; retune at playtest |
 
 Score is **Ember's primary input**: `Ember = floor(score / 200)` plus milestone bonuses. The design note that matters: score never buys power *inside* a run (anti-pillar, GDD §3).
 
@@ -416,12 +420,13 @@ Score is **Ember's primary input**: `Ember = floor(score / 200)` plus milestone 
 | Source | Expected per run (T1, E0) |
 |---|---|
 | Score 40k–90k → Ember | 200–450 |
-| Seam clears (4 × 40) | 160 |
+| Seam clears (5 × 40 on a won run; 40 per Seam cleared, Seam 5 included) | 200 (was 4 × 40 = 160; Seam 5's clear pays on top of the win refund, PM under owner grant 2026-11-19, TECH-001 §11.1a Q-T145) |
+| In-run Ember at the run's end | banks in full on a win **and** on a death (PM under owner grant 2026-11-19, Q-T145) |
 | Choir elites / Heralds | 60–200 |
 | ~~Codex firsts (2–5 × 20 Ink)~~ | ~~40–100 Ink — 20 Ink is per Codex **stamp** (first read of an entry); Ilse Marrow’s marginalia and `cx_vigil_` entries pay 0 (LOOP-001 §8, LR-13)~~ **Retired 2026-11-18, CHD-15:** a Codex stamp pays no currency; it gates a Lantern Tree node (§7.6; LOOP-001 §3.7) |
-| Run-Sigil picks | 3 (choose-1-of-3, 1 paid reroll each) |
+| Run-Sigil picks | 3 (choose-1-of-3, 1 paid reroll each), after Seams 1–3; Seam 4 offers a rare Run Sigil instead (LOOP-001 §4.1; this row and LOOP-001 win over GDD §6.3's old "after each Seam", Q-T147). Reroll prices: §7.7 |
 | Former-Ink Ember (SIG-S-04, SIG-S-08, SIG-S-18, SIG-W-20; Shrine purge, §6) | **value owed**: the rows are in §7.6 (TECH-001 §11.1 Q-T66) |
-| **Run total** | **~450–800 Ember**, plus the former-Ink Ember above once valued. ~~40–100 Ink~~ (retired 2026-11-18, CHD-15). The LOOP-001 §9.5 economy model is to be re-run without Ink (LR-14); no new totals until then |
+| **Run total** | **~450–800 Ember**, plus the former-Ink Ember above once valued. ~~40–100 Ink~~ (retired 2026-11-18, CHD-15). The LOOP-001 §9.5 economy model is to be re-run without Ink (LR-14); no new totals until then. The +40 from the Seam 5 clear (Q-T145, 2026-11-19) is not yet in this total either |
 
 ### 7.3 Entropy rewards
 
@@ -486,6 +491,22 @@ Cosmic horror design rev 3 (PM ruling 2026-11-18 (owner grant)). Unwritten Ink r
 | Rekindled Penitents | at most 1 per kit | a rekindled Penitent stays lit through Hard Unmakings; same Penitent behaviour, no power. It takes the shared per-sector slot (§4.1 `Death-site Penitent cap`). PM-approved 2026-11-18 under owner grant; retune at playtest |
 
 All owed values, and the LOOP-001 §9.5 economy re-run without Ink (LR-14), are one open question: TECH-001 §11.1 Q-T66. Both sinks are cosmetic plus memory and never buy power (GDD-001 §3).
+
+### 7.7 Lantern Tree node prices and Run Sigil rerolls
+
+Moved here from LOOP-001 §3.3 (per-node Cost column) and §4.1 (Reroll row) on 2026-11-19 (PM under owner autonomy grant, TECH-001 §11.1a Q-T149) so SYS-001 is the source; **no value changed**. LOOP-001 carried these values with no tunability marker; they are carried here as they were (treat as first-pass, retune at playtest through this table only). LOOP-001 now cites these rows.
+
+| Field | Value | Notes |
+|---|---|---|
+| Lantern Tree node price, tier 1 (nodes 1–4) | 40 Ember | every Ember-priced T1 node; also the floor of the §7.1 `Act 0 bank` row |
+| Lantern Tree node price, tier 2 (nodes 5–8) | 120 Ember | every Ember-priced T2 node |
+| Lantern Tree node price, tier 3 (nodes 9–12) | 260 Ember | every Ember-priced T3 node |
+| Lantern Tree node price, tier 4 (nodes 13–16) | 520 Ember | every Ember-priced T4 node |
+| Lantern Tree node price, tier 5 (capstones 17–18) | 900 Ember | every Ember-priced capstone |
+| Codex-gated nodes (27) | 0 Ember at every tier | the §7.6 `Ink-node Ember price` row; the gate is the stamped entry (LOOP-001 §3.7) |
+| Run Sigil reroll, by choice number | 40 / 90 / 160 / 240 Ember | bought in-run (GDD §7.3; LOOP-001 §4.1). SIG-M-07 *Second Thought* halves it; SIG-S-14 lets banked Ember pay (LOOP-001 §4.2) |
+
+The tree totals (LOOP-001 §3.3 node rollup, 17,480 Ember over 63 Ember nodes) are derived from these rows and the node tiers.
 
 ---
 

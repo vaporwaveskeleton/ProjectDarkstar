@@ -404,12 +404,17 @@ func _save_act0_complete() -> void:
 	_profile["act0_complete"] = true
 	_profile["pretence_seen"] = true
 	_profile[KEY_STAGE_REACHED] = -1
+	_profile["act0_pending_vi"] = shift_total()   # Q-T141: RunSession banks it if the param is lost; the shift total (all continues) is the Act 0 Vigil Index banked (PM direction 2026-11-19, Q-T132)
 	_save_hi_score()
 
 
-## What the reveal hands the Ruins: the run-scoped shift total (Ember is banked from it later; not built).
+## What the reveal hands the Ruins: the run-scoped shift total (Q-T132, not consumed yet) and, outside
+## the demo, the Act 0 Vigil Index RunSession banks as Ember (TECH-001 §4.2a, Q-T141).
 func _reveal_params() -> Dictionary:
-	return {"shift_total": shift_total()}
+	var params := {"shift_total": shift_total()}
+	if not demo:
+		params["act0_vigil_index"] = shift_total()
+	return params
 
 
 ## GAME OVER and the reveal: the hi-score (and the furthest-stage key already in _profile), merged.

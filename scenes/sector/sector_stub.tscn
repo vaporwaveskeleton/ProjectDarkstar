@@ -1,4 +1,4 @@
-[gd_scene load_steps=31 format=3]
+[gd_scene load_steps=32 format=3]
 
 [ext_resource type="Script" path="res://scenes/sector/sector_stub.gd" id="1"]
 [ext_resource type="PackedScene" path="res://features/vigil/vigil.tscn" id="2"]
@@ -28,11 +28,13 @@
 [ext_resource type="Resource" path="res://data/composure/composure.tres" id="26"]
 [ext_resource type="Script" path="res://features/hud/composure_wick.gd" id="27"]
 [ext_resource type="Resource" path="res://data/hud/composure_wick.tres" id="28"]
+[ext_resource type="Resource" path="res://data/run/run_session.tres" id="29"]
 
 [node name="SectorStub" type="Node2D"]
 script = ExtResource("1")
 vigil_scene = ExtResource("2")
 arena_source = ExtResource("8")
+session_stats = ExtResource("29")
 
 [node name="Floor" type="Node2D" parent="."]
 unique_name_in_owner = true

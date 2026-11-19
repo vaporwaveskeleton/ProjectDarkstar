@@ -80,6 +80,20 @@ func change(delta: float) -> float:
 	return value - before
 
 
+## Seam entry (TECH-001 §4.2a): copies the run's Composure in, clamped. A run that has not set one
+## yet (`composure < 0`, a new run) keeps this component's start value. No cue: nothing was entered.
+func load_from(run: RunState) -> void:
+	if run == null or run.composure < 0.0 or stats == null:
+		return
+	value = clampf(run.composure, stats.min_value, stats.max_value)
+	band = band_for(value, stats)
+
+
+## Seam clear: the live value goes into the report (the only write-back path).
+func report_into(report: SeamReport) -> void:
+	report.composure = value
+
+
 func band_name() -> String:
 	return BAND_NAMES[band]
 
