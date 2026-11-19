@@ -89,6 +89,9 @@ var camera_x: float:
 ## The race framing lean now (world px, length) and how many race points are in play.
 var race_lean: float:
 	get: return _framer.lean.length() if _framer else 0.0
+## The camera zoom now (1 = Z1; below 1 only during a Q-T211 pull-out).
+var camera_zoom: float:
+	get: return _camera.zoom.x if _camera else 1.0
 var race_points: int:
 	get: return race_points_now().size()
 ## Race points on screen now (inside the 640×360 view around the camera): the race-framing check.
@@ -173,6 +176,7 @@ func _ready() -> void:
 	_launcher.composure = _composure
 	_framer.anchor = vigil
 	_framer.points = race_points_now
+	_framer.pull_target = race_pull_target
 	vigil.cockpit_flame.composure = _composure
 	_wick.composure = _composure
 	vigil.health.damaged.connect(func(_a, _r): _refresh_hud())
@@ -234,6 +238,12 @@ func race_points_now() -> PackedVector2Array:
 	if not out.is_empty() and _procession and is_instance_valid(_procession.sepulchre):
 		out.append(_procession.sepulchre.global_position)
 	return out
+
+
+## The Sepulchre while it is a race target (Q-T211 pull-out), else empty.
+func race_pull_target() -> PackedVector2Array:
+	var pts := race_points_now()
+	return PackedVector2Array([pts[pts.size() - 1]]) if pts.size() >= 2 else PackedVector2Array()
 
 
 func _race_on_screen() -> int:
@@ -321,6 +331,9 @@ func _refresh_hud() -> void:
 	var tier := _far.look.tier if _far and _far.look else 0
 	_hud.set_values(score, charges, _magazine.capacity() if _magazine else 0, seam_index, seams, tier,
 		vigil.health.current_hp, vigil.get_hull_max_hp(), _breached)
+	if session and session.stats and session.stats.iteration_budget_loop_min > 0.0:
+		_hud.set_hourglass(session.loop_min_left() / session.stats.iteration_budget_loop_min,
+			session.hourglass_visible())
 
 
 func _on_hull_breached() -> void:
