@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="AudioMixStats" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://core/audio/audio_mix_stats.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+ds_namespace = "ds_audio.mix"
+source_section = "AUDIO-001 7.2, 12.18 (engineering values, proposed; not SYS-001 gameplay numbers)"

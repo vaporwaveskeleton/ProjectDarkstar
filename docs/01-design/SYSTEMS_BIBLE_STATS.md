@@ -642,3 +642,22 @@ Hit-stop does **not** count toward the 1.5 s "Player agency loss" budget above: 
 | 10 | HUD lie laws, hull lamps, Hourglass show threshold | §9, §1.4, §6 |
 
 No GDD number is contradicted here. New numbers are marked `✱` and are all `⚙`. The rev 1.3 rows (cosmic horror design rev 3) are marked "PM-approved 2026-11-18 under owner grant; retune at playtest" instead, and are `⚙` too.
+
+## 12. Audio mix (proposed, engineering ✱)
+
+These are audio engineering values, not gameplay numbers. AUDIO-001 §12.18 owns their meaning; TECH-001 §2.7 lists the `ds_audio.mix` keys and the class (`AudioMixStats`, `data/audio/mix_stats.tres`). All rows: ✱ proposed, UNAUDITIONED, PM under owner autonomy grant, 2026-11-19; the owner retunes after the audition (TECH-001 Q-T220, Q-T222).
+
+| Group | Key (`ds_audio.mix.`) | Value ✱ |
+|---|---|---|
+| Ducking | `duck_db_p0` / `p1` / `p2` / `p3` / `p4` / `p5` | −6 / −5 / −5 / −4 / −3 / −2 dB (P5 is new: AUDIO-001 §7.2 gave no amount) |
+| Ducking | `duck_attack_s`, `duck_release_s` | 0.06 s, 0.4 s |
+| Flight | `flight_floor_db`, `engine_idle_db`, `engine_full_db` | −40, −16, −5 dB |
+| Flight | `engine_pitch_min`, `engine_pitch_max`, `boiler_pitch_lift` | 0.75, 1.3, 0.15 |
+| Flight | `boiler_full_db`, `rigging_full_db`, `rigging_turn_weight` | −6 dB, −6 dB, 0.6 |
+| Flight | `lantern_db`, `lantern_speed_db` | −14 dB, +3 dB |
+| Flight | `flight_attack_s`, `flight_release_s`, `flight_return_s` | 0.08 s, 0.35 s, 0.8 s |
+| Flight | `creak_turn_on`, `creak_turn_off`, `ballast_min_speed` | 0.6, 0.3, 0.25 (fractions) |
+| Threat | `threat_bed_dip_db`, `threat_stem_db` | −3 dB, 0 dB |
+| Threat | `threat_rise_s`, `threat_fall_s`, `threat_poll_s` | 4 s, 8 s, 0.25 s |
+| Threat | `threat_frayed`, `threat_unmoored`, `threat_hollowed` | 0.35, 0.7, 1.0 (by Composure band) |
+| Threat | `threat_per_carrier`, `threat_carrier_cap`, `threat_sepulchre_weight` | 0.2, 0.6, 0.9 |

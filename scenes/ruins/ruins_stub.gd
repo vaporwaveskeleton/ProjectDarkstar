@@ -34,6 +34,8 @@ var look: RuinsLook
 
 const SECTOR_ROUTE := &"sector"
 const TITLE_ROUTE := &"attract"
+const ROOM_TONE := &"ruins_room"
+const FIRST_VISIT_TONE := &"ruins_first_visit"
 
 
 func _ready() -> void:
@@ -50,7 +52,6 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	# Deferred: runs once, after on_route_entered (or without it when the scene is run directly).
 	_arrive.call_deferred()
-	AudioService.set_chant(0.08)
 	get_tree().create_timer(3.0).timeout.connect(func() -> void: _ready_for_input = true)
 
 
@@ -69,6 +70,7 @@ static func _bool_param(params: Dictionary, key: String) -> bool:
 
 
 func _arrive() -> void:
+	AudioService.set_ambience(room_tone_id(_bool_param(_params, "first_visit")))
 	if session != null:
 		session.arrive_at_ruins(_params)
 
@@ -103,8 +105,17 @@ func launch() -> bool:
 	return launched
 
 
+## The Ruins room tone (AUDIO-001 §2.2 layer B, §12.18): the first visit hears the wreck settling with
+## the clock stopped; later visits hear the same room with the clock running. No chant here: the chant
+## means a procession is near (L3), and the hub has none (TECH-001 §11.2, 2026-11-19).
+static func room_tone_id(first_visit: bool) -> StringName:
+	return FIRST_VISIT_TONE if first_visit else ROOM_TONE
+
+
 func _exit_tree() -> void:
-	AudioService.set_chant(0.0)
+	# fade the room out unless the next scene already took the slot (the sector sets its own bed)
+	if AudioService.ambience_id() in [ROOM_TONE, FIRST_VISIT_TONE]:
+		AudioService.set_ambience(&"")
 
 
 func _process(delta: float) -> void:

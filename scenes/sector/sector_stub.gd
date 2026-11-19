@@ -48,6 +48,9 @@ var _menu_paused := false
 ## The camera centre with every torus rebase accumulated (Q-T127 option B): continuous across the seam.
 var far_centre := Vector2.ZERO
 var _far_last := Vector2.ZERO
+## The sector bed and the Vigil's flight voice (AUDIO-001 §12.18), built in _start_sound.
+var soundscape: SectorSoundscape
+var flight_voice: VigilFlightVoice
 
 ## Read-only scalars for the automation id `sector/run` (the golden path). Dev/QA reads.
 var seam_index: int:
@@ -161,6 +164,7 @@ func _ready() -> void:
 	vigil.health.damaged.connect(func(_a, _r): _refresh_hud())
 	vigil.hull_breached.connect(_on_hull_breached)
 	_overlays.emptied.connect(_on_overlays_emptied)
+	_start_sound()
 	_use_session(_throwaway_session(), true)
 	_start_far()
 	_refresh_hud()
@@ -172,6 +176,22 @@ func on_route_entered(params: Dictionary) -> void:
 		if params.has(key) and params[key] is RunSessionCore:
 			_use_session(params[key] as RunSessionCore, false)
 			return
+
+
+## The sound of this sector (AUDIO-001 §12.18): the PM-01 bed with its threat stems, and the Vigil's
+## flight voice (engine, boiler, rigging, lantern). Both are code-built children, so the scenes they
+## read (vigil.tscn, this sector's tscn) stay untouched.
+func _start_sound() -> void:
+	soundscape = SectorSoundscape.new()
+	soundscape.name = "SectorSoundscape"
+	soundscape.composure = _composure
+	soundscape.grubs = _grubs
+	soundscape.sepulchre = _procession.sepulchre if _procession else null
+	add_child(soundscape)
+	flight_voice = VigilFlightVoice.new()
+	flight_voice.name = "FlightVoice"
+	flight_voice.vigil = vigil
+	vigil.add_child(flight_voice)
 
 
 ## New sector for the far layer: its field, then the camera's first centre becomes the origin.
