@@ -84,7 +84,7 @@ func _draw_continue() -> void:
 	var still: bool = SettingsService.get_value(&"reduced_motion") or SettingsService.get_value(&"photosensitivity")
 	var lit := still or int(_t * 2.0) % 2 == 0
 	var y := size.y * 0.5 - 12.0
-	for line in PixelText.wrap(tr("CAB_CONTINUE") % (continue_stage + 1), 1, size.x - 24.0):
+	for line in PixelText.wrap(tr("CAB_CONTINUE").format({"stage": continue_stage + 1}), 1, size.x - 24.0):
 		PixelText.draw_centered(self, size.x * 0.5, y, line, Look.c(Pal.GAS_4) if lit else Look.c(Pal.GAS_2))
 		y += 12.0
 

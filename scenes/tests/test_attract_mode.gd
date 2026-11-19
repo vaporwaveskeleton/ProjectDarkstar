@@ -227,7 +227,8 @@ func test_the_continue_offer_shows_with_the_param() -> void:
 	assert_int(pages.continue_stage).is_equal(1)
 	assert_int(int(runner.scene().get("continue_stage"))).is_equal(1)
 	assert_str(tr("CAB_CONTINUE")).is_not_equal("CAB_CONTINUE")
-	assert_str(tr("CAB_CONTINUE") % 2).contains("2")
+	assert_str(tr("CAB_CONTINUE").format({"stage": 2})).contains("2")
+	assert_str(tr("CAB_CONTINUE")).contains("{stage}")
 	await runner.simulate_frames(2)
 
 
