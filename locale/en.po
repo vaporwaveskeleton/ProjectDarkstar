@@ -276,15 +276,57 @@ msgstr "THAT WAS A PRETENCE."
 msgid "REVEAL_ONE_SKY_LESS"
 msgstr "ONE SKY LESS."
 
-msgid "RUINS_TITLE"
-msgstr "THE RUINS OF THE NINTH SKY"
+#. The Ruins, first visit (NARR-001 §5.7; LOOP-001 §10.5). Sable's chalk: sentence case, second
+#. person, present tense, never a question. The first two are the first words read after THE PRETENCE.
+msgid "NARR_SABLE_FIRST_1"
+msgstr "You're back. Most aren't."
 
-msgid "RUINS_LINE_1"
-msgstr "Something in here is still lit."
+#. The anchoring rule (GDD §6.2; LOOP-001 §2), stated once, diegetically. Never in a menu.
+msgid "NARR_SABLE_FIRST_2"
+msgstr "What you buy here stays. The rest goes back into the dark."
 
-#. Ruins stub launch prompt (golden path); replaced by the physical hangar-mouth launch (beat 11).
-msgid "RUINS_LAUNCH"
-msgstr "PRESS TO LAUNCH"
+#. Chalk tally of the player's Act 0 Vigil Index. {n} = the number (plain integer).
+msgid "NARR_SABLE_TALLY"
+msgstr "Counted: {n}."
+
+#. Sable's slate on every later Ruins visit.
+msgid "NARR_SABLE_RETURN_1"
+msgstr "You return. What you carried is counted."
+
+#. Chalk on the floor under the Lantern Tree (first visit).
+msgid "NARR_SABLE_TREE"
+msgstr "Light one. The dark is long."
+
+#. Chalk by the Hourglass, first visit: the clock starts at the launch (beat 11).
+msgid "NARR_SABLE_GLASS"
+msgstr "The sand starts when you leave."
+
+#. Chalk by the Hourglass on later visits: the clock runs in the Ruins too.
+msgid "NARR_SABLE_GLASS_RETURN"
+msgstr "The sand runs while you stand here."
+
+#. Hidden chalk on the wall, readable only with the lantern down (the beat 15 pre-echo).
+msgid "NARR_SABLE_DARK_1"
+msgstr "Some things are written only for the dark."
+
+#. The wall Cabinet's marquee as it pays out (NARR-001 §5.7, Cabinet register: caps, no period).
+msgid "NARR_CAB_SCORE_BANKED"
+msgstr "SCORE BANKED"
+
+#. A brass plate by the Lantern Tree: the tickets hung there. {n} = Ember banked (1 ticket = 1 Ember).
+msgid "RUINS_TICKET_PLATE"
+msgstr "{n} EMBER"
+
+#. Running head of a Codex page seen close up at the Codex desk.
+msgid "RUINS_CODEX_HEADER"
+msgstr "CODEX"
+
+#. Codex entry cx_place_act0_3 (NARR-001 §8.4), the first Ruins visit's stamped page.
+msgid "CX_PLACE_ACT0_3_TITLE"
+msgstr "Last Normal Day (cabinet stage)"
+
+msgid "CX_PLACE_ACT0_3_BODY"
+msgstr "Pretence Hall curriculum, stage three, the last of the training rotation. A simulation: in it the Dark Star always lost, by design. Final screen retained as written by the curriculum's author."
 
 #. Shown under the title once Act 0 has been finished. The arcade is no longer innocent.
 msgid "ATTRACT_FIRST_SKY_DARK"

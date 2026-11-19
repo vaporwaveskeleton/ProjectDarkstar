@@ -3,7 +3,7 @@ extends GdUnitTestSuite
 ## (PM-01 with the Aether far layer). Route ids only; the Ruins launch goes through RunSession
 ## (start_run, enter_seam, §4.2a). The full chain from a coin is the scenario a1_golden_path.
 
-const RUINS := "res://scenes/ruins/ruins_stub.tscn"
+const RUINS := "res://scenes/ruins/ruins.tscn"
 const SECTOR := "res://scenes/sector/sector_stub.tscn"
 const STATS := preload("res://data/run/run_session.tres")
 const SpySaver := preload("res://features/run/tests/run_spy_saver.gd")

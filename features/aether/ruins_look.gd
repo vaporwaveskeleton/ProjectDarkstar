@@ -31,6 +31,7 @@ extends Node
 ##   set_prop_state(id, state)         &"idle", &"focused" (a gentle chalk lift), &"used" (dimmed);
 ##                                     eases at most max_step_per_frame ✱ per 60 Hz frame, no motion.
 ##   has_prop(id), prop_state(id), prop_node(id), remove_prop(id)
+##   set_sand(fraction, falling)       the stand-in Hourglass's sand (the Ruins mirrors RunSession).
 
 ## ✱ at most this many lamps feed the haze (every lamp still lights the hall).
 const MAX_HAZE_LAMPS := 8
@@ -307,6 +308,13 @@ func _step_props(delta: float) -> void:
 
 func _apply_prop(p: Prop) -> void:
 	p.node.modulate = Color(p.base.r * p.tint.r, p.base.g * p.tint.g, p.base.b * p.tint.b, p.base.a)
+
+
+## The stand-in Hourglass's sand above the neck (0…1) and whether it is falling (the Ruins scene
+## mirrors RunSession here; the look owns no clock).
+func set_sand(fraction: float, falling: bool) -> void:
+	_placeholders.sand = fraction
+	_placeholders.sand_falling = falling
 
 
 ## Where the placeholder Tree hangs its lamps (gallery use).
