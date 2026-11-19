@@ -11,14 +11,34 @@ const PAUSE_SCENE := preload("res://scenes/sector/pause_screen.tscn")
 @onready var _actors: Node2D = %Actors
 @onready var _hull_label: Label = %HullLabel
 @onready var _overlays: ScreenStack = %Overlays
+@onready var _camera: SectorCamera = %SectorCamera
+@onready var _compass: LedgerCompass = %LedgerCompass
 
 var vigil: Vigil
+
+## Read-only scalars for the automation id `sector/vigil` (core/automation/ui_view.gd). Dev/QA reads.
+var vigil_x: float:
+	get: return vigil.global_position.x if is_instance_valid(vigil) else 0.0
+var vigil_y: float:
+	get: return vigil.global_position.y if is_instance_valid(vigil) else 0.0
+var vigil_speed: float:
+	get: return vigil.velocity.length() if is_instance_valid(vigil) else 0.0
+var hull_max_hp: int:
+	get: return vigil.get_hull_max_hp() if is_instance_valid(vigil) else 0
+var camera_x: float:
+	get: return _camera.global_position.x if _camera else 0.0
+var compass_markers: int:
+	get: return _compass.marker_points.size() if _compass else 0
 
 
 func _ready() -> void:
 	vigil = vigil_scene.instantiate() as Vigil
 	vigil.position = _spawn.position
 	_actors.add_child(vigil)
+	# Shots belong to this sector, so they are torn down with it (not parked on Boot/current_scene).
+	vigil.emitter.projectile_parent = _actors
+	_camera.target = vigil
+	_camera.snap_to_target()
 	vigil.health.damaged.connect(func(_a, _r): _refresh_hud())
 	vigil.hull_breached.connect(_on_hull_breached)
 	_overlays.emptied.connect(_on_overlays_emptied)

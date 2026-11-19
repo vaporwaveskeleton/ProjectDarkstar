@@ -71,9 +71,11 @@ Conventions used everywhere:
 | Projectile visual length | 14 px | — | |
 | Hits per projectile | 1 | 2 (pierce), 3 (`Shatter Shot` chain) | |
 | Time to shatter a small geode face | 0.9 s 🔒 | 0.55 s | = 5 lance hits at base rate |
-| Over-fire detonation | ≥ **9 hits in 1.2 s** on one geode ✱ | — | Sinistar's rule kept (RES-001): releases 3–5 shards at once, scattered |
+| Over-fire detonation | ≥ **9 hits in 1.2 s** on one geode ✱ | — | Sinistar's rule kept (RES-001): releases 4–6 shards at once, scattered (row "Shards per geode (detonated)"; Q-T29 resolved, PM under owner autonomy grant 2026-11-18) |
 | Shards per geode (calm kill) | 3 🔒 range 3–5 | — | `+1` if the face was mined, not detonated |
-| Shards per geode (detonated) | 4–6 ✱ | — | scatter radius 140 px — Grubs win that race |
+| Shards per geode (detonated) | 4–6 ✱ | — | scatter radius 140 px — Grubs win that race. PM-approved 2026-11-18 (Q-T29) |
+| Geode size classes | 3 ✱ | — | faces per class = class + 1 → **1 / 2 / 3** faces; the Cabinet values, so M1 matches Act 0. PM-approved 2026-11-18 |
+| Geode radius per size class | **10 / 15 / 21 px** ✱ | — | small / medium / large; the Cabinet values. PM-approved 2026-11-18 |
 | Recoil / pushback | none | — | intentional: mining precision |
 | Damage per lance hit | 1 ✱ | — | derived: 0.9 s to shatter a small geode face = 5 hits at 6 /s. **Approved by owner (2026-11-18)** |
 | Projectile lifetime | 0.9 s ✱ | — | **Approved by owner (2026-11-18)** |
@@ -86,7 +88,11 @@ Conventions used everywhere:
 | Charge magazine | 5 pips 🔒 | 7 / 9 / 13 (tree + Run Sigils) | the HUD lantern magazine, GDD §8.3 |
 | Charge cap gain per run | 1 Sigil pick max | 2 with the *Twin Vigil* chain | prevents pip-spam builds |
 | Shard magnet radius | 96 px ⚙ | 190 px (`Hookline`) | |
+| Shard magnet pull speed | 170 px/s ✱ | — | speed a shard inside the magnet radius moves toward the Vigil; the Cabinet value. PM-approved 2026-11-18 (Q-T29) |
+| Shard drag | 1.2 /s ✱ | — | slows a scattered shard after a detonation; the Cabinet value. PM-approved 2026-11-18 (Q-T29) |
 | Shard collection | 1 shard = 1 Charge, up to cap | — | overflow shards stay in the world, they do not vanish |
+| Shard lifetime | never despawns ✱ | — | follows the row above; no timer. PM-approved 2026-11-18 |
+| Charge life | 6.0 s ✱ | — | a fired Charge gutters (expires) after this; the Cabinet value. PM-approved 2026-11-18 (Q-T17 part) |
 | Charge speed | 210 px/s 🔒 | 250 px/s (`Homing Song`) | |
 | Turn authority | 1.6 s 🔒 | 2.6 s (`Homing Song`, +Composure cost) | |
 | Charge HP (interceptable) | 1 dmg unit ✱ | — | Grub 1, Acolyte 1, Listener 2, geode contact 1, Shrine proximity destroys it (0.9 s fuse) |
@@ -178,6 +184,14 @@ All units are assembled from the 64×64 modular part kit (ART-002), which is how
 | **Choir Matron** *(mini-boss)* | 60 | 90 px/s | spawns 3 Grubs / 9 s; **Litany** +40% deposit within 400 px | n/a | 12 | **silence, do not kill**: killing stops the chant and *rains* the sector (Shroud bloom, +1 Corruption) — Seam-3 gate |
 | **The Listener** | 12 | 90 (silent) / 380 (charge, 2.5 s) | contact 1 dmg | 8 f after your gunfire | 6 | blind; hunts gunfire within a 90° arc; **immune to a silent player** — it loses interest after 6 s without sound |
 | **Herald of the Failed Star** *(elite, 6 named)* | 25–40 | unit-derived | hard-counter to your most-used tool | 24 f | 10–14 | Entropy-gated; see §5.2 |
+
+Oubliette Grub AI numbers (the Cabinet values, so M1 matches Act 0; closes that part of TECH-001 Q-T17):
+
+| Field | Value | Notes |
+|---|---|---|
+| Grub seek speed | 160 px/s ✱ | speed toward a free shard, before it carries one (carry and flee speeds are in the table above). PM-approved 2026-11-18 |
+| Grub flee radius | 110 px ✱ | distance from the Vigil at which a Grub starts to flee. PM-approved 2026-11-18 |
+| Grub respawn | 6.0 s ✱ | delay before a killed Grub is replaced. PM-approved 2026-11-18 |
 
 ### 3.1 Faction laws that are numbers, not mood 🔒
 
@@ -360,8 +374,9 @@ Hunger raises the entity only. It never reduces player currency (GDD P4: progres
 | Screen shake | ≤ 4 px, 0.25 s max | GDD §4.2 |
 | Warp shake (sub-row under the row above) | ≤ 2 px, 0.20 s max ✱ | A warp effect never owns the biggest shake in the frame: warp motion reads as wrongness, not as impact (WARP-001 §8 R-02). Warp shake stacks *within* this ceiling, not on top of the 4 px row |
 | UI safe area at 200 % text | Every HUD element keeps its anchor rectangle inside the safe area at 200 % text scale at 640×360 logical; warp may hide an element, never displace one | Accessibility floor (GDD-001 §10); the anchor set is WARP-001 §4.1 (its §8 R-03). `TEST-ACC-04` is the pass condition |
-| Camera follow | 0.12 s critically damped, 24 px deadzone, 1.5% aim lookahead | GDD §4.2 |
-| Zoom | 1.0 (T0) → 1.06 (T3) → breathing ±2% over 11 s (T5) | GDD §4.2 |
+| Screen shake under Reduced Motion | off ✱ | Reduced Motion disables screen shake (the Cabinet behaviour). PM-approved 2026-11-18 |
+| Camera follow | 0.12 s critically damped, 24 px deadzone, 1.5% aim lookahead | GDD §4.2. How each phrase is read in code is open (TECH-001 §11.1) |
+| Zoom | 1.0 (T0) → 1.06 (T3) → breathing ±2% over 11 s (T5) | GDD §4.2. Zoom 1.0 = the 640×360 logical frame, the fixed post-Act 0 camera scale (TECH-001 Q-T25 resolved Z1, PM under owner autonomy grant 2026-11-18) |
 | Shroud (hazard terrain) | blocks movement, 1 Ward-slice / 1 Surgelight burn to clear, HP 3 | ✱ T2+ terrain |
 | Hitbox policy | player hitbox = a circle of **12 px diameter** (6 px radius; smaller than the sprite); every enemy hitbox = sprite alpha ∩ 1 px inset, **except the entity**, whose contact hitbox is §2.1's 16 px inset from the composite silhouette | fairness over realism. Diameter reading and entity exception: owner-delegated rulings R-04, R-10 (2026-11-17) |
 | On-screen Choir units | ≤ 32 ✱ | spawn budgets (§4) may never schedule past it; excess spawns queue off-screen. `ContactBudget` and pooling size from here (TECH-001 §8.2). Ruling R-14 |

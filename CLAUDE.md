@@ -72,7 +72,7 @@ node tools/automation/darkstar_auto.js run a0_first_contact # headless; add --wi
 ```
 Scenarios live in `tests/scenarios/`; `tests/test_scenarios.gd` runs them in the suite (TECH-001 §9.1).
 Expected `ERROR`/`WARNING` lines in the test log come only from negative-path tests (corrupt save, unknown route); the smoke log must have none.
-Act 0 (the Cabinet, TECH-001 §2.10) takes capture switches after `--`: `--autopilot --stage=N --segments=N --hits=N --smoke-frames=N --no-save`. Always pass `--no-save` when capturing, so the player's saves are never written.
+Act 0 (the Cabinet, TECH-001 §2.10) takes capture switches after `--`: `--autopilot --stage=N --segments=N --hits=N --smoke-frames=N --no-save`; dev builds also take `--route=sector` to start on the M1 sector (TECH-001 §9.1). Always pass `--no-save` when capturing, so the player's saves are never written.
 Prefer the `godot-ai` MCP (`test_run`, `logs_read`, `project_run`, `scene_*`) when the editor is open (addon vendored in `addons/godot_ai`, v4.4.1; never press its dock's Configure; update only via the dock, keeping the server at the same version). Fall back to the console exe.
 In Bash, type the import, all-tests and smoke commands exactly, with the literal path `tools/godot/Godot_v4.7.2-stable_win64_console.exe` (no `$G` variable): those exact strings are allowlisted in `.claude/settings.json` and run without a prompt.
 With the Godot editor open on this project, the project plugin `godot-lsp` (`tools/claude-plugins/`, Node bridge to the editor's language server on port 6005) puts GDScript errors and warnings into context after each `.gd` edit. Fix those before running the suite.

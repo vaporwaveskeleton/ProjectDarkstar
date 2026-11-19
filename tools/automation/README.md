@@ -23,6 +23,13 @@ node tools/automation/darkstar_auto.js run <id> [--windowed] [--keep] [--godot=<
   (a worktree falls back to the main checkout's copy).
 - `--timeout` is the real-time watchdog (default 120 s).
 
+## Dev launch switch `--route=<id>`
+
+`godot --path . -- --route=sector [--hull=1|2] [--no-save]` starts the game on that route instead of
+the attract/Cabinet (e.g. the M1 sector). Same gate as the runner (`editor`, `automation_dev`,
+`automation_qa`); a release build, an unknown id or an empty value starts normally. `--smoke` ignores
+it. Code: `core/routing/launch_route.gd` (`LaunchRoute`); TECH-001 §9.1.
+
 ## Exit codes
 
 | Code | Meaning |
@@ -41,7 +48,8 @@ Step names and argument types live in `core/automation/step_catalog.json` (read 
 validator and this CLI). Comparators on `wait_until` / `assert`: exactly one of `eq ne lt lte gt gte in`.
 Ids: `<route>/ui/<UniqueName>` for controls, plus `cabinet/game` (`state`, `stage_index`, `demo`),
 `cabinet/score` (`score`, `lives`), `cabinet/record` (`grubs_destroyed`, `glass_mined`,
-`charges_thrown`, `glass_carried`). Fixtures: `{"profile": "<name>"}` loads
+`charges_thrown`, `glass_carried`), `sector/vigil` (`vigil_x`, `vigil_y`, `vigil_speed`, `hull_max_hp`,
+`camera_x`, `compass_markers`; scenario `m1_sector_feel`). Fixtures: `{"profile": "<name>"}` loads
 `tests/fixtures/saves/<name>.json` into the in-memory save.
 
 The same runner runs inside GdUnit: `tests/test_scenarios.gd` plays every scenario that is valid for

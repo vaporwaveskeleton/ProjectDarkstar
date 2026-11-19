@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="LedgerCompassStats" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://features/hud/ledger_compass_stats.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+ds_namespace = "ds_hud.compass"
+source_section = "TECH-001 §5.4 (engineering ✱)"
+max_markers = 8
+redraw_hz = 10.0

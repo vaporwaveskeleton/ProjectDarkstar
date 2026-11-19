@@ -32,6 +32,21 @@ func test_vigil_spawns_at_anchor_with_hud() -> void:
 	assert_str(hud.text).is_equal("Hull 1")
 
 
+func test_camera_and_compass_are_wired_to_the_vigil() -> void:
+	var runner := scene_runner(SCENE)
+	await runner.simulate_frames(2)
+	var vigil: Vigil = runner.get_property("vigil")
+	var cam: SectorCamera = runner.find_child("SectorCamera")
+	var compass: LedgerCompass = runner.find_child("LedgerCompass")
+	assert_object(cam.target).is_same(vigil)
+	assert_bool(cam.is_current()).is_true()
+	assert_vector(cam.zoom).is_equal(Vector2.ONE)
+	compass.refresh()
+	assert_int(compass.marker_points.size()).is_equal(1)
+	assert_str(str(compass.marker_kinds[0])).is_equal("vigil")
+	assert_object(vigil.emitter.projectile_parent).is_same(runner.find_child("Actors"))
+
+
 func test_pause_action_opens_pause_and_pauses_tree() -> void:
 	var runner := scene_runner(SCENE)
 	await runner.simulate_frames(2)

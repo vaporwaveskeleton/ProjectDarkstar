@@ -27,7 +27,12 @@ func _ready() -> void:
 	if runner != null:
 		add_child(runner)
 	# The first route of a launch is the Cabinet switching on (attract plays its power-on test).
-	SceneRouter.go_to(SceneRouter.table.initial_route, {"power_on": not _smoke and runner == null})
+	# Dev builds may start elsewhere with `-- --route=<id>` (LaunchRoute); `--smoke` keeps its path.
+	var first: StringName = SceneRouter.table.initial_route
+	if not _smoke:
+		first = LaunchRoute.resolve(OS.get_cmdline_user_args(), SceneRouter.table, LaunchRoute.is_dev_build())
+	var params := {"power_on": not _smoke and runner == null} if first == SceneRouter.table.initial_route else {}
+	SceneRouter.go_to(first, params)
 
 
 func _has_scenario_arg() -> bool:

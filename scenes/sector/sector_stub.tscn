@@ -1,8 +1,12 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://scenes/sector/sector_stub.gd" id="1"]
 [ext_resource type="PackedScene" path="res://features/vigil/vigil.tscn" id="2"]
 [ext_resource type="Script" path="res://core/ui/screen_stack.gd" id="3"]
+[ext_resource type="Script" path="res://features/sector/sector_camera.gd" id="4"]
+[ext_resource type="Resource" path="res://data/sector/sector_camera.tres" id="5"]
+[ext_resource type="Script" path="res://features/hud/ledger_compass.gd" id="6"]
+[ext_resource type="Resource" path="res://data/hud/ledger_compass.tres" id="7"]
 
 [sub_resource type="RectangleShape2D" id="wall_h"]
 size = Vector2(704, 32)
@@ -48,8 +52,11 @@ position = Vector2(320, 180)
 [node name="Actors" type="Node2D" parent="."]
 unique_name_in_owner = true
 
-[node name="Camera2D" type="Camera2D" parent="."]
+[node name="SectorCamera" type="Camera2D" parent="."]
+unique_name_in_owner = true
 position = Vector2(320, 180)
+script = ExtResource("4")
+stats = ExtResource("5")
 
 [node name="Hud" type="CanvasLayer" parent="."]
 layer = 5
@@ -61,6 +68,22 @@ offset_left = 8.0
 offset_top = 6.0
 offset_right = 160.0
 offset_bottom = 26.0
+
+[node name="LedgerCompass" type="Control" parent="Hud"]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -32.0
+offset_top = 4.0
+offset_right = 32.0
+offset_bottom = 40.0
+grow_horizontal = 2
+mouse_filter = 2
+script = ExtResource("6")
+stats = ExtResource("7")
+world_rect = Rect2(0, 0, 640, 360)
 
 [node name="Overlays" type="CanvasLayer" parent="."]
 unique_name_in_owner = true
