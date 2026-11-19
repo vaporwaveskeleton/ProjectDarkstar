@@ -186,8 +186,8 @@ func test_dash_rhythms_are_2_on_1_off_small_and_3_3_for_the_big_ring() -> void:
 	assert_array(world.fx.dash_path(PackedVector2Array([Vector2.ZERO, Vector2(30, 0)]), 1.0)).is_equal(segs)   # fixed pattern
 	assert_int(world.fx.dash_path(PackedVector2Array([Vector2.ZERO, Vector2(30, 0)]), 0.5).size()).is_less(segs.size())
 	# the ring round a shot (radius 9, diameter 18 > hull 15) is coarse; a tiny ring would be fine
-	assert_bool(world.fx.ring_uses_coarse_dashes(9.0)).is_true()
-	assert_bool(world.fx.ring_uses_coarse_dashes(5.0)).is_false()
+	assert_bool(world.fx.ring_uses_coarse_dashes(16.0)).is_true()
+	assert_bool(world.fx.ring_uses_coarse_dashes(9.0)).is_false()   # 18 px across < the 2x hull (30)
 	var spans := world.fx.dash_spans(9.0, 1.0)
 	assert_int(spans.size()).is_greater(3)
 	for i in spans.size():
@@ -204,12 +204,15 @@ func test_outline_is_the_vigils_hull_at_the_death_spot_and_facing() -> void:
 	assert_float(m.facing).is_equal(0.7)
 	var out := world.fx.death_outline(m)
 	assert_int(out.size()).is_equal(4)
-	var expect := world.vigil.hull_points(world.to_screen(v0).round(), 0.7)
+	var c0 := world.to_screen(v0).round()
+	var expect := world.vigil.hull_points(c0, 0.7)
+	for i in 4:
+		expect[i] = (c0 + (expect[i] - c0) * fx.death_outline_scale).round()
 	for i in 4:
 		assert_vector(out[i]).is_equal(expect[i])
 	# 15 px nose to tail
 	var f := Vector2.from_angle(0.7)
-	assert_float((out[0] - (out[1] + out[3]) * 0.5).dot(f)).is_equal_approx(VigilShip.HULL_LENGTH, 0.01)
+	assert_float((out[0] - (out[1] + out[3]) * 0.5).dot(f)).is_equal_approx(VigilShip.HULL_LENGTH * fx.death_outline_scale, 1.0)
 
 
 func test_arrow_is_at_least_a_hull_long_and_points_in_from_the_killers_side() -> void:
@@ -218,11 +221,11 @@ func test_arrow_is_at_least_a_hull_long_and_points_in_from_the_killers_side() ->
 	var m: FxLayer.DeathMark = world.fx.death_marks[0]
 	var arrow := world.fx.death_arrow(m)
 	var c := world.to_screen(v0).round()
-	assert_float(arrow[0].distance_to(arrow[1])).is_greater_equal(VigilShip.HULL_LENGTH)
-	assert_float(fx.death_arrow_px).is_greater_equal(VigilShip.HULL_LENGTH)
+	assert_float(arrow[0].distance_to(arrow[1])).is_greater_equal(VigilShip.HULL_LENGTH * fx.death_outline_scale)
+	assert_float(fx.death_arrow_px).is_equal(VigilShip.HULL_LENGTH * fx.death_outline_scale)
 	assert_float(arrow[0].x).is_greater(arrow[1].x)         # tail is out toward the killer
 	assert_float(arrow[1].x).is_greater(c.x)                # tip lands inside the outline, on the killer's side
-	assert_float(arrow[1].x - c.x).is_less(VigilShip.HULL_LENGTH * 0.5)
+	assert_float(arrow[1].x - c.x).is_equal(4.0 * fx.death_outline_scale)   # the tip inset scales too
 	assert_float(arrow[2].x).is_greater(arrow[1].x)         # barbs sweep back toward the killer
 	assert_float(arrow[3].x).is_greater(arrow[1].x)
 	assert_float(arrow[2].y).is_not_equal(arrow[3].y)
@@ -278,17 +281,31 @@ func test_a_shot_gets_the_silhouette_ring_as_well_as_the_outline() -> void:
 	assert_int(world.fx.death_outline(m).size()).is_equal(4)
 
 
-func test_draw_on_order_outline_completes_before_the_arrow_starts() -> void:
+func test_outline_scale_is_two_hull_sizes() -> void:
+	assert_float(fx.death_outline_scale).is_equal(2.0)
+	assert_float(fx.death_arrow_px).is_equal(30.0)
+	var v0 := world.vigil.pos
+	world.fx.death_mark(v0 + Vector2(10, 0), 3.0, Vector2.RIGHT, v0, 0.0)
+	var out := world.fx.death_outline(world.fx.death_marks[0])
+	var c := world.to_screen(v0).round()
+	assert_float(out[0].x - c.x).is_equal(18.0)            # nose at 9 x 2
+	assert_float(out[1].x - c.x).is_equal(-12.0)           # tail at -6 x 2
+
+
+func test_no_chalk_before_the_death_burst_ring_has_faded_then_outline_then_arrow() -> void:
 	world.fx.death_mark(Vector2(1, 1), 3.0, Vector2.UP, Vector2(2, 2))
 	var m: FxLayer.DeathMark = world.fx.death_marks[0]
-	assert_float(world.fx.death_outline_frac(m)).is_equal(0.0)
-	assert_float(world.fx.death_arrow_frac(m)).is_equal(0.0)
+	var delay := world.fx.death_chalk_delay()
+	assert_float(delay).is_greater_equal(FxLayer.ring_life(fx.vigil_death_ring_radius))
 	var seen_partial_outline := false
 	var last_outline := 0.0
-	for i in 40:
+	for i in 90:
 		world.fx.tick(DT)
 		var o := world.fx.death_outline_frac(m)
 		var a := world.fx.death_arrow_frac(m)
+		if m.age < delay:
+			assert_float(o).is_equal(0.0)        # no chalk pixel while the burst ring may live
+			assert_float(a).is_equal(0.0)
 		assert_float(o).is_greater_equal(last_outline)
 		last_outline = o
 		if a > 0.0:
@@ -300,9 +317,26 @@ func test_draw_on_order_outline_completes_before_the_arrow_starts() -> void:
 	assert_float(world.fx.death_arrow_frac(m)).is_equal(1.0)   # held until respawn
 
 
-func test_reduced_motion_shows_everything_at_once() -> void:
+func test_the_real_burst_ring_is_gone_before_any_chalk() -> void:
+	world.vigil.kill(world.vigil.pos + Vector2(10, 0), Vector2.RIGHT, 3.0)
+	var m: FxLayer.DeathMark = world.fx.death_marks[0]
+	for i in 200:
+		world.fx.tick(DT)
+		var ring_alive := false
+		for r in world.fx.rings:
+			if r.color == Look.c(Pal.GAS_3) and r.radius == fx.vigil_death_ring_radius:
+				ring_alive = true
+		if ring_alive:
+			assert_float(world.fx.death_outline_frac(m)).is_equal(0.0)
+	assert_float(world.fx.death_outline_frac(m)).is_equal(1.0)
+
+
+func test_reduced_motion_keeps_the_delay_then_shows_everything_at_once() -> void:
 	SettingsService.set_value(&"reduced_motion", true)
 	world.fx.death_mark(Vector2(1, 1), 3.0, Vector2.UP, Vector2(2, 2))
 	var m: FxLayer.DeathMark = world.fx.death_marks[0]
+	assert_float(world.fx.death_outline_frac(m)).is_equal(0.0)
+	assert_float(world.fx.death_arrow_frac(m)).is_equal(0.0)
+	m.age = world.fx.death_chalk_delay() + 0.001
 	assert_float(world.fx.death_outline_frac(m)).is_equal(1.0)
 	assert_float(world.fx.death_arrow_frac(m)).is_equal(1.0)

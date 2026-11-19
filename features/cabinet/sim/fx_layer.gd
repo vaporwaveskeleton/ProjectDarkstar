@@ -122,28 +122,47 @@ func clear_death_marks() -> void:
 	death_marks.clear()
 
 
-## 0..1 of the outline (and the ring round a shot) drawn: first in the ordered draw-on. Full at once
-## under Reduced Motion.
+## Life (s) of a shock ring of `radius` (the formula ring() uses).
+static func ring_life(radius: float) -> float:
+	return 0.35 + radius / 400.0
+
+
+## Sim seconds after death before any chalk is drawn: the Vigil's own GAS death burst ring must
+## have faded first (the field, never shorter than that ring's life). Sequencing, not motion: it
+## also applies under Reduced Motion.
+func death_chalk_delay() -> float:
+	var ft := world.fx_tuning
+	return maxf(ft.death_chalk_delay_s, ring_life(ft.vigil_death_ring_radius))
+
+
+## 0..1 of the outline (and the ring round a shot) drawn: first in the ordered draw-on, after the
+## delay. Under Reduced Motion it is complete at once once the delay has passed.
 func death_outline_frac(m: DeathMark) -> float:
+	var t := m.age - death_chalk_delay()
+	if t < 0.0:
+		return 0.0
 	var s := world.fx_tuning.death_outline_draw_s
 	if SettingsService.get_value(&"reduced_motion") or s <= 0.0:
 		return 1.0
-	return clampf(m.age / s, 0.0, 1.0)
+	return clampf(t / s, 0.0, 1.0)
 
 
 ## 0..1 of the arrow (and the leader) drawn: starts only once the outline is complete.
 func death_arrow_frac(m: DeathMark) -> float:
+	var t := m.age - death_chalk_delay()
+	if t < 0.0:
+		return 0.0
 	var s := world.fx_tuning.death_arrow_draw_s
 	if SettingsService.get_value(&"reduced_motion") or s <= 0.0:
 		return 1.0
-	return clampf((m.age - world.fx_tuning.death_outline_draw_s) / s, 0.0, 1.0)
+	return clampf((t - world.fx_tuning.death_outline_draw_s) / s, 0.0, 1.0)
 
 
 func ring(at: Vector2, color: Color, radius: float) -> void:
 	var r := Ring.new()
 	r.pos = at
 	r.radius = radius
-	r.max_life = 0.35 + radius / 400.0
+	r.max_life = ring_life(radius)
 	r.life = r.max_life
 	r.color = color
 	rings.append(r)
@@ -235,22 +254,27 @@ func death_ring_radius(m: DeathMark) -> float:
 
 ## The ring round a shot is bigger than the hull -> the coarse 3/3 rhythm; otherwise the fine 2/1.
 func ring_uses_coarse_dashes(radius: float) -> bool:
-	return radius * 2.0 > VigilShip.HULL_LENGTH
+	return radius * 2.0 > VigilShip.HULL_LENGTH * world.fx_tuning.death_outline_scale
 
 
-## Screen points of the Vigil's own hull (the 4 closed points) at the death spot and facing.
+## Screen points of the Vigil's own hull (4 closed points) at the death spot and facing, scaled by death_outline_scale about the spot.
 func death_outline(m: DeathMark) -> PackedVector2Array:
-	return world.vigil.hull_points(world.to_screen(m.vigil_pos).round(), m.facing)
+	var c := world.to_screen(m.vigil_pos).round()
+	var pts := world.vigil.hull_points(c, m.facing)
+	for i in pts.size():
+		pts[i] = (c + (pts[i] - c) * world.fx_tuning.death_outline_scale).round()
+	return pts
 
 
 ## Screen points [tail, tip, barb_a, barb_b] of the single arrow: it comes from the killer's side
 ## (from_dir) and points into the outline. Shaft length = death_arrow_px; the barbs are the head.
 func death_arrow(m: DeathMark) -> PackedVector2Array:
 	var c := world.to_screen(m.vigil_pos).round()
-	var tip := c + m.from_dir * ARROW_TIP_INSET_PX
+	var sc := world.fx_tuning.death_outline_scale
+	var tip := c + m.from_dir * (ARROW_TIP_INSET_PX * sc)
 	var tail := tip + m.from_dir * world.fx_tuning.death_arrow_px
-	var back := m.from_dir * ARROW_HEAD_PX
-	var side := m.from_dir.orthogonal() * (ARROW_HEAD_PX * 0.6)
+	var back := m.from_dir * (ARROW_HEAD_PX * sc)
+	var side := m.from_dir.orthogonal() * (ARROW_HEAD_PX * sc * 0.6)
 	return PackedVector2Array([tail.round(), tip.round(), (tip + back + side).round(), (tip + back - side).round()])
 
 
@@ -281,7 +305,7 @@ func death_leader(m: DeathMark) -> PackedVector2Array:
 	if to_k.length() < 0.001:
 		return PackedVector2Array()
 	var dir := to_k.normalized()
-	var start := s_vigil + m.from_dir * (ARROW_TIP_INSET_PX + ft.death_arrow_px)
+	var start := s_vigil + m.from_dir * (ARROW_TIP_INSET_PX * ft.death_outline_scale + ft.death_arrow_px)
 	var end := s_vigil + to_k - dir * (m.killer_radius + maxf(MIN_RING_GAP_PX, ft.death_ring_pad_px))
 	var tick := death_edge_tick(m)
 	if tick.size() == 2:

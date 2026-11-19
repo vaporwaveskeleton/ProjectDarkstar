@@ -87,7 +87,9 @@ extends TunableResource
 @export_group("readable death ✱ PROPOSED (owner approval pending; not SYS-001 yet)")
 @export var death_ring_pad_px: float = 6.0                ## px ✱ PROPOSED: dashed chalk gap beyond the killer's outermost drawn part (wider than the entity plate spacing, ~5 px)
 @export var death_big_killer_px: float = 12.0             ## px ✱ PROPOSED: killers drawn larger than this (the entity) are tracked live by the leader
-@export var death_arrow_px: float = 15.0                  ## px ✱ PROPOSED: arrow shaft length, = the hull length (VigilShip.HULL_LENGTH, nose to tail)
+@export var death_arrow_px: float = 30.0                  ## px ✱ PROPOSED: arrow shaft length = VigilShip.HULL_LENGTH x death_outline_scale
+@export var death_outline_scale: float = 2.0              ## x ✱ PROPOSED: the coroner outline (and arrow, tip inset, head) is this many times the hull size
+@export var death_chalk_delay_s: float = 0.5              ## s sim ✱ PROPOSED: no chalk until the Vigil's GAS death burst ring has faded (= FxLayer.ring_life(vigil_death_ring_radius) = 0.5); applies under Reduced Motion too
 @export var death_outline_draw_s: float = 0.15            ## s sim ✱ PROPOSED: the coroner outline draws on first (full at once under Reduced Motion)
 @export var death_arrow_draw_s: float = 0.12              ## s sim ✱ PROPOSED: then the arrow draws on, then it all holds until respawn
 @export var death_edge_tick_px: float = 5.0               ## px ✱ PROPOSED: chalk tick on the view edge pointing at an off-view killer
