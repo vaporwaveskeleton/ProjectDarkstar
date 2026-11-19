@@ -18,6 +18,7 @@ signal entity_unmade
 signal sepulchre_cleared
 signal caption(key: String)
 signal hitstop_started(beat: StringName)   ## a hit-stop freeze began or was extended (beat id of the cause)
+signal slowmo_changed(scale: float)         ## the world's sim speed changed (1.0 = normal); drives the audio bed bend
 
 @export var screen_spec: CabinetScreenSpec   ## the arcade grid and HUD strip (data/cabinet/cabinet_screen.tres)
 @export var tuning: CabinetTuning
@@ -38,6 +39,11 @@ var shader_time := 0.0                ## like `time` but keeps running through h
 
 var hitstop_left := 0                 ## sim frames still frozen (hit-stop; see hitstop())
 
+var sim_scale := 1.0                  ## world sim speed for the last-Charge slow-mo; 1.0 = normal (world only, never Engine.time_scale)
+
+var _slowmo_target := 1.0
+var _slowmo_real_t := 0.0             ## real seconds of the current slow-mo episode (failsafe)
+var _slowmo_locked := false           ## failsafe fired: no slow-mo until the lethal condition clears
 var _shake := 0.0
 var _shake_amp := 0.0
 
@@ -69,6 +75,7 @@ func start(p_stage: CabinetStage) -> void:
 	time = 0.0
 	shader_time = 0.0
 	hitstop_left = 0
+	_reset_slowmo()
 	layers = [stars, geodes, glass, ritual, grubs, acolytes, shots, vigil, fx]
 	for l in layers:
 		l.world = self
@@ -92,15 +99,75 @@ func step(delta: float) -> void:
 		for l in layers:
 			l.queue_redraw()
 		return
-	time += delta
+	_step_slowmo(delta)
+	var sdt := delta * sim_scale          # world time; the Vigil, audio, input and the CRT clock stay on real time
+	time += sdt
 	for l in layers:
-		l.tick(delta)
+		l.tick(delta if l == vigil else sdt)
 	# camera: glue to the Vigil (critically damped follow is the Act 1 camera, SYS-001 §9)
 	view_centre = vigil.pos
 	if _shake > 0.0:
-		_shake = maxf(0.0, _shake - delta)
+		_shake = maxf(0.0, _shake - sdt)
 	for l in layers:
 		l.queue_redraw()
+
+
+## Ask for slow-mo (`t` < 1.0) or normal speed (1.0). Reduced Motion refuses any slow-down.
+## Clearing the request (1.0) also clears the failsafe lockout.
+func set_slowmo_target(t: float) -> void:
+	if t >= 1.0:
+		_slowmo_target = 1.0
+		_slowmo_locked = false
+		return
+	if _slowmo_locked or SettingsService.get_value(&"reduced_motion"):
+		return
+	_slowmo_target = clampf(t, 0.0, 1.0)
+
+
+## Snap back to normal speed now (an impact is about to hit-stop). Emits once if it was slowed.
+func end_slowmo() -> void:
+	_slowmo_target = 1.0
+	_slowmo_real_t = 0.0
+	_slowmo_locked = false
+	if sim_scale != 1.0:
+		sim_scale = 1.0
+		slowmo_changed.emit(1.0)
+
+
+func slowmo_active() -> bool:
+	return sim_scale < 1.0 or _slowmo_target < 1.0
+
+
+func _reset_slowmo() -> void:
+	_slowmo_target = 1.0
+	_slowmo_real_t = 0.0
+	_slowmo_locked = false
+	if sim_scale != 1.0:
+		sim_scale = 1.0
+		slowmo_changed.emit(1.0)
+
+
+## Ramp the sim scale toward its target on REAL time (linear in scale); enforce the failsafe.
+func _step_slowmo(delta: float) -> void:
+	if fx_tuning == null:
+		return
+	if slowmo_active():
+		_slowmo_real_t += delta
+		if _slowmo_target < 1.0 and _slowmo_real_t > fx_tuning.slowmo_max_real_s:
+			_slowmo_target = 1.0
+			_slowmo_locked = true
+	else:
+		_slowmo_real_t = 0.0
+	if sim_scale == _slowmo_target:
+		return
+	var span := 1.0 - fx_tuning.slowmo_scale
+	var down := _slowmo_target < sim_scale
+	var secs := fx_tuning.slowmo_ramp_in_s if down else fx_tuning.slowmo_ramp_out_s
+	var rate := span / maxf(secs, 0.001)
+	var prev := sim_scale
+	sim_scale = move_toward(sim_scale, _slowmo_target, rate * delta)
+	if sim_scale != prev:
+		slowmo_changed.emit(sim_scale)
 
 
 func to_screen(p: Vector2) -> Vector2:

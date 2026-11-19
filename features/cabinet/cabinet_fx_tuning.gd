@@ -89,6 +89,13 @@ extends TunableResource
 @export var credits_full_seconds: float = 13.0            ## s ⚙ owner-approved 2026-11-18, SYS-001 §9: the full stage-2 roll with the service record (was 9.0)
 @export_group("")
 
+@export_group("slow-mo ✱ PROPOSED (owner approval pending; not SYS-001 yet)")
+@export var slowmo_scale: float = 0.25                    ## sim speed during the last-Charge slow-mo, 0.25..1.0 (audio clamps there) ✱ PROPOSED
+@export var slowmo_trigger_px: float = 80.0               ## px: the lethal Charge this close to the entity starts slow-mo ✱ PROPOSED
+@export var slowmo_ramp_in_s: float = 0.15                ## s real: 1.0 -> slowmo_scale ✱ PROPOSED
+@export var slowmo_ramp_out_s: float = 0.2                ## s real: back to 1.0 when the lethal condition clears ✱ PROPOSED
+@export var slowmo_max_real_s: float = 2.5                ## s real: failsafe cap on one episode ✱ PROPOSED
+
 
 func tunable_properties() -> PackedStringArray:
 	var out := PackedStringArray()

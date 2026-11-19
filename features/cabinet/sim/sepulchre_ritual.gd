@@ -157,6 +157,7 @@ func _knock_modules(at: Vector2) -> void:
 func _hit_entity(at: Vector2) -> void:
 	var t := world.tuning
 	hits_left -= 1
+	world.end_slowmo()                                   # scale must be exactly 1.0 when hit-stop starts
 	world.award(t.score_module, entity_pos)              # a piece of the entity (SYS-001 §7.1)
 	world.sfx(&"charge_hit")
 	world.fx.burst(at, Look.c(Pal.BONE_4), world.fx_tuning.entity_hit_burst_count, world.fx_tuning.entity_hit_burst_speed)
