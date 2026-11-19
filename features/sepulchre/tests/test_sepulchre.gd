@@ -57,12 +57,13 @@ func test_three_shards_make_one_segment_and_enter_procession() -> void:
 	sep.deposit()
 	assert_int(sep.segments).is_equal(0)
 	assert_int(sep.phase).is_equal(Sepulchre.Phase.SEED)
+	assert_array(cues).is_empty()   # no cue until a segment completes
 	sep.deposit()
 	assert_int(sep.segments).is_equal(1)
 	assert_int(sep.shard_points).is_equal(0)
 	assert_int(sep.phase).is_equal(Sepulchre.Phase.PROCESSION)
 	assert_int(sep.deposited_shards).is_equal(3)
-	assert_array(cues).is_equal([&"segment_deposit", &"segment_deposit", &"segment_deposit"])
+	assert_array(cues).is_equal([&"segment_deposit"])   # once per completed segment (PM ruling 4)
 
 
 func test_sixty_shards_complete_twenty_segments_and_cap() -> void:
@@ -70,10 +71,23 @@ func test_sixty_shards_complete_twenty_segments_and_cap() -> void:
 		sep.deposit()
 	assert_int(sep.segments).is_equal(20)
 	assert_bool(sep.is_complete()).is_true()
+	assert_int(cues.count(&"segment_deposit")).is_equal(20)
 	for _k in 5:
 		sep.deposit()
 	assert_int(sep.segments).is_equal(20)
 	assert_int(sep.deposited_shards).is_equal(65)
+	assert_int(cues.count(&"segment_deposit")).is_equal(20)   # a complete Sepulchre stays silent
+
+
+func test_one_charge_hit_is_one_segment_no_hp_pool() -> void:
+	# PM ruling 1 (2026-11-19): phases 0–1 have no per-segment HP; each Charge hit = 1 segment.
+	var s: SepulchreStats = load(STATS)
+	assert_bool("hp_per_segment" in s).is_false()
+	for _k in 12:
+		sep.deposit()
+	for h in 4:
+		sep.hurtbox.receive_hit(HitInfo.make(1, 9, h + 1, NullIronCharge.KIND))
+		assert_int(sep.segments).is_equal(3 - h)
 
 
 func test_charge_hit_knocks_one_segment_off() -> void:

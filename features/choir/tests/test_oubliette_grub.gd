@@ -154,7 +154,9 @@ func test_steals_one_shard_then_carries_along_the_route_and_deposits() -> void:
 	assert_array(passed).contains([2, 3])   # walked the rest of the route in order before the deposit
 	assert_bool(g.carrying).is_false()
 	assert_int(g.deposits).is_equal(1)
-	assert_array(cues).contains([&"segment_deposit"])
+	# one shard is not a completed segment: segment_deposit waits for the 3rd (PM ruling 4)
+	assert_array(cues).not_contains([&"segment_deposit"])
+	assert_int(sep.shard_points).is_equal(1)
 
 
 func test_flees_the_lantern_but_not_while_carrying() -> void:

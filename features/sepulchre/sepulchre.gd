@@ -63,17 +63,19 @@ func in_deposit_reach(p: Vector2) -> bool:
 	return d <= stats.deposit_radius_px
 
 
-## A Grub delivered one shard (SYS-001 §2 phase 1: one segment point). Cue segment_deposit.
+## A Grub delivered one shard (SYS-001 §2 phase 1: one segment point). Cue segment_deposit once
+## per COMPLETED segment (every `shards_per_segment`-th shard), not per deposit (PM ruling
+## 2026-11-19, matches the Cabinet's SepulchreRitual).
 func deposit() -> void:
 	deposited_shards += 1
 	pulse_left = stats.deposit_pulse_s
-	_play(&"segment_deposit")
 	if is_complete():
 		return
 	shard_points += 1
 	if shard_points >= stats.shards_per_segment:
 		shard_points -= stats.shards_per_segment
 		segments += 1
+		_play(&"segment_deposit")
 	phase = phase_for(segments)
 
 
