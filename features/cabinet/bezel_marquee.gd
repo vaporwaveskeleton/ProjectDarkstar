@@ -7,6 +7,9 @@ extends ColorRect
 
 const SHADER := preload("res://shaders/cabinet/bezel_marquee.gdshader")
 const KEY := "GAME_TITLE"
+const SHADOW_FROM := 0.56    ## the shadow across the backlight, as fractions of the sign width
+const SHADOW_TO := 0.71
+const SHADOW_SOFT := 0.03
 
 @export var surface: CabinetSurface
 
@@ -31,13 +34,24 @@ func _ready() -> void:
 	_mat.set_shader_parameter(&"rig_origin", r.position)
 	_mat.set_shader_parameter(&"unevenness", surface.marquee_unevenness)
 	_mat.set_shader_parameter(&"dust", surface.dust)
+	_mat.set_shader_parameter(&"hot", surface.marquee_hot)
+	_mat.set_shader_parameter(&"shadow_depth", surface.marquee_shadow_depth)
+	_mat.set_shader_parameter(&"dead_from", SHADOW_FROM)
+	_mat.set_shader_parameter(&"dead_to", SHADOW_TO)
+	_mat.set_shader_parameter(&"dead_soft", SHADOW_SOFT)
 	_ink = Control.new()
 	_ink.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_ink.size = r.size
-	_ink.material = CabinetLighting.print_material(surface, r.position, false)
+	var ink_mat := CabinetLighting.print_material(surface, r.position, false, true)
+	ink_mat.set_shader_parameter(&"backlit_shadow", shadow_params(r))
+	_ink.material = ink_mat
 	_ink.draw.connect(_draw_ink)
 	add_child(_ink)
 
+
+## The shadow across the backlight in rig x (x0, x1, depth, softness): the same band the lens shader darkens.
+func shadow_params(r: Rect2) -> Vector4:
+	return Vector4(r.position.x + r.size.x * SHADOW_FROM, r.position.x + r.size.x * SHADOW_TO, surface.marquee_shadow_depth, r.size.x * SHADOW_SOFT)
 
 ## Where the lettering's cap-top sits (sign-local) and its centre x.
 func lettering_anchor() -> Vector2:

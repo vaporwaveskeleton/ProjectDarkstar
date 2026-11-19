@@ -84,17 +84,20 @@ node tools/automation/darkstar_auto.js run-all [--only=<substr>]  # every scenar
   comment block at the top of `core/automation/scenario_runner.gd`. The cabinet probe exposes
   `cabinet/game|score|record|vigil|world` and `cabinet/acolyte/<id>`, `cabinet/grub/<id>`,
   `cabinet/geode/<index>` (see `caps` for the allow-listed props; `cabinet/vigil` includes `killer_kind`, `killer_dx/dy`,
-  `killer_on_screen`, `death_marks`, `death_outline`, `death_arrow` (0..1 chalk progress); `cabinet/world` includes `death_marks`, `entity_awake`, `entity_dx/dy`). `assert {id, exists:false}` works for gone entities.
+  `killer_on_screen`, `shooter_id` (-1 none), `shooter_alive`, `shooter_on_screen`, `death_marks`, `death_outline`, `death_arrow` (0..1 chalk progress); `cabinet/world` includes `last_spawned_acolyte_id` (-1 none), `death_marks`, `entity_awake`, `entity_dx/dy`). `assert {id, exists:false}` works for gone entities.
 - **New steps.** `snapshot{name}` writes `<out>/snapshots/<name>.json` (max 50 per run); `wait_event{event, within, count?}`
   waits for a probe event (the failure names the events seen); `perf_sample{}` appends to `result.perf` (max 200).
   Cabinet dev steps (dev profile only, refused in QA before frame 0): `set_stage`, `set_lives`, `teleport`, `spawn`
-  (acolyte|geode|shard at Vigil + dx,dy), `shoot_vigil` (a hostile censer shot from Vigil + dx,dy aimed at the Vigil),
-  `kill_all` (Acolytes, Grubs, hostile shots), `place_entity` (dx,dy, |v| ≤ 4000; entity must be awake), `wake_entity`
+  (acolyte|geode|shard at Vigil + dx,dy), `shoot_vigil` (a hostile censer shot from Vigil + dx,dy aimed at the Vigil; optional `acolyte_id`, int ≥ 0 or "last" = the Acolyte last made by `spawn acolyte`, becomes the shot's shooter; omitted = no shooter; a dead or missing id is accepted, which stages "shooter gone"),
+  `kill_all` (Acolytes, Grubs, hostile shots), `kill_acolyte{acolyte_id}` (int or "last"; kills just that Acolyte, leaves shots alone; fails if no live Acolyte has that id), `place_entity` (dx,dy, |v| ≤ 4000; entity must be awake), `wake_entity`
   (needs a non-Cold Sepulchre, so `set_stage 1` first; awake after about 4.2 s: wait on `cabinet/world entity_awake`), `pause_sim`, `step_sim` (needs paused_sim; steps ArcadeWorld only, not
   the CabinetGame state machine, so the death timer and respawn do not advance).
 - **Death scenarios.** `a0_death_marks_clear` (marks held through DEAD, cleared on respawn, `killer_kind` "none")
   and `a0_death_reduced_motion` (uses `set_setting`; chalk completes at once with Reduced Motion). Dev steps, so
   not run in QA exes.
+- **Shooter scenarios.** `a0_acolyte_shot_death` (on-screen shooter), `a0_offview_killer` (shooter spawned off view; staged,
+  since Acolytes never fire off-screen) and `a0_shooter_gone` (shooter killed with `kill_acolyte` after the shot is in
+  flight). The spawned Acolyte wanders, so `shooter_on_screen` is asserted right after the Vigil dies.
 - **Errors.** Every run captures engine errors and warnings into `result.errors[]`, `error_count`, `warning_count`.
   Scenario field `"fail_on_errors": true` fails the run on any error-type entry, except messages containing a
   string from `"allow_errors": [...]`.

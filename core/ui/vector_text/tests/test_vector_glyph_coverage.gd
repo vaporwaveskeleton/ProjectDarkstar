@@ -4,6 +4,8 @@ extends GdUnitTestSuite
 
 const PO_PATH := "res://locale/en.po"
 
+static var _placeholder: RegEx = RegEx.create_from_string("\\{[A-Za-z_][A-Za-z0-9_]*\\}")
+
 
 static func locale_chars() -> Dictionary:
 	var chars: Dictionary = {}
@@ -29,6 +31,7 @@ static func locale_chars() -> Dictionary:
 		if header:
 			continue
 		body = body.replace("\\\"", "\"").replace("\\n", "").replace("\\\\", "\\")
+		body = _placeholder.sub(body, "", true)   # {name} placeholders are replaced in code, never shown (L10N-001 §3)
 		for ch in body:
 			chars[ch] = true
 	return chars
@@ -44,6 +47,11 @@ func test_every_locale_character_has_a_glyph() -> void:
 		if not gs.has_glyph(ch):
 			missing.append(ch)
 	assert_array(missing).is_empty()
+
+
+func test_placeholders_are_not_counted_as_shown_characters() -> void:
+	var stripped: String = _placeholder.sub("CONTINUE? STAGE {stage}", "", true)
+	assert_str(stripped).is_equal("CONTINUE? STAGE ")
 
 
 func test_alphabet_digits_and_marks_are_covered() -> void:
