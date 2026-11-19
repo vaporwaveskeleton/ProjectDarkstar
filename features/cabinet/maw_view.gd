@@ -164,10 +164,11 @@ func vertebra_screen_pos(i: int) -> Vector2:
 
 const SPINE_SWAY := 0.075         ## ✱ S-curve amplitude, fraction of the column length
 const SPINE_TAPER := 0.7          ## ✱ vertebra spacing falls toward the tail (head step : tail step is e^0.7, about 2 : 1)
-const SPINE_HEAD_HALF := 8.5      ## px ✱ silhouette half-width at the head (S2)
-const SPINE_TAIL_RATIO := 0.4     ## ✱ half-width at the tail as a fraction of the head's
-const SPINE_NOTCH := 0.68         ## ✱ lobe edge width where two vertebrae meet, fraction of the lobe's peak
-const SPINE_LOBE_REACH := 0.4     ## ✱ lobe edge points sit this fraction of a step either side of the vertebra
+const SPINE_HEAD_HALF := 11.0     ## px ✱ silhouette half-width at the head (S2)
+const SPINE_TAIL_RATIO := 0.5     ## ✱ half-width at the tail as a fraction of the head's
+const SPINE_NOTCH := 0.5          ## ✱ lobe edge width where two vertebrae meet, fraction of the lobe's peak
+const SPINE_LOBE_REACH := 0.45    ## ✱ a lobe spans this fraction of a step either side of its vertebra (5 points: notch, shoulder, peak, shoulder, notch)
+const SPINE_SHOULDER := 0.88      ## ✱ shoulder width as a fraction of the lobe's peak
 const SPINE_CAP := 0.35           ## ✱ head and tail caps reach this fraction of a step past the end vertebrae
 
 
@@ -212,11 +213,11 @@ static func spine_silhouette(origin: Vector2, dir: Vector2, length: float) -> Pa
 		var to_head := (c[i] - c[i + 1]) if i == 0 else (c[i - 1] - c[i])
 		var to_tail := (c[i] - c[i - 1]) if i == n - 1 else (c[i + 1] - c[i])
 		var nor := (to_tail.normalized() + (-to_head).normalized()).normalized().orthogonal()
-		var offs := [-SPINE_LOBE_REACH, 0.0, SPINE_LOBE_REACH]
+		var offs := [-SPINE_LOBE_REACH, -SPINE_LOBE_REACH * 0.66, 0.0, SPINE_LOBE_REACH * 0.66, SPINE_LOBE_REACH]
 		for f: float in offs:
 			var reach := 0.0 if (i == 0 and f < 0.0) or (i == n - 1 and f > 0.0) else absf(f)    # the end vertebrae are capped, not extended
 			var at := c[i] + (to_tail if f > 0.0 else to_head) * reach
-			var wf := w * (1.0 if f == 0.0 else SPINE_NOTCH)
+			var wf := w * (1.0 if f == 0.0 else (SPINE_SHOULDER if absf(f) < SPINE_LOBE_REACH - 0.001 else SPINE_NOTCH))
 			side_a.append(at + nor * wf)
 			side_b.append(at - nor * wf)
 	var out := PackedVector2Array()
