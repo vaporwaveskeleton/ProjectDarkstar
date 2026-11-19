@@ -1,0 +1,269 @@
+[gd_resource type="Resource" script_class="CueIds" load_steps=32 format=3]
+
+[ext_resource type="Script" path="res://core/audio/cue_ids.gd" id="1"]
+[ext_resource type="Script" path="res://core/audio/cue_id_entry.gd" id="2"]
+
+[sub_resource type="Resource" id="e0"]
+script = ExtResource("2")
+id = &"lance"
+doc_id = "A01"
+act0_only = false
+has_synth_fallback = true
+is_loop = false
+note = ""
+
+[sub_resource type="Resource" id="e1"]
+script = ExtResource("2")
+id = &"geode_hit"
+doc_id = "A02"
+act0_only = false
+has_synth_fallback = true
+is_loop = false
+note = "one pitch; the ladder is not built"
+
+[sub_resource type="Resource" id="e2"]
+script = ExtResource("2")
+id = &"geode_break"
+doc_id = "A05"
+act0_only = false
+has_synth_fallback = true
+is_loop = false
+note = ""
+
+[sub_resource type="Resource" id="e3"]
+script = ExtResource("2")
+id = &"shard_chime"
+doc_id = "A06"
+act0_only = false
+has_synth_fallback = true
+is_loop = false
+note = ""
+
+[sub_resource type="Resource" id="e4"]
+script = ExtResource("2")
+id = &"charge_fire"
+doc_id = "B02"
+act0_only = false
+has_synth_fallback = true
+is_loop = false
+note = ""
+
+[sub_resource type="Resource" id="e5"]
+script = ExtResource("2")
+id = &"charge_hit"
+doc_id = "B04"
+act0_only = false
+has_synth_fallback = true
+is_loop = false
+note = ""
+
+[sub_resource type="Resource" id="e6"]
+script = ExtResource("2")
+id = &"charge_lost"
+doc_id = "B06"
+act0_only = false
+has_synth_fallback = true
+is_loop = false
+note = "the glass chime"
+
+[sub_resource type="Resource" id="e7"]
+script = ExtResource("2")
+id = &"vigil_die"
+doc_id = "C08"
+act0_only = false
+has_synth_fallback = true
+is_loop = false
+note = "the filter sweep"
+
+[sub_resource type="Resource" id="e8"]
+script = ExtResource("2")
+id = &"wake_hit"
+doc_id = ""
+act0_only = true
+has_synth_fallback = true
+is_loop = false
+note = "the Awakening hit (section 2.10); a set piece with no 6.2 id"
+
+[sub_resource type="Resource" id="e9"]
+script = ExtResource("2")
+id = &"entity_unmade"
+doc_id = ""
+act0_only = true
+has_synth_fallback = true
+is_loop = false
+note = "the unmaking (section 2.10); a set piece with no 6.2 id"
+
+[sub_resource type="Resource" id="e10"]
+script = ExtResource("2")
+id = &"grub_keen"
+doc_id = "F06"
+act0_only = false
+has_synth_fallback = true
+is_loop = false
+note = ""
+
+[sub_resource type="Resource" id="e11"]
+script = ExtResource("2")
+id = &"grub_die"
+doc_id = ""
+act0_only = true
+has_synth_fallback = true
+is_loop = false
+note = ""
+
+[sub_resource type="Resource" id="e12"]
+script = ExtResource("2")
+id = &"acolyte_fire"
+doc_id = "F02"
+act0_only = false
+has_synth_fallback = true
+is_loop = false
+note = "approximate (12.4)"
+
+[sub_resource type="Resource" id="e13"]
+script = ExtResource("2")
+id = &"acolyte_die"
+doc_id = ""
+act0_only = true
+has_synth_fallback = true
+is_loop = false
+note = ""
+
+[sub_resource type="Resource" id="e14"]
+script = ExtResource("2")
+id = &"segment_deposit"
+doc_id = "G01"
+act0_only = false
+has_synth_fallback = true
+is_loop = false
+note = "approximate (12.4)"
+
+[sub_resource type="Resource" id="e15"]
+script = ExtResource("2")
+id = &"segment_knocked"
+doc_id = "D02"
+act0_only = false
+has_synth_fallback = true
+is_loop = false
+note = "approximate (12.4)"
+
+[sub_resource type="Resource" id="e16"]
+script = ExtResource("2")
+id = &"extra_life"
+doc_id = "H10"
+act0_only = false
+has_synth_fallback = true
+is_loop = false
+note = ""
+
+[sub_resource type="Resource" id="e17"]
+script = ExtResource("2")
+id = &"quota"
+doc_id = ""
+act0_only = true
+has_synth_fallback = true
+is_loop = false
+note = "the Act 0 jingle"
+
+[sub_resource type="Resource" id="e18"]
+script = ExtResource("2")
+id = &"coin"
+doc_id = ""
+act0_only = true
+has_synth_fallback = true
+is_loop = false
+note = "attract and H family"
+
+[sub_resource type="Resource" id="e19"]
+script = ExtResource("2")
+id = &"menu_accept"
+doc_id = "I06"
+act0_only = false
+has_synth_fallback = true
+is_loop = false
+note = ""
+
+[sub_resource type="Resource" id="e20"]
+script = ExtResource("2")
+id = &"menu_move"
+doc_id = "I07"
+act0_only = false
+has_synth_fallback = true
+is_loop = false
+note = "hover"
+
+[sub_resource type="Resource" id="e21"]
+script = ExtResource("2")
+id = &"power_on"
+doc_id = ""
+act0_only = true
+has_synth_fallback = true
+is_loop = false
+note = "attract"
+
+[sub_resource type="Resource" id="e22"]
+script = ExtResource("2")
+id = &"tape_peel"
+doc_id = ""
+act0_only = true
+has_synth_fallback = true
+is_loop = false
+note = "attract"
+
+[sub_resource type="Resource" id="e23"]
+script = ExtResource("2")
+id = &"chant"
+doc_id = ""
+act0_only = true
+has_synth_fallback = true
+is_loop = true
+note = "loop bed (section 5); fallback is SfxSynth.build_chant_loop()"
+
+[sub_resource type="Resource" id="e24"]
+script = ExtResource("2")
+id = &"lance_armour"
+doc_id = "A03"
+act0_only = false
+has_synth_fallback = false
+is_loop = false
+note = "render only"
+
+[sub_resource type="Resource" id="e25"]
+script = ExtResource("2")
+id = &"geode_crack"
+doc_id = "A04"
+act0_only = false
+has_synth_fallback = false
+is_loop = false
+note = "render only"
+
+[sub_resource type="Resource" id="e26"]
+script = ExtResource("2")
+id = &"dry_fire"
+doc_id = "A09"
+act0_only = false
+has_synth_fallback = false
+is_loop = false
+note = "render only"
+
+[sub_resource type="Resource" id="e27"]
+script = ExtResource("2")
+id = &"hull_hit"
+doc_id = "C07"
+act0_only = false
+has_synth_fallback = false
+is_loop = false
+note = "render only"
+
+[sub_resource type="Resource" id="e28"]
+script = ExtResource("2")
+id = &"surgelight"
+doc_id = "C04"
+act0_only = false
+has_synth_fallback = false
+is_loop = false
+note = "render only"
+
+[resource]
+script = ExtResource("1")
+entries = [SubResource("e0"), SubResource("e1"), SubResource("e2"), SubResource("e3"), SubResource("e4"), SubResource("e5"), SubResource("e6"), SubResource("e7"), SubResource("e8"), SubResource("e9"), SubResource("e10"), SubResource("e11"), SubResource("e12"), SubResource("e13"), SubResource("e14"), SubResource("e15"), SubResource("e16"), SubResource("e17"), SubResource("e18"), SubResource("e19"), SubResource("e20"), SubResource("e21"), SubResource("e22"), SubResource("e23"), SubResource("e24"), SubResource("e25"), SubResource("e26"), SubResource("e27"), SubResource("e28")]
