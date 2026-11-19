@@ -13,7 +13,7 @@
 		{"do": "assert", "id": "sector/field", "prop": "geodes_alive", "eq": 10},
 		{"do": "assert", "id": "sector/field", "prop": "geodes_detonated", "eq": 0},
 		{"do": "mouse_move", "x": 632, "y": 180},
-		{"do": "hold", "action": "move_up", "frames": 2},
+		{"do": "hold", "action": "move_up", "frames": 5},
 		{"do": "wait_frames", "frames": 120},
 		{"do": "assert", "id": "sector/vigil", "prop": "vigil_y", "lt": 165},
 		{"do": "assert", "id": "sector/vigil", "prop": "vigil_y", "gt": 135},

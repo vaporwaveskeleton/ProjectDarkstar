@@ -7,11 +7,13 @@ extends RefCounted
 ## a RunSession write must never erase another writer's key.
 
 ## Keys RunSession owns: its in-memory value wins over what is on disk (`merge_foreign`).
-const OWNED_KEYS := ["ember_banked", "act0_banked"]
+const OWNED_KEYS := ["ember_banked", "act0_banked", "tree_nodes"]
 ## Keys other writers own (TECH-001 §7.2 Act 0 keys; `act0_pending_vi` is Q-T141).
 const FOREIGN_KEYS := ["cabinet_hi_score", "act0_complete", "pretence_seen", "cabinet_tape_peeled", "act0_pending_vi"]
 
 var ember_banked: int = 0
+## Lantern Tree node ids bought (Q-T191), in purchase order; ids only (TECH-001 §7).
+var tree_nodes: Array[StringName] = []
 ## Q-T101: the Act 0 bank has been paid (once per profile, ever).
 var act0_banked: bool = false
 var cabinet_hi_score: int = 0
@@ -33,6 +35,8 @@ func to_payload() -> Dictionary:
 	d["act0_complete"] = act0_complete
 	d["pretence_seen"] = pretence_seen
 	d["cabinet_tape_peeled"] = cabinet_tape_peeled
+	if not tree_nodes.is_empty():
+		d["tree_nodes"] = RunPayload.ids_out(tree_nodes)
 	if act0_pending_vi >= 0:
 		d["act0_pending_vi"] = act0_pending_vi
 	return d
@@ -48,6 +52,7 @@ static func from_payload(d: Dictionary) -> ProfileState:
 	p.act0_complete = RunPayload.read_bool(d, "act0_complete", false, errors)
 	p.pretence_seen = RunPayload.read_bool(d, "pretence_seen", false, errors)
 	p.cabinet_tape_peeled = RunPayload.read_bool(d, "cabinet_tape_peeled", false, errors)
+	p.tree_nodes = RunPayload.read_ids(d, "tree_nodes", errors)
 	p.act0_pending_vi = RunPayload.read_int(d, "act0_pending_vi", -1, errors)
 	var known := PackedStringArray(OWNED_KEYS + FOREIGN_KEYS)
 	for k in RunPayload.unknown_keys(d, known):

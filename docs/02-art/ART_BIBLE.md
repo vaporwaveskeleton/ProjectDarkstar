@@ -847,6 +847,8 @@ How the M1 sector reads once it wears the Aether. Built; not yet scored by The R
 ### 16.7 The Aether Vigil: a brass lantern skiff with visible systems (ruled, PM under owner autonomy grant, 2026-11-19)
 
 > **Status: ruled, PM under owner autonomy grant, 2026-11-19** (TECH-001 Q-T170; queued for the owner's later review). It goes with the Aether handling profile (GDD §4.2a, SYS-001 §1.1a). Act 0's neon Vigil (§3, §15.2) is unchanged.
+>
+> **Built 2026-11-19** as `AetherVigilRig` (runtime `_draw`); visual values are ✱ in `ds_vigil.aether_look` (TECH-001 §3.4). Palette: brass from BONE/VOID mixes, GAS only for lamp, glass, flue and sparks; no CHOIR, SIGNAL or PHOS.
 
 **Intent.** In the Cabinet the Vigil is a simple wedge and a lamp. After THE PRETENCE the player should see the ship it always was: a hand-built Victorian lantern skiff with a keel, bellows and vanes. It is heavy, riveted and engraved, and every system the Lantern Tree brings online is a part you can see. The weight in the hands (GDD §4.2a) and the complexity in the art are the same idea.
 

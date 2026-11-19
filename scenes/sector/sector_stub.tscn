@@ -1,10 +1,11 @@
-[gd_scene load_steps=37 format=3]
+[gd_scene load_steps=38 format=3]
 
 [ext_resource type="Script" path="res://scenes/sector/sector_stub.gd" id="1"]
 [ext_resource type="PackedScene" path="res://features/vigil/vigil.tscn" id="2"]
 [ext_resource type="Script" path="res://core/ui/screen_stack.gd" id="3"]
 [ext_resource type="Script" path="res://features/sector/sector_camera.gd" id="4"]
 [ext_resource type="Resource" path="res://data/sector/sector_camera.tres" id="5"]
+[ext_resource type="Resource" path="res://data/sector/sector_camera_aether.tres" id="cam_aether"]
 [ext_resource type="Script" path="res://features/hud/ledger_compass.gd" id="6"]
 [ext_resource type="Resource" path="res://data/hud/ledger_compass.tres" id="7"]
 [ext_resource type="Resource" path="res://data/cabinet/stage_first_vigil.tres" id="8"]
@@ -122,6 +123,7 @@ unique_name_in_owner = true
 position = Vector2(320, 180)
 script = ExtResource("4")
 stats = ExtResource("5")
+aether_stats = ExtResource("cam_aether")
 
 [node name="RaceFramer" type="Node" parent="." node_paths=PackedStringArray("camera")]
 unique_name_in_owner = true
