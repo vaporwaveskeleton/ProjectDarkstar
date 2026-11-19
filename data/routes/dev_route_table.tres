@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1")
 routes = {
-&"aether_gallery": "res://scenes/dev/aether_gallery/aether_gallery.tscn"
+&"aether_gallery": "res://scenes/dev/aether_gallery/aether_gallery.tscn",
+&"ruins_gallery": "res://scenes/dev/aether_gallery/ruins_gallery.tscn"
 }
 initial_route = &"attract"
