@@ -152,6 +152,7 @@ func _on_timer() -> void:
 			_enter(State.PLAY)
 		State.DEAD:
 			if score.lose_life():
+				world.fx.clear_death_marks()
 				world.vigil.respawn(_safe_spawn())
 				_enter(State.PLAY)
 			else:

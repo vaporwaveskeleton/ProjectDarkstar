@@ -9,6 +9,8 @@ var vel := Vector2.ZERO
 var facing := -PI / 2.0
 var alive := true
 var radius := 6.0
+const HULL_LENGTH := 15.0        ## px nose to tail of the drawn hull (9 + 6): the S6 death arrow is at least this long
+const GHOST_SHARED_EDGE_MAX := 0.4   ## x edge length: max bracket per end on an edge two brackets share (S5)
 var shield := 0.0                ## respawn invulnerability (s)
 var input_enabled := true
 
@@ -23,6 +25,14 @@ var _surge_cooldown := 0.0
 var _thrusting := false
 var used_surgelight := false     ## for the Pretence Kept condition (LOOP-001 §11.6)
 
+## Position trail (S5): one sample per tick() so it freezes in hit-stop; feeds the Surgelight
+## afterimage and the thrust wake. Fixed-size ring buffer, draw-only, never read by the sim.
+var _trail_pos := PackedVector2Array()
+var _trail_face := PackedFloat32Array()
+var _trail_head := 0
+var _trail_count := 0
+var _ghost_hold := 0.0           ## s of sim time the ghosts linger after a surge
+
 ## Test / demo hooks: when set, these replace device input.
 var scripted_move := Vector2.ZERO
 var scripted_aim := Vector2.ZERO
@@ -36,6 +46,7 @@ func reset() -> void:
 	vel = Vector2.ZERO
 	alive = true
 	shield = world.tuning.respawn_shield
+	_clear_trail()
 
 
 func respawn(at: Vector2) -> void:
@@ -43,6 +54,7 @@ func respawn(at: Vector2) -> void:
 	vel = Vector2.ZERO
 	alive = true
 	shield = world.tuning.respawn_shield
+	_clear_trail()
 
 
 func tick(delta: float) -> void:
@@ -83,6 +95,10 @@ func tick(delta: float) -> void:
 	if _surge > 0.0:
 		_surge -= delta
 		vel += move.normalized() * world.tuning.surgelight_impulse * delta / world.tuning.surgelight_time
+		if _surge <= 0.0:
+			_ghost_hold = world.fx_tuning.ghost_hold_s
+	elif _ghost_hold > 0.0:
+		_ghost_hold = maxf(0.0, _ghost_hold - delta)
 	pos = world.torus.wrap(pos + vel * delta)
 	if aim.length() > 1.0:
 		facing = VigilMotor.step_facing(facing, aim.angle(), delta, world.move_stats)
@@ -101,12 +117,104 @@ func tick(delta: float) -> void:
 		var away := world.torus.delta(g.pos, pos).normalized()
 		pos = world.torus.wrap(g.pos + away * (g.radius + radius + 0.5))
 		vel = vel.bounce(away) * 0.5 if vel.dot(away) < 0.0 else vel
+	_record_trail()
 
 
-func kill() -> void:
+# --- S5 trail -------------------------------------------------------------------------------
+
+func _trail_len() -> int:
+	var ft := world.fx_tuning
+	return maxi(ghost_ticks(ft.ghost_count), ft.wake_dots * ft.wake_spacing_ticks) + 1
+
+
+func _clear_trail() -> void:
+	_trail_pos.resize(_trail_len())
+	_trail_face.resize(_trail_len())
+	_trail_head = 0
+	_trail_count = 0
+	_ghost_hold = 0.0
+
+
+func _record_trail() -> void:
+	if _trail_pos.size() != _trail_len():
+		_clear_trail()
+	_trail_pos[_trail_head] = pos
+	_trail_face[_trail_head] = facing
+	_trail_head = (_trail_head + 1) % _trail_pos.size()
+	_trail_count = mini(_trail_count + 1, _trail_pos.size())
+
+
+## Is there a sample `k` ticks back (0 = this tick's)?
+func trail_has(k: int) -> bool:
+	return k >= 0 and k < _trail_count
+
+
+## World position written `k` ticks back (call trail_has first).
+func trail_pos(k: int) -> Vector2:
+	return _trail_pos[posmod(_trail_head - 1 - k, _trail_pos.size())]
+
+
+func trail_facing(k: int) -> float:
+	return _trail_face[posmod(_trail_head - 1 - k, _trail_pos.size())]
+
+
+## Offset of the sample `k` ticks back from the ship, via the torus delta so a wrap of `pos`
+## never throws a ghost across the field.
+func trail_offset(k: int) -> Vector2:
+	return world.torus.delta(pos, trail_pos(k))
+
+
+func afterimage_active() -> bool:
+	return alive and (_surge > 0.0 or _ghost_hold > 0.0)
+
+
+func wake_active() -> bool:
+	return alive and _thrusting
+
+
+## Ticks back for ghost number `i` (1 = nearest): spacing * i*(i+1)/2, so 3, 9, 18 at spacing 3.
+func ghost_ticks(i: int) -> int:
+	return world.fx_tuning.ghost_spacing_ticks * (i * (i + 1) / 2)
+
+
+## Corner brackets of ghost `i`: the nose and the two tail vertices each keep a short segment along
+## both their edges; the notch and the edge middles are dropped. Older ghosts get shorter brackets.
+## Returns 2-point segments. Only the live hull is a closed outline.
+func ghost_brackets(hull: PackedVector2Array, i: int) -> Array[PackedVector2Array]:
+	var ft := world.fx_tuning
+	var fracs: Array[float] = [ft.ghost_bracket_frac_1, ft.ghost_bracket_frac_2, ft.ghost_bracket_frac_3]
+	var frac: float = fracs[clampi(i - 1, 0, fracs.size() - 1)]
+	var out: Array[PackedVector2Array] = []
+	# vertex index -> the two neighbours its brackets run toward (hull: 0 nose, 1/3 tail, 2 notch)
+	for pair in [[0, 1], [0, 3], [1, 0], [1, 2], [3, 0], [3, 2]]:
+		var a := hull[pair[0]]
+		var b := hull[pair[1]]
+		# the two nose edges get a bracket from BOTH ends: cap those so a gap always remains (never closed)
+		var shared: bool = (pair[0] == 0 or pair[1] == 0)
+		out.append(PackedVector2Array([a.round(), a.lerp(b, minf(frac, GHOST_SHARED_EDGE_MAX) if shared else frac).round()]))
+	return out
+
+
+func ghost_color(i: int) -> Color:
+	var ramp: Array[Color] = [Pal.GAS_3, Pal.GAS_2, Pal.GAS_1]
+	return Look.c(ramp[clampi(i - 1, 0, ramp.size() - 1)])
+
+
+## The Vigil's 4 hull points around screen centre `c` facing `ang` (nose, tail, notch, tail).
+func hull_points(c: Vector2, ang: float) -> PackedVector2Array:
+	var f := Vector2.from_angle(ang)
+	var r := f.orthogonal()
+	return PackedVector2Array([c + f * 9.0, c - f * 6.0 + r * 6.0, c - f * 3.0, c - f * 6.0 - r * 6.0])
+
+
+## killer_pos / from_dir / killer_radius feed the chalk death mark (S6): from_dir points from the
+## Vigil toward what hit it. Defaults (INF) keep old callers working and draw no mark.
+func kill(killer_pos: Vector2 = Vector2.INF, from_dir: Vector2 = Vector2.ZERO, killer_radius: float = 0.0) -> void:
 	if not alive or shield > 0.0:
 		return
 	alive = false
+	if killer_pos.is_finite():
+		world.fx.death_mark(killer_pos, killer_radius, from_dir, pos)
 	world.sfx(&"vigil_die")
 	world.fx.burst(pos, Look.c(Pal.GAS_4), world.fx_tuning.vigil_death_burst_a_count, world.fx_tuning.vigil_death_burst_a_speed)
 	world.fx.burst(pos, Look.c(Pal.GAS_2), world.fx_tuning.vigil_death_burst_b_count, world.fx_tuning.vigil_death_burst_b_speed)
@@ -143,6 +251,7 @@ func _draw_ship() -> void:
 	var f := Vector2.from_angle(facing)
 	var r := f.orthogonal()
 	var hull := PackedVector2Array([c + f * 9.0, c - f * 6.0 + r * 6.0, c - f * 3.0, c - f * 6.0 - r * 6.0])
+	_draw_trail(c)
 	Pal.glow_polyline(self, hull, Look.c(Pal.GAS_4), Look.c(Pal.GAS_1))
 	draw_rect(Rect2((c + f * 1.0).round() - Vector2(1, 1), Vector2(3, 3)), Look.c(Pal.GAS_5))   # the lamp
 	if _thrusting and int(world.time * 30.0) % 2 == 0:
@@ -153,3 +262,23 @@ func _draw_ship() -> void:
 		var arm := float(world.fx_tuning.muzzle_star_px)
 		draw_line(m - Vector2(arm, 0), m + Vector2(arm, 0), Look.c(Pal.GAS_5), 1.0)
 		draw_line(m - Vector2(0, arm), m + Vector2(0, arm), Look.c(Pal.GAS_5), 1.0)
+
+
+## S5: stepped-palette afterimage (open hull outlines, no glow) and thrust wake (1x1 dots).
+func _draw_trail(c: Vector2) -> void:
+	var ft := world.fx_tuning
+	if afterimage_active():
+		for i in range(ft.ghost_count, 0, -1):   # farthest first so the nearest sits on top
+			var k := ghost_ticks(i)
+			if not trail_has(k):
+				continue
+			var gc := (c + trail_offset(k)).round()
+			for seg in ghost_brackets(hull_points(gc, trail_facing(k)), i):
+				draw_line(seg[0], seg[1], ghost_color(i), 1.0)
+	if wake_active():
+		for j in range(ft.wake_dots, 0, -1):
+			var k := j * ft.wake_spacing_ticks
+			if not trail_has(k):
+				continue
+			var col := Look.c(Pal.GAS_2) if j * 2 <= ft.wake_dots else Look.c(Pal.GAS_1)
+			draw_rect(Rect2((c + trail_offset(k)).round(), Vector2.ONE), col)

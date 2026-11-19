@@ -10,6 +10,7 @@ extends ArcadeLayer
 enum Phase { SEED, PROCESSION, GUARD, QUICKENING, AWAKENING, RAMPAGE, UNMADE }
 
 const BODY_RADIUS := 30.0        ## ✱ costume scale
+const BODY_DRAWN_RADIUS := BODY_RADIUS + 4.0   ## px ✱ body ring + vertebra plate reach: the silhouette the S6 chalk ring encloses
 const CONTACT_INSET := 4.0       ## ✱ SYS-001 §2.1's 16 px inset at the 64 px module scale, ÷4 for the costume
 const SEPULCHRE_RADIUS := 26.0   ## ✱ deposit / Charge contact radius of the altar
 const ENTITY_TURN := 2.2         ## ✱ rad/s steering: kite-able, never twitchy
@@ -242,7 +243,7 @@ func _rampage(delta: float) -> void:
 	entity_pos = world.torus.wrap(entity_pos + entity_dir * t.rampage_speed * delta)
 	# contact death (SYS-001 §2 phase 5 🔒)
 	if v.alive and world.torus.distance(entity_pos, v.pos) <= BODY_RADIUS - CONTACT_INSET + v.radius:
-		v.kill()
+		v.kill(entity_pos, world.torus.delta(v.pos, entity_pos).normalized(), BODY_DRAWN_RADIUS)
 	# it eats to heal (SYS-001 §2.1)
 	var g := world.geodes.hit_test(entity_pos, BODY_RADIUS - CONTACT_INSET)
 	if g != null:
