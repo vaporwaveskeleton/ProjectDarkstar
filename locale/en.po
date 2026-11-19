@@ -248,6 +248,10 @@ msgstr "1 CREDIT"
 msgid "CAB_CREDIT_COUNT"
 msgstr "CREDIT %d"
 
+#. Attract page after GAME OVER: the next coin continues the stage. %d is the 1-based stage number (Q-T104); PROPOSED wording.
+msgid "CAB_CONTINUE"
+msgstr "CONTINUE? STAGE %d"
+
 #. Coin-door prompts (attract). Mouse wording.
 msgid "CAB_HINT_PEEL_DRAG"
 msgstr "DRAG THE TAPE OFF THE SLOT"

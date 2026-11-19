@@ -25,6 +25,7 @@ const DEMO_IDLE := 30.0          ## s — WARP-001 W0-03 "30 s idle on the title
 
 var idle := 0.0
 var demo_enabled := true         ## tests turn this off
+var continue_stage := -1         ## CONTINUE offer from GAME OVER (Q-T104): 0-based stage, -1 = none; lasts until the demo
 var _profile: Dictionary = {}
 
 
@@ -48,12 +49,16 @@ func _ready() -> void:
 	_set_new_vigil_ready(false)
 	default_focus = _coin
 	_wire_focus()
+	_pages.continue_stage = continue_stage
 	_coin.hint_armed = true
 	super()
 
 
 ## Boot routes the first attract of a launch with {"power_on": true}.
 func on_route_entered(params: Dictionary) -> void:
+	continue_stage = int(params.get("continue_stage", -1))
+	if is_node_ready():
+		_pages.continue_stage = continue_stage
 	if bool(params.get("power_on", false)):
 		power_on()
 
@@ -79,6 +84,7 @@ func _process(delta: float) -> void:
 	idle += delta
 	if idle >= DEMO_IDLE:
 		idle = 0.0
+		clear_continue_offer()          # the offer ends where the attract cycle reaches its demo
 		SceneRouter.go_to(&"cabinet", {"demo": true})
 
 
@@ -151,10 +157,17 @@ func _on_new_vigil() -> void:
 	if SceneRouter.is_busy or not _coin.has_credit():
 		return
 	set_buttons_disabled(true)
-	if SceneRouter.go_to(&"cabinet"):
+	var params: Dictionary = {"continue_stage": continue_stage} if continue_stage >= 0 else {}
+	if SceneRouter.go_to(&"cabinet", params):
 		_coin.spend()
 	else:
 		set_buttons_disabled(false)
+
+
+func clear_continue_offer() -> void:
+	continue_stage = -1
+	if is_node_ready():
+		_pages.continue_stage = -1
 
 
 func open_settings() -> Screen:

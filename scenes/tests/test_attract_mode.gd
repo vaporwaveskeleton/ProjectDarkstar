@@ -183,3 +183,100 @@ func test_omen_line_fits_the_screen_at_200_percent_text() -> void:
 	assert_bool(play.get_global_rect().encloses((runner.find_child("Pages") as Control).get_global_rect())).is_true()
 	SettingsService.set_value(&"text_scale", 1.0)
 	SaveService.set_backend(saved)
+
+
+# --- the CONTINUE offer after GAME OVER (Q-T104) -----------------------------------------------------
+
+## A route host that keeps the params the router hands to the scene it mounts.
+class ParamHost extends Node:
+	var routes: Array[String] = []
+	var params: Array[Dictionary] = []
+
+	func mount(scene: Node) -> void:
+		routes.append(scene.scene_file_path)
+		var stub := GDScript.new()
+		stub.source_code = "extends Node\nvar sink\nfunc on_route_entered(p: Dictionary) -> void:\n\tsink.append(p)\n"
+		stub.reload()
+		scene.set_script(stub)
+		scene.set("sink", params)
+		scene.queue_free()
+
+
+func _with_param_host() -> ParamHost:
+	FakeRouteHost.uninstall(host)
+	host = null
+	var h := ParamHost.new()
+	add_child(h)
+	SceneRouter.register_host(h)
+	return h
+
+
+func _credit(runner: GdUnitSceneRunner) -> CoinSlot:
+	var coin := runner.find_child("CoinSlot") as CoinSlot
+	coin.set_peeled()
+	coin.phase = CoinSlot.Phase.CREDITED
+	runner.scene().call("_on_credit_inserted")
+	return coin
+
+
+func test_the_continue_offer_shows_with_the_param() -> void:
+	var runner := scene_runner(SCENE)
+	await runner.simulate_frames(2)
+	runner.scene().call("on_route_entered", {"continue_stage": 1})
+	var pages := runner.find_child("Pages") as AttractPages
+	assert_int(pages.continue_stage).is_equal(1)
+	assert_int(int(runner.scene().get("continue_stage"))).is_equal(1)
+	assert_str(tr("CAB_CONTINUE")).is_not_equal("CAB_CONTINUE")
+	assert_str(tr("CAB_CONTINUE") % 2).contains("2")
+	await runner.simulate_frames(2)
+
+
+func test_no_param_means_no_offer_and_a_fresh_start() -> void:
+	var h := _with_param_host()
+	var runner := scene_runner(SCENE)
+	await runner.simulate_frames(2)
+	runner.scene().call("on_route_entered", {})
+	assert_int((runner.find_child("Pages") as AttractPages).continue_stage).is_equal(-1)
+	_credit(runner)
+	(runner.find_child("NewVigil") as ArcadeButton).pressed.emit()
+	await runner.simulate_frames(5)
+	assert_array(h.routes).is_equal(["res://features/cabinet/cabinet_game.tscn"])
+	assert_bool(h.params[0].has("continue_stage")).is_false()
+	SceneRouter.unregister_host(h)
+	SceneRouter.is_busy = false
+	host = FakeRouteHost.install(self)
+
+
+func test_start_continues_the_stage_when_the_offer_stands() -> void:
+	var h := _with_param_host()
+	var runner := scene_runner(SCENE)
+	await runner.simulate_frames(2)
+	runner.scene().call("on_route_entered", {"continue_stage": 2})
+	var coin := _credit(runner)
+	await runner.simulate_frames(2)
+	assert_object(_focus()).is_same(runner.find_child("NewVigil"))
+	(runner.find_child("NewVigil") as ArcadeButton).pressed.emit()
+	await runner.simulate_frames(5)
+	assert_array(h.routes).is_equal(["res://features/cabinet/cabinet_game.tscn"])
+	assert_int(int(h.params[0]["continue_stage"])).is_equal(2)
+	assert_bool(coin.has_credit()).is_false()
+	SceneRouter.unregister_host(h)
+	SceneRouter.is_busy = false
+	host = FakeRouteHost.install(self)
+
+
+func test_the_offer_clears_when_the_attract_reaches_its_demo() -> void:
+	var h := _with_param_host()
+	var runner := scene_runner(SCENE)
+	await runner.simulate_frames(2)
+	runner.scene().call("on_route_entered", {"continue_stage": 1})
+	runner.scene().set("demo_enabled", true)
+	runner.scene().set("idle", 29.9999)
+	await runner.simulate_frames(4)
+	assert_int(int(runner.scene().get("continue_stage"))).is_equal(-1)
+	assert_int((runner.find_child("Pages") as AttractPages).continue_stage).is_equal(-1)
+	assert_bool(h.params[0].get("demo", false)).is_true()
+	assert_bool(h.params[0].has("continue_stage")).is_false()
+	SceneRouter.unregister_host(h)
+	SceneRouter.is_busy = false
+	host = FakeRouteHost.install(self)
