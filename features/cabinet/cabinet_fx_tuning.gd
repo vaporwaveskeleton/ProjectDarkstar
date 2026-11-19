@@ -85,17 +85,21 @@ extends TunableResource
 @export_group("")
 
 @export_group("readable death ✱ PROPOSED (owner approval pending; not SYS-001 yet)")
-@export var death_ring_pad_px: float = 4.0                ## px ✱ PROPOSED: chalk ring radius beyond the killer's own radius
+@export var death_ring_pad_px: float = 6.0                ## px ✱ PROPOSED: dashed chalk gap beyond the killer's outermost drawn part (wider than the entity plate spacing, ~5 px)
 @export var death_ring_draw_s: float = 0.25               ## s ✱ PROPOSED: sim time for the ring to draw itself 0..360 deg (full at once under Reduced Motion)
-@export var death_arc_radius_px: float = 12.0             ## px ✱ PROPOSED: chalk arc radius around the Vigil's death position
-@export var death_arc_deg: float = 60.0                   ## deg ✱ PROPOSED: chalk arc span, centred on the hit direction
+@export var death_chevron_px: float = 12.0              ## px ✱ PROPOSED: inbound chevron size at the death spot (a few px larger than the hull)
+@export var death_big_killer_px: float = 12.0             ## px ✱ PROPOSED: killers drawn larger than this get a contact ring + leader line, not a whole-body ring
+@export var death_contact_ring_px: float = 6.0            ## px ✱ PROPOSED: dashed contact ring radius where a big killer touched the Vigil
 @export var death_edge_tick_px: float = 5.0               ## px ✱ PROPOSED: chalk tick on the view edge pointing at an off-view killer
 @export_group("")
 
 @export_group("surge afterimage ✱ PROPOSED (owner approval pending; not SYS-001 yet)")
 @export var ghost_count: int = 3                          ## ✱ PROPOSED: hull outlines trailing a Surgelight burst
-@export var ghost_spacing_ticks: int = 3                  ## sim ticks ✱ PROPOSED: ticks back between successive ghosts
+@export var ghost_spacing_ticks: int = 3                  ## sim ticks ✱ PROPOSED: base spacing; ghost k sits spacing*k*(k+1)/2 ticks back (3, 9, 18)
 @export var ghost_hold_s: float = 0.1                     ## s sim ✱ PROPOSED: ghosts linger this long after the surge ends
+@export var ghost_bracket_frac_1: float = 0.45            ## x edge length ✱ PROPOSED: corner bracket length, nearest ghost
+@export var ghost_bracket_frac_2: float = 0.32            ## x edge length ✱ PROPOSED
+@export var ghost_bracket_frac_3: float = 0.2             ## x edge length ✱ PROPOSED: farthest ghost
 @export var wake_dots: int = 6                            ## ✱ PROPOSED: 1x1 dots trailing a thrusting Vigil
 @export var wake_spacing_ticks: int = 2                   ## sim ticks ✱ PROPOSED: ticks back between wake dots
 @export_group("")

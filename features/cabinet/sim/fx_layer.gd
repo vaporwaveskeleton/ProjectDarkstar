@@ -6,6 +6,8 @@ extends ArcadeLayer
 const MAX_PARTICLES := 600       ## ✱
 const MAX_TEXTS := 24            ## ✱
 const MIN_RING_GAP_PX := 2.0     ## ✱ the S6 chalk ring clears the killer silhouette by at least this
+const DASH_PX := 3.0             ## ✱ S6 chalk dash length
+const GAP_PX := 3.0              ## ✱ S6 chalk gap between dashes
 
 class Spark:
 	var pos: Vector2
@@ -197,17 +199,79 @@ func _draw() -> void:
 		PixelText.draw(self, p, t.text, Look.c(Pal.BONE_4) if t.life > 0.3 else Look.c(Pal.BONE_1))
 
 
+## Killers drawn larger than death_big_killer_px (the entity) get a contact ring + leader, not a whole ring.
+func death_is_big(m: DeathMark) -> bool:
+	return m.killer_radius > world.fx_tuning.death_big_killer_px
+
+
+## Where the killer is NOW: a big killer (the entity) is tracked live through DEAD (torus-aware via
+## the deltas below); a small one (a shot) stays where it killed.
+func death_killer_pos(m: DeathMark) -> Vector2:
+	if death_is_big(m) and world.ritual != null:
+		return world.ritual.entity_pos
+	return m.killer_pos
+
+
 ## Chalk ring radius: the killer's drawn silhouette + pad, never closer than MIN_RING_GAP_PX to it.
 func death_ring_radius(m: DeathMark) -> float:
 	return m.killer_radius + maxf(MIN_RING_GAP_PX, world.fx_tuning.death_ring_pad_px)
 
 
+## World point where a big body touched the Vigil: the death spot offset toward the killer by the hull radius.
+func death_contact_point(m: DeathMark) -> Vector2:
+	return m.vigil_pos + m.from_dir * world.vigil.radius
+
+
+## Dashed arc spans [start, end] in radians for a ring of `radius`, in a fixed pattern (DASH_PX on,
+## GAP_PX off, measured along the circle), clipped to `sweep` (0..1) of the full turn.
+func dash_spans(radius: float, sweep: float) -> Array[Vector2]:
+	var out: Array[Vector2] = []
+	var period := DASH_PX + GAP_PX
+	var n := maxi(3, int(floor(TAU * radius / period)))
+	var step := TAU / float(n)
+	var dash := minf(DASH_PX / maxf(radius, 1.0), step * 0.6)
+	var limit := TAU * clampf(sweep, 0.0, 1.0)
+	for i in n:
+		var a0 := -PI * 0.5 + step * i
+		if step * i >= limit:
+			break
+		out.append(Vector2(a0, minf(a0 + dash, -PI * 0.5 + limit)))
+	return out
+
+
+## Dashed straight segments from a to b (DASH_PX on, GAP_PX off). Each entry is a 2-point polyline.
+func dash_line(a: Vector2, b: Vector2) -> Array[PackedVector2Array]:
+	var out: Array[PackedVector2Array] = []
+	var dist := a.distance_to(b)
+	if dist < 1.0:
+		return out
+	var d := (b - a) / dist
+	var t := 0.0
+	while t < dist:
+		out.append(PackedVector2Array([(a + d * t).round(), (a + d * minf(t + DASH_PX, dist)).round()]))
+		t += DASH_PX + GAP_PX
+	return out
+
+
+## Screen points [arm, tip, arm] of the inbound chevron at the death spot: it points along the hit
+## direction (killer -> Vigil), sitting just outside the hull on the side the hit came from.
+func death_chevron(m: DeathMark) -> PackedVector2Array:
+	var c := world.to_screen(m.vigil_pos).round()
+	var px := world.fx_tuning.death_chevron_px
+	var tip := c + m.from_dir * (px * 0.5 + 4.0)
+	var back := m.from_dir * (px * 0.6)
+	var side := m.from_dir.orthogonal() * (px * 0.5)
+	return PackedVector2Array([(tip + back + side).round(), tip.round(), (tip + back - side).round()])
+
+
 ## Two screen points of a chalk tick on the play-view edge toward an off-view killer, or empty when
-## the killer is in view. Direction = torus delta from the Vigil's death position (wrap-aware).
+## the killer is in view. Direction = torus delta from the Vigil's death position (wrap-aware),
+## to the killer's live position for a big killer.
 func death_edge_tick(m: DeathMark) -> PackedVector2Array:
-	if world.on_screen(m.killer_pos, 0.0):
+	var kp := death_killer_pos(m)
+	if world.on_screen(kp, 0.0):
 		return PackedVector2Array()
-	var d := world.torus.delta(m.vigil_pos, m.killer_pos)
+	var d := world.torus.delta(m.vigil_pos, kp)
 	if d.length() < 0.001:
 		return PackedVector2Array()
 	d = d.normalized()
@@ -217,21 +281,53 @@ func death_edge_tick(m: DeathMark) -> PackedVector2Array:
 	return PackedVector2Array([edge, (edge - d * world.fx_tuning.death_edge_tick_px).round()])
 
 
-## S6: chalk ring (swept over death_ring_draw_s) round the killer, chalk arc on the Vigil,
-## a chalk edge tick when the killer is off-view. 1 px BONE_4, no alpha.
+## Leader line (screen start, end) from the contact ring to the killer's edge, tracking its live
+## position; ends at the view edge tick when the killer is off-view. Empty for small killers.
+func death_leader(m: DeathMark) -> PackedVector2Array:
+	if not death_is_big(m):
+		return PackedVector2Array()
+	var ft := world.fx_tuning
+	var s_vigil := world.to_screen(m.vigil_pos)
+	var to_k := world.torus.delta(m.vigil_pos, death_killer_pos(m))
+	if to_k.length() < 0.001:
+		return PackedVector2Array()
+	var dir := to_k.normalized()
+	var start := s_vigil + m.from_dir * world.vigil.radius + dir * ft.death_contact_ring_px
+	var end := s_vigil + to_k - dir * (m.killer_radius + maxf(MIN_RING_GAP_PX, ft.death_ring_pad_px))
+	var tick := death_edge_tick(m)
+	if tick.size() == 2:
+		end = tick[1]
+	if (end - start).dot(dir) <= 0.0:
+		return PackedVector2Array()
+	return PackedVector2Array([start.round(), end.round()])
+
+
+## S6: dashed BONE_4 chalk, 1 px, no alpha. Shots: whole-silhouette ring at the death spot. Big
+## killers: small contact ring + live leader. Plus the inbound chevron and the off-view edge tick.
 func _draw_death_marks() -> void:
 	var col := Look.c(Pal.BONE_4)
 	var ft := world.fx_tuning
 	for m in death_marks:
-		var rr := death_ring_radius(m)
-		if visible_at(m.killer_pos, rr):
-			var sweep := death_sweep(m)
-			if sweep > 0.0:
-				draw_arc(world.to_screen(m.killer_pos).round(), rr, -PI * 0.5, -PI * 0.5 + TAU * sweep, 48, col, 1.0)
+		var sweep := death_sweep(m)
+		if death_is_big(m):
+			var cp := death_contact_point(m)
+			if visible_at(cp, ft.death_contact_ring_px) and sweep > 0.0:
+				_draw_dashed_ring(world.to_screen(cp).round(), ft.death_contact_ring_px, sweep, col)
+			var lead := death_leader(m)
+			if lead.size() == 2:
+				for seg in dash_line(lead[0], lead[1]):
+					draw_polyline(seg, col, 1.0)
+		else:
+			var rr := death_ring_radius(m)
+			if visible_at(m.killer_pos, rr) and sweep > 0.0:
+				_draw_dashed_ring(world.to_screen(m.killer_pos).round(), rr, sweep, col)
 		var tick := death_edge_tick(m)
 		if tick.size() == 2:
 			draw_line(tick[0], tick[1], col, 1.0)
-		if visible_at(m.vigil_pos, ft.death_arc_radius_px):
-			var half := deg_to_rad(ft.death_arc_deg) * 0.5
-			var a := m.from_dir.angle()
-			draw_arc(world.to_screen(m.vigil_pos).round(), ft.death_arc_radius_px, a - half, a + half, 12, col, 1.0)
+		if visible_at(m.vigil_pos, ft.death_chevron_px + 8.0):
+			draw_polyline(death_chevron(m), col, 1.0)
+
+
+func _draw_dashed_ring(centre: Vector2, radius: float, sweep: float, col: Color) -> void:
+	for span in dash_spans(radius, sweep):
+		draw_arc(centre, radius, span.x, span.y, 4, col, 1.0)

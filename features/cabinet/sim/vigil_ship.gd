@@ -122,7 +122,7 @@ func tick(delta: float) -> void:
 
 func _trail_len() -> int:
 	var ft := world.fx_tuning
-	return maxi(ft.ghost_count * ft.ghost_spacing_ticks, ft.wake_dots * ft.wake_spacing_ticks) + 1
+	return maxi(ghost_ticks(ft.ghost_count), ft.wake_dots * ft.wake_spacing_ticks) + 1
 
 
 func _clear_trail() -> void:
@@ -170,11 +170,25 @@ func wake_active() -> bool:
 	return alive and _thrusting
 
 
-## Open polyline of the hull outline for ghost number `i` (1 = nearest). Only the live hull is a
-## closed shape: ghost 1 keeps 3 of the 4 edges, ghost 2 keeps 2, ghost 3+ keeps 1. Fixed pattern.
-func ghost_outline(hull: PackedVector2Array, i: int) -> PackedVector2Array:
-	var edges := clampi(4 - i, 1, 3)
-	return hull.slice(0, edges + 1)
+## Ticks back for ghost number `i` (1 = nearest): spacing * i*(i+1)/2, so 3, 9, 18 at spacing 3.
+func ghost_ticks(i: int) -> int:
+	return world.fx_tuning.ghost_spacing_ticks * (i * (i + 1) / 2)
+
+
+## Corner brackets of ghost `i`: the nose and the two tail vertices each keep a short segment along
+## both their edges; the notch and the edge middles are dropped. Older ghosts get shorter brackets.
+## Returns 2-point segments. Only the live hull is a closed outline.
+func ghost_brackets(hull: PackedVector2Array, i: int) -> Array[PackedVector2Array]:
+	var ft := world.fx_tuning
+	var fracs: Array[float] = [ft.ghost_bracket_frac_1, ft.ghost_bracket_frac_2, ft.ghost_bracket_frac_3]
+	var frac: float = fracs[clampi(i - 1, 0, fracs.size() - 1)]
+	var out: Array[PackedVector2Array] = []
+	# vertex index -> the two neighbours its brackets run toward (hull: 0 nose, 1/3 tail, 2 notch)
+	for pair in [[0, 1], [0, 3], [1, 0], [1, 2], [3, 0], [3, 2]]:
+		var a := hull[pair[0]]
+		var b := hull[pair[1]]
+		out.append(PackedVector2Array([a.round(), a.lerp(b, frac).round()]))
+	return out
 
 
 func ghost_color(i: int) -> Color:
@@ -250,12 +264,12 @@ func _draw_trail(c: Vector2) -> void:
 	var ft := world.fx_tuning
 	if afterimage_active():
 		for i in range(ft.ghost_count, 0, -1):   # farthest first so the nearest sits on top
-			var k := i * ft.ghost_spacing_ticks
+			var k := ghost_ticks(i)
 			if not trail_has(k):
 				continue
 			var gc := (c + trail_offset(k)).round()
-			var line := ghost_outline(_hull(gc, trail_facing(k)), i)
-			draw_polyline(line, ghost_color(i), 1.0)
+			for seg in ghost_brackets(_hull(gc, trail_facing(k)), i):
+				draw_line(seg[0], seg[1], ghost_color(i), 1.0)
 	if wake_active():
 		for j in range(ft.wake_dots, 0, -1):
 			var k := j * ft.wake_spacing_ticks

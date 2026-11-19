@@ -58,7 +58,7 @@ func _run(n: int, move: Vector2 = Vector2.RIGHT) -> Array[Vector2]:
 func test_buffer_length_follows_the_tuning() -> void:
 	var ft := world.fx_tuning
 	_run(1)
-	assert_int(v._trail_pos.size()).is_equal(maxi(ft.ghost_count * ft.ghost_spacing_ticks, ft.wake_dots * ft.wake_spacing_ticks) + 1)
+	assert_int(v._trail_pos.size()).is_equal(maxi(v.ghost_ticks(ft.ghost_count), ft.wake_dots * ft.wake_spacing_ticks) + 1)
 
 
 func test_trail_records_one_position_per_tick() -> void:
@@ -81,12 +81,19 @@ func test_trail_does_not_advance_during_hitstop() -> void:
 	assert_int(v._trail_head).is_not_equal(head)
 
 
-func test_ghost_samples_are_the_expected_ticks_back() -> void:
+func test_ghost_samples_are_the_expected_ticks_back_and_spacing_grows() -> void:
 	var ft := world.fx_tuning
-	var seen := _run(ft.ghost_count * ft.ghost_spacing_ticks + 2)
+	assert_int(v.ghost_ticks(1)).is_equal(3 * ft.ghost_spacing_ticks / 3)
+	assert_int(v.ghost_ticks(1)).is_equal(ft.ghost_spacing_ticks)
+	assert_int(v.ghost_ticks(2)).is_equal(3 * ft.ghost_spacing_ticks)
+	assert_int(v.ghost_ticks(3)).is_equal(6 * ft.ghost_spacing_ticks)
+	for i in range(2, 4):
+		assert_bool(v.ghost_ticks(i) - v.ghost_ticks(i - 1) > v.ghost_ticks(i - 1) - v.ghost_ticks(i - 2)).is_true()
+	var seen := _run(v.ghost_ticks(ft.ghost_count) + 2)
 	var n := seen.size()
 	for i in range(1, ft.ghost_count + 1):
-		var k := i * ft.ghost_spacing_ticks
+		var k := v.ghost_ticks(i)
+		assert_bool(v.trail_has(k)).is_true()
 		assert_vector(v.trail_pos(k)).is_equal(seen[n - 1 - k])
 		assert_vector(v.trail_offset(k)).is_equal(world.torus.delta(v.pos, seen[n - 1 - k]))
 
@@ -137,19 +144,27 @@ func test_buffer_clears_on_respawn_and_reset() -> void:
 	assert_float(v._ghost_hold).is_equal(0.0)
 
 
-func test_ghosts_are_open_never_closed_polygons() -> void:
+func test_ghosts_are_corner_brackets_that_shrink_and_never_close() -> void:
 	var hull := PackedVector2Array([Vector2(9, 0), Vector2(-6, 6), Vector2(-3, 0), Vector2(-6, -6)])
-	var last_edges := 99
-	for i in range(1, 6):
-		var line := v.ghost_outline(hull, i)
-		assert_int(line.size()).is_less(5)                 # the closed hull would need 5 points
-		assert_bool(line[0] != line[line.size() - 1]).is_true()
-		assert_int(line.size()).is_greater_equal(2)
-		assert_int(line.size() - 1).is_less_equal(last_edges)
-		last_edges = line.size() - 1
-	assert_int(v.ghost_outline(hull, 1).size() - 1).is_equal(3)
-	assert_int(v.ghost_outline(hull, 2).size() - 1).is_equal(2)
-	assert_int(v.ghost_outline(hull, 3).size() - 1).is_equal(1)
+	var ft := world.fx_tuning
+	var last_len := INF
+	for i in range(1, 4):
+		var segs := v.ghost_brackets(hull, i)
+		assert_int(segs.size()).is_equal(6)     # nose x2, each tail vertex x2; notch and middles dropped
+		var total := 0.0
+		for s in segs:
+			assert_int(s.size()).is_equal(2)
+			total += s[0].distance_to(s[1])
+		assert_float(total).is_less(last_len)
+		last_len = total
+		# no edge is fully covered: the two brackets on one edge leave a gap (never a closed outline)
+		var frac := [ft.ghost_bracket_frac_1, ft.ghost_bracket_frac_2, ft.ghost_bracket_frac_3][i - 1] as float
+		assert_float(frac * 2.0).is_less(1.0)
+		# the notch vertex is never a bracket origin
+		for s in segs:
+			assert_bool(s[0].distance_to(hull[2]) > 0.5).is_true()
+	assert_float(ft.ghost_bracket_frac_1).is_greater(ft.ghost_bracket_frac_2)
+	assert_float(ft.ghost_bracket_frac_2).is_greater(ft.ghost_bracket_frac_3)
 
 
 func test_ghost_colours_step_gas3_gas2_gas1() -> void:
@@ -168,7 +183,7 @@ func test_torus_wrap_draws_relative_not_across_the_field() -> void:
 		world.step(DT)
 		if v.pos.x > world.torus.size.x * 0.5:
 			wrapped = true
-		for k in range(1, ft.ghost_count * ft.ghost_spacing_ticks + 1):
+		for k in range(1, v.ghost_ticks(ft.ghost_count) + 1):
 			if v.trail_has(k):
 				# a ship doing < 600 px/s can move at most 10 px per tick
 				assert_float(v.trail_offset(k).length()).is_less_equal(10.0 * k)

@@ -170,3 +170,78 @@ func test_in_view_killer_gets_no_edge_tick() -> void:
 	var v := world.vigil.pos
 	world.fx.death_mark(v + Vector2(20, 0), 3.0, Vector2.RIGHT, v)
 	assert_int(world.fx.death_edge_tick(world.fx.death_marks[0]).size()).is_equal(0)
+
+
+func test_chalk_is_dashed_with_real_gaps_and_a_fixed_pattern() -> void:
+	var spans := world.fx.dash_spans(10.0, 1.0)
+	assert_int(spans.size()).is_greater(3)
+	for i in spans.size():
+		var nxt := spans[(i + 1) % spans.size()]
+		var gap_angle: float = nxt.x - spans[i].y if i + 1 < spans.size() else (nxt.x + TAU) - spans[i].y
+		assert_float(gap_angle * 10.0).is_greater(1.5)       # a gap of at least 1.5 px along the arc
+		assert_float((spans[i].y - spans[i].x) * 10.0).is_greater(1.0)
+	assert_array(world.fx.dash_spans(10.0, 1.0)).is_equal(spans)   # no rng, no clock
+	var line := world.fx.dash_line(Vector2.ZERO, Vector2(30, 0))
+	assert_int(line.size()).is_greater(2)
+	assert_float(line[1][0].x - line[0][1].x).is_greater(1.5)
+
+
+func test_sweep_clips_the_dashes() -> void:
+	var full := world.fx.dash_spans(10.0, 1.0)
+	var half := world.fx.dash_spans(10.0, 0.5)
+	assert_int(half.size()).is_less(full.size())
+	assert_float(half[half.size() - 1].y).is_less_equal(-PI * 0.5 + PI + 0.0001)
+	assert_int(world.fx.dash_spans(10.0, 0.0).size()).is_equal(0)
+
+
+func test_ring_gap_exceeds_the_entity_plate_spacing() -> void:
+	var plate_spacing := TAU * SepulchreRitual.BODY_RADIUS / float(world.tuning.segments_total)
+	assert_float(fx.death_ring_pad_px).is_greater(plate_spacing * 0.5)   # clear gap vs the ~5 px between plates
+	assert_float(fx.death_ring_pad_px).is_greater(5.0)
+
+
+func test_chevron_points_along_the_hit_direction() -> void:
+	var v0 := world.vigil.pos
+	world.fx.death_mark(v0 + Vector2(40, 0), 3.0, Vector2.RIGHT, v0)   # hit came from the right
+	var ch := world.fx.death_chevron(world.fx.death_marks[0])
+	assert_int(ch.size()).is_equal(3)
+	assert_float(ch[1].x).is_less(ch[0].x)      # the tip leads, travelling right-to-left (killer -> Vigil)
+	assert_float(ch[1].x).is_less(ch[2].x)
+	assert_float(ch[0].y).is_not_equal(ch[2].y)
+	assert_float(ch[1].x).is_greater(world.to_screen(v0).x)   # sits on the hit side of the hull
+	assert_float(absf(ch[0].x - ch[1].x)).is_greater(world.vigil.radius * 0.5)
+
+
+func test_big_killer_gets_a_contact_ring_and_leader_and_a_shot_gets_a_whole_ring() -> void:
+	var v0 := world.vigil.pos
+	world.fx.death_mark(v0 + Vector2(80, 0), SepulchreRitual.BODY_DRAWN_RADIUS, Vector2.RIGHT, v0)
+	world.fx.death_mark(v0 + Vector2(10, 0), ShotLayer.HOSTILE_SHOT_RADIUS, Vector2.RIGHT, v0)
+	var big: FxLayer.DeathMark = world.fx.death_marks[0]
+	var shot: FxLayer.DeathMark = world.fx.death_marks[1]
+	assert_bool(world.fx.death_is_big(big)).is_true()
+	assert_bool(world.fx.death_is_big(shot)).is_false()
+	assert_vector(world.fx.death_contact_point(big)).is_equal(v0 + Vector2(world.vigil.radius, 0))
+	assert_int(world.fx.death_leader(shot).size()).is_equal(0)
+	assert_int(world.fx.death_leader(big).size()).is_equal(2)
+	# the shot's ring encloses its whole silhouette; the big killer's contact ring is small
+	assert_float(world.fx.death_ring_radius(shot)).is_less(fx.death_big_killer_px)
+	assert_float(fx.death_contact_ring_px).is_less(SepulchreRitual.BODY_DRAWN_RADIUS)
+
+
+func test_leader_tracks_the_moving_entity_and_ends_at_the_edge_when_off_view() -> void:
+	var v0 := world.vigil.pos
+	world.ritual.entity_pos = v0 + Vector2(80, 0)
+	world.fx.death_mark(world.ritual.entity_pos, SepulchreRitual.BODY_DRAWN_RADIUS, Vector2.RIGHT, v0)
+	var m: FxLayer.DeathMark = world.fx.death_marks[0]
+	var a := world.fx.death_leader(m)
+	world.ritual.entity_pos = v0 + Vector2(100, 0)
+	var b := world.fx.death_leader(m)
+	assert_float(b[1].x - a[1].x).is_equal_approx(20.0, 1.0)     # it follows the live position
+	assert_vector(m.killer_pos).is_equal(v0 + Vector2(80, 0))      # death-time anchor untouched
+	# off-view: the leader meets the edge tick
+	world.ritual.entity_pos = world.torus.wrap(v0 + Vector2(0, world.view_size.y))
+	var tick := world.fx.death_edge_tick(m)
+	assert_int(tick.size()).is_equal(2)
+	var c := world.fx.death_leader(m)
+	assert_int(c.size()).is_equal(2)
+	assert_vector(c[1]).is_equal(tick[1])
