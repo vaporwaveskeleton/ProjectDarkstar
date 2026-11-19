@@ -36,6 +36,15 @@ var vigil_speed: float:
 	get: return vigil.velocity.length() if is_instance_valid(vigil) else 0.0
 var hull_max_hp: int:
 	get: return vigil.get_hull_max_hp() if is_instance_valid(vigil) else 0
+## The Facing node's rotation in degrees, wrapped to (-180, 180]; 0 = right, 90 = down (y-down).
+var facing_deg: float:
+	get: return rad_to_deg(wrapf(vigil.motor.facing_node.rotation, -PI, PI)) \
+		if is_instance_valid(vigil) and vigil.motor.facing_node else 0.0
+## The aim the Vigil's input resolves this frame (unit vector, or zero when there is none).
+var aim_x: float:
+	get: return vigil.input.aim_dir(vigil.global_position).x if is_instance_valid(vigil) else 0.0
+var aim_y: float:
+	get: return vigil.input.aim_dir(vigil.global_position).y if is_instance_valid(vigil) else 0.0
 var camera_x: float:
 	get: return _camera.global_position.x if _camera else 0.0
 var compass_markers: int:

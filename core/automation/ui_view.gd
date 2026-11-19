@@ -13,7 +13,7 @@ const STATE_IDS := {
 	"cabinet/game": {"route": "cabinet", "member": "", "props": ["state", "stage_index", "demo"]},
 	"cabinet/score": {"route": "cabinet", "member": "score", "props": ["score", "lives"]},
 	"cabinet/record": {"route": "cabinet", "member": "record", "props": ["grubs_destroyed", "glass_mined", "charges_thrown", "glass_carried"]},
-	"sector/vigil": {"route": "sector", "member": "", "props": ["vigil_x", "vigil_y", "vigil_speed", "hull_max_hp", "camera_x", "compass_markers", "camera_gap"]},
+	"sector/vigil": {"route": "sector", "member": "", "props": ["vigil_x", "vigil_y", "vigil_speed", "hull_max_hp", "camera_x", "compass_markers", "camera_gap", "facing_deg", "aim_x", "aim_y"]},
 	"sector/field": {"route": "sector", "member": "", "props": ["geodes_alive", "geodes_detonated", "shards_free", "charges", "score"]},
 }
 
