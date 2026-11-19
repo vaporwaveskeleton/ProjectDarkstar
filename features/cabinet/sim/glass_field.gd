@@ -77,6 +77,7 @@ func tick(delta: float) -> void:
 		s.pos = world.torus.wrap(s.pos + s.vel * delta)
 	shards.assign(shards.filter(func(s: Shard) -> bool: return s.alive))
 	_tick_charges(delta)
+	_update_slowmo()
 
 
 func _collect(s: Shard) -> void:
@@ -129,6 +130,35 @@ func _tick_charges(delta: float) -> void:
 		if c.age > t.charge_life:
 			_lose(c, false)
 	charges_flying.assign(charges_flying.filter(func(c: Charge) -> bool: return c.alive))
+
+
+## The Charge whose arrival would unmake the entity: with `hits_left` hits to go it is the
+## hits_left-th nearest of the alive Charges (the nearer ones land first). Null when the entity
+## cannot be unmade now or fewer Charges fly than hits remain.
+func lethal_charge() -> Charge:
+	var r := world.ritual
+	if not (r.awake or r.phase == SepulchreRitual.Phase.AWAKENING) or r.phase == SepulchreRitual.Phase.UNMADE:
+		return null
+	if r.hits_left < 1:
+		return null
+	var alive: Array[Charge] = []
+	for c in charges_flying:
+		if c.alive:
+			alive.append(c)
+	if alive.size() < r.hits_left:
+		return null
+	alive.sort_custom(func(a: Charge, b: Charge) -> bool:
+		return world.torus.distance(a.pos, r.entity_pos) < world.torus.distance(b.pos, r.entity_pos))
+	return alive[r.hits_left - 1]
+
+
+## Re-evaluated every tick (the target moves, Charges get intercepted, the entity heals).
+func _update_slowmo() -> void:
+	var c := lethal_charge()
+	if c != null and world.torus.distance(c.pos, world.ritual.entity_pos) <= world.fx_tuning.slowmo_trigger_px:
+		world.set_slowmo_target(world.fx_tuning.slowmo_scale)
+	else:
+		world.set_slowmo_target(1.0)
 
 
 ## A Charge lost to interception or guttering out: the glass chime (AUDIO-001 B06).

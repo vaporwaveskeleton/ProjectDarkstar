@@ -46,6 +46,7 @@ Rules: signal names are past tense (`hull_breached`, `save_failed`), payloads ar
 | `ArcadeWorld` | `entity_line`, `caption` | `key: String` (an `en.po` key, never text) | `CabinetGame` → `CabinetMessages` | built |
 | `ArcadeWorld` | `entity_unmade`, `sepulchre_cleared` | — | `CabinetGame` (stage flow) | built |
 | `ArcadeWorld` | `hitstop_started` | `beat: StringName` (`charge_hits_entity`, `entity_unmade`, `vigil_death`, `it_wakes`, `modules_knocked`); emitted when a freeze starts or extends | `AudioService` cues (audio chat); no other listeners | built |
+| `ArcadeWorld` | `slowmo_changed` | `scale: float` (the new `sim_scale`; emitted on every change, including exactly 1.0 at the end; Reduced Motion never emits below 1.0) | `CabinetGame` → `AudioService.set_bed_pitch_scale(scale)` (audio chat's chant-bed pitch, AUDIO-001 §12.11); `CabinetGame` also resets it to 1.0 on exit and stage start | built |
 | `CabinetMessages` | `credits_stat_shown` | `index: int` (the stat line's index in the roll; emitted once per stat line as it scrolls into view) | `CabinetGame` (plays AudioService cue `tally_blip`) | built |
 | `ScoreKeeper` | `score_changed`, `lives_changed`, `extra_life_awarded` | `int` / `int` / — | `CabinetGame` → HUD | built |
 | `PretenceReveal` | `finished` | — | `CabinetGame` (save flags, route to the Ruins) | built |

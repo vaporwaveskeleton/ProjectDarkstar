@@ -60,6 +60,7 @@ func _ready() -> void:
 	world.vigil_destroyed.connect(_on_vigil_destroyed)
 	world.sepulchre_cleared.connect(_on_sepulchre_cleared)
 	world.entity_unmade.connect(_on_entity_unmade)
+	world.slowmo_changed.connect(func(s: float) -> void: AudioService.set_bed_pitch_scale(s))
 	world.entity_line.connect(func(key: String) -> void: messages.entity_line(tr(key)))
 	world.caption.connect(func(key: String) -> void: messages.caption(tr(key)))
 	messages.credits_stat_shown.connect(func(_i: int) -> void: AudioService.play(&"tally_blip"))   # cue owned by AUDIO-001 (unknown id = silent no-op)
@@ -80,6 +81,7 @@ func on_route_entered(params: Dictionary) -> void:
 
 func _exit_tree() -> void:
 	get_tree().paused = false
+	AudioService.set_bed_pitch_scale(1.0)
 	AudioService.stop_all()
 
 
@@ -100,6 +102,7 @@ func start_stage(i: int) -> void:
 		st = st.duplicate() as CabinetStage
 		st.sepulchre_start_segments = seg
 	world.start(st)
+	AudioService.set_bed_pitch_scale(1.0)
 	world.vigil.input_enabled = false
 	messages.clear()
 	messages.show_ready(tr(st.title_key), tr(st.subtitle_key), READY_SECONDS)

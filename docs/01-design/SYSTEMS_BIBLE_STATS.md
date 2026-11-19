@@ -380,8 +380,13 @@ Hunger raises the entity only. It never reduces player currency (GDD P4: progres
 | Hit-stop under Reduced Motion (`ds_cabinet.fx.hitstop_reduced_motion_scale`) | × 0.5 ⚙ | Reduced Motion multiplies the frames by this; 0 disables; owner-approved 2026-11-18 |
 | Credits roll, full (stage 2) length (`ds_cabinet.fx.credits_full_seconds`) | 13.0 s ⚙ | the stage-2 roll with the four service-record lines; owner-approved 2026-11-18 (TECH-001 Q-T45) |
 | Credits roll scroll speed (`ds_cabinet.fx.credits_scroll_px_per_s`) | 24 px/s ⚙ | the original literal; owner-approved 2026-11-18 |
+| Last-Charge slow-mo trigger distance (`ds_cabinet.fx.slowmo_trigger_px`) | 130 px ⚙ | the lethal Charge this close to the entity starts slow-mo; measured 0.83-0.85 s of real time at 130 px (autopilot stage 2, seeds 9/11/13); owner-approved 2026-11-18 (TECH-001 Q-T46) |
+| Last-Charge slow-mo scale (`ds_cabinet.fx.slowmo_scale`) | × 0.25 ⚙ | sim speed during the slow-mo; sim-only (the Vigil runs at real speed); off under Reduced Motion; owner-approved 2026-11-18 |
+| Slow-mo ramp in (`ds_cabinet.fx.slowmo_ramp_in_s`) | 0.15 s ⚙ | real time, 1.0 to the slow-mo scale; owner-approved 2026-11-18 |
+| Slow-mo ramp out (`ds_cabinet.fx.slowmo_ramp_out_s`) | 0.2 s ⚙ | real time, back to 1.0 when the lethal condition clears; owner-approved 2026-11-18 |
+| Slow-mo failsafe (`ds_cabinet.fx.slowmo_max_real_s`) | 2.5 s ⚙ | real-time cap per episode; owner-approved 2026-11-18 |
 
-Hit-stop does **not** count toward the 1.5 s "Player agency loss" budget above: it is a presentation freeze with input buffered, not a warp effect.
+Hit-stop does **not** count toward the 1.5 s "Player agency loss" budget above: it is a presentation freeze with input buffered, not a warp effect. The last-Charge slow-mo is likewise not a warp effect and is not counted in that budget: it slows the sim only and the player keeps control (the Vigil runs at real speed).
 
 ---
 
