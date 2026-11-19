@@ -94,7 +94,7 @@ jobs:
           fi
 
       - name: Automation CLI tests
-        run: node --test tools/automation
+        run: node --test tools/automation/darkstar_auto.test.js
 
       - name: Automation scenarios (headless)
         run: |

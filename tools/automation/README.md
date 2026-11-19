@@ -26,7 +26,7 @@ node tools/automation/darkstar_auto.js run <id> [--windowed] [--keep] [--godot=<
   `node tools/automation/darkstar_auto.js run aether_unmaking_capture --windowed -- --aether-cine-scale=8`.
   Only `--name` / `--name=value` tokens; the runner's own (`--scenario`, `--record`, `--out`, `--no-save`,
   `--path`, `--headless`, `--fixed-fps`) are refused (exit 2). Dev builds read their dev args; a release
-  build ignores them. Test: `node --test tools/automation`.
+  build ignores them. Test: `node --test tools/automation/darkstar_auto.test.js`.
 - `--exe=<exe>` (on `run` and `run-all`) runs an exported build instead: the exe is spawned directly, cwd =
   its folder, no `--path`. The exported game takes `--out` only as `res://reports/...` (= `<exe dir>/reports`);
   an absolute path is refused (exit 3). A QA build refuses dev-step scenarios (exit 3); the CLI prints
