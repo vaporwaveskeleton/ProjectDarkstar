@@ -325,6 +325,38 @@ The gating map (design §10.2). Entry ids are reconciled with NARR-001 §8's sam
 
 Per branch, the gated nodes sit at: LANTERN tiers 1, 3, 3, 5; HULL 2, 3, 4, 5; ORDNANCE 2, 3, 3, 4, 5; WARD 1–5; MADNESS 1, 1, 2, 2, 3, 3, 4, 5, 5. Not every branch has a gated node at every tier: LANTERN has none at tiers 2 and 4, and HULL and ORDNANCE have none at tier 1. So a branch can wait on a gate for a tier step (HULL tier 3, where HULL-10 and HULL-12 both require HULL-9, is the tightest case). That wait was already there under Ink, and the tier floor bounds it at Iteration *t*. The pity rule does not depend on per-tier coverage: it holds through the two branch-blind backstops above, which reach every gating entry whatever branch it sits in.
 
+### 3.8 Handling nodes under the Aether profile (PROPOSED, owner approval needed)
+
+> **Status: proposal, 2026-11-19.** Nothing here is ruled (TECH-001 Q-T169). Until the owner rules, the §3.3 rows stand exactly as written. The Aether profile itself is GDD-001 §4.2a and SYS-001 §1.1a.
+
+**Rule.** Handling node effects are stated as percentages or multipliers, so they apply to whichever profile is active (Cabinet in Act 0, Aether afterwards). The tree is bought in the Ruins, after Act 0, so in practice it modifies the Aether profile. The §3.3 speed budget (+12% total) applies per profile. LANTERN-10 and LANTERN-13 keep scaling `accel` and `brake` with `max_speed`, so the Aether full reversal (≈ 0.79 s, SYS-001 §1.1a) stays fixed the same way the Cabinet's 0.28 s does.
+
+**Progression of capability.** A Vigil with no nodes flies the bare Aether profile: weak sideways thrust, a slow keel and one Surgelight. The tree brings systems online one by one: trim vanes (more sideways thrust), a keel (faster turns), bellows (Surgelight charges), brake shutters, plating. Each one is visible on the hull (ART-002 §4.1). The caps keep the weight: even a fully upgraded Vigil turns at ≤ 234 °/s, keeps sideways thrust ≤ 0.75 × `accel`, and never reaches the Cabinet's snap. No new node is added and the tree stays at 90. The proposal adds an **Aether reading** to existing nodes only:
+
+| Node | Today (§3.3) | Aether reading (PROPOSED addition) | Visible module (ART-002 §4.1 socket) |
+|---|---|---|---|
+| LANTERN-1 Surgelight Charges (T1) | 2 stored Surgelight charges | unchanged | `stern`: a second bellows |
+| LANTERN-3 Full Wick (T1) | `Lantern radius` 260 → 340 px | unchanged | `lamp`: a larger globe |
+| LANTERN-5 Dark Lantern (T2) | lantern-down mining and detection | also `lantern_down_thrust` × 0.7 → × 0.85 | `lamp`: shutter louvres |
+| LANTERN-6 / -7 / -16 (T2–T4) | Surgelight impulse and cooldown | unchanged (percentages of the Aether row) | `stern`: bellows chain, oiler |
+| LANTERN-9 Long Glide (T3) | `drag` −20% | unchanged: a longer coast | `keel`: fairing |
+| LANTERN-10 Keel Light (T3) | +6% `max_speed` (+ `accel`, `brake`) | also `hull_turn` +15% | `keel`: keel lamp |
+| LANTERN-13 Keel Deep (T4) | +6% `max_speed` (+ `accel`, `brake`) | also `hull_turn` +15% more (180 → 234 °/s with both, additive) | `keel`: deep keel blade |
+| HULL-1 Drift Control (T1) | `drag` +25% | also `thrust_lateral` 0.45 → 0.6 | `flankL`/`flankR`: trim vanes |
+| HULL-3 Brake Radius (T1) | `brake` +25%, chalk stop ring | unchanged | `cowl`: brake shutters |
+| HULL-4 Plating (T1) | `Hull HP` 1 → 2 | unchanged | `plate`: riveted plate that shears on the first hit |
+| HULL-5 Deep Anchor, HULL-15 Hard Vigil (T2, T4) | `brake` further +15%, +25% | unchanged | `cowl`: second and third shutter stage |
+| HULL-7 Drift Baffles (T2) | `drag` +30% | also `thrust_lateral` 0.6 → 0.75 | `flankL`/`flankR`: second vane |
+| HULL-9 Anchor Field (T3) | the Anchor | unchanged | `bow`: anchor ring |
+| ORDNANCE-1 Hookline (T1) | magnet radius 96 → 190 px | unchanged (already drawn as a brass line from the bow) | `bow`: hook reel |
+
+Sideways thrust and turn rate are new levers (SYS-001 §1.1a), so they need no new budget row beyond the caps stated above. Run Sigil SIG-H-02 Ballast (brake distance −15%, §4.2) applies to the Aether `brake` unchanged.
+
+**What the M2 30-node stub needs** (PROD-001 §3 M2: the slice Tree shows tier 1 only, 20 nodes, the rest as dark lamps). The tier-1 handling nodes are LANTERN-1, LANTERN-3, HULL-1, HULL-3 and HULL-4, plus ORDNANCE-1's bow line. If the profile is approved for M2 (Q-T171), the stub needs:
+- HULL-1's Aether reading (`thrust_lateral`): the one T1 node that changes how the ship turns;
+- the five T1 modules visible on the hull (`stern` bellows, `lamp` globe, `flankL`/`flankR` vanes, `cowl` shutters, `plate`), so buying a node in the Ruins visibly changes the ship that launches;
+- nothing for tiers 2–5: those nodes show as dark lamps and their Aether readings can come later (M5, the full 90-node tree).
+
 ## 4. Run Sigils — the in-run build layer (120-entry pool)
 
 GDD-001 §6.3 promises "~120 pool entries". Here they are. A Run Sigil is stamped onto the Vigil for the rest of the run and **shows up on the sprite** in one of the four module slots (ART-002 §6). A Sigil you cannot see on the ship is a Sigil that does not ship.
