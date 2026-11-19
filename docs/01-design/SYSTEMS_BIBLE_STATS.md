@@ -512,7 +512,7 @@ All owed values, and the LOOP-001 §9.5 economy re-run without Ink (LR-14), are 
 | Lance bite, chalk tick length (`ds_cabinet.fx.tick_len_px`; M1 `ds_arc_lance.fx.tick_len_px`) | 3 px ⚙ | the tick where the lance cannot bite (Sepulchre, entity; in M1 any hurtbox with `bites` off); owner-approved 2026-11-18 |
 | Lance bite, chalk tick life (`ds_cabinet.fx.tick_life_s`; M1 `ds_arc_lance.fx.tick_life_s`) | 0.15 s ⚙ | owner-approved 2026-11-18 |
 | Lance bite, `lance_dull` cue volume (`ds_cabinet.fx.lance_dull_db`; M1 `ds_arc_lance.fx.lance_dull_db`) | 0.0 dB ⚙ | offset on the cue's own level (AUDIO-001 §12.11); owner-approved 2026-11-18 |
-| Readable death, dashed ring gap (`ds_cabinet.fx.death_ring_pad_px`) | 6 px ⚙ | chalk gap beyond a shot-killer's drawn silhouette; PM-approved 2026-11-18 (owner authority; TECH-001 Q-T65) |
+| Readable death, dashed ring gap (`ds_cabinet.fx.death_ring_pad_px`) | 6 px ⚙ | chalk gap beyond the drawn silhouette of the Acolyte that fired the killing shot (the shooter, not the shot); PM-approved 2026-11-18 (owner authority; TECH-001 Q-T65) |
 | Readable death, arrow length (`ds_cabinet.fx.death_arrow_px`) | 30 px ⚙ | = hull length 15 × outline scale; PM-approved 2026-11-18 (owner authority) |
 | Readable death, outline scale (`ds_cabinet.fx.death_outline_scale`) | 2.0 × ⚙ | the coroner outline (and arrow) is this many times the hull size; PM-approved 2026-11-18 (owner authority) |
 | Readable death, outline draw-on time (`ds_cabinet.fx.death_outline_draw_s`) | 0.15 s ⚙ | PM-approved 2026-11-18 (owner authority) |
@@ -527,6 +527,9 @@ All owed values, and the LOOP-001 §9.5 economy re-run without Ink (LR-14), are 
 | Surge afterimage, bracket length, farthest ghost (`ds_cabinet.fx.ghost_bracket_frac_3`) | 0.2 × edge ⚙ | PM-approved 2026-11-18 (owner authority) |
 | Thrust wake, dot count (`ds_cabinet.fx.wake_dots`) | 6 ⚙ | 1 px dots trailing a thrusting Vigil; PM-approved 2026-11-18 (owner authority) |
 | Thrust wake, dot spacing (`ds_cabinet.fx.wake_spacing_ticks`) | 2 ticks ⚙ | PM-approved 2026-11-18 (owner authority) |
+| True-body frame, duration (`ds_cabinet.fx.true_frame_frames`) | 1 drawn frame ⚙ | a Charge hit on the costume entity shows its true silhouette (silhouette only, GDD §20) for this many drawn frames; PM-approved 2026-11-19 (owner authority; TECH-001 Q-T95) |
+| Star spine, hold (`ds_cabinet.fx.spine_hold_pull`) | 0.02 `Starfield.pull` ⚙ | the A0-3 spine stars brighten and hold below this pull (about 1.1 s into the reveal's 8 s ease-in); PM-approved 2026-11-19 (owner authority) |
+| Star spine, travel span (`ds_cabinet.fx.spine_pull_span`) | 0.07 `Starfield.pull` ⚙ | pull range over which the stars travel to the vertebrae; arrives at pull 0.09 (about 2.4 s), before the vertebrae show at 2.5 s; PM-approved 2026-11-19 (owner authority) |
 
 Hit-stop does **not** count toward the 1.5 s "Player agency loss" budget above: it is a presentation freeze with input buffered, not a warp effect. The last-Charge slow-mo is likewise not a warp effect and is not counted in that budget: it slows the sim only and the player keeps control (the Vigil runs at real speed).
 
