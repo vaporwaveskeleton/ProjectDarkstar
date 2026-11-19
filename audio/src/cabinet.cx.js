@@ -75,14 +75,23 @@ sfx("acolyte_die", { vol: 0.5, fx: [crush({ bits: 8 })] },
   noise({ color: "pink", dur: 0.45, env: [0.001, 0.25, 0.3, 0.2], filter: { type: "lp", from: 3000, to: 200 } }),
   tone({ wave: "square", freq: 220, to: 55, dur: 0.45, duty: 0.5, env: [0.001, 0.3, 0.2, 0.15], vol: 0.6 }))
 
-// The chant bed (AUDIO-001 §5): the litany's minor chord sung by detuned saw "voices" through
-// vowel-ish band-passes. Seamless loop; AudioService sets its level from distance and the build.
+// The chant bed (AUDIO-001 §5.1, Q-T85): the litany is written in nine syllables and SUNG IN EIGHT,
+// always one short (NARR-001 §2.1). Three feet of three over an 8 s loop: foot 1 on the drone's fifth,
+// foot 2 on its third, foot 3 on the unison, and the ninth slot left empty (only ending 3 sings it).
+// Detuned saw "voices" through vowel band-passes over a quiet D drone. Seamless loop; AudioService
+// sets its level from distance and the build. UNAUDITIONED (re-rendered 2026-11-18).
+const SLOT = 8 / 9
+const FOOT = [[220, 220, 220], [174.61, 174.61, 174.61], [146.83, 146.83, null]]   // A3, F3, D3
+const VOWEL = [700, 1100, 900, 650, 1000, 800, 700, 1100, 0]
+const syllable = (n, i) => n && at(i * SLOT,
+  tone({ wave: "saw", freq: n, dur: SLOT * 0.8, env: [0.12, 0.2, 0.7, 0.3], vol: 0.2, vibrato: { rate: 5, depth: 0.08, delay: 0.2 }, filter: { type: "bp", cutoff: VOWEL[i], q: 3 } }),
+  tone({ wave: "saw", freq: n * 1.0058, dur: SLOT * 0.8, env: [0.15, 0.2, 0.6, 0.3], vol: 0.12, pan: 0.3, filter: { type: "bp", cutoff: VOWEL[i] * 1.45, q: 4 } }),
+  tone({ wave: "saw", freq: n * 0.9954, dur: SLOT * 0.8, env: [0.18, 0.2, 0.6, 0.3], vol: 0.12, pan: -0.3, filter: { type: "bp", cutoff: VOWEL[i] * 0.8, q: 3 } }))
 sfx("chant", { dur: 8, loop: true, vol: 0.55, fx: [reverb({ size: 0.8, damp: 0.5, mix: 0.35 }), limiter()] },
-  tone({ wave: "saw", freq: "D3", dur: 8, env: [0.5, 0, 1, 0.5], vol: 0.25, vibrato: { rate: 0.23, depth: 0.08 }, filter: { type: "bp", cutoff: 700, q: 2 } }),
-  tone({ wave: "saw", freq: "F3", dur: 8, env: [0.6, 0, 1, 0.5], vol: 0.2, vibrato: { rate: 0.31, depth: 0.1 }, filter: { type: "bp", cutoff: 1100, q: 2 } }),
-  tone({ wave: "saw", freq: "A3", dur: 8, env: [0.7, 0, 1, 0.5], vol: 0.18, vibrato: { rate: 0.19, depth: 0.09 }, filter: { type: "bp", cutoff: 900, q: 2 } }),
-  tone({ wave: "triangle", freq: "D2", dur: 8, env: [0.8, 0, 1, 0.5], vol: 0.3 }),
-  noise({ color: "pink", dur: 8, env: [0.5, 0, 1, 0.5], vol: 0.05, filter: { type: "bp", cutoff: 2500, q: 1 }, tremolo: { rate: 0.4, depth: 0.5 } }))
+  FOOT.flat().map(syllable),
+  tone({ wave: "triangle", freq: "D2", dur: 8, env: [0.8, 0, 1, 0.5], vol: 0.25 }),
+  tone({ wave: "saw", freq: "D3", dur: 8, env: [0.5, 0, 1, 0.5], vol: 0.06, filter: { type: "bp", cutoff: 700, q: 2 } }),
+  noise({ color: "pink", dur: 8, env: [0.5, 0, 1, 0.5], vol: 0.04, filter: { type: "bp", cutoff: 2500, q: 1 }, tremolo: { rate: 0.375, depth: 0.5 } }))
 
 // --- The Vigil's death and the cabinet's furniture (AUDIO-001 C08, I-family, §2.1) -------------
 
