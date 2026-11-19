@@ -98,13 +98,13 @@ func test_the_default_roster_is_this_roster_and_counts_five() -> void:
 
 ## P2 "pressure" switches per stage (PM Q-T105, 2026-11-19); a0_1 keeps every default (= pre-P2).
 ## Columns: acolyte_reinforce_s, acolyte_cap, geode_drift_s, grubs_after_wake, grub_pilfer,
-## acolyte_escort, carry_charges_in.
+## acolyte_escort, carry_charges_in, reinforce_after_wake (the curve retune, PM under owner autonomy grant 2026-11-19).
 const PRESSURE := {
-	&"a0_1": [0.0, 0, 0.0, false, false, false, false],
-	&"a0_2": [40.0, 2, 20.0, false, true, false, true],
-	&"a0_3": [25.0, 6, 20.0, false, true, true, true],
-	&"a0_4": [35.0, 4, 12.0, true, true, false, true],
-	&"a0_5": [30.0, 5, 0.0, true, true, false, true],
+	&"a0_1": [0.0, 0, 0.0, false, false, false, false, true],
+	&"a0_2": [40.0, 2, 20.0, false, true, false, true, true],
+	&"a0_3": [40.0, 4, 20.0, false, true, true, true, false],
+	&"a0_4": [25.0, 6, 12.0, true, true, false, true, true],
+	&"a0_5": [0.0, 0, 20.0, true, true, false, true, true],
 }
 
 
@@ -112,7 +112,7 @@ func test_each_stage_has_its_pressure_switches() -> void:
 	for st: CabinetStage in roster.stages:
 		var row: Array = PRESSURE[st.id]
 		var got: Array = [st.acolyte_reinforce_s, st.acolyte_cap, st.geode_drift_s, st.grubs_after_wake,
-			st.grub_pilfer, st.acolyte_escort, st.carry_charges_in]
+			st.grub_pilfer, st.acolyte_escort, st.carry_charges_in, st.reinforce_after_wake]
 		assert_array(got).override_failure_message("%s pressure row %s" % [st.id, got]).is_equal(row)
 
 

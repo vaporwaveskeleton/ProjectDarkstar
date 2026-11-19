@@ -97,7 +97,7 @@ func _on_power_on_finished() -> void:
 func _process(delta: float) -> void:
 	_strip.credit_line = tr("CAB_CREDIT_COUNT") % (1 if _coin.has_credit() else 0)
 	_strip.credit_color = Look.c(Pal.GAS_4) if _coin.has_credit() else Look.c(Pal.BONE_2)
-	if not demo_enabled or not _overlays.is_empty() or SceneRouter.is_busy or _power.running or _coin.is_busy():
+	if not demo_enabled or _powering_off or not _overlays.is_empty() or SceneRouter.is_busy or _power.running or _coin.is_busy():
 		idle = 0.0
 		return
 	idle += delta

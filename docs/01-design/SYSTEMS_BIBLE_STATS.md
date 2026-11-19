@@ -38,6 +38,8 @@ Conventions used everywhere:
 
 ### 1.1 Movement ⚙ (GDD §4.2 values kept exactly)
 
+This is the **Cabinet profile** (Act 0). Its 🔒 rows are locked for Act 0 only (Q-T164, PM under owner autonomy grant, 2026-11-19). Everything after THE PRETENCE flies the Aether profile, §1.1a.
+
 | Field | Base | Scaling / source | Notes |
 |---|---|---|---|
 | `max_speed` | 340 px/s | 🔒 GDD | +8% per HULL tier-1 plating-style node is **not** allowed; speed nodes are `⚙` and capped at +12% total |
@@ -52,6 +54,37 @@ Conventions used everywhere:
 | `anchor_freeze` duration | 6.0 s | 8.0 s (HULL-16) | ✱ Choir units inside stop moving, chanting and firing; elites and Heralds freeze for half duration. It never damages: a stall, not a kill, per GDD-001 §8.7. |
 | `anchor_rearm` | 20 s | 14 s (HULL-12) | ✱ the timer starts when the freeze lands, not when the field is raised. |
 | `anchor` exclusions and cap | Sepulchre and The Penitent are never frozen; max 6 units per cast | — | ✱ frozen units still count against §4 spawn budgets and the §9 contact budget (`Simultaneous hostile contacts`). Stopping a deposit is WARD-6's job, not the ring's. |
+
+### 1.1a Aether handling profile ✱ (GDD §4.2a; ruled, PM under owner autonomy grant, 2026-11-19)
+
+> **Status: ruled, PM under owner autonomy grant, 2026-11-19** (TECH-001 Q-T164, Q-T165; queued for the owner's later review). Every value here is ✱: first-pass, retuned at playtest. §1.1 stays the **Cabinet profile** for Act 0.
+>
+> **Built 2026-11-19:** data in `data/vigil/vigil_aether_move.tres` (TECH-001 §3.4). **Not built:** the Choir projectile multiplier (no Choir shots in the sector yet) and the Surgelight Composure cost at Warp ≥ 2.
+
+The Aether profile replaces §1.1 for all flight after THE PRETENCE. The motor is the same as in §1.1 (`VigilMotor.step_velocity`): thrust adds `accel` along the input, capped at `max_speed`; coasting decays by `exp(-drag·t)`; braking removes `brake` per second. The derived figures below come from that model and still have to be checked by a motor test once the numbers are approved.
+
+| Field | Cabinet (§1.1) | Aether ✱ | `ds_` key | Notes |
+|---|---|---|---|---|
+| Profile switch | — | `true` | `ds_vigil.aether_move.enabled` | `false` = sectors fly the Cabinet profile. Keeps the change data-switchable for A/B, like D-08 |
+| `max_speed` | 340 px/s 🔒 | **220 px/s** | `ds_vigil.aether_move.max_speed` | ≈ 65% of the Cabinet. Must stay above the Grub flee speed (§3, 190 px/s) so the race still holds |
+| `accel` | 2600 px/s² 🔒 | **560 px/s²** | `ds_vigil.aether_move.accel` | top speed from rest in ≈ 0.39 s (Cabinet ≈ 0.13 s) |
+| `drag` (coast) | 3.4 /s | **0.9 /s** | `ds_vigil.aether_move.drag` | coasts ≈ 245 px from top speed (v / drag), ≈ 5 body-lengths of 48 px (Cabinet ≈ 100 px) |
+| `brake` (Space) | 5200 px/s² | **700 px/s²** | `ds_vigil.aether_move.brake` | stops from top speed in ≈ 0.31 s over ≈ 35 px. Strong, but not instant |
+| Full reversal | 0.28 s 🔒 | **≈ 0.79 s** (derived, straight line) | — | 2 × 220 / 560. The Cabinet identity is untouched; this becomes the Aether identity (Q-T164) |
+| `hull_turn` (keel) | — (the body never rotates) | **180 °/s** | `ds_vigil.aether_move.hull_turn` | a 180° swing takes 1.0 s. The hull turns toward the WASD direction |
+| `thrust_lateral` | — | **0.45 × `accel`** | `ds_vigil.aether_move.thrust_lateral` | thrust at 90° to the keel |
+| `thrust_reverse` | — | **0.6 × `accel`** | `ds_vigil.aether_move.thrust_reverse` | thrust at 180° to the keel. Between the angles, interpolate on the cosine ✱ |
+| `snap_turn` (lance turret aim) | 720 °/s | **720 °/s (unchanged)** | `ds_vigil.move.snap_turn` | the aim stays arcade-precise. In the Aether it turns the turret, not the hull |
+| Lantern Down thrust | — | **× 0.7** | `ds_vigil.aether_move.lantern_down_thrust` | running dark: a weaker drive (top speed from rest ≈ 0.56 s) |
+| Lantern Down drag | — | **× 0.6** | `ds_vigil.aether_move.lantern_down_drag` | the glide is longer in the dark (coast ≈ 405 px) |
+| Surgelight impulse | 200 px/s, 0.18 s | **240 px/s, 0.22 s** | `ds_vigil.aether_move.surge_impulse`, `ds_vigil.aether_move.surge_time` | may exceed `max_speed` while it lasts; drag then brings the ship back ✱ |
+| Surgelight cooldown | 1.6 s | **2.0 s** | `ds_vigil.aether_move.surge_cooldown` | LANTERN-7 / LANTERN-16 cuts apply as percentages; the 0.55 s floor is unchanged. The Composure cost at T ≥ 2 (§1.5) is unchanged |
+| Choir projectile speed, Aether sectors | × 1.0 | **× 0.75** | `ds_sector.aether.projectile_speed_mul` | telegraph times are never shortened. Dodge check: moving one body-length (48 px) from rest takes ≈ 0.19 s in the Cabinet and ≈ 0.41 s in the Aether, so × 0.75 closes only part of the gap. Coasting and Surgelight cover the rest; playtest decides (Q-T168) |
+| Camera velocity lead | — (aim lookahead 1.5% only, GDD §4.2) | **0.25 s of velocity, capped at 48 px** ✱ | `ds_camera.aether.velocity_lead_s`, `ds_camera.aether.velocity_lead_max_px` | engineering; shows what is ahead of a long coast |
+| Hitbox | `ds_vigil.move.hitbox_circle_px` 🔒 | **unchanged** | — | the Aether art grows (ART-001 §16.7), the hitbox does not |
+| Hull HP | 1 🔒 | **unchanged** | `ds_vigil.hull.max_hp` | D-08 stays open and switchable. The profile never touches the hull |
+
+**Speed budget per profile.** The +12% cap on speed nodes (§1.1, LOOP-001 §3.3) applies to whichever profile is active, so the Aether ceiling is ≈ 246 px/s. LANTERN-10 and LANTERN-13 still scale `accel` and `brake` by the same percentage, so each profile keeps its own full-reversal time. Even with every node, a fully upgraded Aether Vigil never reaches the Cabinet's snap: the weight is part of who the ship is, not a penalty to grind away (LOOP-001 §3.8).
 
 ### 1.2 Hull, lantern and the dark
 
@@ -163,16 +196,18 @@ Act 0 is a five-stage shift (~9–11 min skilled; GDD §6.1; TECH-001 §2.10). O
 
 **Pressure switches (P2, built; PM 2026-11-19, TECH-001 §11.1 Q-T105; retune at playtest `⚙`).** Per-stage `CabinetStage` fields; each default reproduces the pre-P2 game, and `a0_1` keeps every default. Vigil rows are untouched. TECH-001 §2.10 holds the behaviour.
 
-| Id | Bell interval (`acolyte_reinforce_s`) | Acolyte cap (`acolyte_cap`) | Geode drift (`geode_drift_s`) | Grubs after wake | Grub pilfer | Acolyte escort | Carry Charges in |
-|---|---|---|---|---|---|---|---|
-| default | 0 (off) | 0 | 0 (off) | no | no | no | no |
-| `a0_1` | default | default | default | no | no | no | no |
-| `a0_2` | 40 s | 2 | 20 s | no (cold) | yes | no | yes |
-| `a0_3` | 25 s | 6 | 20 s | no | yes | yes | yes |
-| `a0_4` | 35 s | 4 | 12 s | yes | yes | no | yes |
-| `a0_5` | 30 s | 5 | default (off) | yes | yes | no | yes |
+| Id | Bell interval (`acolyte_reinforce_s`) | Acolyte cap (`acolyte_cap`) | Bells after wake (`reinforce_after_wake`) | Geode drift (`geode_drift_s`) | Grubs after wake | Grub pilfer | Acolyte escort | Carry Charges in | Backdrop signature (`backdrop`, ✱) |
+|---|---|---|---|---|---|---|---|---|---|
+| default | 0 (off) | 0 | yes | 0 (off) | no | no | no | no | none (plain sky) |
+| `a0_1` | default | default | default | default | no | no | no | no | none |
+| `a0_2` | 40 s | 2 | default | 20 s | no (cold) | yes | no | yes | `currents` |
+| `a0_3` | 40 s | 4 | **no** | 20 s | no | yes | yes | yes | `chains` |
+| `a0_4` | 25 s | 6 | default | 12 s | yes | yes | no | yes | `shoal` |
+| `a0_5` | 0 (off) | 0 | default | 20 s | yes | yes | no | yes | `horizon` |
 
-Meaning: a bell (every interval, while the Vigil is alive and under control) warns, then brings one Acolyte from just off view if fewer than the cap live (guard ring counted). Drift-in adds a geode every `geode_drift_s` while live geodes sit below half the stage count. "Grubs after wake" keeps the Sepulchre birthing replacement Grubs after the entity wakes (§3 Grub respawn). Pilfer: Grubs prefer loose glass the Vigil's magnet is not pulling. Escort: idle non-guard Acolytes trail a laden Grub. Carry: the next stage starts with the Charges held at the last stage's end (cap: magazine 5).
+Stage-curve retune (PM under owner autonomy grant, 2026-11-19, TECH-001 §11.1 Q-T135, §11.2): `a0_4` is the pressure peak, `a0_3` is eased and its bells stop once the Sepulchre wakes, `a0_5` is scarcity, not pressure: bells off, with a trickle of drift-in (20 s, only while live geodes are below half the stage count, 4). Reason: 8 geodes hold at most 8 × `shards_detonated_max` (6) = 48 glass, short of the 60 deposits (20 segments × 3 shards per segment) its wake needs from 0 starting segments, so without drift-in `a0_5` could not be won (2026-11-19). Grub pilfer is unchanged (mild but legible: no number change; the legibility FX is P3 work, Q-T134). Backdrop signatures are dim VOID-register art in `Starfield` (TECH-001 §2.10, Q-T230), not game numbers.
+
+Meaning: a bell (every interval, while the Vigil is alive and under control) warns, then brings one Acolyte from just off view if fewer than the cap live (guard ring counted). With bells after wake = no, the bells stop once the Sepulchre wakes and a pending bell is called off. Drift-in adds a geode every `geode_drift_s` while live geodes sit below half the stage count. "Grubs after wake" keeps the Sepulchre birthing replacement Grubs after the entity wakes (§3 Grub respawn). Pilfer: Grubs prefer loose glass the Vigil's magnet is not pulling. Escort: idle non-guard Acolytes trail a laden Grub. Carry: the next stage starts with the Charges held at the last stage's end (cap: magazine 5).
 
 Engineering rows (✱, `CabinetTuning`, `ds_cabinet.tuning.*`; PM-accepted 2026-11-19 under delegated owner authority, Q-T105; retune at playtest):
 
@@ -539,6 +574,11 @@ The tree totals (LOOP-001 §3.3 node rollup, 17,480 Ember over 63 Ember nodes) a
 | UI safe area at 200 % text | Every HUD element keeps its anchor rectangle inside the safe area at 200 % text scale at 640×360 logical; warp may hide an element, never displace one | Accessibility floor (GDD-001 §10); the anchor set is WARP-001 §4.1 (its §8 R-03). `TEST-ACC-04` is the pass condition |
 | Screen shake under Reduced Motion | off ✱ | Reduced Motion disables screen shake (the Cabinet behaviour). PM-approved 2026-11-18 |
 | Camera follow | 0.12 s critically damped, 24 px deadzone, 1.5% aim lookahead | GDD §4.2. Accepted readings (PM under owner autonomy grant 2026-11-18, TECH-001 §11.1a): 1.5% lookahead = a fraction of the visible viewport **per axis** along the aim (Q-T55); 0.12 s = the smoothing time T of the critically damped spring, omega = 2/T (Q-T56); 24 px = the radius of a **circular** deadzone (Q-T57) |
+| Race framing reach (`ds_camera.race_reach_px`) | 900 px ⚙ **proposed** | Race points (Charges in flight, Grubs carrying glass, the Sepulchre while either happens) farther than this from the Vigil are ignored by the camera lean. PM under owner autonomy grant 2026-11-19 (sector slice look); retune at playtest |
+| Race framing max lean (`ds_camera.race_lean_max_frac`) | 0.7 of the half view per axis ⚙ **proposed** | Caps the lean so the Vigil never leaves the screen; zoom stays fixed (Z1). PM under owner autonomy grant 2026-11-19; retune at playtest |
+| Race framing lean time (`ds_camera.race_lean_time_s`) | 0.6 s ⚙ **proposed** | Smoothing time of the lean (same critically damped spring as follow). PM under owner autonomy grant 2026-11-19; retune at playtest |
+| Race pull-out zoom (`ds_camera.race_pull_zoom`) | 0.8 ⚙ **proposed** | Zoom the camera eases to (same spring and time as the lean) while the Sepulchre is a race target off the zoom-1 frame (TECH-001 Q-T211). The one context exception to Zoom 1.0; 0 = off. PM under owner autonomy grant 2026-11-19; retune at playtest |
+| Race pull-out max (`ds_camera.race_pull_max_s`) | 2.5 s ⚙ **proposed** | Longest one pull-out lasts; then zoom 1 until the Sepulchre stops being a race target. PM under owner autonomy grant 2026-11-19; retune at playtest |
 | M1 sandbox arena | wrapping torus 1920×720 ✱ | Same source as the Cabinet's torus field (`CabinetStage.field_size`), so M1 matches Act 0; no clear colour shows (a repeating floor covers the view). Real kit bounds come from ZONES-001 later. TECH-001 Q-T58, PM under owner autonomy grant 2026-11-18 |
 | Zoom | 1.0 (T0) → 1.06 (T3) → breathing ±2% over 11 s (T5) | GDD §4.2. Zoom 1.0 = the 640×360 logical frame, the fixed post-Act 0 camera scale (TECH-001 Q-T25 resolved Z1, PM under owner autonomy grant 2026-11-18) |
 | Lie spend window (L6) | 3 s | a HUD lie never concerns the count of a resource the player can spend within this window (WARP-001 §4.2 L6, widened). PM-approved 2026-11-18 under owner grant; retune at playtest |
@@ -637,6 +677,7 @@ Hit-stop does **not** count toward the 1.5 s "Player agency loss" budget above: 
 | Hourglass Clock rate | 🔒 **not warp-writable.** Hiding the clock is legal (WARP-001 §4.3); stopping, slowing, reversing or spending it is not. The only open question is whether it runs during exploration at all, which is an A/B flag (`clock_runs_during_exploration`), not a warp permission (WARP-001 §6.1 D-01, its §8 R-04) | design + engineering |
 | Warp state seed contract | 🔒 the warp state must be derivable from the seed alone: world tier, Hunger preset and the WARP-001 §3.2 registry state are deterministic per seed ✱. No daily or weekly challenge mode exists without this row (WARP-001 §6.1 D-06, its §8 R-05) | engineering |
 | Cosmic horror first-pass rows (§1.4 hull lamps, §1.5 gaze and Procession, §2.3, §4.1, §6 Hourglass threshold, §7.6, §9 lie and tear rows) | PM-approved 2026-11-18 under owner grant; retune at playtest. Move one if `TEST-PASS-01` or `TEST-LIE-02` (WARP-001) shows a Passing or a lie reading as unfair, or if kit memory stages arrive far from the simulated runs 4 / 11 / 25 for the first kit (ZONES-001 §4.8) | design |
+| Aether handling profile (§1.1a) | PM under owner autonomy grant, 2026-11-19 (TECH-001 Q-T164–Q-T169). Move a row if a first-flight playtest shows the weight reading as broken controls rather than as a heavier ship (players pressing harder, fighting the keel), or if Aether deaths cluster on bullets that could not be dodged at the slower pace. Fix the numbers, and do not switch the profile off | design |
 
 ---
 

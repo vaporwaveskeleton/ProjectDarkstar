@@ -28,6 +28,7 @@ const SLOT_RUN := &"run"
 const REASON_RUINS_ENTRY := &"ruins_entry"
 const REASON_SEAM_BOUNDARY := &"seam_boundary"
 const REASON_RUN_END := &"run_end"
+const REASON_TREE_PURCHASE := &"tree_purchase"
 
 const OUTCOME_DIED := &"died"
 const OUTCOME_WON := &"won"
@@ -41,6 +42,9 @@ const PAUSE_CINEMATIC := &"cinematic"
 const PAUSE_ATTRACT := &"attract"
 const PAUSE_CURTAIN := &"curtain"
 const PAUSE_RUINS_MENU := &"ruins_menu"
+## Q-T162 (settled 2026-11-19): the Ruins holds this on the first visit until the launch, so the
+## Hourglass starts when you leave (beat 11; GDD §6.2 exception).
+const PAUSE_FIRST_GLASS := &"first_glass"
 
 ## Route param keys (TECH-001 §4.2a).
 const PARAM_ACT0_VI := "act0_vigil_index"
@@ -57,6 +61,8 @@ var _profile := ProfileState.new()
 var _pauses: Dictionary = {}
 ## True between enter_seam and end_seam / die (abandon is refused here, Q-T144).
 var _in_seam := false
+## The Vigil Index the last arrival banked (−1 = none): the Ruins chalks it as a tally (LOOP-001 §10.5).
+var act0_vi_banked := -1
 ## False when the profile on disk could not be read: never overwrite it (no data loss).
 var _profile_writable := true
 
@@ -111,6 +117,24 @@ func arrive_at_ruins(params: Dictionary = {}) -> int:
 	return paid
 
 
+# --- the Lantern Tree station (Q-T191) -------------------------------------------------------------
+
+## Buys the next unbought node of `stock` at its tier-1 price from the banked Ember (LOOP-001 §3.8).
+## Only in the Ruins (never mid-run). Returns the node id, or &"" when nothing was bought (all
+## owned, not enough Ember, a run is live, or the profile on disk is unreadable). One profile
+## write, reason `tree_purchase`: the spend and the node commit together.
+func buy_tree_node(stock: LanternTreeStock) -> StringName:
+	if stock == null or _run.is_active() or not _profile_writable:
+		return &""
+	var id := stock.next_unbought(_profile.tree_nodes)
+	if id == &"" or _profile.ember_banked < stock.price_tier1:
+		return &""
+	_profile.ember_banked -= stock.price_tier1
+	_profile.tree_nodes.append(id)
+	_save(SLOT_PROFILE, REASON_TREE_PURCHASE)
+	return id
+
+
 ## The Cabinet or attract mode may have written the profile since boot: take their keys, keep ours.
 func _refresh_profile() -> void:
 	var d := _load(SLOT_PROFILE)
@@ -135,6 +159,7 @@ func _bank_act0(params: Dictionary) -> int:
 	var pay := maxi(floori(float(vi) / float(maxi(1, stats.score_per_ember))), stats.act0_bank_floor_ember)
 	_profile.ember_banked += pay
 	_profile.act0_banked = true
+	act0_vi_banked = vi
 	return pay
 
 

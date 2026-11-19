@@ -32,15 +32,17 @@ func _draw() -> void:
 
 func _draw_layer() -> void:
 	var full := Rect2(Vector2.ZERO, layout.size)
-	# Brass bezel (GAS ramp), then the VOID-1 face.
-	draw_rect(full, Pal.GAS_2, true)
-	draw_rect(full.grow(-0.5), Pal.GAS_1, false, 1.0)
+	# Brass bezel (Brass.plate: bevel, rivets; Aether-tier HUD 2026-11-19), then the VOID-1 face.
+	Brass.plate(self, full, Pal.VOID_1)
 	draw_rect(layout.face, Pal.VOID_1, true)
-	draw_rect(layout.face.grow(0.5), Pal.GAS_1, false, 1.0)
+	draw_rect(layout.face.grow(0.5), Pal.GAS_0, false, 1.0)
 	_draw_ticks(full)
 	# The sector cell: the whole wrapping map, with a grid of one cell per `grid_world_px`.
 	var m := layout.map
 	draw_rect(m, Pal.VOID_0, true)
+	# Glass over the chart: a faint pearl sheen in the upper-left corner (ART-001 §16 crystal).
+	draw_colored_polygon(PackedVector2Array([m.position, m.position + Vector2(m.size.x * 0.45, 0.0),
+		m.position + Vector2(0.0, m.size.y * 0.6)]), Color(Pal.AETHER_4, 0.07))
 	for x in LedgerCompassLayout.grid_lines(world_rect.size.x, grid_world_px.x):
 		var gx := m.position.x + x * m.size.x
 		draw_line(Vector2(gx, m.position.y), Vector2(gx, m.end.y), Pal.VOID_3, 1.0)

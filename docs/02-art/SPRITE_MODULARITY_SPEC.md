@@ -91,6 +91,33 @@ Rule: `assets/sprites/generated/**` is **never edited by hand after it is used i
 | `compass` | Ledger Compass markers | 0.25 (16×16) | 16 | `markPlayer`, `markGrub`, `markAcolyte`, `markGeode`, `markSepulchre`, `markEntity`, `markSeam`, `markLying` |
 | `hub` | Ruins hub art (modular tiles) | 64 tiles | 64 tile grid | `floorTile`, `wallTile`, `archTile`, `pillarTile`, `windowTile`, `rubbleTile`, `treeTrunk`, `treeBranch`, `treeNodeLit`, `treeNodeDark`, `clockTile`, `deskTile`, `skyTileA`…`skyTileI` |
 
+### 4.1 The Aether Vigil: modules and sockets (ruled, PM under owner autonomy grant, 2026-11-19)
+
+> **Status: ruled, PM under owner autonomy grant, 2026-11-19** (TECH-001 Q-T170). The look is in ART-001 §16.7, and the node-to-module map is in LOOP-001 §3.8. The `vigil` row in §4 stays the Act 0 Vigil.
+>
+> **Built 2026-11-19** as `AetherVigilRig` (`MODULE_PARTS` map the modules to these sockets; runtime vector, no sprites); ✱ values in `ds_vigil.aether_look`.
+
+The Act 0 Vigil keeps the `vigil` row above. The Aether Vigil uses the same kit id and the same naming (§2: `ds_vigil_<part>[_<variant>]`), with the proposed parts and sockets below. Sockets are named points on the `core`; the §5.1 descriptor's `socket` field refers to them. Each part is symmetric about its socket axis (§6). `z` runs from back to front.
+
+| Socket | Parts and variants | Shown when | z |
+|---|---|---|---|
+| `keel` | `keelSpine` (always), `keelFairing` (LANTERN-9), `keelLamp` (LANTERN-10), `keelBlade` (LANTERN-13) | always; variants by node | 0 |
+| `hull` | `hull` (existing) | always | 1 |
+| `plate` | `plate`, `plateSheared` | with HULL-4; sheared after the first hit until it re-arms (HULL-14) | 2 |
+| `flankL`, `flankR` | `vaneA` (HULL-1), `vaneB` (HULL-7), `runLamp` (vane tip) | by node; the running lamp goes out with Lantern Down | 2 |
+| `stern` | `bellowsA` (base), `bellowsB` (LANTERN-1), `bellowsChain` (LANTERN-6, -7), `oiler` (LANTERN-16), `flue` (runtime glow) | always; variants by node | 2 |
+| `cowl` | `cowl` (existing), `shutter1`–`shutter3` (HULL-3, HULL-5, HULL-15) | by node; the shutters open while braking | 3 |
+| `bow` | `bow` (existing), `anchorRing` (HULL-9), `hookReel` (ORDNANCE-1) | by node | 3 |
+| `turret` | `lanceTurret` | always; rotates to the aim (`rotate: "turret"`, §5.1), separately from the hull | 4 |
+| `chargeLamp1`–`chargeLamp5`, `chargeRing` | hull Charge lamps and the phosphor ring (cosmic-horror C-27) | per Charge carried | 4 |
+| `cockpitFlame` | 4 shape states, one per Composure band (C-27) | always | 4 |
+| `lamp` | `lampGimbal`, `lampGlobe` / `lampGlobeDim` (existing), `globeLarge` (LANTERN-3), `louvres` (LANTERN-5) | always; the gimbal swings against acceleration (runtime) | 5 |
+
+- **Mutation** (§5.3): the plate shear, the lamp guttering on death and relighting on revive are the Vigil's mutation parts. Like every other kit's, they are seeded and reversible.
+- **Palette pool** (§8): unchanged: `GASLIGHT (4) + BONE (3) + VOID-0`. Brass is a BONE/VOID mix, and PHOSPHOR appears only on the Charge ring. No CHOIR and no SIGNAL.
+- **Collision stays separate** (TECH-001 §2.6): no socket adds a physics shape, and the hitbox stays `ds_vigil.move.hitbox_circle_px`.
+- **Generated only** (D-13): parts are runtime vector shapes or pxl renders, never hand-made files.
+
 ## 5. Assembly rules
 
 ### 5.1 How a composite is described (part descriptors)

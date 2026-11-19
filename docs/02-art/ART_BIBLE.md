@@ -41,7 +41,7 @@ Mood keywords: *aether, crystal spheres, orrery, gaslight, brass, glass, fog, no
 
 | Role | Shape language | Signature tell |
 |---|---|---|
-| **Vigil** (player) | Wedge + lantern globe. Small, round-topped, brass. Symmetric, honest, *simple*. | The lamp globe is the brightest pixel in the frame and pulses with the Lantern state |
+| **Vigil** (player) | Wedge + lantern globe. Small, round-topped, brass. Symmetric, honest, *simple*. | The lamp globe is the brightest pixel in the frame and pulses with the Lantern state. Aether tier: a longer brass skiff with a keel and visible modules (§16.7) |
 | **Oubliette Grub** (worker) | Teardrop + 4 tiny limbs + a carried shard held overhead. Cute, pitiful. | Bows when it deposits a shard (a genuflection) |
 | **Acolyte** (warrior) | Tall bell/vestment shape + a **censer turret** hanging/rotating off one shoulder | Turret swings 0.25 s behind the body — a visible tell |
 | **Deacon of Lies** | Flat, 2D-paper-thin shape that is somehow *larger* than its outline | Its own shadow does not match its shape |
@@ -537,7 +537,7 @@ First asset (2026-11-18): `ds_ui_paletteSwatch` (`art/src/reference.px.js`), the
 
 ## 15. The visual fidelity ladder (owner direction, 2026-11-18)
 
-**The game starts as a neon arcade machine and becomes something richer as it reveals itself.** Act 0 looks like a classic 1983 cabinet: neon colours on black, flat vector shapes, no lighting. After THE PRETENCE the Aether look takes over (§16: retro-future Victorian space), and the graphics are allowed to *transcend* arcade limits: real 2D lighting with the lantern as the key light, shadows, fog and volumetric haze, bloom, complex particle systems, normal-mapped and shader-rich bodies. Gameplay stays top-down 2D throughout; the Act 0 screen's pixel grid is 256×304 (TECH-001 §1.1) and 640×360 is the logical space, which renders at native resolution after Act 0 (owner, 2026-11-18). This section governs; where §4–§5 or §14 read as a hard cap on colours or lighting, this section wins.
+**The game starts as a neon arcade machine and becomes something richer as it reveals itself.** Act 0 looks like a classic 1983 cabinet: neon colours on black, flat vector shapes, no lighting. Each Act 0 stage carries a dim VOID-register backdrop signature behind the stars (currents, censer chains, a shoal of glass motes, a still horizon; never a faction hue; TECH-001 §2.10). After THE PRETENCE the Aether look takes over (§16: retro-future Victorian space), and the graphics are allowed to *transcend* arcade limits: real 2D lighting with the lantern as the key light, shadows, fog and volumetric haze, bloom, complex particle systems, normal-mapped and shader-rich bodies. Gameplay stays top-down 2D throughout; the Act 0 screen's pixel grid is 256×304 (TECH-001 §1.1) and 640×360 is the logical space, which renders at native resolution after Act 0 (owner, 2026-11-18). This section governs; where §4–§5 or §14 read as a hard cap on colours or lighting, this section wins.
 
 **Neon Cabinet video limits (owner, 2026-11-18; layer one only, never the bezel, never after Act 0; built 2026-11-18).** Act 0 screen colours must fit 16 RGB332 registers (`VideoRegisters`, table in §15.2a). Breaking the limit during THE PRETENCE reveal is in-fiction. The limits are: 16 colours on screen at once from a 256-colour palette (3 bits red, 3 green, 2 blue); registers writable at any time, so colour cycling and fades are register writes; frame time 16.64 ms (counter arithmetic in TECH-001 §1.1). The quantize pass runs in the CRT shaders of the arcade screen and the attract hole only; the limits fade out as `Look.t` goes 0 to 1 (THE PRETENCE).
 
@@ -829,8 +829,55 @@ The look of the Ruins of the Ninth Sky on the first visit (NARR-001 §5.7, GDD �
 - No occlusion shadows (`shadow_enabled` is false on every light).
 - The torn vault shows mostly the navy far band of the Aether.
 - Before any Tree lamp the hangar mouth is near-black by default (`mouth_veil_dark` 1.0 ✱, NARR-001 §5.7 "dark"); `mouth_aether_hint` (0..1, default 0 ✱) lets the owner bring back a faint glimpse of the Aether without code (TECH-001 Q-T156, agreed with M1, pending the owner).
+
+### 16.6h The sector at Aether tier (sector slice look, 2026-11-19)
+How the M1 sector reads once it wears the Aether. Built; not yet scored by The Reviewer, and the captures (scenario `m1_sector_look_capture`) are not evaluated here. Implementation: TECH-001 §2.5, §2.9, §5.4. Every value is an engineering ✱ drawing parameter, in `Pal` colours.
+
+**Near depth, no grid.** At Aether tiers the M1 debug grid does not draw. The Aether far layer is the backdrop; two screen-space depth layers sit around the play layer: behind it, fog wisps and glass motes at slow parallax; in front of it (below the HUD), sparse brass-gold motes and a faint fog lens at faster parallax. They are hash-placed, never jump at the torus seam, and their twinkle and drift are off under Reduced Motion. They never carry information and never hide a hitbox or a telegraph.
+
+**Brass instrument HUD.** The sector HUD is a set of riveted brass plates and studs (the Ledger Compass bezel, the Composure wick bracket, the Steady Ledger tier, the Vigil Index, the Charge strip, the Seam index). Lamps are glass: lit = phosphor = truth (loaded Charge, honest state); to-come items are chalk rings; the current Seam stud is lit gold. Text is `VectorLabel` stroke glyphs. SIGNAL stays at most 3 on screen; the HUD adds none.
+
+**Actors.** The Grub, the geodes and the Sepulchre have filled bodies, a rim light, a soft glow halo in faction hue (Choir hue for Choir bodies) and crystal facets with a slow shimmer (off under Reduced Motion). The geodes read as crystal spheres' cousins, not as pickups. Collision shapes are unchanged. Nothing in the sector is true black: the only true black remains the entity (§16.1).
 - The left side is cluttered: the telescope crosses the chalk star chart.
 - The orrery can read as an atom symbol.
 - The flash and lantern-law tests are structural, not pixel-measured (TECH-001 §9.1, Q-T64).
 - Authored for 640×360; wider aspects not designed (TECH-001 Q-T159).
 
+
+### 16.7 The Aether Vigil: a brass lantern skiff with visible systems (ruled, PM under owner autonomy grant, 2026-11-19)
+
+> **Status: ruled, PM under owner autonomy grant, 2026-11-19** (TECH-001 Q-T170; queued for the owner's later review). It goes with the Aether handling profile (GDD §4.2a, SYS-001 §1.1a). Act 0's neon Vigil (§3, §15.2) is unchanged.
+>
+> **Built 2026-11-19** as `AetherVigilRig` (runtime `_draw`); visual values are ✱ in `ds_vigil.aether_look` (TECH-001 §3.4). Palette: brass from BONE/VOID mixes, GAS only for lamp, glass, flue and sparks; no CHOIR, SIGNAL or PHOS.
+
+**Intent.** In the Cabinet the Vigil is a simple wedge and a lamp. After THE PRETENCE the player should see the ship it always was: a hand-built Victorian lantern skiff with a keel, bellows and vanes. It is heavy, riveted and engraved, and every system the Lantern Tree brings online is a part you can see. The weight in the hands (GDD §4.2a) and the complexity in the art are the same idea.
+
+**Silhouette.** The §3 grammar is kept and extended. It is still a wedge with a lantern globe on top and still symmetric. The **lamp globe stays the brightest pixel in the frame** (§3, palette law 4). What changes:
+- **Length and keel.** The hull lengthens along a brass keel spine, so the ship has an obvious nose and an obvious heading: the keel *is* the heading tell. The composite grows from the Act 0 48×48 core toward ART-002's 128×64 nominal footprint (about 64 × 40 px of visible hull at the 640×360 frame, ✱).
+- **The lamp on a gimbal.** The globe hangs in a brass gimbal above the hull and swings against acceleration: the visible sign of inertia. The Arc-Lance turret sits under the lamp and follows the aim, separately from the hull.
+- **Stern drive.** Bellows and a flue at the stern, with gaslight in the flue. It brightens with thrust and dims when running dark.
+- **Readability at gameplay scale.** At 640×360 the read order is: lamp (brightest), keel direction (the longest line), then everything else. Greyscale check: with the modules removed, the silhouette must still say "nose here, lamp there". Modules are small, never break the outline into noise, and never cover the lamp. The hitbox does not change (`ds_vigil.move.hitbox_circle_px` 🔒); the art grows around a small, honest core.
+
+**Modules show the Lantern Tree** (sockets in ART-002 §4.1; node map in LOOP-001 §3.8). A bare Vigil is a hull, a keel spine, a lamp and one bellows. Each handling or survival node adds a part: trim vanes on the flanks (HULL-1, HULL-7), a keel lamp and blade (LANTERN-10, -13), extra bellows (LANTERN-1), lamp louvres (LANTERN-5), brake shutters on the cowl (HULL-3, -5, -15), a riveted plate (HULL-4), and an anchor ring and hook reel at the bow (HULL-9, ORDNANCE-1). Run Sigils keep their own reads on the sprite (LOOP-001 §4). At a glance, a veteran's ship looks different from a first launch: more systems online.
+
+**Lamp and lantern lighting** (§5; §15.1 per tier).
+- **T1:** the lantern is a real light (soft falloff, occluder shadows). Two small running lamps at the vane tips (GAS-2 glass, never brighter than GAS-3) show the heading in fog.
+- **T2:** the flue glows, with bloom on the globe.
+- **T3 and up:** god-rays from the lantern through the gimbal ribs, and normal-mapped brass on the hull.
+- **Lantern Down:** the globe shutters to `lampGlobeDim`, the running lamps go out, and the flue dims to an ember (the drive runs weaker, GDD §4.2a). The Vigil becomes a dark brass shape in the fog. It must still read, through rim light from the fog and the phosphor Charge ring when Charges are carried.
+
+**Instruments on the hull (the hull never lies).** These come from cosmic-horror change C-27 and are not invented here: up to 5 Charge lamps on the hull, then one phosphor ring for Charges 6–13, and a cockpit flame with 4 shape states for Composure. They sit on the sockets listed in ART-002 §4.1.
+
+**Damage states.** The default is one hit (D-08 stays open), so the hull has only one damage read:
+- **Plating (HULL-4) shears:** on the first hit the plate tears off in a GAS spark burst, and a patch of bare ribs stays for the rest of the Seam (or until HULL-14 re-arms it). Shape carries the read, not colour: the Vigil never uses SIGNAL, so the SIGNAL ≤ 3 budget stays with the threats.
+- **Death:** the lamp gutters out first, then the hull goes dark and drifts. This matches the cinematic image of the unlit, drifting Vigil (M2 slice beat 6).
+- **Second Vigil (HULL-6) revive:** the lamp relights before the hull does.
+
+**Role laws** (§4 laws 1–5; §15.1 "what survives every rung"):
+- No CHOIR on any Vigil part, at any tier.
+- Brass is a BONE/VOID mix (§16.6a). GAS appears only in flames, glass and light.
+- PHOSPHOR appears only on truth-telling things: the Charge ring and the Null-Iron Charges.
+- The Vigil never uses SIGNAL.
+- The lamp stays the warmest and brightest light in the frame.
+
+**Generated only (D-13, D-14; §14).** The hull and modules are runtime vector parts (`Polygon2D` or draw calls in `Pal` colours, assembled on the ART-002 sockets), or pxl renders (`art/src/vigil_aether*.px.js`, ✱ names) for engraved static detail. The lamp swing, flue glow, shutters and plate shear change continuously, so they stay runtime. No hand-made or recorded file is used.
