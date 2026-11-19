@@ -63,6 +63,8 @@ var _shift_open := false          ## true once fresh-or-continue is decided; pro
 ## messages.show_tally replaces the mid-shift banner): tally_lines(stage_index + 1, <now>, stage_record_start).
 var stage_record_start: Array[int] = [0, 0, 0, 0]
 var _end_charges := -1             ## P2 carry-over: Charges held when this stage ended (cleared/unmade); -1 = not ended
+var _early_params: Dictionary = {}   ## route params that arrived before _ready (see on_route_entered)
+var _has_early_params := false
 
 
 func _ready() -> void:
@@ -94,6 +96,9 @@ func _ready() -> void:
 	autopilot.enabled = OS.get_cmdline_user_args().has("--autopilot")
 	overlays.emptied.connect(func() -> void: get_tree().paused = false)
 	start_stage(0)
+	if _has_early_params:              # the router reached us before the tree did: apply them now, in its order
+		_has_early_params = false
+		on_route_entered(_early_params)
 	# on_route_entered (same frame, after this) decides fresh or continue; an unrouted start
 	# (F6, tests) is a fresh game once the frame ends. The demo never opens a shift.
 	_open_shift.call_deferred(false)
@@ -104,7 +109,14 @@ func _ready() -> void:
 ## a new game that begins at stage N, with T as the shift total before it (0 if missing or invalid).
 ## SceneRouter mounts the scene first (so _ready has already started stage 0) and calls this right
 ## after, in the same frame; a valid N restarts here, anything else keeps stage 0 as a fresh shift.
+## A host that mounts without adding the scene to the tree (the tests' FakeRouteHost) calls this
+## before _ready: the params wait, and _ready applies them right after stage 0 starts, so nothing
+## touches an @onready node that is not set yet.
 func on_route_entered(params: Dictionary) -> void:
+	if not is_node_ready():
+		_early_params = params
+		_has_early_params = true
+		return
 	demo = bool(params.get("demo", false))
 	if demo:
 		_demo_t = DEMO_SECONDS
