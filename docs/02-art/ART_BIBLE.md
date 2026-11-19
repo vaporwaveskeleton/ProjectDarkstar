@@ -334,7 +334,7 @@ The UI uses a **4 px sub-grid** of the 64 px module (16 steps per module). Every
 | Progress bar | 6 px tall, any width in multiples of 4 | BONE-1 keyline; the fill is **PHOS-3** for truth readouts (Unravel progress, segments remaining) or **GAS-3** for player resources | `ds_ui_bar_frame` |
 | Charge pips ("lantern magazine", GDD-001 §8.3) | each pip 12 × 16; 2 px gap; up to 13 | a glass lamp: brass cage (GAS-2) holding a glass body. **Full** = PHOS-3 glass + GAS-4 wick; **empty** = VOID-2 glass + unlit wick; **lost in flight** = the pip shatters (3 frames, BONE-4 flecks) | `ds_ui_pip_charge` |
 | Composure wick (GDD-001 §10) | 64 × 16 | an oil-lamp wick whose flame height is the value; never a bar | `ds_ui_wick_composure` |
-| Ledger Compass frame | 64 × 64 (one module) | brass bezel, VOID-1 face, chalk tick marks | kit `compass` |
+| Ledger Compass frame | 64 × 64 (one module) | brass bezel, VOID-1 face, chalk tick marks. Built in M1 as runtime vector with `Pal` colours (TECH-001 §5.4; Q-T120 confirms this size over TECH-001's earlier 64×36) | kit `compass` |
 | Toggle (settings rows) | 24 px row; the switch is 24 × 12 | a chalk switch: left = off (BONE-1 knob), right = on (GAS-3 knob + check) | `ds_ui_toggle` |
 
 ### 12.6 Icon language
