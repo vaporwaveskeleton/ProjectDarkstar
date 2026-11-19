@@ -141,7 +141,7 @@ We refuse non-integer scaling **of the screen**. A fractional scale blurs a 1 px
 |---|---|---|
 | Windows x86-64, Steam Depot 1 | planned | only shipping target for 1.0 |
 | Windows demo build | planned | Steam playable/demo branch, same binary, gated content flag |
-| Linux x86-64 | post-1.0 | not built during development; CI does a compile-check only from month 6 ✱ |
+| Linux x86-64 | post-1.0 | not built or exported during development; the CI job (§9.2) already runs the full headless suite on Linux, which covers the compile check |
 | macOS | post-1.0 | out of scope for v1 entirely |
 | Steam Deck verification | target, not gate | verified after the vertical slice; the ×2/40-bar case above is the one we test first |
 | Web | tested 2026-11-18 (boots; single run) | low priority, not a release target; inherits the desktop tests |
@@ -151,7 +151,7 @@ We refuse non-integer scaling **of the screen**. A fractional scale blurs a 1 px
 |---|---|---|
 | `import` | every checkout, first run | Godot `.import` cache; regenerated, never committed |
 | `manifest_import` | **retired** (D-13) | no raster sprites are consumed; the manifest is a reference inventory only (ASSET-003) |
-| `data_lint` | pre-build, CI | every SYS-001 §10 row ↔ exactly one `ds_` key; class check (§3.3) |
+| `data_lint` | pre-build, CI (planned; not built, the CI job §9.2 runs the suite only) | every SYS-001 §10 row ↔ exactly one `ds_` key; class check (§3.3) |
 | `palette_lint` | test suite | `Pal` = the palette file (built); generator render tests check kit colour pools (ART-001 §14.7, planned) |
 | `localize_extract` | deferred | English only (L10N-001 §1); `locale/en.po` is edited directly |
 | `export_presets` | release | `Windows Desktop` preset, PCK packed, no encryption at 1.0 |
@@ -755,6 +755,35 @@ Placed under §9 because it is a test tool (a scenario runs in the suite and fro
 
 **Relation to the `godot-ai` MCP.** `godot-ai` is an editor-time live tool (it talks to the open editor). This runner is separate: it runs the game by itself, from a scenario file, with no editor.
 
+### 9.2 CI (GitHub Actions)
+
+File: `.github/workflows/ci.yml` (job `checks`). Status: added 2026-11-18; the first run is the PR that adds it, so it is not yet shown to pass.
+
+**Setup.** Runs on every pull request and on pushes to `main`, on `ubuntu-latest`. Timeout 25 min ✱. Token is read-only (`permissions: contents: read`); no secrets. Concurrency cancels older runs of the same ref.
+
+**Steps.**
+1. Check out without LFS. Cache the LFS objects (key = hash of `git lfs ls-files -l`), then `git lfs pull`. Only generated audio is in LFS (about 25 MB, 45 files); on a cache hit nothing is downloaded, so no LFS bandwidth is used.
+2. Download Godot 4.7.2-stable (Linux zip, official release), check it against a pinned SHA-512, cache the binary.
+3. `--import`.
+4. The GdUnit4 suite (`-a core -a features -a scenes -a tests`).
+5. Boot smoke (`--smoke --no-save`): must print `BOOT_SMOKE: reached route 'cabinet'` and have no ERROR or WARNING lines.
+6. Every `tests/scenarios/*.scenario.json`, headless, through `node tools/automation/darkstar_auto.js run <id> --godot=<exe> --keep` (§9.1).
+7. On failure, upload `reports/` and `smoke.log` as an artifact (7 days).
+
+Actions (checkout, cache, upload-artifact) are pinned to full commit SHAs (tags resolved 2026-11-18).
+
+**Not in CI.** Exports and pack audits (they need the 1.2 GB export templates); a Windows runner (planned later, on demand or nightly: Windows minutes cost 2x and Windows is the ship target); screenshots (headless has none); the Web export.
+
+**Cost.** Private-repo free-minutes allowance; Linux minutes count 1x. A run is expected to take about 5-10 minutes [estimate; measure from the first run].
+
+**Run the same checks locally.** The commands are in CLAUDE.md §4 (import, suite, smoke), plus `node tools/automation/darkstar_auto.js run <id>` for scenarios.
+
+**Update pins.**
+- Godot: change the version and the SHA-512 together in `ci.yml` (take the hash from the official release's `SHA512-SUMS.txt`); bump the cache key with it. Keep it equal to the version in CLAUDE.md §4.
+- Actions: resolve the new tag to its full commit SHA and replace the pinned SHA; keep the tag in a comment.
+
+**Required check (recommendation).** After the first green run, the owner may mark the `checks` job required in branch protection. Owner's decision; not changed here.
+
 ## 10. Import conventions
 **D-13:** no raster imports feed the game. The reference PNGs under `assets/sprites/` are local-only reference: kept on disk, **not in git** (`.gitignore`) and **ignored by Godot** (`assets/sprites/.gdignore`), so they are never imported, exported or pushed. Only `SPRITE_MANIFEST.csv` is tracked, as the inventory of parts to build (owner decision 2026-11-18). Exports must still exclude `tools/**` (set in the export preset when it is created). Historical, for the reference PNGs only: per ART-002 §7, canvas default filter Nearest (set in `project.godot`); pixel atlases import with `compress/mode = Lossless`, mipmaps off, `fix_alpha_border = true`. Every `.csv` under `assets/` imports as `keep` (ruling R-19), never as a translation; PNG import flags per ASSET-003. ART-002 §7 mentions a `godot/DarkStar/` path; the project root is the repo root (TASK-BOOT Q4), so that path is obsolete — §11 Q-T08. No import preset file is committed yet. `docs/`, `tools/`, `research/` and `Claude outputs/` carry `.gdignore`.
 
@@ -886,6 +915,7 @@ Rows R-01…R-19 are the owner-delegated rulings of 2026-11-17; later rows carry
 | 2026-11-18 | **Smoke route doc fix and Web wording.** §9 now says the smoke run reaches route `'cabinet'` (matches `boot.gd` and CLAUDE.md §4). §1.4 Web row: "Web export tested 2026-11-18 (boots; single run), low priority, not a release target; inherits the desktop tests"; console/mobile stay refused | owner (wording), relayed by the PM chat |
 | 2026-11-18 | **S4 Lance bite (§2.10), Cabinet only.** Muzzle star, visual-only recoil and impact flecks are deterministic effects (no `world.rng`); the Sepulchre/entity no-bite replaces the three random sparks with `FxLayer.chalk_tick` and the AudioService cue `lance_dull` wired at the no-bite hit (`world.sfx(&"lance_dull", lance_dull_db)`). No new signals. The M1 counterpart (`features/vigil`, `features/arc_lance`) is not built. The nine "lance bite" values are PROPOSED ✱, pending owner approval (Q-T50) | owner approved the S4 batch item ("Go, Cabinet only"); values pending (Q-T50) |
 | 2026-11-18 | **S4 lance-bite values promoted to SYS-001 §9** (nine ⚙ game-feel rows, `ds_cabinet.fx` group "lance bite"). **Flash ruling recorded in AUDIO-001 §8.3:** a few-pixel vector muzzle star is not a luminance flash; it ships ON, with new accessibility setting `muzzle_flash` (default true, persisted in `user://settings.cfg` via `SettingsService`, `SETTINGS_MUZZLE_FLASH` "Weapon Muzzle Flash"); `photosensitivity` also turns it off. Cross-references added in ART-001 §12.9, WARP-001 §4.5, UI-001 §1/§4. Closes Q-T50 | owner, relayed by the PM chat |
+| 2026-11-18 | **First CI added (§9.2).** `.github/workflows/ci.yml`: import, GdUnit suite, boot smoke and all `tests/scenarios/*` headless on `ubuntu-latest`, on every PR and on pushes to `main`; read-only token, no secrets, pinned Godot SHA-512 and action SHAs. Exports, pack audits, Windows runner and screenshots are not in CI. First run is the PR itself (not claimed green). Owner: "Build all, CI later"; PM: CI PR after the automation PR merges, as approved. Marking `checks` a required status check is left to the owner | owner, relayed by the PM chat |
 | 2026-11-18 | **Aether sound direction recorded (AUDIO-001 §12.12) and first five sounds built, all UNAUDITIONED.** One idea: the Aether is a medium you can hear, the entity is where it stops; entity presence is a subtraction gradient (§4.3 voice rules unchanged). Built: `aether_bed_t1`..`t3`, `aether_swell`, `aether_wrong` (`audio/src/aether_beds.cx.js`, stereo WAV); `AudioService.set_ambience` (one slot, two players, `BUS-AMB`; `AMBIENCE_FADE_S` 2.0, `AMBIENCE_MAX_DB` −12, ✱). Requested "stingers" became slow swells (AUDIO-001 §1.1 forbids stings). Direction only; levels are dBFS, LUFS not measured. Opens Q-T51 to Q-T53 | PM-requested under owner-delegated authority; owner review pending |
 | 2026-11-18 | **Act 0 video limits built: `VideoRegisters` + `ScreenRegisters` + quantize pass (§1.1, §2.10, §3.4; ART-001 §15.2a).** Layer one only (arcade screen and attract hole; the bezel is never quantized, `Look.NEON` unchanged). Each pixel is assigned a register by nearest match, then shows that register's current colour; limits = 1 − `Look.t`, so THE PRETENCE fades them out. `cycle()` has no caller yet (no tuning value for a flash period; register 15 reserved). Test `test_screen_registers.gd` written; run results are in the PR report, not asserted here | Claude (engineering), owner hardware spec |
 | 2026-11-18 | **Video frame clock 16.64 ms is used only for register cycling; gameplay physics stays at 60 Hz.** Godot's `physics_ticks_per_second` is an integer, so 60.096 Hz is impossible (0.16 % difference). Engineering decision | Claude (engineering), owner hardware spec |

@@ -1,0 +1,116 @@
+# DARKSTAR CI (TECH-001 §9.2): on every pull request and on pushes to main, run the same checks as
+# CLAUDE.md §4 on a clean Linux machine: import, the GdUnit4 suite, the boot smoke and the
+# automation scenarios. Nothing here builds, signs or publishes a release.
+#
+# Notes for maintainers:
+# - Actions are pinned to full commit SHAs (the comment gives the tag they were resolved from on
+#   2026-11-18). Bump them deliberately.
+# - The Godot binary is downloaded from the official release and checked against a pinned SHA-512.
+# - Git LFS: only the generated audio is in LFS (about 25 MB, 45 files). The LFS objects are cached,
+#   so a run with unchanged audio downloads nothing from LFS and uses no LFS bandwidth.
+# - No secrets are used. The token is read-only.
+
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GODOT_VERSION: 4.7.2-stable
+  GODOT_ZIP: Godot_v4.7.2-stable_linux.x86_64.zip
+  GODOT_SHA512: 9aa00f7a605200940bce3027a567b782f49bd8e940dd06ae9e987bd65aee1b1467edd56ed84fcdcbdd44354bf613bdbb4e5d2913e925850368e150c59ed54c65
+  GODOT_BIN: ${{ github.workspace }}/.ci/godot/Godot_v4.7.2-stable_linux.x86_64
+
+jobs:
+  checks:
+    name: Suite, smoke and scenarios (Linux)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Check out (without LFS objects yet)
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          lfs: false
+
+      - name: List LFS objects (cache key)
+        run: git lfs ls-files -l | cut -d' ' -f1 | sort > .lfs-assets-id
+
+      - name: Cache LFS objects
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: .git/lfs
+          key: lfs-${{ hashFiles('.lfs-assets-id') }}
+
+      - name: Fetch LFS files (generated audio)
+        run: git lfs pull
+
+      - name: Cache the Godot binary
+        id: godot-cache
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: .ci/godot
+          key: godot-${{ env.GODOT_VERSION }}-linux-${{ env.GODOT_SHA512 }}
+
+      - name: Download Godot (checked against a pinned SHA-512)
+        if: steps.godot-cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p .ci/godot "$RUNNER_TEMP/godot-dl"
+          curl -fsSL -o "$RUNNER_TEMP/godot-dl/$GODOT_ZIP" \
+            "https://github.com/godotengine/godot/releases/download/$GODOT_VERSION/$GODOT_ZIP"
+          echo "$GODOT_SHA512  $RUNNER_TEMP/godot-dl/$GODOT_ZIP" | sha512sum -c -
+          unzip -q "$RUNNER_TEMP/godot-dl/$GODOT_ZIP" -d .ci/godot
+          chmod +x "$GODOT_BIN"
+
+      - name: Godot version
+        run: '"$GODOT_BIN" --version'
+
+      - name: Import
+        run: '"$GODOT_BIN" --headless --path . --import'
+
+      - name: Test suite (GdUnit4)
+        run: |
+          "$GODOT_BIN" --headless --path . -s addons/gdUnit4/bin/GdUnitCmdTool.gd \
+            -a core -a features -a scenes -a tests --ignoreHeadlessMode -c
+
+      - name: Boot smoke
+        run: |
+          "$GODOT_BIN" --headless --path . --quit-after 600 -- --smoke --no-save | tee smoke.log
+          grep -q "BOOT_SMOKE: reached route 'cabinet'" smoke.log
+          if grep -E "^(ERROR|WARNING)" smoke.log; then
+            echo "The smoke log must have no ERROR or WARNING lines (CLAUDE.md section 4)."
+            exit 1
+          fi
+
+      - name: Automation scenarios (headless)
+        run: |
+          ok=0
+          for f in tests/scenarios/*.scenario.json; do
+            id=$(basename "$f" .scenario.json)
+            echo "::group::scenario $id"
+            node tools/automation/darkstar_auto.js run "$id" --godot="$GODOT_BIN" --keep || ok=1
+            echo "::endgroup::"
+          done
+          exit $ok
+
+      - name: Upload reports when something failed
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: ci-reports
+          path: |
+            reports/
+            smoke.log
+          if-no-files-found: ignore
+          retention-days: 7

@@ -71,6 +71,7 @@ node tools/automation/darkstar_auto.js validate             # check all scenario
 node tools/automation/darkstar_auto.js run a0_first_contact # headless; add --windowed for screenshots
 ```
 Scenarios live in `tests/scenarios/`; `tests/test_scenarios.gd` runs them in the suite (TECH-001 §9.1).
+CI (`.github/workflows/ci.yml`) runs import, suite, smoke and the scenarios on every PR; the same commands as above (TECH-001 §9.2).
 Expected `ERROR`/`WARNING` lines in the test log come only from negative-path tests (corrupt save, unknown route); the smoke log must have none.
 Act 0 (the Cabinet, TECH-001 §2.10) takes capture switches after `--`: `--autopilot --stage=N --segments=N --hits=N --smoke-frames=N --no-save`. Always pass `--no-save` when capturing, so the player's saves are never written.
 Prefer the `godot-ai` MCP (`test_run`, `logs_read`, `project_run`, `scene_*`) when the editor is open (addon vendored in `addons/godot_ai`, v4.4.1; never press its dock's Configure; update only via the dock, keeping the server at the same version). Fall back to the console exe.
