@@ -178,6 +178,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("20")
+fx_tuning = ExtResource("fx_tuning")
 spec = ExtResource("28")
 
 [node name="Hud" type="Control" parent="Rig" node_paths=PackedStringArray("screen_hud", "field")]

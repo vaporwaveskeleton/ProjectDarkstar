@@ -84,6 +84,11 @@ extends TunableResource
 @export var hitstop_max_frames: int = 10                  ## frames ⚙ owner-approved 2026-11-18, SYS-001 §9: hard cap on any freeze or stack
 @export var hitstop_reduced_motion_scale: float = 0.5     ## ⚙ owner-approved 2026-11-18, SYS-001 §9: frames x this under Reduced Motion; 0 disables
 
+@export_group("credits ✱ PROPOSED (owner approval pending; not SYS-001 yet)")
+@export var credits_scroll_px_per_s: float = 24.0         ## px/s ✱ PROPOSED: the roll's scroll speed (was a literal)
+@export var credits_full_seconds: float = 13.0            ## s ✱ PROPOSED: the full stage-2 roll with the service record (was 9.0)
+@export_group("")
+
 
 func tunable_properties() -> PackedStringArray:
 	var out := PackedStringArray()
