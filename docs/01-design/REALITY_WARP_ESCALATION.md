@@ -227,6 +227,8 @@ These bind every row in §2 and §3. The warp lint (§7.3) fails the build on an
 
 ### 2.2 T1 — Frayed (10 effects)
 
+*Aether cross-reference (2026-11-19, TECH-001 §2.9, §3.4, ART-001 §16.6f).* W1-01 Wrong Three and W1-03 Parallax Arrives are represented as `AetherLook` data (the PM-01 look, `warp_effects`). W1-06 Chromatic Edge's far-layer part is `AetherFarLayer.set_chromatic_edge` (default off, never drawn under photosensitivity); the full-frame split over the play layer has no owner yet (TECH-001 Q-T128). W1-02 and W1-05 (ART-002 sprites), W1-07 and W1-08 (audio), W1-09 and W1-10 (UI) are not Aether art.
+
 | ID | Class | Effect | Trigger | What changes in play | Counterplay | Art / audio hand-off | Primary AC |
 |---|---|---|---|---|---|---|---|
 | W1-01 | standing | Wrong Three | T1 sector start | The aether's colour fields settle (ART-001 §16) and three hues arrive that do not belong to any ramp the player has learned (GDD-001 §8.7, §11 ramp rule). Value contrast is preserved so colourblind play is unaffected (ART-001 §4). | none required; colourblind-safe variants ship in the same ramp (GDD-001 §10) | ART-001 tier 1 palette table | AC5 |
