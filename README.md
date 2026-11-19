@@ -20,7 +20,7 @@ tools\godot\Godot_v4.7.2-stable_win64_console.exe --headless --path . --quit-aft
 ```
 Controls: **WASD** move · **mouse** aim · **left click** Arc-Lance (mine and shoot) · **right click** throw a Null-Iron Charge (homes on the Sepulchre / the Dark Star) · **Shift** Surgelight · **Space** brake · **Esc** pause. Gamepad: left stick move, right stick aim, RT lance, LT Charge, A Surgelight, left-stick click brake, Start pause.
 
-Tips: fire in calm bursts — over-firing a geode (9 hits in 1.2 s) shatters it and scatters the glass where the Grubs can steal it. Shoot Grubs that are carrying glass. Acolytes' censers lag a quarter-second behind you: keep moving.
+Tips: fire in calm bursts — over-firing a geode (7 hits in 1.2 s) shatters it and scatters the glass where the Grubs can steal it. Shoot Grubs that are carrying glass. Acolytes' censers lag a quarter-second behind you: keep moving.
 
 ## Art tool (pxl)
 

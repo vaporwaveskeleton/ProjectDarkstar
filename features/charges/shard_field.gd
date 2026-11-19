@@ -190,8 +190,8 @@ func magnet_active() -> bool:
 
 
 ## Pure velocity step. Outside the magnet: exponential drift drag. Inside: steer toward the pull
-## with no drag, so the shard settles at exactly the pull speed (SYS-001 §1.4 "170 px/s"; the
-## Cabinet also drags inside, which settles near 144 px/s at 60 Hz).
+## with no drag, so the shard settles at exactly the pull speed (SYS-001 §1.4 "170 px/s"; PM
+## 2026-11-18; the Cabinet's glass_field.gd does the same).
 ## `damp` = exp(-drag * dt); `steer` = clamp(dt * steer_rate, 0, 1); `pull` is signed (H4).
 static func step_velocity(v: Vector2, to_target: Vector2, inside: bool, damp: float, steer: float, pull: float) -> Vector2:
 	if inside and to_target != Vector2.ZERO:

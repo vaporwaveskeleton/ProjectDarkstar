@@ -59,6 +59,29 @@ func test_populate_registers_geodes_and_places_images_near_reference() -> void:
 		var d := g.global_position - ref.global_position
 		assert_bool(absf(d.x) <= WORLD.x * 0.5 and absf(d.y) <= WORLD.y * 0.5).is_true()
 		assert_vector(torus.wrap(g.global_position)).is_equal_approx(g.home, Vector2(0.01, 0.01))
+	assert_int(sandbox.detonated_count()).is_equal(0)
 	sandbox.geodes[0].detonate()
 	assert_int(sandbox.alive_count()).is_equal(9)
 	assert_int(field.live_count()).is_between(4, 6)
+	assert_int(sandbox.detonated_count()).is_equal(1)
+	await get_tree().process_frame   # the node is freed; the count must survive it
+	assert_int(sandbox.detonated_count()).is_equal(1)
+
+
+func test_sandbox_seed_puts_a_small_geode_on_the_right_aim_ray() -> void:
+	# The M1 scenarios aim right from the spawn; the data seed must keep a 1-face geode there,
+	# 140–260 px out, with nothing nearer on that ray.
+	var s: GeodeSandboxStats = load(STATS)
+	var gs: GeodeStats = load(GEODE_STATS)
+	var t := Torus.new(WORLD)
+	var spawn := Vector2(320, 180)
+	var best_along := INF
+	var best_class := -1
+	for e in GeodeSandbox.layout(RunSeed.new(s.run_seed), s, gs.class_count(), t, spawn):
+		var v := t.delta(spawn, e.pos as Vector2)
+		var cls: int = int(e.size_class)
+		if v.x > 0.0 and absf(v.y) <= gs.radius_for(cls) - 3.0 and v.x < best_along:
+			best_along = v.x
+			best_class = cls
+	assert_int(best_class).is_equal(0)
+	assert_float(best_along).is_between(140.0, 260.0)

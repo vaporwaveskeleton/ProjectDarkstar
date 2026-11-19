@@ -43,12 +43,19 @@ func _calm_hit(g: SectorGeode) -> SectorGeode.Outcome:
 	return g.register_lance_hit()
 
 
+## Feathered fire: one hit every 20 ticks (3/s), so at most 4 land inside 1.2 s (calm mining).
+func _feathered_hit(g: SectorGeode) -> SectorGeode.Outcome:
+	for t in 20:
+		g.advance(DT)
+	return g.register_lance_hit()
+
+
 func test_data_matches_sys001() -> void:
 	var s: GeodeStats = load(STATS)
 	assert_int(s.face_hits).is_equal(5)
-	assert_int(s.overfire_hits).is_equal(9)
+	assert_int(s.overfire_hits).is_equal(7)
 	assert_float(s.overfire_window_s).is_equal(1.2)
-	assert_int(s.overfire_warn_hits).is_equal(6)
+	assert_int(s.overfire_warn_hits).is_equal(5)
 	assert_int(s.shards_calm).is_equal(3)
 	assert_int(s.shards_mined_bonus).is_equal(1)
 	assert_int(s.shards_detonated_min).is_equal(4)
@@ -82,28 +89,31 @@ func test_large_geode_face_by_face_totals_calm_plus_one() -> void:
 	var g := _geode(2)
 	var outcomes := []
 	for k in 15:
-		outcomes.append(_calm_hit(g))
+		outcomes.append(_feathered_hit(g))
 	assert_int(outcomes[4]).is_equal(SectorGeode.Outcome.FACE_SHATTERED)
 	assert_int(outcomes[9]).is_equal(SectorGeode.Outcome.FACE_SHATTERED)
 	assert_int(outcomes[14]).is_equal(SectorGeode.Outcome.CALM_KILL)
 	assert_int(field.live_count()).is_equal(4)   # 1 + 1 + max(1, 4 - 2)
 	assert_bool(g.detonated).is_false()
+	assert_int(g.overfire_warnings).is_equal(0)
 
 
-func test_base_fire_rate_never_overfires_but_warns() -> void:
-	# 6/s puts at most 8 hits inside 1.2 s, so calm fire can never reach 9 (see report).
+func test_held_fire_at_base_rate_warns_then_detonates_on_the_seventh_hit() -> void:
+	# 6/s puts up to 8 hits inside 1.2 s, so held fire reaches the threshold of 7 (PM 2026-11-18).
 	var g := _geode(2)
-	for k in 14:
-		_calm_hit(g)
-		assert_int(g.recent_hits()).is_less_equal(8)
-	assert_bool(g.detonated).is_false()
-	assert_int(g.overfire_warnings).is_greater_equal(1)
+	var outcomes := []
+	for k in 7:
+		outcomes.append(_calm_hit(g))
+	for k in 6:
+		assert_int(outcomes[k]).is_not_equal(SectorGeode.Outcome.DETONATED)
+	assert_int(outcomes[6]).is_equal(SectorGeode.Outcome.DETONATED)
+	assert_int(g.overfire_warnings).is_equal(1)
 
 
-func test_nine_hits_inside_the_window_detonates() -> void:
+func test_seven_hits_inside_the_window_detonates() -> void:
 	var g := _geode(2)
 	var last := SectorGeode.Outcome.NONE
-	for k in 9:
+	for k in 7:
 		g.advance(1.2 / 10.0)
 		last = g.register_lance_hit()
 	assert_int(last).is_equal(SectorGeode.Outcome.DETONATED)
@@ -115,7 +125,7 @@ func test_nine_hits_inside_the_window_detonates() -> void:
 
 func test_hits_outside_the_window_do_not_count() -> void:
 	var g := _geode(2)
-	for k in 8:
+	for k in 6:
 		g.advance(0.01)
 		g.register_lance_hit()
 	g.advance(1.3)

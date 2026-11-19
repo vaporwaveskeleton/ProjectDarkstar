@@ -20,6 +20,7 @@ var torus: Torus
 var reference: Node2D
 var geodes: Array[SectorGeode] = []
 var loot_rng: RandomNumberGenerator
+var _detonated_freed: int = 0   ## detonated geodes whose nodes have already left the tree
 
 
 ## Spawns the layout. `avoid` is the Vigil spawn (kept clear); `p_reference` is the Vigil.
@@ -30,6 +31,7 @@ func populate(p_torus: Torus, avoid: Vector2, p_reference: Node2D = null) -> voi
 		if is_instance_valid(g):
 			g.queue_free()
 	geodes.clear()
+	_detonated_freed = 0
 	var run_seed := RunSeed.new(stats.run_seed)
 	loot_rng = run_seed.stream(RunSeed.STREAM_LOOT)
 	var vfx_rng := run_seed.stream(RunSeed.STREAM_VFX)
@@ -37,6 +39,7 @@ func populate(p_torus: Torus, avoid: Vector2, p_reference: Node2D = null) -> voi
 		var g := GEODE_SCENE.instantiate() as SectorGeode
 		g.configure(geode_stats, int(entry.size_class), entry.pos as Vector2, torus, shard_field, loot_rng, vfx_rng)
 		add_child(g)
+		g.tree_exiting.connect(_on_geode_exiting.bind(g))
 		LedgerCompass.register(g, COMPASS_KIND)
 		geodes.append(g)
 	place_images()
@@ -64,6 +67,20 @@ func alive_count() -> int:
 		if is_instance_valid(g) and g.alive:
 			n += 1
 	return n
+
+
+## Geodes destroyed by over-fire (not calm mining). Dev/QA read via the `sector/field` probe.
+func detonated_count() -> int:
+	var n := _detonated_freed
+	for g in geodes:
+		if is_instance_valid(g) and g.detonated and g.is_inside_tree():
+			n += 1
+	return n
+
+
+func _on_geode_exiting(g: SectorGeode) -> void:
+	if g.detonated and geodes.has(g):
+		_detonated_freed += 1
 
 
 func _physics_process(_delta: float) -> void:

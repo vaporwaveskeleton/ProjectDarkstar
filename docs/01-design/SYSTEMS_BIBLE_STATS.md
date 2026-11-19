@@ -71,7 +71,7 @@ Conventions used everywhere:
 | Projectile visual length | 14 px | — | |
 | Hits per projectile | 1 | 2 (pierce), 3 (`Shatter Shot` chain) | |
 | Time to shatter a small geode face | 0.9 s 🔒 | 0.55 s | = 5 lance hits at base rate |
-| Over-fire detonation | ≥ **9 hits in 1.2 s** on one geode ✱ | — | Sinistar's rule kept (RES-001): releases 4–6 shards at once, scattered (row "Shards per geode (detonated)"; Q-T29 resolved, PM under owner autonomy grant 2026-11-18) |
+| Over-fire detonation | ≥ **7 hits in 1.2 s** on one geode ✱ (warn at 5) | — | Sinistar's rule kept (RES-001): releases 4–6 shards at once, scattered (row "Shards per geode (detonated)"; Q-T29 resolved, PM under owner autonomy grant 2026-11-18) |
 | Shards per geode (calm kill) | 3 🔒 range 3–5 | — | `+1` if the face was mined, not detonated |
 | Shards per geode (detonated) | 4–6 ✱ | — | scatter radius 140 px — Grubs win that race. PM-approved 2026-11-18 (Q-T29) |
 | Geode size classes | 3 ✱ | — | faces per class = class + 1 → **1 / 2 / 3** faces; the Cabinet values, so M1 matches Act 0. PM-approved 2026-11-18 |

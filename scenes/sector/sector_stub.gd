@@ -48,6 +48,8 @@ var camera_gap: float:
 ## Read-only scalars for the automation id `sector/field` (glass economy). Dev/QA reads.
 var geodes_alive: int:
 	get: return _geodes.alive_count() if _geodes else 0
+var geodes_detonated: int:
+	get: return _geodes.detonated_count() if _geodes else 0
 var shards_free: int:
 	get: return _shards.free_count() if _shards else 0
 var charges: int:
