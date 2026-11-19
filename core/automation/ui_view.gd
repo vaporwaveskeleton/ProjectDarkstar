@@ -15,6 +15,7 @@ const STATE_IDS := {
 	"sector/field": {"route": "sector", "member": "", "props": ["geodes_alive", "geodes_detonated", "shards_free", "shards_live", "charges", "score", "charges_in_flight", "charges_lost", "charges_hit", "charges_guttered", "dry_fires"]},
 	"sector/run": {"route": "sector", "member": "", "props": ["seam_index", "run_session", "far_look"]},
 	"sector/choir": {"route": "sector", "member": "", "props": ["grubs_alive", "grubs_carrying", "segments", "deposited_shards", "sepulchre_complete"]},
+	"ruins/onboarding": {"route": "ruins", "member": "", "props": ["beat", "focus_id", "lamp_x", "gate_open", "tickets_landed", "codex_open", "codex_read", "chalk_lines", "first_visit", "clock_held", "paid_ember", "dark_revealed", "launched"]},
 	# Route-independent: read from the RunSession autoload (TECH-001 §4.2a), on any route.
 	"run/session": {"route": "*", "autoload": "RunSession", "props": ["ember", "act0_banked", "hourglass_left", "skies_dark", "seam_index", "clock_paused"]},
 }
