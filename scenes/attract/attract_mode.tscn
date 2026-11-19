@@ -1,17 +1,23 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=20 format=3]
 
 [ext_resource type="Script" path="res://scenes/attract/attract_mode.gd" id="1"]
 [ext_resource type="Script" path="res://core/ui/screen_stack.gd" id="2"]
 [ext_resource type="Script" path="res://core/ui/input_mode_tracker.gd" id="3"]
 [ext_resource type="Script" path="res://scenes/attract/attract_backdrop.gd" id="4"]
 [ext_resource type="Script" path="res://scenes/attract/attract_logo.gd" id="5"]
-[ext_resource type="Shader" path="res://shaders/crt.gdshader" id="6"]
+[ext_resource type="Shader" path="res://shaders/crt_attract.gdshader" id="6"]
 [ext_resource type="Script" path="res://scenes/attract/attract_frame.gd" id="7"]
 [ext_resource type="Script" path="res://features/cabinet/coin_slot.gd" id="8"]
 [ext_resource type="Script" path="res://scenes/attract/attract_pages.gd" id="9"]
 [ext_resource type="Script" path="res://scenes/attract/power_on_test.gd" id="10"]
 [ext_resource type="Resource" path="res://data/cabinet/cabinet_boot_tuning.tres" id="11"]
 [ext_resource type="Resource" path="res://data/cabinet/cabinet_tuning.tres" id="12"]
+[ext_resource type="Script" path="res://features/cabinet/screen_rig.gd" id="13"]
+[ext_resource type="Resource" path="res://data/cabinet/cabinet_screen.tres" id="14"]
+[ext_resource type="Script" path="res://features/cabinet/hole_fit.gd" id="15"]
+[ext_resource type="Script" path="res://scenes/attract/attract_crt.gd" id="16"]
+[ext_resource type="Script" path="res://features/cabinet/cabinet_screen_hud.gd" id="17"]
+[ext_resource type="Script" path="res://features/cabinet/bezel_field.gd" id="18"]
 
 [sub_resource type="ShaderMaterial" id="crt_mat"]
 shader = ExtResource("6")
@@ -22,6 +28,7 @@ shader_parameter/vignette = 0.35
 shader_parameter/desaturate = 0.0
 shader_parameter/tear = 0.0
 shader_parameter/time_s = 0.0
+shader_parameter/rows = 304.0
 
 [node name="AttractMode" type="Control" node_paths=PackedStringArray("default_focus")]
 layout_mode = 3
@@ -31,10 +38,28 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1")
-default_focus = NodePath("CoinSlot")
+default_focus = NodePath("Rig/CoinSlot")
 cancel_closes = false
 
-[node name="Backdrop" type="Control" parent="."]
+[node name="Rig" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 0
+offset_right = 640.0
+offset_bottom = 360.0
+mouse_filter = 2
+script = ExtResource("13")
+spec = ExtResource("14")
+
+[node name="Hole" type="Control" parent="Rig"]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 0
+mouse_filter = 2
+script = ExtResource("15")
+spec = ExtResource("14")
+
+[node name="Backdrop" type="Control" parent="Rig/Hole"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -44,7 +69,28 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("4")
 
-[node name="Center" type="CenterContainer" parent="."]
+[node name="StripHud" type="Control" parent="Rig/Hole"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("17")
+attract = true
+
+[node name="Play" type="Control" parent="Rig/Hole"]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 0
+mouse_filter = 2
+script = ExtResource("15")
+spec = ExtResource("14")
+play_view = true
+
+[node name="Center" type="CenterContainer" parent="Rig/Hole/Play"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -53,18 +99,20 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="Menu" type="VBoxContainer" parent="Center"]
+[node name="Menu" type="VBoxContainer" parent="Rig/Hole/Play/Center"]
 layout_mode = 2
+theme_override_constants/separation = 1
 custom_minimum_size = Vector2(160, 0)
 mouse_filter = 2
 
-[node name="Logo" type="Control" parent="Center/Menu"]
+[node name="Logo" type="Control" parent="Rig/Hole/Play/Center/Menu"]
 unique_name_in_owner = true
 layout_mode = 2
 mouse_filter = 2
 script = ExtResource("5")
+spec = ExtResource("14")
 
-[node name="Pages" type="Control" parent="Center/Menu"]
+[node name="Pages" type="Control" parent="Rig/Hole/Play/Center/Menu"]
 unique_name_in_owner = true
 layout_mode = 2
 mouse_filter = 2
@@ -72,7 +120,7 @@ script = ExtResource("9")
 tuning = ExtResource("11")
 scores = ExtResource("12")
 
-[node name="Omen" type="Label" parent="Center/Menu"]
+[node name="Omen" type="Label" parent="Rig/Hole/Play/Center/Menu"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
@@ -80,50 +128,33 @@ theme_type_variation = &"HintLabel"
 text = "ATTRACT_FIRST_SKY_DARK"
 horizontal_alignment = 1
 
-[node name="NewVigil" type="Button" parent="Center/Menu"]
+[node name="NewVigil" type="Button" parent="Rig/Hole/Play/Center/Menu"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 4
 custom_minimum_size = Vector2(160, 0)
 text = "MENU_NEW_VIGIL"
 
-[node name="Settings" type="Button" parent="Center/Menu"]
+[node name="Gap" type="Control" parent="Rig/Hole/Play/Center/Menu"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 8)
+mouse_filter = 2
+
+[node name="Settings" type="Button" parent="Rig/Hole/Play/Center/Menu"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 4
-custom_minimum_size = Vector2(160, 0)
+custom_minimum_size = Vector2(128, 0)
 text = "MENU_SETTINGS"
 
-[node name="Quit" type="Button" parent="Center/Menu"]
+[node name="Quit" type="Button" parent="Rig/Hole/Play/Center/Menu"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 4
-custom_minimum_size = Vector2(160, 0)
+custom_minimum_size = Vector2(128, 0)
 text = "MENU_QUIT"
 
-[node name="Frame" type="Control" parent="."]
-unique_name_in_owner = true
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-script = ExtResource("7")
-
-[node name="CoinSlot" type="Control" parent="."]
-unique_name_in_owner = true
-layout_mode = 0
-offset_left = 572.0
-offset_top = 252.0
-offset_right = 628.0
-offset_bottom = 332.0
-focus_mode = 2
-script = ExtResource("8")
-tuning = ExtResource("11")
-
-[node name="PowerOn" type="Control" parent="."]
+[node name="PowerOn" type="Control" parent="Rig/Hole"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 1
@@ -136,7 +167,7 @@ mouse_filter = 2
 script = ExtResource("10")
 tuning = ExtResource("11")
 
-[node name="Crt" type="ColorRect" parent="."]
+[node name="Crt" type="ColorRect" parent="Rig/Hole"]
 material = SubResource("crt_mat")
 layout_mode = 1
 anchors_preset = 15
@@ -145,6 +176,33 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+script = ExtResource("16")
+spec = ExtResource("14")
+
+[node name="Frame" type="Control" parent="Rig"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("7")
+
+[node name="Field" type="Control" parent="Rig/Frame" node_paths=PackedStringArray("rig")]
+layout_mode = 3
+anchors_preset = 0
+mouse_filter = 2
+script = ExtResource("18")
+rig = NodePath("../..")
+
+[node name="CoinSlot" type="Control" parent="Rig"]
+unique_name_in_owner = true
+layout_mode = 0
+focus_mode = 2
+script = ExtResource("8")
+tuning = ExtResource("11")
 
 [node name="Overlays" type="CanvasLayer" parent="." node_paths=PackedStringArray("base_screen")]
 unique_name_in_owner = true

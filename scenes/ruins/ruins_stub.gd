@@ -50,16 +50,17 @@ func _draw() -> void:
 	var k := clampf(_t / 4.0, 0.0, 1.0)
 	# the Lantern Tree as a sapling: one brass stem, one lamp, in the only light there is
 	var base := Vector2(320, 250)
-	var top := base + Vector2(0, -60.0 * k)
+	var top := base + Vector2(0, -60.0)   # stem and lamp stand from frame 0: the first focal subject
+	draw_circle(top.round(), 18.0, Color(Pal.GAS_1, 0.25))   # banded gas-lamp halo (stepped, no gradient)
+	draw_circle(top.round(), 12.0, Color(Pal.GAS_1, 0.4))
 	draw_line(base, top.round(), Pal.GAS_2, 2.0)
 	for i in 3:
 		var y := lerpf(base.y, top.y, 0.35 + i * 0.2)
 		var dir := -1.0 if i % 2 == 0 else 1.0
 		draw_line(Vector2(320, y).round(), (Vector2(320 + dir * 14.0 * k, y - 10.0 * k)).round(), Pal.GAS_1, 1.0)
-	if k >= 1.0:
-		var flicker := 1.0 if int(_t * 7.0) % 9 != 0 else 0.0
-		draw_circle(top.round(), 4.0, Pal.GAS_3)
-		draw_circle(top.round(), 2.0 if flicker > 0.0 else 1.0, Pal.GAS_5)
+	var flicker := 1.0 if int(_t * 7.0) % 9 != 0 else 0.0
+	draw_circle(top.round(), 4.0, Pal.GAS_3)
+	draw_circle(top.round(), 2.0 if flicker > 0.0 else 1.0, Pal.GAS_5)
 	if _t > 1.0:
 		_centered(90, tr("RUINS_TITLE"), 14, Pal.BONE_4)
 	if _t > 2.5:

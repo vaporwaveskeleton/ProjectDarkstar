@@ -81,10 +81,12 @@ func tick(delta: float) -> void:
 			a.aim_history.remove_at(0)
 		a.turret = a.aim_history[0]
 		if engaged:
-			a.cycle -= delta
-			if a.cycle <= 0.0:
-				a.cycle = t.acolyte_cycle
-				world.shots.fire_censer(a.pos + Vector2.from_angle(a.turret) * 8.0, Vector2.from_angle(a.turret))
+			# owner ruling (Q5, 2026-11-18): an Acolyte never fires from off-screen; its cycle waits until it is in the play view
+			if world.on_screen(a.pos, 0.0):
+				a.cycle -= delta
+				if a.cycle <= 0.0:
+					a.cycle = t.acolyte_cycle
+					world.shots.fire_censer(a.pos + Vector2.from_angle(a.turret) * 8.0, Vector2.from_angle(a.turret))
 		else:
 			_mine(a, delta)
 	items.assign(items.filter(func(a: Acolyte) -> bool: return a.alive))

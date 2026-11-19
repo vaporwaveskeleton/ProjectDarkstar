@@ -16,7 +16,7 @@ const DEMO_IDLE := 30.0          ## s — WARP-001 W0-03 "30 s idle on the title
 @onready var _omen: Label = %Omen
 @onready var _logo: AttractLogo = %Logo
 @onready var _pages: AttractPages = %Pages
-@onready var _frame: AttractFrame = %Frame
+@onready var _strip: CabinetScreenHud = %StripHud
 @onready var _coin: CoinSlot = %CoinSlot
 @onready var _power: PowerOnTest = %PowerOn
 @onready var _tracker: InputModeTracker = %InputModeTracker
@@ -35,7 +35,7 @@ func _ready() -> void:
 	var profile := SaveService.load_slot(&"profile")
 	_profile = profile.payload if profile.ok else {}
 	_omen.visible = bool(_profile.get("act0_complete", false))
-	_logo.hi_score = int(_profile.get("cabinet_hi_score", 0))
+	_strip.hi_score = int(_profile.get("cabinet_hi_score", 0))
 	if bool(_profile.get("cabinet_tape_peeled", false)):
 		_coin.set_peeled()
 	_coin.tape_peeled.connect(_on_tape_peeled)
@@ -45,8 +45,18 @@ func _ready() -> void:
 	_set_new_vigil_ready(false)
 	default_focus = _coin
 	_wire_focus()
+	_apply_text_scale_layout()
+	SettingsService.setting_changed.connect(func(key: StringName, _v: Variant) -> void:
+		if key == &"text_scale":
+			_apply_text_scale_layout())
 	_coin.hint_armed = true
 	super()
+
+
+## The 240-class screen has no room for the instruction cards beside 200 % buttons (the text is never
+## shrunk): at 200 % the cards give way, the marquee and the menu stay.
+func _apply_text_scale_layout() -> void:
+	_pages.visible = float(SettingsService.get_value(&"text_scale")) < 1.5
 
 
 ## Boot routes the first attract of a launch with {"power_on": true}.
@@ -68,7 +78,8 @@ func _on_power_on_finished() -> void:
 
 
 func _process(delta: float) -> void:
-	_frame.credits = 1 if _coin.has_credit() else 0
+	_strip.credit_line = tr("CAB_CREDIT_COUNT") % (1 if _coin.has_credit() else 0)
+	_strip.credit_color = Look.c(Pal.GAS_4) if _coin.has_credit() else Look.c(Pal.BONE_2)
 	if not demo_enabled or not _overlays.is_empty() or SceneRouter.is_busy or _power.running or _coin.is_busy():
 		idle = 0.0
 		return

@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="CabinetScreenSpec" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://features/cabinet/cabinet_screen_spec.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+ds_namespace = "ds_cabinet.screen"
+source_section = "engineering parameters owned by the cabinet feature (TECH-001 §1.3): portrait 256×304 grid (owner, 2026-11-18); HUD strip 40 px (owner, 2026-11-18, Q-T31)"
+grid = Vector2i(256, 304)
+hud_strip_height = 40

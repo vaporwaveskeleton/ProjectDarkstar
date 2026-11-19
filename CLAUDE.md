@@ -1,6 +1,6 @@
 # DARKSTAR — Claude Code instructions
 
-Godot **4.7.2**, **GDScript only**, 2D, Act 0 screen 640×360 pixel-perfect, native resolution elsewhere (decided 2026-11-18, not yet implemented; TECH-001 §1.1), Windows + Steam, single-player (no networking).
+Godot **4.7.2**, **GDScript only**, 2D. Act 0 arcade screen = pixel-perfect low-res grid in its own SubViewport (256×304 portrait, 4 bpp, PR B; 16 colours from RGB332 = Williams video limits, layer one only, not yet built; TECH-001 §1.1), integer-scaled by `ScreenFit`; root and bezel render at native resolution (`canvas_items`, 640×360 logical space; TECH-001 §1.1). Windows + Steam, single-player (no networking).
 This file is loaded every turn: keep it short. Detail lives in `docs/`; cite it, do not copy it.
 
 ## 1. Sources of truth (read the owner, never guess)

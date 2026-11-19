@@ -73,10 +73,21 @@ func test_all_buttons_inside_safe_area_at_200_percent_text() -> void:
 	SettingsService.set_value(&"text_scale", 2.0)
 	var runner := scene_runner(SCENE)
 	await runner.simulate_frames(3)
-	var view: Rect2 = runner.scene().get_viewport_rect()
-	for name in ["Logo", "Pages", "NewVigil", "Settings", "Quit", "CoinSlot"]:
+	var view := Rect2(Vector2.ZERO, Vector2(ScreenFit.REF))   # the bezel is laid out in reference units
+	var rig := runner.find_child("Rig") as Control
+	var play := runner.find_child("Play") as Control
+	var to_play: Transform2D = play.get_global_transform().affine_inverse()
+	var play_bounds := Rect2(Vector2.ZERO, play.size)
+	# the menu lives on the screen (the play view of the hole); the coin door is on the bezel, in the window
+	for name in ["Logo", "Pages", "NewVigil", "Settings", "Quit"]:
 		var c: Control = runner.find_child(name)
-		assert_bool(view.encloses(c.get_global_rect())).override_failure_message("%s outside %s: %s" % [name, view, c.get_global_rect()]).is_true()
+		if not c.is_visible_in_tree():
+			continue   # at 200 % the instruction cards give way (the text is never shrunk)
+		var r: Rect2 = to_play * c.get_global_rect()
+		assert_bool(play_bounds.encloses(r)).override_failure_message("%s outside the play view %s: %s" % [name, play_bounds, r]).is_true()
+	var coin: Control = runner.find_child("CoinSlot")
+	var coin_rect: Rect2 = rig.get_global_transform().affine_inverse() * coin.get_global_rect()
+	assert_bool(view.encloses(coin_rect)).override_failure_message("coin door outside %s: %s" % [view, coin_rect]).is_true()
 	SettingsService.set_value(&"text_scale", 1.0)
 
 
@@ -101,3 +112,13 @@ func test_visible_text_is_never_a_raw_key() -> void:
 		var c: Control = runner.find_child(name)
 		var shown: String = c.atr(c.text)
 		assert_bool(RegEx.create_from_string("^[A-Z][A-Z0-9_]+_[A-Z0-9_]+$").search(shown) == null).override_failure_message("%s shows raw key %s" % [name, shown]).is_true()
+
+
+func test_instruction_cards_give_way_to_the_200_percent_menu() -> void:
+	SettingsService.set_value(&"text_scale", 2.0)
+	var runner := scene_runner(SCENE)
+	await runner.simulate_frames(2)
+	assert_bool((runner.find_child("Pages") as Control).visible).is_false()
+	SettingsService.set_value(&"text_scale", 1.0)
+	await runner.simulate_frames(2)
+	assert_bool((runner.find_child("Pages") as Control).visible).is_true()

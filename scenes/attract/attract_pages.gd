@@ -8,8 +8,8 @@ extends Control
 enum Page { PITCH, CONTROLS, MISSION, SCORES }
 
 const PITCH_KEYS := ["NARR_CAB_ATTRACT_1", "NARR_CAB_ATTRACT_2", "NARR_CAB_ATTRACT_3"]
-const ROW := 11.0
-const BOX := Vector2(472, 108)
+const ROW := 10.0
+const BOX := Vector2(232, 96)     # fits the 256 px screen with 12 px clear each side
 
 @export var tuning: CabinetBootTuning
 @export var scores: CabinetTuning
@@ -77,8 +77,12 @@ func _header(key: String) -> void:
 
 func _draw_pitch() -> void:
 	var cols := [Look.c(Pal.GAS_4), Look.c(Pal.BONE_4), Look.c(Pal.PHOS_4)]
+	var y := 16.0
 	for i in PITCH_KEYS.size():
-		PixelText.draw_centered(self, size.x * 0.5, 30.0 + i * 20.0, tr(PITCH_KEYS[i]), cols[i] as Color)
+		for line in PixelText.wrap(tr(PITCH_KEYS[i]), 1, size.x - 24.0):
+			PixelText.draw_centered(self, size.x * 0.5, y, line, cols[i] as Color)
+			y += 12.0
+		y += 8.0
 
 
 func _draw_controls() -> void:
@@ -95,13 +99,15 @@ func _draw_controls() -> void:
 	for i in rows.size():
 		var row: Array = rows[i]
 		var y := 22.0 + i * ROW
-		PixelText.draw(self, Vector2(150, y), tr(row[0] as String), Look.c(Pal.BONE_3))
-		var dots_from := 150.0 + PixelText.width(tr(row[0] as String)) + 4.0
-		for dx in range(int(dots_from), 266, 4):
+		var value := row[1] as String
+		var value_x := size.x - 12.0 - PixelText.width(value)
+		PixelText.draw(self, Vector2(12, y), tr(row[0] as String), Look.c(Pal.BONE_3))
+		var dots_from := 12.0 + PixelText.width(tr(row[0] as String)) + 4.0
+		for dx in range(int(dots_from), int(value_x) - 4, 4):
 			draw_rect(Rect2(dx, y + 6, 1, 1), Look.c(Pal.BONE_1))
-		PixelText.draw(self, Vector2(272, y), row[1] as String, Look.c(Pal.GAS_4))
+		PixelText.draw(self, Vector2(value_x, y), value, Look.c(Pal.GAS_4))
 	# the Vigil itself, turning slowly, lamp lit, thrusting
-	_vigil(Vector2(76, 60), _t * 0.8)
+	_vigil(Vector2(24, 12), _t * 0.8)
 
 
 func _draw_mission() -> void:
@@ -110,8 +116,8 @@ func _draw_mission() -> void:
 	var icons := ["geode", "lamp", "grub", "sepulchre"]
 	for i in keys.size():
 		var y := 26.0 + i * 19.0
-		_icon(icons[i] as String, Vector2(120, y + 3))
-		PixelText.draw(self, Vector2(146, y), tr(keys[i] as String), Look.c(Pal.BONE_4))
+		_icon(icons[i] as String, Vector2(16, y + 3))
+		PixelText.draw(self, Vector2(30, y), tr(keys[i] as String), Look.c(Pal.BONE_4))
 
 
 func _draw_scores() -> void:
@@ -125,13 +131,13 @@ func _draw_scores() -> void:
 	]
 	for i in rows.size():
 		var row: Array = rows[i]
-		var y := 22.0 + i * 14.0
-		_icon(row[0] as String, Vector2(140, y + 3))
-		PixelText.draw(self, Vector2(160, y), tr(row[1] as String), Look.c(Pal.BONE_3))
+		var y := 22.0 + i * 11.0
+		_icon(row[0] as String, Vector2(16, y + 3))
+		PixelText.draw(self, Vector2(30, y), tr(row[1] as String), Look.c(Pal.BONE_3))
 		var pts := LocFormat.format_int(int(row[2]))
-		PixelText.draw(self, Vector2(330 - PixelText.width(pts), y), pts, Look.c(Pal.GAS_4))
+		PixelText.draw(self, Vector2(size.x - 14.0 - PixelText.width(pts), y), pts, Look.c(Pal.GAS_4))
 	var extra := tr("CAB_SCORE_EXTRA") % LocFormat.format_int(scores.extra_life_first)
-	PixelText.draw_centered(self, size.x * 0.5, 22.0 + rows.size() * 14.0 + 2.0, extra, Look.c(Pal.PHOS_4))
+	PixelText.draw_centered(self, size.x * 0.5, 22.0 + rows.size() * 11.0 + 2.0, extra, Look.c(Pal.PHOS_4))
 
 
 func _vigil(c: Vector2, angle: float) -> void:

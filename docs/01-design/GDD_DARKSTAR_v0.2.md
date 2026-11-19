@@ -62,7 +62,7 @@ DARKSTAR **opens as a 1983-style arcade shooter**: black space, one ship, astero
 | Monetization | Premium, single purchase, no F2P, no monetized progression. Target $19.99 USD (see `STEAM_MARKET_PLAN.md`) |
 | Rating target | ESRB T / PEGI 12 (cosmic horror, no gore, mild occult themes) |
 | Engine / language | Godot 4.7.2 stable, GDScript, 2D renderer, custom canvas-item shaders for warp effects |
-| Resolution model | **640×360** pixel-perfect integer scale, nearest filtering, optional CRT shader for the **Act 0 arcade screen only**; the bezel and everything after Act 0 render at the display's native resolution (owner, 2026-11-18; decided, not yet implemented; 512×288 fallback struck 2026-11-17; TECH-001 §1.1) |
+| Resolution model | **640×360** logical space; pixel-perfect integer scale, nearest filtering and the CRT shader apply to the **Act 0 arcade screen only**, which is a **256×304 portrait** grid (4 bpp, the Williams video circuit rotated 90°; owner 2026-11-18, replacing the 240×320 approval; colour limits TECH-001 §1.1) inside a native-resolution cabinet with no black bars at any aspect; the bezel and everything after Act 0 render at the display's native resolution (owner, 2026-11-18; 512×288 fallback struck 2026-11-17; TECH-001 §1.1) |
 | Steam features (launch) | Steamworks: achievements (30), cloud saves, statistics, full glyph/rebind support, remote play, Deck-verified target, local co-op *not* at launch |
 | Language | **English only** (owner decision 2026-11-17). Other languages are deferred, not scheduled (L10N-001 §1) |
 
