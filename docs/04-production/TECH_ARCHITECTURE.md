@@ -258,6 +258,7 @@ Source: `core/physics/physics_layers.gd` (`PhysicsLayers`) and `project.godot [l
 |---|---|---|---|
 | Vigil movement | `CircleShape2D` on `CharacterBody2D`; radius = `ds_vigil.move.hitbox_circle_px` / 2 | collision from data, never from the sprite; `move_and_slide` sweeps, so no tunnelling | built; tested at 6000 px/s |
 | Vigil hurtbox | `CircleShape2D` on `HurtboxComponent` (same radius) | hurtboxes are `monitorable`, never `monitoring` | built |
+| Lance bite filter | `HurtboxComponent.bites: bool = true` (`@export`); `LanceProjectile.can_bite(target)` (static) | the lance does no damage to a hurtbox with `bites = false`, but the shot is still used up; other hitters (e.g. a Charge's `receive_hit`) ignore the flag (PM ruling A2) | built (M1 slice 3 PR 2) |
 | Enemy hitbox | sprite alpha ∩ 1 px inset (SYS-001 §9) → baked primitive/convex per module at import | convex only where a primitive cannot fit; no triangle mesh on anything that moves | planned |
 | Walls, geodes, segments | `StaticBody2D`, rectangle/circle/convex | concave/segment shapes only for static kit geometry | built (walls) |
 | Fast shots, the lance | `ShapeCast2D` / `RayCast2D` swept each physics tick from previous to current position | anything moving more than its own size per tick must sweep | planned |
@@ -300,7 +301,7 @@ Refused as autoloads: a UI manager (menus use a per-scene `ScreenStack`), a game
 |---|---|---|
 | characters | `features/vigil`, `features/choir`, `features/sepulchre` | vigil built (move + aim + hull) |
 | Act 0 arcade (the Cabinet) | `features/cabinet` | **built** — §2.10 |
-| combat | `features/arc_lance`, `features/charges` | arc_lance built (M1 slice 1: `ArcLanceStats`, `LanceProjectile`, `ArcLanceEmitter`; hits by `Area2D` overlap, not ShapeCast); charges empty |
+| combat | `features/arc_lance`, `features/charges` | arc_lance built (M1 slice 1: `ArcLanceStats`, `LanceProjectile`, `ArcLanceEmitter`; hits by `Area2D` overlap, not ShapeCast; M1 slice 3 PR 2: `ArcLanceFxStats`, `ArcLanceFx` (top_level world-space node `%ArcLanceFx` on the Vigil: muzzle star on `lance_fired`, flecks or chalk tick + `lance_dull` on that shot's `lance_hit`; no RNG), `LanceRecoil` (`%LanceRecoil`, visual-only nudge of the new `Facing/Visual` node; Placeholder and Core moved under `%Visual`; never moves body, velocity or Facing; off under reduced_motion); `ArcLanceEmitter.last_shot` is set before `lance_fired`); charges empty |
 | inventory | `features/run` (Run Sigils, Relics, Pacts) — no classic inventory/equipment | empty |
 | dialogue | `features/entity_voice` (big-type lines; no branching dialogue) | empty |
 | quests | **N/A**; nearest: `features/lantern_tree`, `features/codex` | empty |
@@ -418,6 +419,7 @@ Create a **Resource** when data is shared, tuned, or authored (stats, items, abi
 | `ds_arc_lance.{fire_rate_per_s, projectile_speed, visual_length_px, hits_per_projectile}` (`ArcLanceStats`, `data/arc_lance/arc_lance.tres`) | SYS-001 §1.3 | 🔒 fire rate base; others ⚙ |
 | `ds_arc_lance.damage`, `.lifetime_s` | SYS-001 §1.3 (derived rows, approved by owner 2026-11-18) | ✱ |
 | `ds_arc_lance.muzzle_offset_px` (10) | engineering-only, no SYS-001 row | ✱ |
+| `ds_arc_lance.fx.*` (`ArcLanceFxStats`, `data/arc_lance/arc_lance_fx.tres`): the nine Lance-bite fields, same names and values as the Cabinet's `ds_cabinet.fx` "lance bite" group | SYS-001 §9 Lance-bite rows (owner-approved 2026-11-18, Q-T50) | ⚙ |
 
 **D-08 runtime API (M1 slice 1).** `Vigil.set_hull_max_hp(int)` / `get_hull_max_hp()` switch the hull at runtime; they call `HealthComponent.set_max_hp`, which duplicates the stats resource (the shared `.tres` is never mutated). Post-hit grace (R-11) applies only when `max_hp >= 2`.
 
@@ -688,6 +690,7 @@ The smoke run prints `BOOT_SMOKE: reached route 'cabinet'` and exits 0. GdUnit w
 | `core/ui/tests/test_theme_palette.gd` | theme and scene colours ⊆ palette, text-scale application |
 | `features/vigil/tests/test_vigil_motor.gd` | speed cap, drag, brake, 30/60/144 Hz independence, full reversal 0.28 s, turn rate, ±π wrap |
 | `features/arc_lance/tests/test_arc_lance.gd` | Arc-Lance stats, projectile, emitter (M1 slice 1) |
+| `features/arc_lance/tests/test_lance_bite.gd` (not the Cabinet suite of the same file name) | 12 cases (M1 slice 3 PR 2): muzzle star + muzzle_flash/photosensitivity gate, visual-only recoil (off under reduced_motion), flecks on bite incl. walls, tick + `lance_dull` on `bites = false` with no damage, `bites` default true and only the lance honours it, determinism. Whole suite 380 cases, 0 failures; smoke clean |
 | `features/vigil/tests/test_vigil_hull.gd` | D-08 runtime hull switch (`set_hull_max_hp`), grace only at max_hp >= 2 |
 | `features/vigil/tests/test_hull_mode.gd` | `HullMode` `--hull=1\|2` parsing, invalid/absent falls back to data value, `apply_hull_override` on Vigil (M1 slice 2A; passes (139 cases, 0 failures, 2026-11-18)) |
 | `features/vigil/tests/test_vigil_collision.gd` | data-driven radius, wall stop, no tunnelling at 6000 px/s, overlap recovery, live hitbox one hit per window → breach → HUD |
@@ -892,3 +895,4 @@ Rows R-01…R-19 are the owner-delegated rulings of 2026-11-17; later rows carry
 | 2026-11-18 | **Cabinet realism direction (PR C):** the diegetic bezel parts (coin door and slot, buttons, control panel, T-molding, glass) move from cartoon to tactile, worn realism, still generated in code; coin-door prototype goes to the PM for yes/adjust first. Detail in ART-001 §12.7a | owner, relayed by PM |
 | 2026-11-18 | **Aether T4 and T5 beds built (Q-T52 follow-up), UNAUDITIONED.** `aether_bed_t4` (Inverted: life backwards, register swap, detune 19) and `aether_bed_t5` (Unmaking: subtraction, near-silence, detune 22) join `audio/src/aether_beds.cx.js` as 16 s stereo WAV loops (AUDIO-001 §12.12); cue ids AMB-06 and AMB-07; still WAV because Ogg is blocked on ffmpeg (Q-T51) | owner approved via PM; audio session built |
 | 2026-11-18 | **M1 slice 3 cues added (AUDIO-001 §12.13), UNAUDITIONED.** Seven mono chirp renders in `audio/src/cabinet.cx.js` (`overfire_warn`, `overfire_burst`, `magnet_latch`, `charge_armed`, `magazine_full`, `charge_gutter`, `grub_steal`); §6.2 gains A13, A14, B10–B12, F11, F12; cue ids 38 to 45 and policy entries to 34 (verified); M1 wires the calls (PR 3: A07, A08, A13, B10, B11; PR 4: F11, B12). `act0_only` is a doc label only | PM-directed, requested by the M1 chat |
+| 2026-11-18 | **M1 slice 3 PR 2 built: M1 Lance bite** (`ArcLanceFxStats` `ds_arc_lance.fx`, `ArcLanceFx`, `LanceRecoil`, `HurtboxComponent.bites`, `ArcLanceEmitter.last_shot`; §2.6, §2.9, §3.4, §9). Same values as the Cabinet's S4 rows (SYS-001 §9); colours GAS_5 / BONE_4→BONE_1 / BONE_2 from `Pal`, no `Look.c()` (not Act 0); deterministic; no damage, sparks, shake or score; no new signals. `data/audio/cue_ids.tres` unchanged: the audio chat flips `lance_dull` (A14, PR #24) | PM under owner autonomy grant 2026-11-18; built by Claude |
