@@ -354,13 +354,50 @@ func test_policy_table_matches_the_cue_table_and_the_bus_layout() -> void:
 	assert_float(d.pitch_jitter_cents).is_equal(0.0)
 
 
+func test_m1_slice3_cues_are_listed_rendered_mono_and_have_policy() -> void:
+	var ids: CueIds = load(AudioServiceScript.CUE_IDS_PATH)
+	var pol: CuePolicy = load(AudioServiceScript.CUE_POLICY_PATH)
+	# id: [doc_id, bus, priority, max_concurrent, min_retrigger_ms, jitter_cents]
+	var want := {
+		&"overfire_warn": ["A07", "BUS-FLY", 3, 1, 300, 0.0],
+		&"overfire_burst": ["A08", "BUS-FLY", 2, 2, 0, 0.0],
+		&"magnet_latch": ["A13", "BUS-FLY", 5, 3, 30, 30.0],
+		&"charge_armed": ["B10", "BUS-FLY", 3, 2, 40, 0.0],
+		&"magazine_full": ["B11", "BUS-FLY", 4, 1, 150, 0.0],
+		&"charge_gutter": ["B12", "BUS-FLY", 2, 2, 0, 0.0],
+		&"grub_steal": ["F11", "BUS-CHO", 3, 2, 80, 25.0],
+	}
+	for id: StringName in want:
+		var w: Array = want[id]
+		var row := ids.entry(id)
+		assert_object(row).is_not_null()
+		assert_str(row.doc_id).is_equal(w[0])
+		assert_bool(row.act0_only).is_false()
+		assert_bool(row.has_synth_fallback).is_false()
+		assert_bool(row.is_loop).is_false()
+		var stream := AudioServiceScript.chirp_stream(id)
+		assert_object(stream).is_not_null()
+		var wav := stream as AudioStreamWAV
+		assert_bool(wav != null and not wav.stereo).override_failure_message("%s is not a mono WAV" % id).is_true()
+		var rule := pol.entry_for(id)
+		assert_str(rule.bus).is_equal(w[1])
+		assert_int(rule.priority).is_equal(w[2])
+		assert_int(rule.max_concurrent).is_equal(w[3])
+		assert_int(rule.min_retrigger_ms).is_equal(w[4])
+		assert_float(rule.pitch_jitter_cents).is_equal(w[5])
+	assert_str(ids.entry(&"lance_dull").doc_id).is_equal("A14")
+	assert_bool(ids.entry(&"lance_dull").act0_only).is_false()
+	assert_str(ids.entry(&"grub_die").doc_id).is_equal("F12")
+	assert_bool(ids.entry(&"grub_die").act0_only).is_false()
+
+
 # --- sizzle cues, bed pitch bend, no hit-stop path (AUDIO-001 §12.11) ---------------------------
 
 func test_sizzle_cues_are_listed_rendered_and_have_policy() -> void:
 	var ids: CueIds = load(AudioServiceScript.CUE_IDS_PATH)
 	var pol: CuePolicy = load(AudioServiceScript.CUE_POLICY_PATH)
-	assert_int(ids.entries.size()).is_equal(38)
-	assert_int(pol.entries.size()).is_equal(27)
+	assert_int(ids.entries.size()).is_equal(45)
+	assert_int(pol.entries.size()).is_equal(34)
 	var want := {&"lance_dull": [2, 3, 40], &"tally_blip": [3, 1, 60]}
 	for id: StringName in want:
 		assert_bool(ids.has_id(id)).is_true()

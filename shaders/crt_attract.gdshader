@@ -11,5 +11,5 @@ void fragment() {
 	vec2 local = (SCREEN_UV - hole_uv.xy) / hole_uv.zw;
 	vec2 uv = crt_sample_uv(local);
 	vec2 src = hole_uv.xy + uv * hole_uv.zw;
-	COLOR = vec4(crt_finish(texture(screen_tex, src).rgb, local, uv), 1.0);
+	COLOR = vec4(crt_finish(crt_quantize(texture(screen_tex, src).rgb), local, uv), 1.0);
 }

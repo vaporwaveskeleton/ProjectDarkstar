@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="ScreenRegisters" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://features/cabinet/screen_registers.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+ds_namespace = "ds_cabinet.registers"
+source_section = "Owner direction 2026-11-18: Williams video limits, layer one only (TECH-001 section 1.1)"
+pal_map = {"VOID-0": 0, "VOID-1": 0, "VOID-2": 1, "VOID-3": 1, "VOID-4": 2, "VOID-5": 3, "BONE-0": 4, "BONE-1": 4, "BONE-2": 5, "BONE-3": 5, "BONE-4": 6, "BONE-5": 6, "CHOIR-0": 0, "CHOIR-1": 7, "CHOIR-2": 7, "CHOIR-3": 8, "CHOIR-4": 8, "CHOIR-5": 9, "PHOS-0": 0, "PHOS-1": 10, "PHOS-2": 10, "PHOS-3": 11, "PHOS-4": 11, "PHOS-5": 12, "GAS-0": 0, "GAS-1": 13, "GAS-2": 13, "GAS-3": 14, "GAS-4": 14, "GAS-5": 14, "NULL": 0, "SIGNAL": 15}
+video_frame_s = 0.01664

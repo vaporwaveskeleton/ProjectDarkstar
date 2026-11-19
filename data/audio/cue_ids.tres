@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="CueIds" load_steps=41 format=3]
+[gd_resource type="Resource" script_class="CueIds" load_steps=48 format=3]
 
 [ext_resource type="Script" path="res://core/audio/cue_ids.gd" id="1"]
 [ext_resource type="Script" path="res://core/audio/cue_id_entry.gd" id="2"]
@@ -105,8 +105,8 @@ note = ""
 [sub_resource type="Resource" id="e11"]
 script = ExtResource("2")
 id = &"grub_die"
-doc_id = ""
-act0_only = true
+doc_id = "F12"
+act0_only = false
 has_synth_fallback = true
 is_loop = false
 note = ""
@@ -267,8 +267,8 @@ note = "render only"
 [sub_resource type="Resource" id="e29"]
 script = ExtResource("2")
 id = &"lance_dull"
-doc_id = ""
-act0_only = true
+doc_id = "A14"
+act0_only = false
 has_synth_fallback = false
 is_loop = false
 note = "render only"
@@ -345,6 +345,69 @@ has_synth_fallback = false
 is_loop = true
 note = "render only, Aether ambience bed (AUDIO-001 12.12)"
 
+[sub_resource type="Resource" id="e38"]
+script = ExtResource("2")
+id = &"overfire_warn"
+doc_id = "A07"
+act0_only = false
+has_synth_fallback = false
+is_loop = false
+note = "render only, M1 slice 3 (AUDIO-001 6.2)"
+
+[sub_resource type="Resource" id="e39"]
+script = ExtResource("2")
+id = &"overfire_burst"
+doc_id = "A08"
+act0_only = false
+has_synth_fallback = false
+is_loop = false
+note = "render only, M1 slice 3 (AUDIO-001 6.2)"
+
+[sub_resource type="Resource" id="e40"]
+script = ExtResource("2")
+id = &"magnet_latch"
+doc_id = "A13"
+act0_only = false
+has_synth_fallback = false
+is_loop = false
+note = "render only, M1 slice 3 (AUDIO-001 6.2)"
+
+[sub_resource type="Resource" id="e41"]
+script = ExtResource("2")
+id = &"charge_armed"
+doc_id = "B10"
+act0_only = false
+has_synth_fallback = false
+is_loop = false
+note = "render only, M1 slice 3 (AUDIO-001 6.2)"
+
+[sub_resource type="Resource" id="e42"]
+script = ExtResource("2")
+id = &"magazine_full"
+doc_id = "B11"
+act0_only = false
+has_synth_fallback = false
+is_loop = false
+note = "render only, M1 slice 3 (AUDIO-001 6.2)"
+
+[sub_resource type="Resource" id="e43"]
+script = ExtResource("2")
+id = &"charge_gutter"
+doc_id = "B12"
+act0_only = false
+has_synth_fallback = false
+is_loop = false
+note = "render only, M1 slice 3 (AUDIO-001 6.2)"
+
+[sub_resource type="Resource" id="e44"]
+script = ExtResource("2")
+id = &"grub_steal"
+doc_id = "F11"
+act0_only = false
+has_synth_fallback = false
+is_loop = false
+note = "render only, M1 slice 3 (AUDIO-001 6.2)"
+
 [resource]
 script = ExtResource("1")
-entries = [SubResource("e0"), SubResource("e1"), SubResource("e2"), SubResource("e3"), SubResource("e4"), SubResource("e5"), SubResource("e6"), SubResource("e7"), SubResource("e8"), SubResource("e9"), SubResource("e10"), SubResource("e11"), SubResource("e12"), SubResource("e13"), SubResource("e14"), SubResource("e15"), SubResource("e16"), SubResource("e17"), SubResource("e18"), SubResource("e19"), SubResource("e20"), SubResource("e21"), SubResource("e22"), SubResource("e23"), SubResource("e24"), SubResource("e25"), SubResource("e26"), SubResource("e27"), SubResource("e28"), SubResource("e29"), SubResource("e30"), SubResource("e31"), SubResource("e32"), SubResource("e33"), SubResource("e34"), SubResource("e35"), SubResource("e36"), SubResource("e37")]
+entries = [SubResource("e0"), SubResource("e1"), SubResource("e2"), SubResource("e3"), SubResource("e4"), SubResource("e5"), SubResource("e6"), SubResource("e7"), SubResource("e8"), SubResource("e9"), SubResource("e10"), SubResource("e11"), SubResource("e12"), SubResource("e13"), SubResource("e14"), SubResource("e15"), SubResource("e16"), SubResource("e17"), SubResource("e18"), SubResource("e19"), SubResource("e20"), SubResource("e21"), SubResource("e22"), SubResource("e23"), SubResource("e24"), SubResource("e25"), SubResource("e26"), SubResource("e27"), SubResource("e28"), SubResource("e29"), SubResource("e30"), SubResource("e31"), SubResource("e32"), SubResource("e33"), SubResource("e34"), SubResource("e35"), SubResource("e36"), SubResource("e37"), SubResource("e38"), SubResource("e39"), SubResource("e40"), SubResource("e41"), SubResource("e42"), SubResource("e43"), SubResource("e44")]

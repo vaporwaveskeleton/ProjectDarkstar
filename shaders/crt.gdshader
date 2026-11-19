@@ -6,5 +6,5 @@ shader_type canvas_item;
 
 void fragment() {
 	vec2 uv = crt_sample_uv(UV);
-	COLOR = vec4(crt_finish(texture(TEXTURE, uv).rgb, UV, uv), 1.0);
+	COLOR = vec4(crt_finish(crt_quantize(texture(TEXTURE, uv).rgb), UV, uv), 1.0);
 }

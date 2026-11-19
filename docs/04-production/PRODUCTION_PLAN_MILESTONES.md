@@ -106,7 +106,7 @@ An imagined 1.0 review scored the game 9/10, with sub-scores for graphics and ar
 - #9: SeedCode checksum CRC-5 (TECH-001 §4.9).
 
 **In flight (2026-11-18).** None of this is built or measured yet unless stated.
-- Visual Design: Act 0 video limits (16 colours from RGB332; approved, not built), then PR C (VectorText and the full bezel art) and PR D (zoom destruction).
+- Visual Design: Act 0 video limits (16 RGB332 colour registers; built 2026-11-18, TECH-001 §2.10), then PR C (VectorText and the full bezel art) and PR D (zoom destruction).
 - Sizzle: in-game polish batch S0 effect tunables, S1 hit-stop, S7 credits service record, S3 last-Charge slow-mo, S4 Lance bite. Approved; values pending owner approval.
 - Game audio: the sizzle sound cues.
 - Workflow tools research.
