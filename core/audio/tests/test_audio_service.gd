@@ -462,14 +462,46 @@ func test_choir_heralds_and_cues_are_listed_rendered_mono_and_have_policy() -> v
 		assert_float(rule.pitch_jitter_cents).is_equal(w[5])
 
 
+# --- Act 0 shift cues (AUDIO-001 §12.16) ---------------------------------------------------------
+
+func test_act0_shift_cues_are_listed_rendered_mono_and_have_policy() -> void:
+	var ids: CueIds = load(AudioServiceScript.CUE_IDS_PATH)
+	var pol: CuePolicy = load(AudioServiceScript.CUE_POLICY_PATH)
+	var want := {
+		&"censer_bell": ["BUS-FLY", 1, 2, 500, 20.0],
+		&"zone_drift": ["BUS-UI", 2, 1, 2000, 0.0],
+		&"zone_censer_watch": ["BUS-UI", 2, 1, 2000, 0.0],
+		&"zone_shoal": ["BUS-UI", 2, 1, 2000, 0.0],
+		&"zone_hollow": ["BUS-UI", 2, 1, 2000, 0.0],
+		&"continue_tick": ["BUS-UI", 2, 1, 200, 0.0],
+		&"continue_taken": ["BUS-UI", 2, 1, 1000, 0.0],
+	}
+	for id: StringName in want:
+		var row := ids.entry(id)
+		assert_object(row).is_not_null()
+		assert_bool(row.act0_only).is_true()
+		assert_bool(row.doc_id.is_empty()).is_true()
+		assert_bool(row.has_synth_fallback).is_false()
+		assert_bool(row.is_loop).is_false()
+		var wav := AudioServiceScript.chirp_stream(id) as AudioStreamWAV
+		assert_bool(wav != null and not wav.stereo).override_failure_message("%s is not a mono WAV" % id).is_true()
+		assert_float(wav.get_length()).override_failure_message("%s is longer than 2.5 s" % id).is_less_equal(2.5)
+		var rule := pol.entry_for(id)
+		var w: Array = want[id]
+		assert_str(rule.bus).is_equal(w[0])
+		assert_int(rule.priority).is_equal(w[1])
+		assert_int(rule.max_concurrent).is_equal(w[2])
+		assert_int(rule.min_retrigger_ms).is_equal(w[3])
+		assert_float(rule.pitch_jitter_cents).is_equal(w[4])
+
 
 # --- sizzle cues, bed pitch bend, no hit-stop path (AUDIO-001 §12.11) ---------------------------
 
 func test_sizzle_cues_are_listed_rendered_and_have_policy() -> void:
 	var ids: CueIds = load(AudioServiceScript.CUE_IDS_PATH)
 	var pol: CuePolicy = load(AudioServiceScript.CUE_POLICY_PATH)
-	assert_int(ids.entries.size()).is_equal(67)
-	assert_int(pol.entries.size()).is_equal(61)
+	assert_int(ids.entries.size()).is_equal(74)
+	assert_int(pol.entries.size()).is_equal(68)
 	var want := {&"lance_dull": [2, 3, 40], &"tally_blip": [3, 1, 60]}
 	for id: StringName in want:
 		assert_bool(ids.has_id(id)).is_true()
