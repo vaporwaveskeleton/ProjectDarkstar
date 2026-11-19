@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="SectorDepthStyle" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://features/sector/sector_depth_style.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+parallax = PackedFloat32Array(1.25, 1.4)
+cell_px = PackedFloat32Array(260.0, 480.0)
+radius_px = PackedFloat32Array(1.8, 120.0)
+alpha = PackedFloat32Array(0.7, 0.07)
+wisp = Array[bool]([false, true])
+colour = PackedColorArray(0.94902, 0.776471, 0.360784, 1, 0.909804, 0.862745, 0.847059, 1)
+drift_px_s = Vector2(-4, 1.5)
+twinkle_s = 3.4
