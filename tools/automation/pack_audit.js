@@ -50,6 +50,8 @@ const RELEASE_BANNED = [
   [/^core\/automation\//, "core/automation/"],
   [/^features\/[^/]+\/automation\//, "features/*/automation/"],
   [/(^|\/)tests\//, "a tests/ folder"],
+  [/^scenes\/dev\//, "scenes/dev/ (dev routes)"],
+  [/^data\/routes\/dev_/, "data/routes/dev_* (dev route tables)"],
   [/^addons\/gdUnit4/, "addons/gdUnit4"],
   [/^addons\/godot_ai/, "addons/godot_ai"],
 ];
