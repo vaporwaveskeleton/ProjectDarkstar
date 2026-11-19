@@ -1,9 +1,10 @@
-[gd_scene load_steps=30 format=3]
+[gd_scene load_steps=31 format=3]
 
 [ext_resource type="Script" path="res://features/cabinet/cabinet_game.gd" id="1"]
 [ext_resource type="Resource" path="res://data/cabinet/stage_first_vigil.tres" id="2"]
 [ext_resource type="Resource" path="res://data/cabinet/stage_last_normal_day.tres" id="3"]
 [ext_resource type="Resource" path="res://data/cabinet/cabinet_tuning.tres" id="4"]
+[ext_resource type="Resource" path="res://data/cabinet/cabinet_fx_tuning.tres" id="fx_tuning"]
 [ext_resource type="Script" path="res://features/cabinet/sim/arcade_world.gd" id="5"]
 [ext_resource type="Resource" path="res://data/vigil/vigil_move.tres" id="6"]
 [ext_resource type="Script" path="res://features/cabinet/sim/starfield.gd" id="7"]
@@ -84,6 +85,7 @@ render_target_update_mode = 4
 unique_name_in_owner = true
 script = ExtResource("5")
 tuning = ExtResource("4")
+fx_tuning = ExtResource("fx_tuning")
 screen_spec = ExtResource("28")
 move_stats = ExtResource("6")
 

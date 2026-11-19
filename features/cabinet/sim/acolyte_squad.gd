@@ -48,7 +48,7 @@ func on_guard_phase() -> void:
 	_guard_spawned = true
 	for i in world.stage.guard_acolytes:
 		var a := spawn(world.torus.wrap(world.ritual.pos + Vector2.from_angle(TAU * i / maxi(1, world.stage.guard_acolytes)) * GUARD_ORBIT))
-		world.fx.ring(a.pos, Look.c(Pal.CHOIR_4), 24.0)
+		world.fx.ring(a.pos, Look.c(Pal.CHOIR_4), world.fx_tuning.acolyte_guard_ring_radius)
 
 
 func tick(delta: float) -> void:
@@ -130,9 +130,9 @@ func kill(a: Acolyte) -> void:
 	a.alive = false
 	world.award(world.tuning.score_acolyte, a.pos)
 	world.sfx(&"acolyte_die", -2.0)
-	world.fx.burst(a.pos, Look.c(Pal.CHOIR_4), 22, 110.0)
-	world.fx.ring(a.pos, Look.c(Pal.CHOIR_3), 30.0)
-	world.shake(2.0, 0.15)
+	world.fx.burst(a.pos, Look.c(Pal.CHOIR_4), world.fx_tuning.acolyte_death_burst_count, world.fx_tuning.acolyte_death_burst_speed)
+	world.fx.ring(a.pos, Look.c(Pal.CHOIR_3), world.fx_tuning.acolyte_death_ring_radius)
+	world.shake(world.fx_tuning.acolyte_death_shake_amp, world.fx_tuning.acolyte_death_shake_dur)
 
 
 func _draw() -> void:

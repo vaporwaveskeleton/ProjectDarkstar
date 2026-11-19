@@ -20,6 +20,7 @@ signal caption(key: String)
 
 @export var screen_spec: CabinetScreenSpec   ## the arcade grid and HUD strip (data/cabinet/cabinet_screen.tres)
 @export var tuning: CabinetTuning
+@export var fx_tuning: CabinetFxTuning     ## presentation numbers (data/cabinet/cabinet_fx_tuning.tres)
 @export var move_stats: VigilMoveStats
 
 var stage: CabinetStage

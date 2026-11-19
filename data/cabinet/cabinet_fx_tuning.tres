@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="CabinetFxTuning" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://features/cabinet/cabinet_fx_tuning.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+ds_namespace = "ds_cabinet.fx"
+source_section = "✱ engineering presentation params (TECH-001); SYS-001 §9 holds only the shake caps (4.0 px / 0.25 s)"

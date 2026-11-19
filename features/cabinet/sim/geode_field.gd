@@ -108,7 +108,7 @@ func detonate(g: Geode) -> void:
 ## The entity eats a geode (SYS-001 §2.1). No shards: it takes the glass for itself.
 func devour(g: Geode) -> void:
 	g.alive = false
-	world.fx.burst(g.pos, Look.c(Pal.BONE_2), 14, 60.0)
+	world.fx.burst(g.pos, Look.c(Pal.BONE_2), world.fx_tuning.geode_devour_burst_count, world.fx_tuning.geode_devour_burst_speed)
 
 
 func _free_shards(g: Geode, n: int, dist: float, speed: float) -> void:
@@ -122,10 +122,11 @@ func _free_shards(g: Geode, n: int, dist: float, speed: float) -> void:
 func _break(g: Geode, violent: bool) -> void:
 	g.alive = false
 	world.sfx(&"geode_break", 0.0 if violent else -4.0)
-	world.fx.burst(g.pos, Look.c(Pal.BONE_3), 26 if violent else 14, 140.0 if violent else 70.0)
-	world.fx.ring(g.pos, Look.c(Pal.PHOS_4) if violent else Look.c(Pal.BONE_2), g.radius * (3.0 if violent else 1.6))
+	world.fx.burst(g.pos, Look.c(Pal.BONE_3), world.fx_tuning.geode_violent_burst_count if violent else world.fx_tuning.geode_break_burst_count,
+			world.fx_tuning.geode_violent_burst_speed if violent else world.fx_tuning.geode_break_burst_speed)
+	world.fx.ring(g.pos, Look.c(Pal.PHOS_4) if violent else Look.c(Pal.BONE_2), g.radius * (world.fx_tuning.geode_violent_ring_scale if violent else world.fx_tuning.geode_break_ring_scale))
 	if violent:
-		world.shake(3.0, 0.2)
+		world.shake(world.fx_tuning.geode_violent_shake_amp, world.fx_tuning.geode_violent_shake_dur)
 
 
 func _draw() -> void:

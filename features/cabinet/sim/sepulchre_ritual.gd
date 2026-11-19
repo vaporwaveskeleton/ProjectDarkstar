@@ -87,7 +87,7 @@ func accepts_deposits() -> bool:
 func deposit() -> void:
 	var t := world.tuning
 	shard_points += 1
-	world.fx.ring(pos, Look.c(Pal.CHOIR_4), 16.0)
+	world.fx.ring(pos, Look.c(Pal.CHOIR_4), world.fx_tuning.ritual_deposit_ring_radius)
 	if shard_points < t.shards_per_segment or segments >= t.segments_total:
 		return
 	shard_points = 0
@@ -130,7 +130,7 @@ func charge_contact(p: Vector2, r: float) -> bool:
 	elif segments > 0:
 		_knock_modules(p)
 	else:
-		world.fx.burst(p, Look.c(Pal.BONE_2), 6, 40.0)
+		world.fx.burst(p, Look.c(Pal.BONE_2), world.fx_tuning.ritual_bare_hit_burst_count, world.fx_tuning.ritual_bare_hit_burst_speed)
 	return true
 
 
@@ -143,9 +143,9 @@ func _knock_modules(at: Vector2) -> void:
 		world.award(t.score_module, world.torus.wrap(pos + Vector2.from_angle(world.rng.randf() * TAU) * 20.0))
 	world.sfx(&"segment_knocked")
 	world.sfx(&"charge_hit", -4.0)
-	world.fx.burst(pos, Look.c(Pal.BONE_4), 10 * n, 120.0)
-	world.fx.ring(at, Look.c(Pal.PHOS_4), 40.0)
-	world.shake(3.0, 0.2)
+	world.fx.burst(pos, Look.c(Pal.BONE_4), world.fx_tuning.modules_knocked_burst_per_module * n, world.fx_tuning.modules_knocked_burst_speed)
+	world.fx.ring(at, Look.c(Pal.PHOS_4), world.fx_tuning.modules_knocked_ring_radius)
+	world.shake(world.fx_tuning.modules_knocked_shake_amp, world.fx_tuning.modules_knocked_shake_dur)
 	_set_phase(_phase_for(segments))
 	if segments <= 0 and world.stage.goal == CabinetStage.Goal.CLEAR_SEPULCHRE:
 		world.sepulchre_cleared.emit()
@@ -156,9 +156,9 @@ func _hit_entity(at: Vector2) -> void:
 	hits_left -= 1
 	world.award(t.score_module, entity_pos)              # a piece of the entity (SYS-001 §7.1)
 	world.sfx(&"charge_hit")
-	world.fx.burst(at, Look.c(Pal.BONE_4), 16, 140.0)
-	world.fx.ring(at, Look.c(Pal.PHOS_5), 50.0)
-	world.shake(4.0, 0.25)
+	world.fx.burst(at, Look.c(Pal.BONE_4), world.fx_tuning.entity_hit_burst_count, world.fx_tuning.entity_hit_burst_speed)
+	world.fx.ring(at, Look.c(Pal.PHOS_5), world.fx_tuning.entity_hit_ring_radius)
+	world.shake(world.fx_tuning.entity_hit_shake_amp, world.fx_tuning.entity_hit_shake_dur)
 	_twitch = 0.5
 	if phase == Phase.AWAKENING and _awaken_t <= t.awakening_silence + t.stagger_window:
 		_stagger_hits += 1
@@ -173,10 +173,10 @@ func _unmake() -> void:
 	awake = false
 	world.award(world.tuning.score_entity, entity_pos)
 	world.sfx(&"entity_unmade")
-	world.fx.burst(entity_pos, Look.c(Pal.BONE_4), 80, 220.0)
-	world.fx.burst(entity_pos, Look.c(Pal.PHOS_5), 40, 160.0)
-	world.fx.ring(entity_pos, Look.c(Pal.BONE_5), 160.0)
-	world.shake(4.0, 0.25)
+	world.fx.burst(entity_pos, Look.c(Pal.BONE_4), world.fx_tuning.entity_unmade_burst_a_count, world.fx_tuning.entity_unmade_burst_a_speed)
+	world.fx.burst(entity_pos, Look.c(Pal.PHOS_5), world.fx_tuning.entity_unmade_burst_b_count, world.fx_tuning.entity_unmade_burst_b_speed)
+	world.fx.ring(entity_pos, Look.c(Pal.BONE_5), world.fx_tuning.entity_unmade_ring_radius)
+	world.shake(world.fx_tuning.entity_unmade_shake_amp, world.fx_tuning.entity_unmade_shake_dur)
 	AudioService.set_chant(0.0)
 	world.entity_unmade.emit()
 
@@ -188,7 +188,7 @@ func lance_test(p: Vector2) -> bool:
 	var r := BODY_RADIUS if awake or phase == Phase.AWAKENING else SEPULCHRE_RADIUS * 0.7
 	if world.torus.distance(p, centre) > r:
 		return false
-	world.fx.burst(p, Look.c(Pal.BONE_3), 3, 30.0)          # the lance does not bite (AUDIO-001 A03)
+	world.fx.burst(p, Look.c(Pal.BONE_3), world.fx_tuning.ritual_lance_burst_count, world.fx_tuning.ritual_lance_burst_speed)          # the lance does not bite (AUDIO-001 A03)
 	return true
 
 
@@ -207,8 +207,8 @@ func tick(delta: float) -> void:
 				_line_said = true
 				world.entity_line.emit("ENTITY_IT_WAKES")
 				world.sfx(&"wake_hit")
-				world.shake(4.0, 0.25)
-				world.fx.ring(pos, Look.c(Pal.NULL), 200.0)
+				world.shake(world.fx_tuning.it_wakes_shake_amp, world.fx_tuning.it_wakes_shake_dur)
+				world.fx.ring(pos, Look.c(Pal.NULL), world.fx_tuning.it_wakes_ring_radius)
 				AudioService.set_chant(0.0)
 			if _awaken_t >= t.awakening_silence + t.stagger_window:
 				awake = true
@@ -251,7 +251,7 @@ func _rampage(delta: float) -> void:
 
 func _heal() -> void:
 	hits_left = mini(world.tuning.unravel_hits, hits_left + 1)
-	world.fx.ring(entity_pos, Look.c(Pal.CHOIR_4), 44.0)
+	world.fx.ring(entity_pos, Look.c(Pal.CHOIR_4), world.fx_tuning.heal_ring_radius)
 
 
 func _update_chant() -> void:

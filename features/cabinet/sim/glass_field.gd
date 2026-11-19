@@ -84,7 +84,7 @@ func _collect(s: Shard) -> void:
 	set_charges(charges + 1)
 	world.award(world.tuning.score_shard, s.pos)
 	world.sfx(&"shard_chime", -3.0 + charges)
-	world.fx.ring(s.pos, Look.c(Pal.PHOS_4), 14.0)
+	world.fx.ring(s.pos, Look.c(Pal.PHOS_4), world.fx_tuning.shard_pickup_ring_radius)
 
 
 ## Fire one Charge from the Vigil toward `dir`. Returns false with an empty magazine.
@@ -133,9 +133,9 @@ func _tick_charges(delta: float) -> void:
 func _lose(c: Charge, intercepted: bool) -> void:
 	c.alive = false
 	world.sfx(&"charge_lost", 0.0)
-	world.fx.burst(c.pos, Look.c(Pal.PHOS_5), 10, 50.0)
+	world.fx.burst(c.pos, Look.c(Pal.PHOS_5), world.fx_tuning.charge_lost_burst_count, world.fx_tuning.charge_lost_burst_speed)
 	if intercepted:
-		world.fx.ring(c.pos, Look.c(Pal.BONE_5), 18.0)
+		world.fx.ring(c.pos, Look.c(Pal.BONE_5), world.fx_tuning.charge_intercepted_ring_radius)
 
 
 func _draw() -> void:
