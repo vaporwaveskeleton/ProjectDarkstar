@@ -38,3 +38,30 @@ vec3 crt_finish(vec3 col, vec2 suv, vec2 uv) {
 	float g = dot(col, vec3(0.299, 0.587, 0.114));
 	return mix(col, vec3(g), desaturate);
 }
+
+// Williams video limits (layer one only): 16 colour registers, RGB332. Every pixel is assigned the register of
+// its nearest match-set colour (the Neon palette tagged with designated registers, plus the register defaults),
+// then shows that register's CURRENT value, so a register write recolours every pixel using it with no redraw.
+// The match set is built in GDScript (VideoRegisters.match_set); VideoRegisters.nearest_register mirrors this search.
+// `limits` 1 -> 0 is THE PRETENCE breaking the limit (Look.t 0 -> 1).
+uniform vec3 match_rgb[48];
+uniform int match_reg[48];
+uniform vec3 registers[16];
+uniform float limits = 1.0;
+
+vec3 crt_quantize(vec3 raw) {
+	if (limits <= 0.0) {
+		return raw;
+	}
+	float best = 1.0e20;
+	int reg = 0;
+	for (int i = 0; i < 48; i++) {
+		vec3 d = raw - match_rgb[i];
+		float dd = dot(d, d);
+		if (dd < best) {
+			best = dd;
+			reg = match_reg[i];
+		}
+	}
+	return mix(raw, registers[reg], limits);
+}

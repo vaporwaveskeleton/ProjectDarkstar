@@ -18,6 +18,8 @@
 [ext_resource type="Script" path="res://scenes/attract/attract_crt.gd" id="16"]
 [ext_resource type="Script" path="res://features/cabinet/cabinet_screen_hud.gd" id="17"]
 [ext_resource type="Script" path="res://features/cabinet/bezel_field.gd" id="18"]
+[ext_resource type="Script" path="res://features/cabinet/video_registers.gd" id="vreg_script"]
+[ext_resource type="Resource" path="res://data/cabinet/screen_registers.tres" id="vreg_data"]
 
 [sub_resource type="ShaderMaterial" id="crt_mat"]
 shader = ExtResource("6")
@@ -178,6 +180,10 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("16")
 spec = ExtResource("14")
+
+[node name="Registers" type="Node" parent="Rig/Hole/Crt"]
+script = ExtResource("vreg_script")
+spec = ExtResource("vreg_data")
 
 [node name="Frame" type="Control" parent="Rig"]
 unique_name_in_owner = true
