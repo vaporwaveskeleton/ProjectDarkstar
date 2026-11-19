@@ -85,7 +85,7 @@ extends TunableResource
 @export_group("")
 
 @export_group("readable death ⚙ PM-approved 2026-11-18, SYS-001 §9")
-@export var death_ring_pad_px: float = 6.0                ## px ⚙ PM-approved 2026-11-18, SYS-001 §9: dashed chalk gap beyond the killer's outermost drawn part (wider than the entity plate spacing, ~5 px)
+@export var death_ring_pad_px: float = 6.0                ## px ⚙ PM-approved 2026-11-18, SYS-001 §9: dashed chalk gap beyond the outermost drawn part of the killer (for a shot: the shooter Acolyte, drawn radius + this) (wider than the entity plate spacing, ~5 px)
 @export var death_big_killer_px: float = 12.0             ## px ✱ engineering (TECH-001, not a SYS-001 row): killers drawn larger than this (the entity) are tracked live by the leader
 @export var death_arrow_px: float = 30.0                  ## px ⚙ PM-approved 2026-11-18, SYS-001 §9: arrow shaft length = VigilShip.HULL_LENGTH x death_outline_scale
 @export var death_outline_scale: float = 2.0              ## x ⚙ PM-approved 2026-11-18, SYS-001 §9: the coroner outline (and arrow, tip inset, head) is this many times the hull size
@@ -106,13 +106,13 @@ extends TunableResource
 @export var wake_spacing_ticks: int = 2                   ## sim ticks ⚙ PM-approved 2026-11-18, SYS-001 §9: ticks back between wake dots
 @export_group("")
 
-@export_group("true-body frame ✱ PROPOSED (owner approval pending; not SYS-001 yet)")
-@export var true_frame_frames: int = 1                    ## drawn frames ✱ PROPOSED: a Charge hit on the costume entity shows its true silhouette this long (GDD §20: silhouette only)
+@export_group("true-body frame ⚙ PM-approved 2026-11-19, SYS-001 §9")
+@export var true_frame_frames: int = 1                    ## drawn frames ⚙ PM-approved 2026-11-19, SYS-001 §9: a Charge hit on the costume entity shows its true silhouette this long (GDD §20: silhouette only)
 @export_group("")
 
-@export_group("star spine ✱ PROPOSED (owner approval pending; not SYS-001 yet)")
-@export var spine_hold_pull: float = 0.02                 ## Starfield.pull ✱ PROPOSED: the spine stars brighten and hold below this pull (~1.1 s of the 8 s ease-in quad)
-@export var spine_pull_span: float = 0.07                 ## Starfield.pull ✱ PROPOSED: pull range over which they travel to the vertebrae; 0.07 lands them at pull 0.09 (~2.4 s), before reveal starts showing vertebrae (~2.5 s, pull ~0.098)
+@export_group("star spine ⚙ PM-approved 2026-11-19, SYS-001 §9")
+@export var spine_hold_pull: float = 0.02                 ## Starfield.pull ⚙ PM-approved 2026-11-19, SYS-001 §9: the spine stars brighten and hold below this pull (~1.1 s of the 8 s ease-in quad)
+@export var spine_pull_span: float = 0.07                 ## Starfield.pull ⚙ PM-approved 2026-11-19, SYS-001 §9: pull range over which they travel to the vertebrae; 0.07 lands them at pull 0.09 (~2.4 s), before reveal starts showing vertebrae (~2.5 s, pull ~0.098)
 @export_group("")
 
 # --- Hit-stop ⚙ (owner-approved 2026-11-18, SYS-001 §9) ---
