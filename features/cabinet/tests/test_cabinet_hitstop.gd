@@ -13,6 +13,7 @@ var _saved_reduced := false
 func before_test() -> void:
 	AudioService.muted_for_tests = true
 	SaveService.set_backend(MemorySaveBackend.new())
+	SettingsService.persist = false   # never write the player settings.cfg
 	_saved_reduced = SettingsService.get_value(&"reduced_motion")
 	SettingsService.set_value(&"reduced_motion", false)
 	game = SCENE.instantiate()
@@ -26,6 +27,7 @@ func before_test() -> void:
 
 func after_test() -> void:
 	SettingsService.set_value(&"reduced_motion", _saved_reduced)
+	SettingsService.persist = true
 	if is_instance_valid(game):
 		game.free()
 	AudioService.muted_for_tests = false

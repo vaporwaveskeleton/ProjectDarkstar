@@ -9,7 +9,7 @@
 | Screen | Required by | Status |
 |---|---|---|
 | Attract mode (title): the cabinet marquee (DARKSTAR in the Cabinet face), INSERT CREDIT (PRESS NEW VIGIL once credited), high score, drifting vector field, CRT glass; first attract of a launch opens with the power-on self-test (any input skips); four instruction cards cycle (pitch, how to play, mission, score table); a hazard-taped coin door on the right bezel (peel the tape, insert a coin); New Vigil is greyed and outside the focus loop until a credit is in, then spends it; Settings, Quit; 30 s idle (not while a credit waits or a peel is in progress) plays the autopilot demo, any input returns | GDD §10, WARP-001 W0-01/W0-03 | built — `scenes/attract/` |
-| Settings: large text, reduced motion, photosensitivity, Steady Ledger (no language setting: English only, L10N-001 §1) | GDD §10, WARP-001 §4.4 | built (subset) — `scenes/settings/` |
+| Settings: large text, reduced motion, photosensitivity, weapon muzzle flash, Steady Ledger (no language setting: English only, L10N-001 §1) | GDD §10, WARP-001 §4.4 | built (subset) — `scenes/settings/` |
 | Pause: Resume, Settings, Abandon Run | GDD §4.1, WARP-001 §4.4 W4-07 | built — `scenes/sector/pause_screen.tscn` |
 | Confirmation (two-choice, safe default) | brief | built — `scenes/common/confirm_screen.tscn` |
 | Loading / transition curtain | brief | built (fade) — `scenes/boot/boot.tscn` |
@@ -67,7 +67,7 @@ Route scene (e.g. AttractMode : Screen)        one per SceneRouter route
 | Touch-safe targets | Windows-only, mouse targets ≥ ~22 logical px tall (✱ content margins). No touch support planned |
 | Steady Ledger / Esc always pauses | the `pause` action opens the real pause screen whenever the overlay stack is empty (WARP-001 §4.4) |
 | Accessibility rows never lie or hide | settings read live from `SettingsService` (WARP-001 §4.7) |
-| Photosensitivity | stored; no flicker exists yet to suppress. Must never hide information (GDD §10) |
+| Photosensitivity | stored; read live. Today it turns off the Cabinet's muzzle star (S4, TECH-001 §2.10); the separate `muzzle_flash` setting (default on) also turns that star off (AUDIO-001 §8.3 ruling). Must never hide information (GDD §10) |
 
 ## 5. Control states
 

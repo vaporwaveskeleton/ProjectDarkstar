@@ -39,8 +39,6 @@ extends TunableResource
 @export var grub_death_burst_speed: float = 70.0          ## px/s ✱
 
 # --- Sepulchre and entity ---
-@export var ritual_lance_burst_count: int = 3             ## ✱ the lance does not bite
-@export var ritual_lance_burst_speed: float = 30.0        ## px/s ✱
 @export var ritual_bare_hit_burst_count: int = 6          ## ✱ Charge on a bare Sepulchre
 @export var ritual_bare_hit_burst_speed: float = 40.0     ## px/s ✱
 @export var modules_knocked_burst_per_module: int = 10    ## ✱ x modules knocked
@@ -73,6 +71,18 @@ extends TunableResource
 @export var vigil_death_shake_amp: float = 4.0            ## px ✱ (≤ 4.0 cap)
 @export var vigil_death_shake_dur: float = 0.25           ## s ✱ (≤ 0.25 cap)
 
+
+@export_group("lance bite ⚙ owner-approved 2026-11-18, SYS-001 §9")
+@export var muzzle_star_px: int = 3                       ## px ⚙ owner-approved 2026-11-18, SYS-001 §9: arm length of the muzzle plus
+@export var muzzle_star_frames: int = 1                   ## drawn frames ⚙ owner-approved 2026-11-18, SYS-001 §9: how long the muzzle star shows
+@export var recoil_px: int = 1                            ## px ⚙ owner-approved 2026-11-18, SYS-001 §9: visual-only draw nudge opposite the aim (never moves pos/vel, SYS-001 §1.3)
+@export var recoil_frames: int = 2                        ## drawn frames ⚙ owner-approved 2026-11-18, SYS-001 §9
+@export var fleck_speed_px_s: float = 60.0                ## px/s ⚙ owner-approved 2026-11-18, SYS-001 §9: impact flecks leave perpendicular to the shot
+@export var fleck_life_s: float = 0.12                    ## s ⚙ owner-approved 2026-11-18, SYS-001 §9
+@export var tick_len_px: int = 3                          ## px ⚙ owner-approved 2026-11-18, SYS-001 §9: the chalk tick where the lance cannot bite
+@export var tick_life_s: float = 0.15                     ## s ⚙ owner-approved 2026-11-18, SYS-001 §9
+@export var lance_dull_db: float = 0.0                    ## dB ⚙ owner-approved 2026-11-18, SYS-001 §9: lance_dull cue volume
+@export_group("")
 
 # --- Hit-stop ⚙ (owner-approved 2026-11-18, SYS-001 §9) ---
 # Sim frames (physics ticks at 60 Hz). Freezes the sim only: audio, CRT, state timers and input keep running.

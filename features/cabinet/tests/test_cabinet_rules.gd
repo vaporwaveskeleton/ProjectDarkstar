@@ -205,8 +205,12 @@ func test_the_lance_does_not_bite_the_entity() -> void:
 	world.start(_stage(CabinetStage.Goal.UNMAKE_ENTITY, t.segments_total))
 	_steps(t.awakening_silence + t.stagger_window + 0.1)
 	var before := world.ritual.hits_left
-	assert_bool(world.ritual.lance_test(world.ritual.entity_pos)).is_true()
+	var sparks_before := world.fx.sparks.size()
+	var ticks_before := world.fx.chalk_ticks.size()
+	assert_bool(world.ritual.lance_test(world.ritual.entity_pos, Vector2.RIGHT)).is_true()
 	assert_int(world.ritual.hits_left).is_equal(before)
+	assert_int(world.fx.chalk_ticks.size()).is_equal(ticks_before + 1)   # the no-bite tick teaches the rule
+	assert_int(world.fx.sparks.size()).is_equal(sparks_before)           # and it is not a hit-looking spark burst
 
 
 func test_thirteen_charges_unmake_it_for_fifteen_thousand() -> void:

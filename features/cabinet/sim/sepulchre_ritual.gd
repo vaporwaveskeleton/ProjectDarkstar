@@ -187,14 +187,15 @@ func _unmake() -> void:
 	world.entity_unmade.emit()
 
 
-func lance_test(p: Vector2) -> bool:
+func lance_test(p: Vector2, dir: Vector2 = Vector2.RIGHT) -> bool:
 	if phase == Phase.UNMADE:
 		return false
 	var centre := entity_pos if awake or phase == Phase.AWAKENING else pos
 	var r := BODY_RADIUS if awake or phase == Phase.AWAKENING else SEPULCHRE_RADIUS * 0.7
 	if world.torus.distance(p, centre) > r:
 		return false
-	world.fx.burst(p, Look.c(Pal.BONE_3), world.fx_tuning.ritual_lance_burst_count, world.fx_tuning.ritual_lance_burst_speed)          # the lance does not bite (AUDIO-001 A03)
+	world.fx.chalk_tick(p, dir)          # the lance does not bite (AUDIO-001 A03): a dim tick, no sparks, no rng
+	world.sfx(&"lance_dull", world.fx_tuning.lance_dull_db)
 	return true
 
 

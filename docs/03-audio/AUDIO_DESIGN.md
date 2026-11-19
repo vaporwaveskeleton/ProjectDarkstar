@@ -972,7 +972,7 @@ The game's dread is not flash-based (GDD-001 §11: dread from scale and wrongnes
 
 | Rule | Value |
 |---|---|
-| Flash rate | no more than **3 luminance flashes per second anywhere on screen**, and no simultaneous full-field flash; the §5.5 pulse is one per litany foot at §5.1 tempi, which is always under the ceiling |
+| Flash rate | no more than **3 luminance flashes per second anywhere on screen**, and no simultaneous full-field flash; the §5.5 pulse is one per litany foot at §5.1 tempi, which is always under the ceiling. **Owner ruling 2026-11-18 (sizzle chat, relayed by the PM chat):** the few-pixel vector muzzle star the Cabinet draws when the Vigil fires (SYS-001 §9 `muzzle_star_px`, 3 px, 1 drawn frame; TECH-001 §2.10 S4) is **not** a luminance flash under this rule. It ships **ON** by default; the accessibility setting `muzzle_flash` (default on, `SETTINGS_MUZZLE_FLASH`) turns it off, and `photosensitivity` also turns it off |
 | Luminance step | no audio-driven change exceeding 10% ✱ mean screen luminance in one frame; beat-locked effects ramp over ≥ 3 frames ✱ |
 | Red | no full-field red flash at any Warp Tier (GDD-001 §11's palette discipline) |
 | Beat-locked camera motion | off by default; `Reduced motion` removes it entirely, and the music's own pulse never drives camera shake (SYS-001 §9's shake row is not audio-linked) |

@@ -68,3 +68,21 @@ func test_defaults_equal_the_legacy_literals() -> void:
 	assert_float(fx.acolyte_death_shake_amp).is_equal(2.0)
 	assert_float(fx.geode_violent_ring_scale).is_equal(3.0)
 	assert_float(fx.geode_break_ring_scale).is_equal(1.6)
+
+
+func test_lance_bite_defaults_and_keys() -> void:
+	var fx := load(PATH) as CabinetFxTuning
+	assert_int(fx.muzzle_star_px).is_equal(3)
+	assert_int(fx.muzzle_star_frames).is_equal(1)
+	assert_int(fx.recoil_px).is_equal(1)
+	assert_int(fx.recoil_frames).is_equal(2)
+	assert_float(fx.fleck_speed_px_s).is_equal(60.0)
+	assert_float(fx.fleck_life_s).is_equal(0.12)
+	assert_int(fx.tick_len_px).is_equal(3)
+	assert_float(fx.tick_life_s).is_equal(0.15)
+	assert_float(fx.lance_dull_db).is_equal(0.0)
+	var reg := TunableRegistry.new().scan()
+	assert_array(Array(reg.errors)).is_empty()
+	for k in ["muzzle_star_px", "muzzle_star_frames", "recoil_px", "recoil_frames", "fleck_speed_px_s", "fleck_life_s", "tick_len_px", "tick_life_s", "lance_dull_db"]:
+		assert_bool(reg.has_key("ds_cabinet.fx." + k)).is_true()
+	assert_bool(fx.tunable_properties().has("ritual_lance_burst_count")).is_false()
