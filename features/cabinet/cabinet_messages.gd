@@ -31,6 +31,7 @@ signal credits_stat_shown(index: int)       ## stat line `index` (0..3) just scr
 
 const MARGIN := 4.0              ## text keeps this far from the screen edge
 const ZONE_GAP := 6.0            ## ✱ px between the zone line and the READY title below it
+const READY_CLEAR := 14.0     ## ✱ px between the READY card and the play-view centre (Vigil hull 12 px + margin)
 
 
 func _ready() -> void:
@@ -52,8 +53,16 @@ func show_ready(title: String, sub: String, seconds: float, zone: String = "") -
 
 
 ## Top of the READY title, and of the zone line above it (play-view y). One layout for _draw and tests.
+## The whole card sits above the play view centre, where the Vigil spawns (Reviewer, PR #57): its
+## bottom (the READY line) ends READY_CLEAR px above the centre.
 func ready_title_top() -> float:
-	return size.y * 0.5 - 48.0
+	var h := block_height(_ready_title, 3) + 2.0 + block_height(_ready_sub, 1) + 12.0 + float(PixelText.H * 2)
+	return size.y * 0.5 - READY_CLEAR - h
+
+
+## Bottom of the READY line (play-view y).
+func ready_bottom() -> float:
+	return ready_title_top() + block_height(_ready_title, 3) + 2.0 + block_height(_ready_sub, 1) + 12.0 + float(PixelText.H * 2)
 
 
 func ready_zone_top() -> float:

@@ -137,7 +137,7 @@ msgstr "SECOND VIGIL"
 
 #. WORDING PROPOSED.
 msgid "CAB_STAGE_A0_2_SUB"
-msgstr "THE GRUBS ARE STEALING. BREAK IT ANYWAY."
+msgstr "THE GRUBS STEAL. BREAK IT ANYWAY."
 
 #. A0-3 title card: the first level where the entity wakes. WORDING PROPOSED.
 msgid "CAB_STAGE_A0_3"
@@ -145,7 +145,7 @@ msgstr "THIRD VIGIL"
 
 #. WORDING PROPOSED.
 msgid "CAB_STAGE_A0_3_SUB"
-msgstr "THE CHOIR KEEPS WATCH. UNMAKE WHAT WAKES."
+msgstr "CENSERS SWING. UNMAKE WHAT WAKES."
 
 #. A0-4 title card: a dense Glass field. WORDING PROPOSED.
 msgid "CAB_STAGE_A0_4"
@@ -153,7 +153,7 @@ msgstr "FOURTH VIGIL"
 
 #. WORDING PROPOSED.
 msgid "CAB_STAGE_A0_4_SUB"
-msgstr "THE GLASS IS THICK HERE. SO ARE THEY."
+msgstr "RICH GLASS. HUNGRY GRUBS."
 
 #. A0-5 title card: the last stage of the shift; THE PRETENCE follows it.
 msgid "CAB_STAGE_A0_5"

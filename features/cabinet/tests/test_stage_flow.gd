@@ -138,3 +138,13 @@ func test_the_ready_card_shows_the_zone_line_when_the_stage_has_one() -> void:
 	var top := messages.ready_zone_top()
 	assert_float(top).is_greater_equal(0.0)
 	assert_float(top + messages.block_height(messages.ready_zone(), 1)).is_less_equal(messages.ready_title_top())
+
+
+## Reviewer, PR #57: the Vigil spawns at the play-view centre, so no READY card may reach it.
+func test_every_ready_card_ends_above_the_vigil_spawn() -> void:
+	for i in game.stages.size():
+		game.start_stage(i)
+		assert_float(messages.ready_bottom()).override_failure_message("stage %d card reaches the Vigil" % i) \
+			.is_less_equal(messages.size.y * 0.5 - 12.0)
+		var top := messages.ready_zone_top() if not messages.ready_zone().is_empty() else messages.ready_title_top()
+		assert_float(top).override_failure_message("stage %d card leaves the screen" % i).is_greater_equal(0.0)
