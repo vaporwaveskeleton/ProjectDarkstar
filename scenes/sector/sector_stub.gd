@@ -13,8 +13,14 @@ const PAUSE_SCENE := preload("res://scenes/sector/pause_screen.tscn")
 @onready var _overlays: ScreenStack = %Overlays
 @onready var _camera: SectorCamera = %SectorCamera
 @onready var _compass: LedgerCompass = %LedgerCompass
+@onready var _geodes: GeodeSandbox = %GeodeSandbox
+@onready var _shards: ShardField = %ShardField
+@onready var _magazine: ChargeMagazine = %ChargeMagazine
 
 var vigil: Vigil
+## The sector's wrap space, injected into the glass economy (TECH-001 §4.3). Until the shared world
+## size lands (Q-T57) it is the compass's world rect, the one size this stub already has.
+var torus: Torus
 
 ## Read-only scalars for the automation id `sector/vigil` (core/automation/ui_view.gd). Dev/QA reads.
 var vigil_x: float:
@@ -30,6 +36,16 @@ var camera_x: float:
 var compass_markers: int:
 	get: return _compass.marker_points.size() if _compass else 0
 
+## Read-only scalars for the automation id `sector/field` (glass economy). Dev/QA reads.
+var geodes_alive: int:
+	get: return _geodes.alive_count() if _geodes else 0
+var shards_free: int:
+	get: return _shards.free_count() if _shards else 0
+var charges: int:
+	get: return _magazine.count if _magazine else 0
+var score: int:
+	get: return _shards.score if _shards else 0
+
 
 func _ready() -> void:
 	vigil = vigil_scene.instantiate() as Vigil
@@ -39,6 +55,11 @@ func _ready() -> void:
 	vigil.emitter.projectile_parent = _actors
 	_camera.target = vigil
 	_camera.snap_to_target()
+	torus = Torus.new(_compass.world_rect.size)
+	_shards.setup(torus)
+	_shards.collector = vigil
+	_shards.collector_radius_px = vigil.motor.stats.hitbox_circle_px * 0.5
+	_geodes.populate(torus, _spawn.position, vigil)
 	vigil.health.damaged.connect(func(_a, _r): _refresh_hud())
 	vigil.hull_breached.connect(_on_hull_breached)
 	_overlays.emptied.connect(_on_overlays_emptied)

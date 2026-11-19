@@ -1,0 +1,26 @@
+{
+	"format": "darkstar.scenario",
+	"version": 1,
+	"id": "m1_geode_mine",
+	"profile": "qa",
+	"args": [],
+	"fixtures": {},
+	"timeout_frames": 1200,
+	"steps": [
+		{"do": "wait_route", "route": "attract", "within": 120},
+		{"do": "goto", "route": "sector"},
+		{"do": "wait_route", "route": "sector", "within": 240},
+		{"do": "assert", "id": "sector/field", "prop": "geodes_alive", "eq": 10},
+		{"do": "assert", "id": "sector/field", "prop": "shards_free", "eq": 0},
+		{"do": "press", "action": "aim_right"},
+		{"do": "wait_frames", "frames": 10},
+		{"do": "press", "action": "fire_lance"},
+		{"do": "wait_until", "id": "sector/field", "prop": "shards_free", "gt": 0, "within": 600},
+		{"do": "wait_until", "id": "sector/field", "prop": "geodes_alive", "lt": 10, "within": 120},
+		{"do": "release", "action": "fire_lance"},
+		{"do": "checkpoint", "name": "geode_mined"},
+		{"do": "assert", "id": "sector/field", "prop": "charges", "eq": 0},
+		{"do": "screenshot", "name": "geode_mined", "target": "window"},
+		{"do": "quit"}
+	]
+}

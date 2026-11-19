@@ -1,0 +1,12 @@
+﻿[gd_resource type="Resource" script_class="GeodeSandboxStats" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://features/charges/geode_sandbox_stats.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+ds_namespace = "ds_charges.sandbox"
+source_section = "M1 slice 3 PR 3 (PM: 10 geodes, seeded); seed, clear radius and attempts ✱"
+geode_count = 10
+run_seed = 8
+spawn_clear_radius_px = 160.0
+placement_attempts = 32

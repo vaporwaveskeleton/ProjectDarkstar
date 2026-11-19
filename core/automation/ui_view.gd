@@ -14,6 +14,7 @@ const STATE_IDS := {
 	"cabinet/score": {"route": "cabinet", "member": "score", "props": ["score", "lives"]},
 	"cabinet/record": {"route": "cabinet", "member": "record", "props": ["grubs_destroyed", "glass_mined", "charges_thrown", "glass_carried"]},
 	"sector/vigil": {"route": "sector", "member": "", "props": ["vigil_x", "vigil_y", "vigil_speed", "hull_max_hp", "camera_x", "compass_markers"]},
+	"sector/field": {"route": "sector", "member": "", "props": ["geodes_alive", "shards_free", "charges", "score"]},
 }
 
 var _route_host: Node

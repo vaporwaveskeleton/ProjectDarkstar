@@ -1,0 +1,26 @@
+{
+	"format": "darkstar.scenario",
+	"version": 1,
+	"id": "m1_magnet_collect",
+	"profile": "qa",
+	"args": [],
+	"fixtures": {},
+	"timeout_frames": 1200,
+	"steps": [
+		{"do": "wait_route", "route": "attract", "within": 120},
+		{"do": "goto", "route": "sector"},
+		{"do": "wait_route", "route": "sector", "within": 240},
+		{"do": "press", "action": "aim_right"},
+		{"do": "wait_frames", "frames": 10},
+		{"do": "press", "action": "fire_lance"},
+		{"do": "wait_until", "id": "sector/field", "prop": "geodes_alive", "lt": 10, "within": 600},
+		{"do": "release", "action": "fire_lance"},
+		{"do": "assert", "id": "sector/field", "prop": "shards_free", "gt": 0},
+		{"do": "hold", "action": "move_right", "frames": 30},
+		{"do": "wait_until", "id": "sector/field", "prop": "charges", "gte": 1, "within": 300},
+		{"do": "checkpoint", "name": "glass_collected"},
+		{"do": "assert", "id": "sector/field", "prop": "score", "gte": 200},
+		{"do": "screenshot", "name": "glass_collected", "target": "window"},
+		{"do": "quit"}
+	]
+}

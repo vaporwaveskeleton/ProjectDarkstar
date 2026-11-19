@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=18 format=3]
 
 [ext_resource type="Script" path="res://scenes/sector/sector_stub.gd" id="1"]
 [ext_resource type="PackedScene" path="res://features/vigil/vigil.tscn" id="2"]
@@ -7,6 +7,12 @@
 [ext_resource type="Resource" path="res://data/sector/sector_camera.tres" id="5"]
 [ext_resource type="Script" path="res://features/hud/ledger_compass.gd" id="6"]
 [ext_resource type="Resource" path="res://data/hud/ledger_compass.tres" id="7"]
+[ext_resource type="PackedScene" path="res://features/charges/shard_field.tscn" id="8"]
+[ext_resource type="Script" path="res://features/charges/geode_sandbox.gd" id="9"]
+[ext_resource type="Resource" path="res://data/charges/geode_sandbox.tres" id="10"]
+[ext_resource type="Resource" path="res://data/charges/geode.tres" id="11"]
+[ext_resource type="Script" path="res://features/charges/charge_magazine.gd" id="12"]
+[ext_resource type="Resource" path="res://data/charges/charge_magazine.tres" id="13"]
 
 [sub_resource type="RectangleShape2D" id="wall_h"]
 size = Vector2(704, 32)
@@ -48,6 +54,22 @@ shape = SubResource("wall_v")
 [node name="VigilSpawn" type="Marker2D" parent="."]
 unique_name_in_owner = true
 position = Vector2(320, 180)
+
+[node name="GeodeSandbox" type="Node2D" parent="." node_paths=PackedStringArray("shard_field")]
+unique_name_in_owner = true
+script = ExtResource("9")
+stats = ExtResource("10")
+geode_stats = ExtResource("11")
+shard_field = NodePath("../ShardField")
+
+[node name="ShardField" parent="." node_paths=PackedStringArray("magazine") instance=ExtResource("8")]
+unique_name_in_owner = true
+magazine = NodePath("../ChargeMagazine")
+
+[node name="ChargeMagazine" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("12")
+stats = ExtResource("13")
 
 [node name="Actors" type="Node2D" parent="."]
 unique_name_in_owner = true
