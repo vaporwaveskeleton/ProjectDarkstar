@@ -173,3 +173,16 @@ sfx("surgelight", { vol: 0.35, fx: [crush({ bits: 10 })] },
   tone({ wave: "saw", freq: 700, to: 1500, slide: 0.18, dur: 0.2, env: [0.04, 0.08, 0.6, 0.06], filter: { type: "lp", from: 1800, to: 5000 } }),
   tone({ wave: "saw", freq: 703, to: 1510, slide: 0.18, dur: 0.2, env: [0.05, 0.08, 0.5, 0.06], vol: 0.6, filter: { type: "lp", from: 1800, to: 5000 } }),
   noise({ color: "white", dur: 0.18, env: [0.08, 0.08, 0.2, 0.05], filter: { type: "hp", from: 3000, to: 6000 }, vol: 0.1 }))
+
+// --- Sizzle sounds (AUDIO-001 §12.11; owner-approved 2026-11-18) ---------------------------------
+
+// S4 lance on the Sepulchre or the entity: "does not bite". Lower and flatter than lance_armour
+// (A03): a chalk tick, no tone to follow, no ring. Player-caused, so the §1.4 onset exception applies.
+sfx("lance_dull", { vol: 0.4 },
+  noise({ color: "pink", dur: 0.035, env: [0.001, 0.025, 0, 0.015], filter: { type: "bp", cutoff: 700, q: 1.0 } }),
+  tone({ wave: "triangle", freq: 330, to: 240, slide: 0.03, dur: 0.035, env: [0.001, 0.025, 0, 0.015], vol: 0.35 }))
+
+// S7 service record tally: one bright cabinet blip per stat line. A short square step, quiet,
+// no tail, so a seven-line roll never builds into a phrase.
+sfx("tally_blip", { vol: 0.22, fx: [crush({ bits: 10 })] },
+  tone({ wave: "square", freq: 1320, dur: 0.05, duty: 0.25, env: [0.001, 0.03, 0.2, 0.015] }))

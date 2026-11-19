@@ -13,6 +13,9 @@ const VOICES := 24                     ## ✱ one-shot voice pool
 const CHANT_MAX_DB := -14.0            ## ✱ chant bed level at full build
 const CHIRP_DIR := "res://assets/audio/generated/sfx"   ## chirp build output (AUDIO-001 §11.7)
 const SYNTH_TRIM_DB := -6.0            ## ✱ runtime-synth cues run hotter than the chirp renders
+const BED_PITCH_FALL_S := 0.15         ## ✱ full-range glide time going down (slow-mo in)
+const BED_PITCH_RISE_S := 0.35         ## ✱ full-range glide time going up (slow-mo out)
+const BED_PITCH_MIN := 0.25            ## ✱ safety clamp (engine minimum is 0.01)
 const CUE_IDS_PATH := "res://data/audio/cue_ids.tres"
 const CUE_POLICY_PATH := "res://data/audio/cue_policy.tres"
 const UNSTEALABLE_BELOW := 2           ## P0 and P1 are never stolen (AUDIO-001 §12.6)
@@ -37,6 +40,7 @@ var _jitter_rng := RandomNumberGenerator.new()   # cosmetic only; never the seed
 var _chant: AudioStreamPlayer
 var _chant_level := 0.0
 var _silence := 0.0
+var _bed_pitch_target := 1.0
 var muted_for_tests := false
 
 
@@ -220,9 +224,34 @@ func stop_all() -> void:
 	_stop_voices()
 	_chant_level = 0.0
 	_chant.stop()
+	_bed_pitch_target = 1.0
+	_chant.pitch_scale = 1.0
+
+
+## Slow-mo bend of the chant bed only (AUDIO-001 §12.11). The caller passes a scale; the bed glides
+## to it in _process. One-shot voices are never bent. Clamped to a safe range (✱ safety only).
+func set_bed_pitch_scale(scale: float) -> void:
+	_bed_pitch_target = clampf(scale, BED_PITCH_MIN, 1.0)
+
+
+## Current chant bed pitch_scale (tests, diagnostics).
+func bed_pitch_scale() -> float:
+	return _chant.pitch_scale if _chant != null else 1.0
+
+
+func _step_bed_pitch(delta: float) -> void:
+	var cur := _chant.pitch_scale
+	if is_equal_approx(cur, _bed_pitch_target):
+		_chant.pitch_scale = _bed_pitch_target
+		return
+	var down := _bed_pitch_target < cur
+	var span := (1.0 - BED_PITCH_MIN)
+	var rate := span / (BED_PITCH_FALL_S if down else BED_PITCH_RISE_S)   # linear, units per second
+	_chant.pitch_scale = move_toward(cur, _bed_pitch_target, rate * delta)
 
 
 func _process(delta: float) -> void:
+	_step_bed_pitch(delta)
 	_silence = maxf(0.0, _silence - delta)
 	var target := -80.0
 	if _chant_level > 0.0 and _silence <= 0.0:

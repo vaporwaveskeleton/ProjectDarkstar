@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="CueIds" load_steps=32 format=3]
+[gd_resource type="Resource" script_class="CueIds" load_steps=34 format=3]
 
 [ext_resource type="Script" path="res://core/audio/cue_ids.gd" id="1"]
 [ext_resource type="Script" path="res://core/audio/cue_id_entry.gd" id="2"]
@@ -264,6 +264,24 @@ has_synth_fallback = false
 is_loop = false
 note = "render only"
 
+[sub_resource type="Resource" id="e29"]
+script = ExtResource("2")
+id = &"lance_dull"
+doc_id = ""
+act0_only = true
+has_synth_fallback = false
+is_loop = false
+note = "render only"
+
+[sub_resource type="Resource" id="e30"]
+script = ExtResource("2")
+id = &"tally_blip"
+doc_id = ""
+act0_only = true
+has_synth_fallback = false
+is_loop = false
+note = "render only"
+
 [resource]
 script = ExtResource("1")
-entries = [SubResource("e0"), SubResource("e1"), SubResource("e2"), SubResource("e3"), SubResource("e4"), SubResource("e5"), SubResource("e6"), SubResource("e7"), SubResource("e8"), SubResource("e9"), SubResource("e10"), SubResource("e11"), SubResource("e12"), SubResource("e13"), SubResource("e14"), SubResource("e15"), SubResource("e16"), SubResource("e17"), SubResource("e18"), SubResource("e19"), SubResource("e20"), SubResource("e21"), SubResource("e22"), SubResource("e23"), SubResource("e24"), SubResource("e25"), SubResource("e26"), SubResource("e27"), SubResource("e28")]
+entries = [SubResource("e0"), SubResource("e1"), SubResource("e2"), SubResource("e3"), SubResource("e4"), SubResource("e5"), SubResource("e6"), SubResource("e7"), SubResource("e8"), SubResource("e9"), SubResource("e10"), SubResource("e11"), SubResource("e12"), SubResource("e13"), SubResource("e14"), SubResource("e15"), SubResource("e16"), SubResource("e17"), SubResource("e18"), SubResource("e19"), SubResource("e20"), SubResource("e21"), SubResource("e22"), SubResource("e23"), SubResource("e24"), SubResource("e25"), SubResource("e26"), SubResource("e27"), SubResource("e28"), SubResource("e29"), SubResource("e30")]

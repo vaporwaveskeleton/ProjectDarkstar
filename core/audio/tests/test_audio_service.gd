@@ -174,7 +174,7 @@ func test_cue_without_a_policy_entry_gets_the_safe_default() -> void:
 
 func test_pitch_jitter_is_bounded_and_reset_per_play() -> void:
 	var svc := _make()
-	var limit := pow(2.0, 12.0 / 1200.0)
+	var limit := pow(2.0, 20.0 / 1200.0)
 	var seen_off_unity := false
 	for i in 40:
 		svc.now_ms_override += 100   # each lance has ended: slot 0 every time
@@ -342,7 +342,7 @@ func test_policy_table_matches_the_cue_table_and_the_bus_layout() -> void:
 	assert_int(pol.entry_for(&"charge_lost").priority).is_equal(1)
 	assert_int(pol.entry_for(&"charge_lost").max_concurrent).is_equal(1)
 	assert_int(pol.entry_for(&"lance").max_concurrent).is_equal(4)
-	assert_float(pol.entry_for(&"lance").pitch_jitter_cents).is_equal(12.0)
+	assert_float(pol.entry_for(&"lance").pitch_jitter_cents).is_equal(20.0)
 	assert_int(pol.entry_for(&"geode_hit").max_concurrent).is_equal(3)
 	assert_int(pol.entry_for(&"geode_hit").min_retrigger_ms).is_equal(40)
 	assert_str(pol.entry_for(&"menu_accept").bus).is_equal("BUS-UI")
@@ -352,3 +352,97 @@ func test_policy_table_matches_the_cue_table_and_the_bus_layout() -> void:
 	assert_int(d.max_concurrent).is_equal(4)
 	assert_int(d.min_retrigger_ms).is_equal(0)
 	assert_float(d.pitch_jitter_cents).is_equal(0.0)
+
+
+# --- sizzle cues, bed pitch bend, no hit-stop path (AUDIO-001 §12.11) ---------------------------
+
+func test_sizzle_cues_are_listed_rendered_and_have_policy() -> void:
+	var ids: CueIds = load(AudioServiceScript.CUE_IDS_PATH)
+	var pol: CuePolicy = load(AudioServiceScript.CUE_POLICY_PATH)
+	assert_int(ids.entries.size()).is_equal(31)
+	assert_int(pol.entries.size()).is_equal(25)
+	var want := {&"lance_dull": [2, 3, 40], &"tally_blip": [3, 1, 60]}
+	for id: StringName in want:
+		assert_bool(ids.has_id(id)).is_true()
+		assert_bool(ids.entry(id).has_synth_fallback).is_false()
+		assert_object(AudioServiceScript.chirp_stream(id)).is_not_null()
+		var rule := pol.entry_for(id)
+		var w: Array = want[id]
+		assert_str(rule.bus).is_equal("BUS-FLY")
+		assert_int(rule.priority).is_equal(w[0])
+		assert_int(rule.max_concurrent).is_equal(w[1])
+		assert_int(rule.min_retrigger_ms).is_equal(w[2])
+		assert_float(rule.pitch_jitter_cents).is_equal(0.0)
+	assert_float(pol.entry_for(&"lance").pitch_jitter_cents).is_equal(20.0)
+
+
+func test_bed_pitch_steps_down_within_fall_time() -> void:
+	var svc := _make()
+	svc.set_bed_pitch_scale(0.5)
+	var prev := svc.bed_pitch_scale()
+	var t := 0.0
+	var max_step := 0.0
+	while t < AudioServiceScript.BED_PITCH_FALL_S + 0.001:
+		svc._process(1.0 / 60.0)
+		t += 1.0 / 60.0
+		max_step = maxf(max_step, absf(svc.bed_pitch_scale() - prev))
+		prev = svc.bed_pitch_scale()
+	assert_float(svc.bed_pitch_scale()).is_equal(0.5)
+	assert_float(max_step).is_less(0.2)   # never a jump: a fraction of the range per 60 Hz frame
+
+
+func test_bed_pitch_rises_slower_than_it_falls_and_lands_exactly() -> void:
+	var svc := _make()
+	svc.set_bed_pitch_scale(0.5)
+	for i in 60:
+		svc._process(1.0 / 60.0)
+	assert_float(svc.bed_pitch_scale()).is_equal(0.5)
+	svc.set_bed_pitch_scale(1.0)
+	for i in 6:   # 0.1 s: not there yet
+		svc._process(1.0 / 60.0)
+	assert_float(svc.bed_pitch_scale()).is_between(0.5, 0.99)
+	var prev := svc.bed_pitch_scale()
+	for i in 30:   # past 0.35 s total
+		svc._process(1.0 / 60.0)
+		assert_float(svc.bed_pitch_scale()).is_greater_equal(prev)
+		prev = svc.bed_pitch_scale()
+	assert_float(svc.bed_pitch_scale()).is_equal(1.0)
+
+
+func test_bed_pitch_clamps_and_stop_all_resets() -> void:
+	var svc := _make()
+	svc.set_bed_pitch_scale(0.0)
+	for i in 120:
+		svc._process(1.0 / 60.0)
+	assert_float(svc.bed_pitch_scale()).is_equal(AudioServiceScript.BED_PITCH_MIN)
+	svc.set_bed_pitch_scale(5.0)
+	for i in 120:
+		svc._process(1.0 / 60.0)
+	assert_float(svc.bed_pitch_scale()).is_equal(1.0)
+	svc.set_bed_pitch_scale(0.5)
+	for i in 120:
+		svc._process(1.0 / 60.0)
+	svc.stop_all()
+	assert_float(svc.bed_pitch_scale()).is_equal(1.0)
+	svc._process(0.5)
+	assert_float(svc.bed_pitch_scale()).is_equal(1.0)
+
+
+func test_bed_pitch_does_not_bend_one_shot_voices() -> void:
+	var svc := _make()
+	svc.set_bed_pitch_scale(0.5)
+	svc._process(1.0)
+	for p in svc._voices:
+		assert_float(p.pitch_scale).is_equal(1.0)
+
+
+func test_no_hit_stop_freeze_path() -> void:
+	var svc := _make()
+	assert_int(svc.process_mode).is_equal(Node.PROCESS_MODE_ALWAYS)
+	for m in svc.get_method_list():
+		var n := String(m["name"]).to_lower()
+		assert_bool(n.contains("hitstop") or n.contains("hit_stop") or n.contains("freeze")).override_failure_message("hit-stop method %s" % n).is_false()
+	for s in svc.get_signal_list():
+		assert_bool(String(s["name"]).to_lower().contains("hitstop")).is_false()
+	svc.play(&"lance")
+	assert_int(svc.active_count(&"lance")).is_equal(1)
