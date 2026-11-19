@@ -53,7 +53,7 @@ func test_coin_door_has_focus_and_new_vigil_waits_for_a_credit() -> void:
 	var runner := scene_runner(SCENE)
 	var coin := await _open(runner)
 	assert_object(_focus()).is_same(coin)
-	assert_bool((runner.find_child("NewVigil") as Button).disabled).is_true()
+	assert_bool((runner.find_child("NewVigil") as ArcadeButton).disabled).is_true()
 	assert_int(coin.phase).is_equal(CoinSlot.Phase.TAPED)
 
 
@@ -149,7 +149,7 @@ func test_coin_gives_one_credit_then_new_vigil_spends_it() -> void:
 	_step(coin, coin.tuning.coin_drop_seconds + 0.1)
 	assert_bool(coin.has_credit()).is_true()
 	await runner.simulate_frames(2)
-	var btn: Button = runner.find_child("NewVigil")
+	var btn: ArcadeButton = runner.find_child("NewVigil")
 	assert_bool(btn.disabled).is_false()
 	assert_object(_focus()).is_same(btn)
 	assert_str((runner.find_child("StripHud") as CabinetScreenHud).credit_line).is_equal(tr("CAB_CREDIT_COUNT") % 1)
@@ -165,7 +165,7 @@ func test_coin_gives_one_credit_then_new_vigil_spends_it() -> void:
 func test_new_vigil_without_a_credit_does_nothing() -> void:
 	var runner := scene_runner(SCENE)
 	await _open(runner)
-	(runner.find_child("NewVigil") as Button).pressed.emit()
+	(runner.find_child("NewVigil") as ArcadeButton).pressed.emit()
 	await runner.simulate_frames(5)
 	assert_array(host.mounted_routes).is_empty()
 

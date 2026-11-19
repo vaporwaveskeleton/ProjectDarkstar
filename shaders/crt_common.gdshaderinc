@@ -1,5 +1,5 @@
-// Shared by crt.gdshader (the arcade screen's own texture) and crt_attract.gdshader (the attract scene,
-// which still shades the root screen texture). One costume, one set of uniforms (WARP-001 W0-01).
+// Shared by crt.gdshader, the arcade screen's own texture (the game and, since Q-T80, the attract scene).
+// One costume, one set of uniforms (WARP-001 W0-01).
 uniform float costume : hint_range(0.0, 1.0) = 1.0;
 uniform float scanline_strength : hint_range(0.0, 1.0) = 0.22;
 uniform float curvature : hint_range(0.0, 0.2) = 0.06;
@@ -7,7 +7,7 @@ uniform float vignette : hint_range(0.0, 1.0) = 0.35;
 uniform float desaturate : hint_range(0.0, 1.0) = 0.0;
 uniform float tear : hint_range(0.0, 1.0) = 0.0;     // W0-07 Pretence Tear: horizontal slice offsets
 uniform float time_s = 0.0;
-uniform float rows = 304.0;                           // scanline row count = the grid height; the arcade screen and AttractCrt set it from CabinetScreenSpec
+uniform float rows = 304.0;                           // scanline row count = the grid height; the arcade screen sets it from CabinetScreenSpec
 
 vec2 crt_warp(vec2 uv) {
 	vec2 c = uv * 2.0 - 1.0;

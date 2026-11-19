@@ -32,7 +32,7 @@ static func add_tube(host: Control) -> ScreenTube:
 	return t
 
 
-## The screen-light sampler. `source` is the arcade screen's SubViewport, or null to read the window.
+## The screen-light sampler. `source` is the arcade screen's SubViewport (the game and the attract screen).
 static func add_light(host: Node, source: SubViewport) -> ScreenLight:
 	var l := ScreenLight.new()
 	l.source = source

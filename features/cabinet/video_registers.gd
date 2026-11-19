@@ -4,7 +4,7 @@ extends Node
 ## The CPU may write a register at any time: `write()` snaps to RGB332 and the shader recolours every
 ## pixel assigned to that register on the next draw, with no redraw of the screen. Colour cycling
 ## (`cycle()`) steps on video frames (16.64 ms each, counted from accumulated delta), not on physics ticks.
-## Child of the node whose material is the CRT shader (ArcadeScreen, AttractCrt): `target` defaults to the
+## Child of the node whose material is the CRT shader (ArcadeScreen): `target` defaults to the
 ## parent. Pushes `registers`, the pixel-match set and `limits` (1 - Look.t, so THE PRETENCE fades the
 ## limits out) to that material. Only what that material shades is limited; the bezel never is.
 

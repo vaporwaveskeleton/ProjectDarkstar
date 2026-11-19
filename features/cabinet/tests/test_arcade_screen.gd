@@ -63,7 +63,7 @@ func test_screen_crt_reads_its_own_texture_and_no_shader_hard_codes_the_rows() -
 	var crt := FileAccess.get_file_as_string(SHADER_DIR + "crt.gdshader")
 	assert_bool(crt.contains("hint_screen_texture")).is_false()
 	assert_bool(crt.contains("TEXTURE")).is_true()
-	for f in ["crt.gdshader", "crt_attract.gdshader"]:
+	for f in ["crt.gdshader"]:
 		assert_bool(FileAccess.get_file_as_string(SHADER_DIR + f).contains("360")).override_failure_message("%s hard-codes 360" % f).is_false()
 	var common := FileAccess.get_file_as_string(SHADER_DIR + "crt_common.gdshaderinc")
 	assert_bool(common.contains("uniform float rows")).is_true()
