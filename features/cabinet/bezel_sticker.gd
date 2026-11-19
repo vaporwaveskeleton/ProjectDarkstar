@@ -1,8 +1,8 @@
 class_name BezelSticker
 extends ColorRect
-## The "NEW!" sticker as a real printed vinyl sticker stuck on the glass (replaces the flat starburst):
+## The "NEW!" sticker as a real die-cut vinyl sticker stuck on the glass (replaces the flat starburst):
 ## shaders/cabinet/bezel_sticker.gdshader draws flat inks, fading, edge wear, rim dirt and a lifted
-## curling corner with a shadow; the slogan is PixelText over it, through the same print material so it
+## curling corner with a shadow; the slogan is VectorText over it, through the same print material so it
 ## fades and scuffs with the rest of the print. Child of the right BezelPrint column; `rect` is
 ## column-local (CabinetBezel.RIGHT_STICKER).
 
@@ -14,6 +14,7 @@ const MARGIN := 3.0
 var _mat: ShaderMaterial
 var _text: Control
 var _sticker := Rect2()
+var _text_cache: Dictionary = {}
 
 
 ## A sticker over `rect` (column-local).
@@ -64,5 +65,8 @@ func _ready() -> void:
 func _draw_text() -> void:
 	var inks := BezelInks.default() as BezelInks
 	var s := tr("CAB_BEZEL_SLOGAN")
+	var cap := _sticker.size.y * 0.42
+	var stroke := cap * 0.2
 	var c := Vector2(MARGIN + _sticker.size.x * 0.5, MARGIN + _sticker.size.y * 0.5)
-	PixelText.draw_centered(_text, c.x, roundf(c.y - PixelText.H * 0.5), s, inks.key_black)
+	var top := c.y - BezelText.ink_size(s, cap, stroke, 0.8).y * 0.5 + stroke * 0.5
+	BezelText.draw(_text, _text_cache, s, Vector2(c.x, top), true, cap, stroke, 0.8, inks.key_black)

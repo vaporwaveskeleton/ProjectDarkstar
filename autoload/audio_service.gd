@@ -63,6 +63,7 @@ var _sub_ramp_s := 0.0
 var _sub_t := 0.0
 var _sub_fx: Dictionary = {}           # StringName bus -> AudioEffectLowPassFilter index on that bus
 var _sub_base_db: Dictionary = {}      # StringName bus -> volume_db before any subtraction
+var _touch_ms := -1000000              # wall-clock ms of the last playback start or stop (shutdown drain)
 
 
 func _ready() -> void:
@@ -148,6 +149,10 @@ func has_cue(id: StringName) -> bool:
 	return _cues.has(id)
 
 
+func _touch() -> void:
+	_touch_ms = Time.get_ticks_msec()
+
+
 func _now_ms() -> int:
 	return now_ms_override if now_ms_override >= 0 else Time.get_ticks_msec()
 
@@ -185,6 +190,7 @@ func play(id: StringName, volume_db: float = 0.0) -> void:
 		pitch = pow(2.0, _jitter_rng.randf_range(-rule.pitch_jitter_cents, rule.pitch_jitter_cents) / 1200.0)
 	p.pitch_scale = pitch
 	p.play()
+	_touch()
 	_voice_cue[index] = id
 	_voice_priority[index] = rule.priority
 	_voice_start_ms[index] = now
@@ -230,6 +236,7 @@ func set_chant(level: float) -> void:
 	_chant_level = clampf(level, 0.0, 1.0)
 	if _chant_level > 0.0 and not _chant.playing and not muted_for_tests:
 		_chant.play()
+		_touch()
 
 
 ## Total silence for `seconds`: every voice and the chant stop (the scare chord, GDD §12).
@@ -269,6 +276,7 @@ func ambience_id() -> StringName:
 
 
 func _stop_ambience_players() -> void:
+	_touch()
 	for i in 2:
 		_amb[i].stop()
 		_amb_fade[i] = 0.0
@@ -283,20 +291,24 @@ func _step_ambience(delta: float) -> void:
 		if muted_for_tests or _silence > 0.0:
 			if p.playing:
 				p.stop()
+				_touch()
 			_amb_fade[i] = 0.0
 			continue
 		if wanted and not p.playing and p.stream != null:
 			_amb_fade[i] = 0.0   # fresh start or return from silence: fade in
 			p.volume_db = -80.0
 			p.play()
+			_touch()
 		_amb_fade[i] = move_toward(_amb_fade[i], 1.0 if wanted else 0.0, delta / AMBIENCE_FADE_S)
 		var gain := sin(_amb_fade[i] * PI * 0.5)
 		p.volume_db = lerpf(-40.0, AMBIENCE_MAX_DB, _amb_level_cur) + linear_to_db(maxf(gain, 0.0001))
 		if not wanted and _amb_fade[i] <= 0.0 and p.playing:
 			p.stop()
+			_touch()
 
 
 func _stop_voices() -> void:
+	_touch()
 	for i in _voices.size():
 		_voices[i].stop()
 		_voice_end_ms[i] = 0
@@ -309,7 +321,9 @@ func _stop_voices() -> void:
 func _exit_tree() -> void:
 	_apply_subtraction(0.0)   # never leave the shared buses filtered or cut
 	# children leave the tree first, so Player.playing is already false here: use our own books
-	var was_sounding := active_count() > 0 or _chant_level > 0.0 or _amb_id != &""
+	# our books lie after silence()/stop_all() zero them while the mixer still holds the playbacks,
+	# so the drain is keyed to the wall-clock time since the last start or stop instead
+	var drain_ms := SHUTDOWN_DRAIN_MS - (Time.get_ticks_msec() - _touch_ms)
 	var players: Array[AudioStreamPlayer] = []
 	players.append_array(_voices)
 	players.append_array(_amb)
@@ -322,8 +336,8 @@ func _exit_tree() -> void:
 	_beds.clear()
 	_trim.clear()
 	_rendered.clear()
-	if was_sounding:
-		OS.delay_msec(SHUTDOWN_DRAIN_MS)
+	if drain_ms > 0:
+		OS.delay_msec(drain_ms)
 
 
 func stop_all() -> void:
@@ -333,6 +347,7 @@ func stop_all() -> void:
 	_amb_id = &""
 	_chant_level = 0.0
 	_chant.stop()
+	_touch()
 	_bed_pitch_target = 1.0
 	_chant.pitch_scale = 1.0
 
@@ -370,6 +385,7 @@ func _process(delta: float) -> void:
 	_chant.volume_db = lerpf(_chant.volume_db, target, clampf(delta * 4.0, 0.0, 1.0))
 	if _chant.volume_db < -79.0 and _chant.playing and _chant_level <= 0.0:
 		_chant.stop()
+		_touch()
 
 
 # --- subtraction: the entity has no sound, it is heard as sound removed (AUDIO-001 §12.14) ---------

@@ -18,6 +18,9 @@ extends TunableResource
 @export var silver_lining: int = 1
 ## ✱ fog bands render offscreen at this fraction of the window's pixel size; 1 = in place.
 @export var fog_resolution_scale: float = 1.0
+## ✱ the two MID fog bands render offscreen at this fraction (pass 3: mid fog is the CH-7 lever,
+## quarter-res at low); never above fog_resolution_scale.
+@export var mid_fog_resolution_scale: float = 1.0
 ## ✱ most fog bands drawn (the look may ask for fewer).
 @export var max_fog_bands: int = 5
 ## ✱ multiplier on every particle count.
@@ -40,7 +43,7 @@ extends TunableResource
 
 func tunable_properties() -> PackedStringArray:
 	return PackedStringArray([
-		"fog_octave_drop", "warp_octaves", "two_sample_advection", "silver_lining", "fog_resolution_scale",
+		"fog_octave_drop", "warp_octaves", "two_sample_advection", "silver_lining", "fog_resolution_scale", "mid_fog_resolution_scale",
 		"max_fog_bands", "particle_scale", "animated_shafts", "shaft_resolution_scale", "sphere_refraction",
 		"nested_shells", "entity_edge_octaves", "set_pieces", "glow",
 	])

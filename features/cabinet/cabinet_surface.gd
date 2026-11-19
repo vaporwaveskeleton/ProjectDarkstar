@@ -24,7 +24,7 @@ extends TunableResource
 @export_range(0.0, 1.0) var thumb_wear: float = 0.85              ## the dulled, greyed thumb patch on the lit plate
 @export_range(0.0, 1.0) var micro_texture: float = 0.55           ## painted-steel orange-peel grain
 @export var lamp_idle: float = 0.22                               ## lamp light at glow 0 (dim but visible)
-@export var lamp_spill: float = 0.32                              ## red-orange light the lit plate throws on its neighbours
+@export var lamp_spill: float = 0.2                               ## red-orange light the lit plate throws on its neighbours
 @export var lamp_spill_radius: float = 10.0                       ## how far it reaches, rig units
 
 # --- Determinism and light ---
@@ -32,7 +32,7 @@ extends TunableResource
 @export var light_direction: Vector3 = Vector3(-0.55, -0.65, 0.55) ## strength (xy) and elevation (z) of the key; its heading comes from the screen hole
 @export var warm_color: Color = Color(1.0, 0.78, 0.52)            ## the screen glow
 @export var fill_color: Color = Color(0.5, 0.58, 0.78)            ## the cool dim room fill
-@export var warm_gain: float = 1.25                               ## key strength next to the hole
+@export var warm_gain: float = 0.5                                ## the steady glow of the tube next to the hole (the live spill adds the rest)
 @export var warm_radius: float = 170.0                            ## rig units over which the screen glow falls to 1/e
 @export var fill_gain: float = 0.78                               ## room fill strength
 @export var top_gain: float = 1.0                                 ## fill at the top of the cabinet
@@ -43,11 +43,11 @@ extends TunableResource
 # --- Printed glass (reverse screen print under the glass) ---
 @export var print_misregister: float = 0.4                        ## plate misregistration, rig units
 @export_range(0.0, 1.0) var print_fade: float = 0.28              ## ink faded by years of light
-@export_range(0.0, 1.0) var print_mottle: float = 0.55            ## ink-density unevenness
-@export_range(0.0, 1.0) var print_halftone: float = 0.4           ## visible halftone where the tone changes
-@export var print_halftone_cell: float = 2.6                      ## halftone dot pitch, rig units (about 45 lpi on a real bezel)
-@export_range(0.0, 1.0) var print_scuff: float = 0.55             ## fine scuffs through to the white backer
-@export_range(0.0, 1.0) var print_flake: float = 0.45             ## ink flaked off in specks
+@export_range(0.0, 1.0) var print_mottle: float = 0.4             ## ink-density unevenness (slow blotches only)
+@export_range(0.0, 1.0) var print_halftone: float = 1.0           ## screened tones on (1) or flat (0)
+@export var print_halftone_cell: float = 1.25                     ## halftone dot pitch, rig units (about 1 to 1.5)
+@export_range(0.0, 1.0) var print_scuff: float = 0.3              ## rub fade along the worn edges
+@export_range(0.0, 1.0) var print_flake: float = 0.7             ## sharp-edged flakes of ink lost to the black backing (causal)
 @export var backer_color: Color = Color8(0xE4, 0xDF, 0xD2)        ## the white backer ink behind the colours
 @export_range(0.0, 1.0) var glass_reflection: float = 0.55        ## broad soft reflection on the glass
 @export_range(0.0, 1.0) var glass_edge_tint: float = 0.6          ## green-blue tint of the glass edge
@@ -58,6 +58,38 @@ extends TunableResource
 @export_range(0.0, 1.0) var sticker_fade: float = 0.18            ## the "new" sticker's faded vinyl inks
 @export var sticker_curl: float = 13.0                            ## how far the lifted corner reaches, rig units
 @export_range(0.0, 1.0) var vent_dust: float = 0.6                ## dust in the speaker-grille holes
+
+
+# --- PR C pass 2: the screen lights the cabinet, the real tube, trim, marquee, bezel lettering (all ✱) ---
+@export var spill_gain: float = 2.2                               ## strength of the screen's average colour on the bezel and door
+@export var spill_radius: float = 150.0                           ## rig units over which that spill falls to 1/e
+@export var spill_boost: float = 12.0                              ## screen average luminance to spill intensity: (luminance * boost) ^ curve
+@export var spill_curve: float = 0.6                              ## below 1 so a mostly dark screen still lights the cabinet a little
+@export var spill_interval: float = 0.2                           ## s between samples of the screen
+@export var spill_smooth: float = 0.25                            ## s: how slowly the cabinet follows the screen (breathes, never strobes)
+@export var spill_steady_color: Color = Color(0.5, 0.6, 0.85)     ## the fixed spill colour while photosensitivity is on
+@export var spill_steady_amount: float = 0.22                     ## its fixed intensity
+@export var recess_shadow: float = 0.7                            ## darkness of the tube's recess wall beside the opening
+@export var recess_width: float = 7.0                             ## its reach, rig units
+@export var tube_corner_radius: float = 5.0                       ## rounded corners of the tube mask, rig units (the only screen pixels it ever replaces)
+@export_range(0.0, 1.0) var tube_glass: float = 1.0               ## master amount of the glass layer over the screen (0 = off)
+@export var tube_reflection: float = 0.035                        ## faint convex reflection, max alpha
+@export var tube_dust: float = 0.02                               ## light dust on the tube glass, max alpha
+@export var tube_bloom: float = 0.04                              ## phosphor bloom bleed at the edges, max alpha
+@export var tube_edge_shadow: float = 0.07                        ## soft inner shadow where the tube sits recessed, max alpha
+@export var tube_max_shift: float = 0.12                          ## readability bound: the glass may move no screen channel by more than this (0..1)
+@export var tmold_width: float = 3.2                              ## black T-molding on the bezel's outer edges, rig units
+@export var bolt_radius: float = 2.3                              ## zinc bezel bolt heads
+@export var marquee_lettering: float = 17.0                       ## cap height of the marquee's title, rig units
+@export var marquee_stroke: float = 2.6                           ## its stroke
+@export var marquee_tracking: float = 5.0
+@export_range(0.0, 1.0) var marquee_unevenness: float = 0.55      ## uneven backlight
+@export var print_dot_gain: float = 0.22                          ## ink spread: a 50 % tone prints as about 61 %
+@export var price_cap: float = 4.6                                ## cap height of the price plate's lettering
+@export var price_stroke: float = 1.0
+@export var price_tracking: float = 0.8
+@export_range(0.0, 1.0) var glass_band: float = 0.6               ## broad soft diagonal specular band on the bezel glass
+@export_range(0.0, 1.0) var glass_screen_reflection: float = 0.5  ## the screen's glow reflected in the glass
 
 const _DEFAULT_PATH := "res://data/cabinet/cabinet_surface.tres"
 

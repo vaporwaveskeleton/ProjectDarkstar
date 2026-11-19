@@ -12,6 +12,7 @@ warp_octaves = 2
 two_sample_advection = 1
 silver_lining = 1
 fog_resolution_scale = 0.75
+mid_fog_resolution_scale = 0.5
 max_fog_bands = 4
 particle_scale = 0.7
 animated_shafts = 1

@@ -19,6 +19,12 @@ uniform float cab_bottom_gain = 0.5;
 uniform float cab_view_h = 360.0;
 uniform vec3 light_dir = vec3(-0.55, -0.65, 0.55);
 
+// The screen lights the cabinet: ScreenLight writes the screen's average colour (rgb) and intensity (a)
+// here every few frames (registered in project.godot [shader_globals]); one value for every part.
+global uniform vec4 cab_screen_light;
+uniform float cab_spill_gain = 1.9;
+uniform float cab_spill_radius = 130.0;
+
 // ---------------------------------------------------------------- noise
 float hash21(vec2 p) {
 	p = fract(p * vec2(123.34, 456.21));
@@ -91,13 +97,24 @@ vec3 cab_key_dir(vec2 rp) {
 	return normalize(vec3(to * length(light_dir.xy), light_dir.z));
 }
 
+// The live screen colour falling on a part: soft falloff from the hole's edge, onto the bezel and the door alike.
+float cab_hole_dist(vec2 rp) {
+	vec2 hc = cab_hole.xy + cab_hole.zw * 0.5;
+	vec2 q = abs(rp - hc) - cab_hole.zw * 0.5;
+	return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0);
+}
+
+vec3 cab_spill(vec2 rp) {
+	return cab_screen_light.rgb * cab_screen_light.a * cab_spill_gain * exp(-max(cab_hole_dist(rp), 0.0) / cab_spill_radius);
+}
+
 vec3 cab_amb(vec2 rp) {
 	float k = clamp(rp.y / cab_view_h, 0.0, 1.0);
 	return cab_fill_color * cab_fill_gain * mix(cab_top_gain, cab_bottom_gain, k);
 }
 
 vec3 cab_key(vec2 rp) {
-	return cab_warm_color * cab_warm_gain * cab_falloff(rp);
+	return cab_warm_color * cab_warm_gain * cab_falloff(rp) + cab_spill(rp);
 }
 
 // Diffuse light on a surface of normal n at rig position rp (white-light units, multiply the albedo).
@@ -169,4 +186,21 @@ vec3 environment(float t, float x, float blur) {
 	e = mix(e, ground, floor_k);
 	e += 0.12 * smoothstep(0.3, 0.0, abs(x + 0.4)) * (1.0 - floor_k);
 	return e;
+}
+
+// ---------------------------------------------------------------- causal wear
+// Where the cabinet is worn is where it is touched and kicked: the lower bezel edge, round the coin door,
+// the sheet's corners (lower ones most) and its outer edges. The upper art stays clean. 0 clean .. 1 worn.
+float wear_k(vec2 rp) {
+	float x0 = cab_hole.x - 80.0;
+	float x1 = cab_hole.x + cab_hole.z + 80.0;
+	float y0 = cab_hole.y;
+	float y1 = cab_hole.y + cab_hole.w;
+	float low = smoothstep(y1 - 80.0, y1 + 14.0, rp.y);
+	vec2 cn = vec2(rp.x < (x0 + x1) * 0.5 ? x0 : x1, rp.y < (y0 + y1) * 0.5 ? y0 : y1);
+	float corner = smoothstep(44.0, 3.0, length(rp - cn)) * (rp.y < (y0 + y1) * 0.5 ? 0.35 : 0.85);
+	vec2 dc = vec2(x1 - 40.0, y1 - 40.0);
+	float door = smoothstep(62.0, 24.0, length((rp - dc) * vec2(1.0, 1.1)));
+	float edge = smoothstep(6.0, 0.0, min(rp.x - x0, x1 - rp.x)) * 0.35;
+	return clamp(max(max(low * 0.85, corner), max(door, edge)), 0.0, 1.0);
 }

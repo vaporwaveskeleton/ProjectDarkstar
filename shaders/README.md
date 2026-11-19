@@ -13,3 +13,10 @@ Index (TECH-001 §5.1 WarpComposer, §5.5 rendering ladder):
   - `bezel_vent.gdshader`: perforated black-metal speaker grilles.
   - `bezel_sticker.gdshader`: the worn vinyl NEW! sticker with a lifted corner.
   - `contact_shadow.gdshader`: the soft shadow and occlusion under a raised part.
+  - Pass 2 (2026-11-19; the global uniform `cab_screen_light` is declared in `cabinet_material.gdshaderinc` and registered in `project.godot` `[shader_globals]`):
+    - `bezel_frame.gdshader`: the printed border round the rounded screen opening.
+    - `screen_tube.gdshader`: the overlay after the screen: rounded tube mask and a very faint, alpha-clamped glass layer (never alters the CRT or register quantize).
+    - `bezel_marquee.gdshader`: the backlit marquee sign (uneven backlight, dead tube band, dust).
+    - `cabinet_trim.gdshader`: the T-molding.
+    - `bezel_bolt.gdshader`: the zinc bolts.
+    - `cabinet_room.gdshader`: the dark room beyond the printed sheet.
