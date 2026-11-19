@@ -49,6 +49,13 @@ const _SKY_EPS := 1e-6
 ## The act the M2 slice's runs play (WARP-001 §1.3 act window: Act 1 = T1). TECH-001 Q-T200.
 const WARP_ACT_SLICE := 1
 
+## Transient warp effects witnessed this Iteration (WARP-001 §1.1 "novel"; Q-T201): id -> true.
+## In memory only; cleared when a new Iteration begins. The WarpComposer reads and adds to it.
+var warp_witnessed: Dictionary = {}
+## Highest effective warp tier seen this Iteration (SYS-001 §8 telemetry key `warp_max`; Q-T203).
+## In memory until the telemetry pass saves it in the iteration slot.
+var warp_max: int = 0
+
 var stats: RunSessionStats
 
 var _saver: Object
@@ -157,6 +164,8 @@ func begin_iteration_if_needed() -> bool:
 	_iteration = IterationState.new()
 	_iteration.started = true
 	_iteration.loop_min_left = stats.iteration_budget_loop_min
+	warp_witnessed.clear()
+	warp_max = 0
 	iteration_started.emit()
 	return true
 
@@ -371,6 +380,11 @@ func warp_inputs() -> Dictionary:
 		"seam_index": maxi(1, _run.seam_index),
 		"seed": _run.seed_value,
 	}
+
+
+## The WarpComposer reports each effective tier it enters (warp_tier_set).
+func note_warp_tier(tier: int) -> void:
+	warp_max = maxi(warp_max, tier)
 
 
 # --- snapshot / restore ----------------------------------------------------------------------------

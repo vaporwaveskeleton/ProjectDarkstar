@@ -105,7 +105,8 @@ func enter_seam() -> void:
 		bool(inputs.get("hollow", false)), bool(inputs.get("composure_zero", false)))
 	var seam := int(inputs.get("seam_index", 1))
 	depth = warp_set.depth_for_seam(seam) if warp_set else 1.0
-	schedule = WarpSchedule.plan(warp_set, int(inputs.get("seed", 0)), seam)
+	schedule = WarpSchedule.plan(warp_set, int(inputs.get("seed", 0)), seam,
+		session.warp_witnessed if session else null)
 	if showcase:
 		_plan_showcase()
 	liar = HudLiar.new()
@@ -124,6 +125,12 @@ func enter_seam() -> void:
 	if camera:
 		_cam_last = camera.global_position
 		_cam_centre = _cam_last
+	_report_tier()
+
+
+func _report_tier() -> void:
+	if session:
+		session.note_warp_tier(current_tier())
 	warp_tier_set.emit(current_tier())
 
 
@@ -170,7 +177,7 @@ func step(delta: float) -> void:
 		composure.warp_passive(delta, current_tier())
 		if composure.band == Composure.Band.HOLLOWED and tier.force_hollowed(tier_stats):
 			liar.tier = current_tier()
-			warp_tier_set.emit(current_tier())
+			_report_tier()
 	if not runs_set():
 		return
 	if t < warp_set.entry_quiet_s:

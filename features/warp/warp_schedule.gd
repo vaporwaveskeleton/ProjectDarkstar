@@ -9,12 +9,17 @@ extends RefCounted
 var planned: Dictionary = {}
 ## Novel effects admitted this sector (GDD §16 R-02).
 var novel_used: int = 0
+## Witnessed ids: the run's Iteration memory when bound (RunSessionCore.warp_witnessed, Q-T201),
+## else a sector-local set. Shared by reference, so admits write through to the Iteration.
 var _witnessed: Dictionary = {}
 var _cap: int = 0
 
 
-static func plan(warp_set: WarpSet, run_seed: int, seam_index: int) -> WarpSchedule:
+static func plan(warp_set: WarpSet, run_seed: int, seam_index: int,
+		witnessed: Variant = null) -> WarpSchedule:
 	var s := WarpSchedule.new()
+	if witnessed is Dictionary:
+		s._witnessed = witnessed
 	if warp_set == null:
 		return s
 	s._cap = warp_set.novel_per_sector
@@ -42,7 +47,7 @@ static func duration_of(warp_set: WarpSet, effect_id: StringName) -> float:
 ## Returns false when the cap is spent (the effect is refused, not deferred).
 func admit(effect_id: StringName) -> bool:
 	if _witnessed.has(effect_id):
-		return true
+		return true   # not novel this Iteration: free (WARP-001 §1.1)
 	if novel_used >= _cap:
 		return false
 	_witnessed[effect_id] = true

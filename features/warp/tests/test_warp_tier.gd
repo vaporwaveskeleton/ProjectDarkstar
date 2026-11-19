@@ -114,3 +114,26 @@ func test_run_session_supplies_the_warp_drives() -> void:
 	assert_int(int(d.seed)).is_equal(77)
 	assert_int(WarpTier.compute(TIER, int(d.act), int(d.entropy), bool(d.hollow),
 		bool(d.composure_zero)).world).is_equal(1)
+
+
+func test_novelty_is_remembered_across_sectors_of_one_iteration() -> void:
+	var memory: Dictionary = {}
+	var a := WarpSchedule.plan(T1, 1, 1, memory)
+	assert_bool(a.admit(&"W1-09")).is_true()
+	assert_int(a.novel_used).is_equal(1)
+	var b := WarpSchedule.plan(T1, 1, 2, memory)
+	assert_bool(b.admit(&"W1-09")).is_true()
+	assert_int(b.novel_used).is_equal(0)   # witnessed earlier this Iteration: not novel
+
+
+func test_run_session_keeps_warp_max_and_clears_it_with_the_iteration() -> void:
+	var core := RunSessionCore.new(preload("res://data/run/run_session.tres"), null)
+	core.begin_iteration_if_needed()
+	core.note_warp_tier(1)
+	core.note_warp_tier(0)
+	assert_int(core.warp_max).is_equal(1)
+	core.warp_witnessed[&"W1-07"] = true
+	core.iteration().skies_dark = 99
+	core.begin_iteration_if_needed()
+	assert_int(core.warp_max).is_equal(0)
+	assert_bool(core.warp_witnessed.is_empty()).is_true()
