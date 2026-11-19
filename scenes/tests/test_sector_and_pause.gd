@@ -51,6 +51,10 @@ func test_camera_and_compass_are_wired_to_the_vigil() -> void:
 		assert_str(str(compass.marker_kinds[i])).is_equal("grub")
 	assert_str(str(compass.marker_kinds[6])).is_equal("geode")
 	assert_object(compass.torus).is_same(runner.get_property("torus"))
+	# Q-T120: one 64 × 64 module (ART-001 §12.5), top-centre of the sector HUD
+	assert_vector(compass.size).is_equal(Vector2(64, 64))
+	assert_float(compass.position.x + compass.size.x * 0.5).is_equal_approx(
+		compass.get_parent_area_size().x * 0.5, 0.5)
 	assert_object(vigil.emitter.projectile_parent).is_same(runner.find_child("Actors"))
 
 
