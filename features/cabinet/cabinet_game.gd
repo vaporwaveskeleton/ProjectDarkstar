@@ -1,7 +1,8 @@
 extends Node
 ## Act 0 — "The Last Normal Day" as the Cabinet runs it (GDD §6.1). Owns the stage flow only:
-## READY → play → (death → respawn | game over) → stage clear → … → the entity unmade →
-## the cabinet's credits → THE PRETENCE (WARP-001 W0-07/W0-08) → the Ruins.
+## READY → play → (death → respawn | game over → attract, where CONTINUE restarts this stage) →
+## stage clear or entity unmade → short credits → next stage … → the last stage (a0_5) → the full
+## credits → THE PRETENCE (WARP-001 W0-07/W0-08) → the Ruins.
 ## Rules live in the ArcadeWorld layers; text lives in en.po; numbers live in CabinetTuning.
 
 enum State { INTRO, PLAY, DEAD, CLEARED, UNMADE, CREDITS, REVEAL, GAME_OVER }
@@ -20,8 +21,16 @@ const STAT_KEYS := ["CAB_CREDITS_STAT_GRUBS", "CAB_CREDITS_STAT_MINED", "CAB_CRE
 const STAT_AFTER := 3             ## stat lines follow the first 3 credit lines
 const STAT_ENTRY_INDICES := [3, 4, 5, 6]   ## their positions in the full roll
 
-@export var stages: Array[CabinetStage] = []
+@export var roster: CabinetStageRoster   ## the shift, a0_1 … a0_5 in play order (data/cabinet/stage_roster.tres)
 @export var tuning: CabinetTuning
+
+## Read-only view of `roster.stages` (the automation probe and tests read `stages`).
+var stages: Array[CabinetStage]:
+	get:
+		if roster == null:
+			var none: Array[CabinetStage] = []
+			return none
+		return roster.stages
 
 @onready var world: ArcadeWorld = %World
 @onready var hud: CabinetHud = %Hud
@@ -73,12 +82,62 @@ func _ready() -> void:
 
 
 ## Routed with {"demo": true} from the attract screen: the cabinet plays itself.
+## Routed with {"continue_stage": N} after GAME OVER and a new coin (PM Q-T104c): a new game that
+## begins at stage N. SceneRouter mounts the scene first (so _ready has already started stage 0) and
+## calls this right after, in the same frame; a valid N restarts here, anything else keeps stage 0.
 func on_route_entered(params: Dictionary) -> void:
 	demo = bool(params.get("demo", false))
 	if demo:
 		_demo_t = DEMO_SECONDS
 		autopilot.enabled = true
 		messages.demo = true
+		return
+	var cont := continue_stage_of(params, stages.size())
+	if cont >= 0:
+		new_game(cont)
+		AudioService.play(&"continue_taken")   # AUDIO-001 cue (unknown id = silent no-op)
+
+
+## The stage a `continue_stage` route param asks for: an int (or float) inside 0..count-1, else -1.
+static func continue_stage_of(params: Dictionary, count: int) -> int:
+	for key: Variant in ["continue_stage", &"continue_stage"]:
+		if not params.has(key):
+			continue
+		var v: Variant = params[key]
+		if typeof(v) != TYPE_INT and typeof(v) != TYPE_FLOAT:
+			return -1
+		var i := int(v)
+		return i if i >= 0 and i < count else -1
+	return -1
+
+
+## A fresh game (score 0, starting lives, empty service record) that begins at stage `i`.
+func new_game(i: int) -> void:
+	score.reset()
+	record.reset()
+	start_stage(i)
+
+
+## True on the shift's last stage: its end rolls the full credits and opens THE PRETENCE.
+func is_last_stage() -> bool:
+	return stage_index >= stages.size() - 1
+
+
+## The stage that follows this one's credits (cleared or unmade alike), or -1: THE PRETENCE follows.
+func next_stage_index() -> int:
+	return -1 if is_last_stage() else stage_index + 1
+
+
+## The attract CONTINUE page's line for stage index `i` (shown 1-based). Attract draws it.
+static func continue_line(i: int) -> String:
+	return TranslationServer.translate("CAB_CONTINUE") % (i + 1)
+
+
+## What GAME OVER hands the attract screen: the stage a CONTINUE restarts. The demo hands nothing.
+func _game_over_params() -> Dictionary:
+	if demo:
+		return {}
+	return {"continue_stage": stage_index}
 
 
 func _exit_tree() -> void:
@@ -107,7 +166,10 @@ func start_stage(i: int) -> void:
 	AudioService.set_bed_pitch_scale(1.0)
 	world.vigil.input_enabled = false
 	messages.clear()
-	messages.show_ready(tr(st.title_key), tr(st.subtitle_key), READY_SECONDS)
+	var zone := "" if st.zone_key.is_empty() else tr(st.zone_key)
+	messages.show_ready(tr(st.title_key), tr(st.subtitle_key), READY_SECONDS, zone)
+	if st.zone_cue != &"":
+		AudioService.play(st.zone_cue)   # AUDIO-001 zone jingle (≤ READY_SECONDS); unknown id = silent no-op
 	_enter(State.INTRO, READY_SECONDS)
 
 
@@ -162,16 +224,21 @@ func _on_timer() -> void:
 				_save_hi_score()
 				_enter(State.GAME_OVER, 3.5)
 		State.GAME_OVER:
-			SceneRouter.go_to(&"attract")
+			SceneRouter.go_to(&"attract", _game_over_params())
 		State.CLEARED:
 			messages.roll_credits(_credit_lines(3))
 			_enter(State.CREDITS, CREDITS_SECONDS * 0.6)
 		State.UNMADE:
-			messages.roll_credits(_full_credit_lines(), PackedInt32Array(STAT_ENTRY_INDICES))
-			_enter(State.CREDITS, world.fx_tuning.credits_full_seconds)
+			if is_last_stage():
+				messages.roll_credits(_full_credit_lines(), PackedInt32Array(STAT_ENTRY_INDICES))
+				_enter(State.CREDITS, world.fx_tuning.credits_full_seconds)
+			else:   # mid-shift unmade (a0_3, a0_4): the short roll, then the next stage
+				messages.roll_credits(_credit_lines(3))
+				_enter(State.CREDITS, CREDITS_SECONDS * 0.6)
 		State.CREDITS:
-			if stage_index + 1 < stages.size() and world.ritual.phase != SepulchreRitual.Phase.UNMADE:
-				start_stage(stage_index + 1)
+			var next := next_stage_index()
+			if next >= 0:
+				start_stage(next)
 			else:
 				_enter(State.REVEAL)
 				reveal.play(self, bool(_profile.get("pretence_seen", false)))
@@ -184,7 +251,7 @@ func _credit_lines(n: int) -> PackedStringArray:
 	return out
 
 
-## The full stage-2 roll: the 7 propaganda lines with the true service record after "YOUR QUOTA IS MET".
+## The full roll after the last stage: the 7 propaganda lines with the true service record after "YOUR QUOTA IS MET".
 func _full_credit_lines() -> PackedStringArray:
 	var out := PackedStringArray()
 	var vals: Array[int] = [record.grubs_destroyed, record.glass_mined, record.charges_thrown, record.glass_carried]

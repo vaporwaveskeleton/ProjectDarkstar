@@ -1,12 +1,13 @@
 # DARKSTAR — Systems Bible (Numbers)
 
-**Doc ID:** SYS-001 · **Version:** 1.5 · **Status:** Authoritative for all numbers · **Last updated:** 2026-11-19
+**Doc ID:** SYS-001 · **Version:** 1.6 · **Status:** Authoritative for all numbers · **Last updated:** 2026-11-19
 **Owner:** Design (systems) · **Upstream:** `GDD_DARKSTAR_v0.2.md` (GDD-001) · **Downstream:** every other doc in this set
 **Data target:** `docs/04-production/TECH_ARCHITECTURE.md` §6 (data-driven tables) — every table below maps 1:1 to a `.tres`/JSON resource.
 **Rev 1.1 (2026-11-17):** the Anchor field rows in §1.1 (owner decision D-11 of GDD-001 §18); **rev 1.2 (2026-11-17, owner-delegated rulings R-01, R-04, R-10, R-11, R-14):** §1.2 post-hit grace, §9 resolution closed to 640×360, hitbox diameter and entity exception, on-screen caps; §2.2 ninth-sky Hunger as one +2 row, §6 Hourglass budget/death cost/refund, §7.2 Codex stamp note, §7.5 Fragments and Threads (LOOP-001 LR-09…LR-13); the warp-owned numbers WARP-001 asked for in its §8 R-01 to R-05, added to §6, §9 and §10; and the §2.2 eaten-rule pointer corrected from WARP-001 §6 to §3. **No pre-existing number in this doc was changed by that revision.**
 **Rev 1.3 (2026-11-18, cosmic horror design rev 3; PM ruling 2026-11-18 (owner grant), GDD-001 §18 D-15, CHD-17):** first-pass rows for the Passing, the Glimpse, gaze and the entity's on-screen silhouette (new §2.3); gaze drain and the Procession let-pass gain (§1.5); hull Charge lamps (§1.4); kit memory, reserve kits, the Procession and the death-site Penitent cap (new §4.1); the Hourglass in-run show threshold (§6); the lie-law rows and the tear silence (§9); Codex gating, the respec row and the post-tree Ember sink (new §7.6). **Retired (CHD-15, Unwritten Ink):** the §7.2 `Codex firsts` Ink row, the §7.3 Ink multiplier column, the §6 Shrine purge Ink payout and the §7.5 20 : 1 overflow valve. Every new game-visible row is marked **PM-approved 2026-11-18 under owner grant; retune at playtest** (not `✱`). Rows with no ruled value say "value owed" and are listed in TECH-001 §11.1 (Q-T66).
 **Rev 1.4 (2026-11-18, Act 1 vertical slice; PM ruling 2026-11-18 (owner grant)):** §7.1 new row "Act 0 bank (first Ruins visit, once)" (the existing Ember formula applied once; PM-approved 2026-11-18 under owner grant; retune at playtest); §6 Hourglass Clock budget row notes the first-visit start at the first launch (GDD §6.2 exception). **No pre-existing number was changed.** Open: the bank's save reason (TECH-001 §11.1 Q-T101).
 **Rev 1.5 (2026-11-19, M1 slice 3 PR 4; PM under owner autonomy grant 2026-11-19):** §1.4 turn-authority reading (time for a 180° turn), Charge contact radius, trail and hits on target; §2 phase-0 row: "Sepulchre HP per segment 8 ✱" **dropped for phases 0–1** (1 Charge hit = 1 segment; TECH-001 Q-T110), new Sepulchre and sandbox procession rows; §3 Grub flee-while-carrying (never, Q-T112), body/steering and idle-orbit rows. All new values are the Cabinet's or M1 engineering values, ✱.
+**Rev 1.6 (2026-11-19, Act 0 arcade expansion P1, "the shift"; PM (delegated owner authority)):** new §1.6 Act 0 stage table (five stages); §7.1 rows for lives at start, lives cap and the extra-life schedule (schedule approved, built in P2). No Vigil number was changed.
 
 ---
 
@@ -142,6 +143,20 @@ Conventions used everywhere:
 | **Hollowed** | 0 | +1 Warp Tier for the sector (forced, ends at sector end), 1 free death, Choir detection always full, **MADNESS branch effects ×2** |
 
 A `Hollowed` sector is a **build choice**, tracked in telemetry as `hollow_sectors` and shown in the run summary as a stat, not a warning.
+
+### 1.6 Act 0 stage table (the shift)
+
+Act 0 is a five-stage shift (~9–11 min skilled; GDD §6.1; TECH-001 §2.10). One `CabinetStage` per row (`data/cabinet/stage_*.tres`, played in the order of `stage_roster.tres`). Field size is the Cabinet torus, 1920×720 ✱ (unchanged; §9). Zone names are the GDD §19 glossary words. Source for every row: **PM 2026-11-19 (arcade layer study); retune at playtest** (`⚙`). `wakes` = the Sepulchre can wake the entity (false = cold, the stage ends when the Sepulchre is cleared); `goal` is the stage's end condition (0 = clear the Sepulchre, 1 = unmake the entity; `CabinetStage.goal`).
+
+| Id | Name / zone | Geodes | Grubs | Acolytes | Guard Acolytes | Sepulchre start segments | Wakes | Goal |
+|---|---|---|---|---|---|---|---|---|
+| `a0_1` | First Vigil (cold) | 12 | 2 | 0 | 0 | 8 | no | 0 |
+| `a0_2` | Second Vigil / Drift (cold, Grub-heavy) | 16 | 7 | 1 | 1 | 10 | no | 0 |
+| `a0_3` | Third Vigil / Censer Watch (Acolyte-heavy, first full Waking) | 18 | 4 | 3 | 2 | 0 | yes | 1 |
+| `a0_4` | Fourth Vigil / Shoal (geode-rich) | 26 | 6 | 2 | 1 | 4 | yes | 1 |
+| `a0_5` | The Last Normal Day / Hollow (geode-scarce, last stage) | 8 | 5 | 2 | 2 | 0 | yes | 1 |
+
+`a0_1` is the old A0-1 stage and `a0_5` the old A0-3 stage (The Last Normal Day); `a0_2`–`a0_4` are new. Vigil rows (§1.1–§1.5) are not touched by the shift (the 340 px/s lock stays).
 
 ---
 
@@ -361,6 +376,9 @@ Cosmic horror design rev 3 (PM ruling 2026-11-18 (owner grant)). The rules are Z
 | Rite boss | 15,000 | 15,000 | ✱ same weight as the entity: the Choir's rites *are* its body |
 | **Warp multiplier** | ×1.0 | **×1.0 (T0–T1), ×1.2 (T2–T3), ×1.5 (T4–T5)** | ✱ the horror pays better; score is diegetic telemetry, not reward |
 | Chain bonus | none | +10% per 3 s of continuous fire, cap +50%, resets on hit-taken | ✱ arcade-feel hook for clips |
+| Lives at start (Act 0) | 3 ✱ | — | arcade convention; `CabinetTuning.lives_start` 3. PM-approved 2026-11-19 (Q-T107); built |
+| Lives cap (Act 0) | 5 ✱ | — | `CabinetTuning.lives_cap` 5. PM-approved 2026-11-19 (Q-T107); built |
+| Extra life (Act 0) | at 10,000, then 30,000, then every +40,000 | — | PM-approved 2026-11-19 (Q-T107); **build: P2**. Built today: first at 10,000 (`extra_life_first`), then every 20,000 (`extra_life_every`, single step); the schedule change is not built. GDD §9.4 owns the rule |
 | Act 0 bank (first Ruins visit, once) | Ember = `floor(Act 0 Vigil Index / 200)` | — | the existing Ember formula below, applied once, at the first Ruins visit; the wall Cabinet pays it out in tickets (GDD §7.1; NARR-001 §5.7). A Cabinet replay never banks again (LOOP-001 §11.6; save reason open, TECH-001 §11.1 Q-T101). PM-approved 2026-11-18 under owner grant; retune at playtest |
 
 Score is **Ember's primary input**: `Ember = floor(score / 200)` plus milestone bonuses. The design note that matters: score never buys power *inside* a run (anti-pillar, GDD §3).

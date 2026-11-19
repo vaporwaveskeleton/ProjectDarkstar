@@ -19,6 +19,15 @@ func _init(tuning: CabinetTuning) -> void:
 	_next_extra = tuning.extra_life_first
 
 
+## Back to a new game: score 0, the starting lives, the first extra-life threshold (CONTINUE, Q-T104c).
+func reset() -> void:
+	score = 0
+	lives = _tuning.lives_start
+	_next_extra = _tuning.extra_life_first
+	score_changed.emit(score)
+	lives_changed.emit(lives)
+
+
 func add(points: int) -> void:
 	if points <= 0:
 		return

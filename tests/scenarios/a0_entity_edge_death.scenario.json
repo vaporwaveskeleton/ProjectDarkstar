@@ -10,7 +10,7 @@
 		{"do": "wait_until", "id": "attract/ui/NewVigil", "prop": "enabled", "eq": true, "within": 240},
 		{"do": "activate", "id": "attract/ui/NewVigil"},
 		{"do": "wait_route", "route": "cabinet", "within": 240},
-		{"do": "set_stage", "index": 1},
+		{"do": "set_stage", "index": 4},
 		{"do": "wait_until", "id": "cabinet/game", "prop": "state", "eq": "play", "within": 600},
 		{"do": "kill_all"},
 		{"do": "set_lives", "lives": 3},

@@ -520,7 +520,8 @@ func test_reduced_motion_keeps_the_delay_then_shows_everything_at_once() -> void
 
 
 func test_real_entity_death_in_the_real_stage_draws_the_outline_and_arrow() -> void:
-	var st := (game.stages[1] as CabinetStage).duplicate() as CabinetStage
+	var roster: CabinetStageRoster = game.roster
+	var st := (roster.get_stage(roster.index_of(&"a0_5"))).duplicate() as CabinetStage   # THE LAST NORMAL DAY: it wakes
 	st.sepulchre_start_segments = 20
 	world.start(st)
 	world.vigil.shield = 0.0

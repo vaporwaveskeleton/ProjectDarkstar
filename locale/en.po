@@ -131,12 +131,56 @@ msgstr "FIRST VIGIL"
 msgid "CAB_STAGE_A0_1_SUB"
 msgstr "MINE THE GLASS. BREAK THE SEPULCHRE."
 
-#. A0-3 title card: the level where the entity wakes.
+#. A0-2 title card. Still a cold Sepulchre; the Grubs steal the Glass. WORDING PROPOSED.
+msgid "CAB_STAGE_A0_2"
+msgstr "SECOND VIGIL"
+
+#. WORDING PROPOSED.
+msgid "CAB_STAGE_A0_2_SUB"
+msgstr "THE GRUBS ARE STEALING. BREAK IT ANYWAY."
+
+#. A0-3 title card: the first level where the entity wakes. WORDING PROPOSED.
 msgid "CAB_STAGE_A0_3"
+msgstr "THIRD VIGIL"
+
+#. WORDING PROPOSED.
+msgid "CAB_STAGE_A0_3_SUB"
+msgstr "THE CHOIR KEEPS WATCH. UNMAKE WHAT WAKES."
+
+#. A0-4 title card: a dense Glass field. WORDING PROPOSED.
+msgid "CAB_STAGE_A0_4"
+msgstr "FOURTH VIGIL"
+
+#. WORDING PROPOSED.
+msgid "CAB_STAGE_A0_4_SUB"
+msgstr "THE GLASS IS THICK HERE. SO ARE THEY."
+
+#. A0-5 title card: the last stage of the shift; THE PRETENCE follows it.
+msgid "CAB_STAGE_A0_5"
 msgstr "THE LAST NORMAL DAY"
 
-msgid "CAB_STAGE_A0_3_SUB"
+msgid "CAB_STAGE_A0_5_SUB"
 msgstr "THEY ARE BUILDING SOMETHING. STOP THEM."
+
+#. Zone line, small, above a READY card title (A0-2). WORDING PROPOSED.
+msgid "CAB_ZONE_DRIFT"
+msgstr "ENTERING THE DRIFT"
+
+#. Zone line above the A0-3 READY card title. WORDING PROPOSED.
+msgid "CAB_ZONE_CENSER_WATCH"
+msgstr "ENTERING CENSER WATCH"
+
+#. Zone line above the A0-4 READY card title. WORDING PROPOSED.
+msgid "CAB_ZONE_SHOAL"
+msgstr "ENTERING THE SHOAL"
+
+#. Zone line above the A0-5 READY card title. WORDING PROPOSED.
+msgid "CAB_ZONE_HOLLOW"
+msgstr "ENTERING THE HOLLOW"
+
+#. Attract CONTINUE page. %d is the 1-based stage number (stage index + 1). WORDING PROPOSED.
+msgid "CAB_CONTINUE"
+msgstr "CONTINUE? STAGE %d / PRESS START"
 
 msgid "CAB_GAME_OVER"
 msgstr "GAME OVER"

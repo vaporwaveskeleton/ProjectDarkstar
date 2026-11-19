@@ -181,6 +181,7 @@ func _unmake_for_real() -> void:
 	game.record.glass_mined = 21
 	game.record.charges_thrown = 15
 	game.record.glass_carried = 12
+	game.stage_index = game.stages.size() - 1   # the full roll belongs to the shift's last stage
 	world.start(_stage(t.segments_total))
 	world.ritual.hits_left = 1
 	world.ritual._hit_entity(world.ritual.entity_pos)    # the last Charge: emits entity_unmade

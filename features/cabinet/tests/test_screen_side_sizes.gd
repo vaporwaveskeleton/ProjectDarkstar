@@ -46,7 +46,10 @@ func _fits(text: String, scale: int, limit: float) -> bool:
 func test_every_cabinet_message_fits_the_screen_at_its_scale() -> void:
 	var limit := float((load(SPEC) as CabinetScreenSpec).grid.x) - 2.0 * CabinetMessages.MARGIN
 	var items := [
-		["CAB_STAGE_A0_1", 3], ["CAB_STAGE_A0_3", 3], ["CAB_STAGE_A0_1_SUB", 1], ["CAB_STAGE_A0_3_SUB", 1],
+		["CAB_STAGE_A0_1", 3], ["CAB_STAGE_A0_2", 3], ["CAB_STAGE_A0_3", 3], ["CAB_STAGE_A0_4", 3], ["CAB_STAGE_A0_5", 3],
+		["CAB_STAGE_A0_1_SUB", 1], ["CAB_STAGE_A0_2_SUB", 1], ["CAB_STAGE_A0_3_SUB", 1], ["CAB_STAGE_A0_4_SUB", 1],
+		["CAB_STAGE_A0_5_SUB", 1], ["CAB_ZONE_DRIFT", 1], ["CAB_ZONE_CENSER_WATCH", 1], ["CAB_ZONE_SHOAL", 1],
+		["CAB_ZONE_HOLLOW", 1],
 		["CAB_READY", 2], ["CAB_GAME_OVER", 2], ["CAB_VIGIL_COMPLETE", 2], ["CAB_ENTITY_DOWN", 2],
 		["CAB_EXTRA_VIGIL", 1], ["CAB_CAPTION_WHISPER", 1], ["CAB_CREDIT", 1],
 		["ENTITY_IT_WAKES", 3], ["REVEAL_PRETENCE", 3], ["REVEAL_ONE_SKY_LESS", 3], ["CAB_MAKER", 1],
