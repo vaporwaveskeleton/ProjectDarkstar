@@ -134,6 +134,8 @@ Five ramps of six, plus two specials. **Value separation between ramps is intent
 
 These are **trophies, not light sources**. No Choir or entity part may ever carry **GAS-5** (index 29, the lantern core): nothing in the Choir has ever *lit* a lantern, and the lint fails the build if one appears. Any further exception is a new ruling and a new `faction_exceptions` row, never a quiet palette edit. The other direction of law 1 has no exception: CHOIR never appears on player art.
 
+**GASLIGHT exception: the lamp interior (PM under owner autonomy grant, 2026-11-18).** GASLIGHT belongs to the player. In the Aether, brass (orrery rings, meridian bands, lattices, observatory housings) is drawn in BONE and VOID mixes only. **The one exception is the T4 Inverted lamp interior.** At that tier the background *is* the inside of the Vigil's own lamp (WARP-001 W4-01), so those set pieces are the player's art. They may carry a dim **GAS-0 or GAS-1 tarnish**, and only there. They may not carry GAS-2 or higher; the lantern stays the brightest warm light (law 4). They may never carry GAS on Choir or entity art (law 1). Enforced by `features/aether/tests/test_aether_look_table.gd`: GAS is allowed only in an `AetherLook`'s `rib_accent` field, only when `tier == 4`, and only as GAS-0 or GAS-1.
+
 ## 5. Lighting rules
 
 > **§15 governs the tiers:** no lighting at all in Act 0 (the neon cabinet is flat). From T1, real 2D lighting, shadows, fog and bloom are allowed and grow with the warp. The rules below describe the Aether look once lighting exists.

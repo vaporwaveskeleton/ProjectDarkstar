@@ -34,7 +34,7 @@ extends TunableResource
 @export var shaft_tint: Color = Pal.BONE_4
 ## Brass ribs of the lamp's interior (T4 only).
 @export var rib_colour: Color = Pal.BONE_1
-@export var rib_accent: Color = Pal.GAS_1
+@export var rib_accent: Color = Pal.BONE_1   ## GAS-0/1 only at T4 (ART-001 §4 lamp-interior exception)
 
 @export_group("Rungs")
 @export var lantern_light: bool = true

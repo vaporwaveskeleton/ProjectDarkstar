@@ -34,7 +34,9 @@ func test_colours_follow_the_role_laws() -> void:
 			if name.begins_with("CHOIR-"):
 				assert_bool(look.tier == 4 and field == "far_band_tint").override_failure_message("%s.%s: CHOIR only as the T4 far-band tint" % [path, field]).is_true()
 			if name.begins_with("GAS-"):
-				assert_str(field).override_failure_message("%s.%s: GAS only on the lantern" % [path, field]).is_equal("rib_accent")
+				# ART-001 §4, GASLIGHT exception: the lamp interior — a dim GAS-0/1 tarnish on the T4 ribs only.
+				var lamp_interior := look.tier == 4 and field == "rib_accent" and (name == "GAS-0" or name == "GAS-1")
+				assert_bool(lamp_interior).override_failure_message("%s.%s: GAS only as the T4 lamp-interior tarnish (GAS-0/1)" % [path, field]).is_true()
 
 
 func test_registry_accepts_the_aether_keys() -> void:
