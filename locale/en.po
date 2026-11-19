@@ -178,9 +178,9 @@ msgstr "ENTERING THE SHOAL"
 msgid "CAB_ZONE_HOLLOW"
 msgstr "ENTERING THE HOLLOW"
 
-#. Attract CONTINUE page. %d is the 1-based stage number (stage index + 1). WORDING PROPOSED.
+#. Attract CONTINUE page. {stage} is the 1-based stage number (stage index + 1), filled in code (L10N-001 §3). WORDING PROPOSED.
 msgid "CAB_CONTINUE"
-msgstr "CONTINUE? STAGE %d / PRESS START"
+msgstr "CONTINUE? STAGE {stage}"
 
 msgid "CAB_GAME_OVER"
 msgstr "GAME OVER"

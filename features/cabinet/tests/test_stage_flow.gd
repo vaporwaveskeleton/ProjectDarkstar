@@ -125,7 +125,7 @@ func test_continue_stage_parsing() -> void:
 func test_the_continue_line_counts_stages_from_one() -> void:
 	var s: String = game.continue_line(2)
 	assert_str(s).contains("3")
-	assert_bool(s.contains("%d")).is_false()
+	assert_bool(s.contains("{stage}")).is_false()
 
 
 # --- the READY card's zone line --------------------------------------------------------------

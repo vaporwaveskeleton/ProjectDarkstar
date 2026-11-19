@@ -130,7 +130,7 @@ func next_stage_index() -> int:
 
 ## The attract CONTINUE page's line for stage index `i` (shown 1-based). Attract draws it.
 static func continue_line(i: int) -> String:
-	return TranslationServer.translate("CAB_CONTINUE") % (i + 1)
+	return TranslationServer.translate("CAB_CONTINUE").format({"stage": i + 1})
 
 
 ## What GAME OVER hands the attract screen: the stage a CONTINUE restarts. The demo hands nothing.
