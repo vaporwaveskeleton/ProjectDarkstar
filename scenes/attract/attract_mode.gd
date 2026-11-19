@@ -13,7 +13,8 @@ const DEMO_IDLE := 30.0          ## s — WARP-001 W0-03 "30 s idle on the title
 
 @onready var _new_vigil: ArcadeButton = %NewVigil
 @onready var _settings: ArcadeButton = %Settings
-@onready var _quit: ArcadeButton = %Quit
+@onready var _power_switch: PowerRocker = %Power
+@onready var _arcade: ArcadeScreen = %ArcadeScreen
 @onready var _overlays: ScreenStack = %Overlays
 @onready var _omen: Label = %Omen
 @onready var _logo: AttractLogo = %Logo
@@ -26,6 +27,9 @@ const DEMO_IDLE := 30.0          ## s — WARP-001 W0-03 "30 s idle on the title
 var idle := 0.0
 var demo_enabled := true         ## tests turn this off
 var continue_stage := -1         ## CONTINUE offer from GAME OVER (Q-T104): 0-based stage, -1 = none; lasts until the demo
+var shift_total := -1           ## the shift's cumulative score handed back with the CONTINUE offer (never saved); -1 = none received
+var quit_action: Callable = Callable()   ## what POWER does after the collapse; tests inject a stub (default: quit the engine)
+var _powering_off := false
 var _profile: Dictionary = {}
 
 
@@ -34,7 +38,7 @@ func _ready() -> void:
 	cancel_closes = false
 	_new_vigil.pressed.connect(_on_new_vigil)
 	_settings.pressed.connect(open_settings)
-	_quit.pressed.connect(_on_quit)
+	_power_switch.pressed.connect(_on_power_pressed)
 	var profile := SaveService.load_slot(&"profile")
 	_profile = profile.payload if profile.ok else {}
 	_omen.visible = bool(_profile.get("act0_complete", false))
@@ -57,6 +61,7 @@ func _ready() -> void:
 ## Boot routes the first attract of a launch with {"power_on": true}.
 func on_route_entered(params: Dictionary) -> void:
 	continue_stage = int(params.get("continue_stage", -1))
+	shift_total = int(params["shift_total"]) if params.has("shift_total") else -1
 	if is_node_ready():
 		_pages.continue_stage = continue_stage
 	if bool(params.get("power_on", false)):
@@ -127,13 +132,13 @@ func _set_new_vigil_ready(armed: bool) -> void:
 
 
 ## One focus domain: the pushbuttons on the control panel and the coin door.
-## Up/down loop [New Vigil] → Settings → Quit → coin door → wrap; left/right walk the row of pushbuttons
+## Up/down loop [START] → SERVICE → POWER → coin door → wrap; left/right walk the row of pushbuttons
 ## (as they sit on the panel) and leave it for the coin door, which is to the right of the panel.
 func _wire_focus() -> void:
 	var row: Array[Control] = []
 	if _new_vigil.focus_mode != Control.FOCUS_NONE:
 		row.append(_new_vigil)
-	row.append_array([_settings, _quit])
+	row.append_array([_settings, _power_switch])
 	var order: Array[Control] = row.duplicate()
 	order.append(_coin)
 	for i in order.size():
@@ -157,7 +162,11 @@ func _on_new_vigil() -> void:
 	if SceneRouter.is_busy or not _coin.has_credit():
 		return
 	set_buttons_disabled(true)
-	var params: Dictionary = {"continue_stage": continue_stage} if continue_stage >= 0 else {}
+	var params: Dictionary = {}
+	if continue_stage >= 0:
+		params["continue_stage"] = continue_stage
+		if shift_total >= 0:
+			params["shift_total"] = shift_total
 	if SceneRouter.go_to(&"cabinet", params):
 		_coin.spend()
 	else:
@@ -166,6 +175,7 @@ func _on_new_vigil() -> void:
 
 func clear_continue_offer() -> void:
 	continue_stage = -1
+	shift_total = -1
 	if is_node_ready():
 		_pages.continue_stage = -1
 
@@ -175,9 +185,46 @@ func open_settings() -> Screen:
 
 
 func set_buttons_disabled(value: bool) -> void:
-	for b: ArcadeButton in [_new_vigil, _settings, _quit]:
+	for b: BaseButton in [_new_vigil, _settings, _power_switch]:
 		b.disabled = value
 
 
-func _on_quit() -> void:
-	get_tree().quit()
+## POWER was pressed: ask first. The confirmation goes on this scene's own ScreenStack; cancelling returns focus to POWER
+## (the stack restores the remembered focus).
+func _on_power_pressed() -> void:
+	if _powering_off or SceneRouter.is_busy:
+		return
+	var confirm := ConfirmScreen.create("CONFIRM_QUIT_TITLE", "CONFIRM_QUIT_BODY", "CONFIRM_QUIT_YES", "CONFIRM_QUIT_STAY")
+	confirm.confirmed.connect(power_off)
+	_overlays.push(confirm)
+
+
+## The player confirmed: throw the switch, collapse the picture, then quit. Photosensitivity / reduced motion swaps the
+## collapse for a plain quick fade of the same length.
+func power_off() -> void:
+	if _powering_off:
+		return
+	_powering_off = true
+	set_buttons_disabled(true)
+	_coin.hint_armed = false
+	_power_switch.throw_off()
+	var mat := _arcade.crt_material()
+	var seconds := _power.tuning.power_off_seconds
+	if mat != null:
+		mat.set_shader_parameter(&"collapse_fade", 1.0 if ArcadeButton.is_still() else 0.0)
+		var tw := create_tween()
+		tw.tween_method(func(v: float) -> void: mat.set_shader_parameter(&"collapse", v), 0.0, 1.0, seconds)
+		tw.finished.connect(_finish_power_off)
+	else:
+		_finish_power_off()
+
+
+func is_powering_off() -> bool:
+	return _powering_off
+
+
+func _finish_power_off() -> void:
+	if quit_action.is_valid():
+		quit_action.call()
+	else:
+		get_tree().quit()

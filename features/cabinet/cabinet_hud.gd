@@ -70,6 +70,7 @@ var crack := 0.0:
 var _left: BezelPrint
 var _right: BezelPrint
 var _door: CoinDoorFace
+var _rocker: PowerRocker
 var _glass: BezelGlass
 var _parts: Array[Control] = []
 var _tube: ScreenTube
@@ -91,7 +92,9 @@ func _ready() -> void:
 	_glass.peel = peel
 	_tube = BezelAssembly.add_tube(self)
 	BezelAssembly.add_light(self, light_source)
-	_parts.append(ControlPanel.add_decorative(self))   # after the glass, like the attract panel; decoration only
+	var rocker_out: Array = []
+	_parts.append(ControlPanel.add_decorative(self, rocker_out))   # after the glass, like the attract panel; decoration only
+	_rocker = rocker_out[0] as PowerRocker
 	_left.peel = peel
 	_right.peel = peel
 	_left.crack = crack
@@ -121,6 +124,9 @@ func _process(_delta: float) -> void:
 	if _door != null:
 		_door.visible = peel < 1.0
 		_door.fit_to(_door_plate())
+	if _rocker != null:
+		_rocker.visible = peel < 1.0
+		_rocker.position = CabinetBezel.power_rocker().position + Vector2(peel * (CabinetBezel.SIDE + 20.0), 0.0)
 
 
 ## The coin door rides the right column as it peels away.
