@@ -8,6 +8,7 @@ uniform vec2 rect_size = vec2(640.0, 360.0);
 uniform vec2 rig_origin = vec2(0.0);
 uniform vec2 sheet_x = vec2(112.0, 528.0);
 uniform float trim = 3.2;
+uniform float room_glow = 0.6;
 
 void fragment() {
 	vec2 rp = rig_origin + UV * rect_size;
@@ -24,11 +25,17 @@ void fragment() {
 		vec3 panel_c = vec3(0.05, 0.05, 0.06) * (0.35 * amb + cab_key(rp) * 0.22);
 		panel_c *= 0.8 + 0.4 * vnoise(vec2(rp.x * 0.5, rp.y * 0.03));          // faint laminate grain
 		panel_c += vec3(0.5, 0.52, 0.56) * smoothstep(1.6, 0.0, ds) * 0.03 * (cab_amb(rp) + cab_key(rp));   // the crisp edge
-		// the dark room: nearly black, a faint bounce of the screen on the floor and the walls
+		// the dark room: nearly black, lit by the screen. The cabinet lights its surroundings: a broad
+		// screen-coloured pool on the floor and a fainter wash up the walls, breathing with the picture
+		// (cab_screen_light is the smoothed, photosensitivity-frozen light, so this never flickers)
 		float far = exp(-ds / 90.0);
-		vec3 room = vec3(0.004, 0.004, 0.009) + cab_spill(rp) * 0.05 * far * (0.4 + 0.6 * yk);
+		float wide = exp(-ds / 260.0);
+		float lum = 0.14 + 0.86 * cab_screen_light.a;
+		float floor_pool = smoothstep(0.45, 1.0, yk);
+		vec3 glow = cab_screen_light.rgb * lum * room_glow;
+		vec3 room = vec3(0.006, 0.006, 0.012) + glow * (0.17 * wide * (0.25 + 1.6 * floor_pool * floor_pool) + 0.12 * far * (0.3 + 0.7 * yk));
 		room += vec3(0.01, 0.009, 0.014) * far * (1.0 - yk);
-		room *= 0.85 + 0.3 * vnoise(rp * 0.03);
+		room *= 0.88 + 0.24 * vnoise(rp * 0.03);
 		vec3 c = mix(room, panel_c, panel);
 		COLOR = vec4(c, 1.0);
 	}

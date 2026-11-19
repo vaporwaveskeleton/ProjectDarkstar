@@ -17,6 +17,9 @@ uniform float edge_tint : hint_range(0.0, 1.0) = 0.6;
 uniform float dust : hint_range(0.0, 1.0) = 0.5;
 uniform float smudges : hint_range(0.0, 1.0) = 0.5;
 uniform float scratch : hint_range(0.0, 1.0) = 0.5;
+uniform float band_lift = 0.42;          // peak alpha of the specular band: a pale veil that lowers contrast and saturation
+uniform float smear_haze = 0.36;         // peak alpha of the thumb-smear when the screen is bright
+uniform float smear_idle = 0.1;          // its share of that when the screen is dark
 
 varying vec2 lp;
 
@@ -39,7 +42,7 @@ void fragment() {
 	float band = exp(-pow((u + 12.0) / 74.0, 2.0));
 	float core = exp(-pow((u + 12.0) / 20.0, 2.0)) * 0.35;
 	float top = 0.75 + 0.5 * (1.0 - clamp(rp.y / cab_view_h, 0.0, 1.0));
-	float a_band = (band * 0.11 + core * 0.05) * top * band_gain * reflection * (0.9 + 0.2 * fbm(rp + 4.0, 0.015, px));
+	float a_band = (band * band_lift + core * band_lift * 0.45) * top * band_gain * reflection * (0.9 + 0.2 * fbm(rp + 4.0, 0.015, px));
 	acc += vec3(0.86, 0.92, 1.0) * a_band;
 	asum += a_band;
 
@@ -47,7 +50,7 @@ void fragment() {
 	float dh = max(cab_hole_dist(rp), 0.0);
 	float halo = exp(-dh / 22.0) + 0.45 * exp(-dh / 70.0);
 	float crawl = 0.75 + 0.5 * vnoise(vec2(dh * 0.11 - (rp.x + rp.y) * 0.02, 3.0));
-	float a_scr = clamp(halo * crawl * (0.04 + 0.2 * cab_screen_light.a), 0.0, 0.32) * screen_reflection;
+	float a_scr = clamp(halo * crawl * (0.05 + 0.26 * cab_screen_light.a), 0.0, 0.4) * screen_reflection;
 	acc += mix(vec3(0.55, 0.65, 0.9), cab_screen_light.rgb, 0.8) * a_scr;
 	asum += a_scr;
 
@@ -66,13 +69,16 @@ void fragment() {
 
 	// the thumb-smear: where kids leaned in to watch, lower centre under the opening. A broad greasy wipe
 	// with streaks along the lean, and two thumb ovals with ridges.
-	vec2 sc = vec2(hc.x - 6.0, cab_hole.y + cab_hole.w + 12.0);
-	vec2 sq = rot2(rp - sc, -0.12) / vec2(70.0, 8.5);
+	vec2 sc = vec2(hc.x - 6.0, cab_hole.y + cab_hole.w + 11.0);
+	vec2 sq = rot2(rp - sc, -0.12) / vec2(96.0, 13.0);
 	float streak = 0.55 + 0.6 * vnoise(rp * vec2(0.22, 2.2) + 11.0);
 	float wipe = smoothstep(1.0, 0.1, length(sq)) * streak;
 	float thumb = max(print_blob(rp, sc + vec2(-22.0, 1.5), 0.25, vec2(9.0, 6.5), px), print_blob(rp, sc + vec2(14.0, -0.5), -0.15, vec2(8.0, 6.0), px));
-	float a_sm = clamp(wipe * 0.1 + thumb * 0.13, 0.0, 0.26) * smudges * (0.7 + 1.2 * key_l);
-	acc += vec3(0.9, 0.92, 0.94) * a_sm;
+	// its visibility is the screen's light scattering in the grease: hazes up when the picture is bright,
+	// nearly vanishes when it is dark (cab_screen_light.a is the smoothed, photosensitivity-frozen light)
+	float lit_k = smear_idle + (1.0 - smear_idle) * clamp(cab_screen_light.a, 0.0, 1.0);
+	float a_sm = clamp(wipe * 0.55 + thumb * 0.7, 0.0, 1.0) * smear_haze * smudges * lit_k * (0.8 + 0.6 * key_l);
+	acc += mix(vec3(0.9, 0.92, 0.94), cab_screen_light.rgb * 1.1 + 0.15, 0.55) * a_sm;
 	asum += a_sm;
 
 	// a few fine scratches
