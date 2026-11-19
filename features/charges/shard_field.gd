@@ -12,7 +12,7 @@ extends Node2D
 ## recycled. Pool size is PM ruling Q-T59 (144).
 
 const FLAG_ALIVE := 1
-const FLAG_CLAIMED := 2   ## a Grub has claimed it (Grub hook; no Grubs in M1 yet)
+const FLAG_CLAIMED := 2   ## a Grub has claimed it (OublietteGrub, features/choir)
 const NONE := -1
 ## Diamond width / height ratio of the drawn shard (presentation, mirrors the Cabinet).
 const DIAMOND_WIDTH_RATIO := 0.6
@@ -33,6 +33,7 @@ var collector_radius_px: float = 0.0
 var score: int = 0
 var collected_total: int = 0
 var spawns_refused: int = 0
+var stolen_total: int = 0   ## shards Grubs have picked up (`take`)
 var latch_count: int = 0
 var tick_count: int = 0
 
@@ -93,6 +94,7 @@ func setup(p_torus: Torus) -> void:
 	score = 0
 	collected_total = 0
 	spawns_refused = 0
+	stolen_total = 0
 	latch_count = 0
 	tick_count = 0
 	_setup_render()
@@ -252,6 +254,20 @@ func claim(i: int) -> bool:
 func release_claim(i: int) -> void:
 	if is_alive(i):
 		flags[i] &= ~FLAG_CLAIMED
+
+
+func is_claimed(i: int) -> bool:
+	return is_alive(i) and flags[i] & FLAG_CLAIMED != 0
+
+
+## A Grub picks shard `i` up: it leaves the field (the Grub carries it; a dying carrier spawns it
+## back). Returns false when `i` is not live. Counted in `stolen_total`.
+func take(i: int) -> bool:
+	if not is_alive(i):
+		return false
+	_remove(i)
+	stolen_total += 1
+	return true
 
 
 # --- grid -----------------------------------------------------------------------------------------

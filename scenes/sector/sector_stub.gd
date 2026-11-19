@@ -21,10 +21,14 @@ const PAUSE_SCENE := preload("res://scenes/sector/pause_screen.tscn")
 @onready var _geodes: GeodeSandbox = %GeodeSandbox
 @onready var _shards: ShardField = %ShardField
 @onready var _magazine: ChargeMagazine = %ChargeMagazine
+@onready var _launcher: ChargeLauncher = %ChargeLauncher
+@onready var _procession: ProcessionSandbox = %ProcessionSandbox
+@onready var _grubs: GrubProcession = %GrubProcession
 
 var vigil: Vigil
 ## The sector's wrap-around space. Features that need positions or distances on this sector take it
-## from here (injected; never built twice): SectorWrap, SectorCamera, ShardField, GeodeSandbox.
+## from here (injected; never built twice): SectorWrap, SectorCamera, ShardField, GeodeSandbox,
+## LedgerCompass, ProcessionSandbox (Sepulchre + Grubs), ChargeLauncher.
 var torus: Torus
 
 ## Read-only scalars for the automation id `sector/vigil` (core/automation/ui_view.gd). Dev/QA reads.
@@ -63,8 +67,33 @@ var shards_free: int:
 	get: return _shards.free_count() if _shards else 0
 var charges: int:
 	get: return _magazine.count if _magazine else 0
+## Shards + Grubs killed + Sepulchre segments knocked off (SYS-001 §7.1).
 var score: int:
-	get: return _shards.score if _shards else 0
+	get: return (_shards.score if _shards else 0) + (_grubs.score if _grubs else 0) \
+		+ (_procession.sepulchre.score if _procession and is_instance_valid(_procession.sepulchre) else 0)
+var charges_in_flight: int:
+	get: return _launcher.in_flight() if _launcher else 0
+## Charges destroyed by an interceptor (Grub or geode); guttered ones are not counted here.
+var charges_lost: int:
+	get: return _launcher.lost() if _launcher else 0
+var charges_hit: int:
+	get: return _launcher.hits() if _launcher else 0
+var charges_guttered: int:
+	get: return _launcher.guttered() if _launcher else 0
+var dry_fires: int:
+	get: return _launcher.dry_fires if _launcher else 0
+
+## Read-only scalars for the automation id `sector/choir` (Grubs and the Sepulchre). Dev/QA reads.
+var grubs_alive: int:
+	get: return _grubs.alive_count() if _grubs else 0
+var grubs_carrying: int:
+	get: return _grubs.carrying_count() if _grubs else 0
+var segments: int:
+	get: return _procession.sepulchre.segments if _procession and is_instance_valid(_procession.sepulchre) else 0
+var deposited_shards: int:
+	get: return _procession.sepulchre.deposited_shards if _procession and is_instance_valid(_procession.sepulchre) else 0
+var sepulchre_complete: bool:
+	get: return _procession.sepulchre.is_complete() if _procession and is_instance_valid(_procession.sepulchre) else false
 
 
 func _ready() -> void:
@@ -84,6 +113,12 @@ func _ready() -> void:
 	_shards.collector = vigil
 	_shards.collector_radius_px = vigil.motor.stats.hitbox_circle_px * 0.5
 	_geodes.populate(torus, _spawn.position, vigil)
+	_compass.torus = torus
+	_procession.populate(torus, _actors, vigil)
+	_launcher.torus = torus
+	_launcher.vigil = vigil
+	_launcher.projectile_parent = _actors
+	_launcher.target = _procession.sepulchre.hurtbox
 	vigil.health.damaged.connect(func(_a, _r): _refresh_hud())
 	vigil.hull_breached.connect(_on_hull_breached)
 	_overlays.emptied.connect(_on_overlays_emptied)
