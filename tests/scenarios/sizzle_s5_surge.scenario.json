@@ -1,0 +1,31 @@
+{
+	"format": "darkstar.scenario",
+	"version": 1,
+	"id": "sizzle_s5_surge",
+	"profile": "qa",
+	"args": [],
+	"fixtures": {},
+	"timeout_frames": 1200,
+	"steps": [
+		{"do": "wait_route", "route": "attract", "within": 120},
+		{"do": "coin"},
+		{"do": "wait_until", "id": "attract/ui/NewVigil", "prop": "enabled", "eq": true, "within": 240},
+		{"do": "activate", "id": "attract/ui/NewVigil"},
+		{"do": "wait_route", "route": "cabinet", "within": 240},
+		{"do": "wait_until", "id": "cabinet/game", "prop": "state", "eq": "play", "within": 600},
+		{"do": "press", "action": "move_right"},
+		{"do": "wait_frames", "frames": 20},
+		{"do": "screenshot", "name": "thrust_wake", "target": "arcade"},
+		{"do": "key", "keycode": "SHIFT", "frames": 2},
+		{"do": "wait_frames", "frames": 3},
+		{"do": "screenshot", "name": "surge_a", "target": "arcade"},
+		{"do": "wait_frames", "frames": 3},
+		{"do": "screenshot", "name": "surge_b", "target": "arcade"},
+		{"do": "wait_frames", "frames": 3},
+		{"do": "screenshot", "name": "surge_c_window", "target": "window"},
+		{"do": "wait_frames", "frames": 40},
+		{"do": "screenshot", "name": "thrust_after", "target": "arcade"},
+		{"do": "release", "action": "move_right"},
+		{"do": "quit"}
+	]
+}
