@@ -2,19 +2,26 @@ class_name AetherBackdrop
 extends Node2D
 ## The Aether world backdrop (ART-001 §15–§16): a lit sea of coloured fog inside a glass sky, with
 ## far set pieces, life, and the entity's presence. Back to front: far fog (stars), the far halves of the
-## armillary rings, crystal sphere (orrery shells) + cracks + smudge, set pieces + orrery ribs, mid fog,
-## the Presence (leviathan), mid fog, god-rays, life, near fog, veil fog, entity, grade.
+## armillary rings, crystal sphere (orrery shells) + cracks + smudge, the Pale Marches Presence (T1),
+## set pieces + far life (+ the lantern-down reveal life) + orrery ribs, mid fog, the leviathan (T3
+## Presence), mid fog, god-rays, life, near fog, veil fog, entity, grade, W1-06 edge split.
 ## Every layer can be switched off to measure its cost. A quality rung (AetherQuality, CH-7)
 ## trades octaves, resolution and particle counts; every rung keeps the sphere curve, the entity's
 ## exact black and the play-band fog cap. Owns no game state; callers drive it with
-## apply_look / apply_quality / set_tier / set_drain / set_time / set_camera / set_lantern.
+## apply_look / apply_quality / set_tier / set_drain / set_time / set_camera / set_lantern /
+## set_lantern_lit / presence_flee / set_chromatic_edge.
 
 signal sphere_glinted
 signal leviathan_entered
 signal leviathan_closest
 
-const LAYERS: Array[StringName] = [&"far_fog", &"sky", &"cracks", &"smudge", &"set_pieces", &"orrery", &"mid_fog",
-	&"leviathan", &"shafts", &"life", &"near_fog", &"entity", &"grade"]
+const LAYERS: Array[StringName] = [&"far_fog", &"sky", &"cracks", &"smudge", &"presence", &"set_pieces", &"orrery",
+	&"reveal", &"mid_fog", &"leviathan", &"shafts", &"life", &"near_fog", &"entity", &"grade", &"edge_split"]
+## ✱ CH-3 lantern-down reveal: seconds for the far-band life and the Presence's full light pattern to
+## fade in when the lantern goes down (and out when it is lit again). A monotonic ramp: no flicker.
+const REVEAL_FADE_S := 0.8
+## ✱ drain above the look's base at which the Presence turns and flees the entity.
+const PRESENCE_FLEE_DRAIN := 0.02
 ## ✱ every full-coverage layer rect: oversized so camera drift and parallax never show an edge.
 const COVER := Rect2(-240.0, -200.0, 1120.0, 760.0)
 ## ✱ the main entity's anchor in its layer (top right, so its extent runs off the frame) and its
@@ -48,7 +55,15 @@ var lantern_screen := Vector2(320.0, 200.0)
 var lantern_radius := 120.0
 var lantern_colour := Pal.GAS_4
 var lantern_energy := 1.6
+## The lantern is up (true) or down (CH-3). Down: the warm pool fades out and `reveal` fades in.
+var lantern_lit := true
+## 0 = lantern up … 1 = lantern down: far-band life and the Presence's full light pattern shown.
+var reveal := 0.0
+## W1-06 Chromatic Edge (Composure in Frayed): off unless the caller switches it on.
+var chromatic_edge := false
+var photosensitive := false
 var _enabled: Dictionary = {}
+var _reveal_life_on := false
 var _mats: Array[ShaderMaterial] = []
 
 @onready var _far_layer: Parallax2D = %FarLayer
@@ -78,6 +93,11 @@ var _mats: Array[ShaderMaterial] = []
 @onready var _entity: EntityPresence = %Entity
 @onready var _holes: Array[EntityPresence] = [%Hole1, %Hole2, %Hole3]
 @onready var _life: Array[AetherLife] = [%Motes, %Jellies, %Spores, %School, %VastJellies]
+@onready var _presence_layer: Parallax2D = %PresenceLayer
+@onready var _presence: FrostPresence = %FrostPresence
+@onready var _reveal_life: AetherLife = %RevealLife
+@onready var _edge_split: AetherShaderRect = %EdgeSplit
+@onready var _edge_copy: BackBufferCopy = %EdgeCopy
 
 
 func _ready() -> void:
@@ -85,6 +105,8 @@ func _ready() -> void:
 		_enabled[l] = true
 	if SettingsService.DEFAULTS.has(&"reduced_motion"):
 		reduced_motion = bool(SettingsService.get_value(&"reduced_motion"))
+	if SettingsService.DEFAULTS.has(&"photosensitivity"):
+		photosensitive = bool(SettingsService.get_value(&"photosensitivity"))
 	if quality == null:
 		quality = load(DEFAULT_QUALITY) as AetherQuality
 	for band in _bands:
@@ -111,7 +133,7 @@ func _collect_materials() -> void:
 	_mats.clear()
 	var rects: Array[AetherShaderRect] = []
 	rects.append_array(_bands)
-	rects.append_array([_sphere, _cracks, _leviathan, _shafts, _grade])
+	rects.append_array([_sphere, _cracks, _leviathan, _presence, _shafts, _grade])
 	for r in rects:
 		_mats.append(r.ensure_material())
 
@@ -176,6 +198,13 @@ func apply_look(new_look: AetherLook) -> void:
 	_grade.set_param(&"subtraction", look.subtraction_amount if look.subtraction else 0.0)
 	_leviathan.configure(look)
 	_leviathan.set_param(&"edge_octaves", 3 if q.fog_octave_drop == 0 else 2)
+	# the Presence on every rung (low keeps it and its flee: CH-7); only its edge noise thins
+	_presence.configure(look)
+	_presence.set_param(&"edge_octaves", 3 if q.fog_octave_drop == 0 else 2)
+	_presence.set_steady(reduced_motion or photosensitive)
+	_reveal_life.configure(look, look.reveal_life_count if look.life else 0, q.particle_scale)
+	_reveal_life_on = _reveal_life.visible
+	_edge_split.set_param(&"split_px", look.chromatic_edge_px)
 	_ribs.configure(look)
 	_smudge.configure(look)
 	_set_pieces.configure(look)
@@ -209,7 +238,46 @@ func set_drain(amount: float) -> void:
 	for i in _holes.size():
 		_holes[i].radius = HOLES[i].z if (look != null and look.black_holes) else 0.0
 		_holes[i].set_growth(HOLE_GROWTH)
+	# Presences flee the entity (ZONES-001 §2.3): its leaving is the first tell of the Passing
+	if drain - base > PRESENCE_FLEE_DRAIN or _entity.radius > 0.5:
+		_presence.presence_flee()
 	_refresh_visibility()
+
+
+## The Presence turns and leaves (ZONES-001 §2.3). Also happens on its own when the entity drains.
+func presence_flee() -> void:
+	_presence.presence_flee()
+
+
+## 0 = the Presence is here … 1 = it has gone.
+func presence_flee_progress() -> float:
+	return _presence.flee_progress
+
+
+## Lantern up (true) or down (CH-3). Down fades the pool out and the reveal in over REVEAL_FADE_S;
+## lit again reverses it. Changes nothing in the play layer.
+func set_lantern_lit(lit: bool) -> void:
+	lantern_lit = lit
+
+
+## W1-06 Chromatic Edge on or off (the caller decides: Composure in Frayed). Never drawn while
+## photosensitivity is on (WARP-001 §4.5).
+func set_chromatic_edge(on: bool) -> void:
+	chromatic_edge = on
+	_refresh_visibility()
+
+
+## Advance the clocks that run on real time: the reveal ramp and the Presence's flee.
+func advance_clock(delta: float) -> void:
+	var target := 0.0 if lantern_lit else 1.0
+	reveal = move_toward(reveal, target, maxf(delta, 0.0) / REVEAL_FADE_S)
+	_presence.step(delta)
+	_presence.set_reveal(reveal)
+	_reveal_life.modulate.a = smoothstep(0.0, 1.0, reveal)
+	if look != null:
+		_reveal_life.visible = _layer_active(&"reveal")
+	if look != null and _presence.visible != _layer_active(&"presence"):
+		_refresh_visibility()
 
 
 func set_time(seconds: float) -> void:
@@ -290,6 +358,12 @@ func _layer_active(l: StringName) -> bool:
 			return mini(look.fog_band_count, quality.max_fog_bands) > 3
 		&"leviathan":
 			return look.leviathan
+		&"presence":
+			return look.frost_presence and not _presence.is_gone()
+		&"reveal":
+			return _reveal_life_on and reveal > 0.001
+		&"edge_split":
+			return chromatic_edge and not photosensitive
 		&"shafts":
 			return look.god_rays
 		&"life":
@@ -316,6 +390,10 @@ func _refresh_visibility() -> void:
 	_set_pieces_back.visible = _set_pieces.visible and _set_pieces_back.any_shown()
 	_ribs.visible = _layer_active(&"orrery")
 	_leviathan.visible = _layer_active(&"leviathan")
+	_presence.visible = _layer_active(&"presence")
+	_reveal_life.visible = _layer_active(&"reveal")
+	_edge_split.visible = _layer_active(&"edge_split")
+	_edge_copy.visible = _edge_split.visible
 	_shafts.set_drawn(_layer_active(&"shafts"))
 	_grade.visible = _layer_active(&"grade")
 	_grade_copy.visible = _grade.visible
@@ -332,6 +410,7 @@ func _apply_parallax() -> void:
 	_set_scroll(_rib_layer, look.band_scroll(0) * 2.5)
 	_set_scroll(_rib_back_layer, look.band_scroll(0) * 2.5)
 	_set_scroll(_lev_layer, (look.band_scroll(1) + look.band_scroll(2)) * 0.5)
+	_set_scroll(_presence_layer, look.band_scroll(0) * 2.0)
 	_set_scroll(_life_layer, look.band_scroll(2) * 1.7)
 	_set_scroll(_entity_layer, look.band_scroll(1) * 1.6)
 
@@ -342,7 +421,8 @@ func _set_scroll(layer: Parallax2D, s: float) -> void:
 	layer.scroll_scale = Vector2(k, k)
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	advance_clock(delta)
 	refresh()
 
 
@@ -377,7 +457,7 @@ func refresh() -> void:
 		band.set_param(&"lantern_r", lantern_radius)
 		band.set_param(&"lantern_col", lantern_colour)
 		band.set_param(&"lantern_outer", Pal.GAS_3)
-		band.set_param(&"lantern_energy", lantern_energy if look.lantern_light else 0.0)
+		band.set_param(&"lantern_energy", lantern_energy * (1.0 - reveal) if look.lantern_light else 0.0)
 	_sphere.set_param(&"camera_offset", cam_off)
 	_sphere.update_glint(time_s, camera_centre - _sky_layer.position)
 	_cracks.set_param(&"camera_offset", cam_off)
@@ -397,6 +477,11 @@ func refresh() -> void:
 	_shafts.set_param(&"lev_quad", _leviathan.quad_size)
 	_shafts.set_param(&"lev_thick", _leviathan.thickness)
 	_shafts.set_param(&"lev_time", t)
+	_presence.place(t, drain, reduced_motion)
+	_presence.set_param(&"lantern_px", lantern_screen)
+	_presence.set_param(&"lantern_r", lantern_radius)
+	_edge_split.size = screen
+	_edge_split.set_param(&"screen_size", screen)
 	_entity.set_time(time_s)
 	for h in _holes:
 		h.set_time(time_s)
@@ -417,7 +502,9 @@ func refresh() -> void:
 func _update_life(t: float, mask: Vector4) -> void:
 	var heading := TAU * fposmod(t / CURRENT_TURN_S, 1.0)
 	var fade := 1.0 - smoothstep(0.15, 0.85, drain - (look.base_drain if look != null else 0.0))
-	for life in _life:
+	var all: Array[AetherLife] = _life.duplicate()
+	all.append(_reveal_life)
+	for life in all:
 		if not life.visible:
 			continue
 		var flee_local := Vector2(9999.0, 9999.0)

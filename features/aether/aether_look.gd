@@ -46,6 +46,11 @@ extends TunableResource
 @export var leviathan_lights: Color = Pal.PHOS_4
 ## The tier's accent hue (one per tier; pass 2 colour law).
 @export var accent: Color = Pal.PHOS_4
+## The Pale Marches Presence (ZONES-001 §2.3): its frost body (AETHER-4 pearl), the frost rim of its
+## calving front (BONE-3) and its heartbeat of glass light (PHOS: truth and glass).
+@export var presence_pearl: Color = Pal.AETHER_4
+@export var presence_frost: Color = Pal.BONE_3
+@export var presence_light: Color = Pal.PHOS_4
 
 @export_group("Rungs")
 @export var lantern_light: bool = true
@@ -78,6 +83,9 @@ extends TunableResource
 @export var set_ring_fragments: bool = false
 ## Holes of true black in the far field (T5).
 @export var black_holes: bool = false
+## The Pale Marches Presence (ZONES-001 §2.3, T1): a frost-drifting thing like a migrating ice shelf,
+## with a slow heartbeat of light. Far layer only, never a hitbox; flees the entity.
+@export var frost_presence: bool = false
 ## Crisp engraved Roman numerals I–XII on the brass meridian band (pass 4, Q-T92; decorative
 ## engraving, not UI text). Off = graduations only. Pending PM approval.
 @export var meridian_numerals: bool = true
@@ -165,10 +173,29 @@ extends TunableResource
 @export var lantern_scatter: float = 0.3
 ## ✱ vast, far, cropped jelly-lanterns (very dim).
 @export var vast_jelly_count: int = 0
+## ✱ far-band life the lantern hides: shown only while the lantern is down (CH-3 reveal; 0 = none).
+@export var reveal_life_count: int = 0
+
 ## ✱ pass 6 (G-2 tier sort): the ONE monotonic "missing" cue, 0..1, that only grows T1 → T5. It
 ## drives the backdrop's saturation drain, the VOID share of the frame (a slice of the far layer that
 ## is not there, aether_common a_missing) and star dropout, together. Never black.
 @export_range(0.0, 1.0) var missing: float = 0.0
+
+@export_group("Damage ladder (ART-001 §15.4, one biome T1..T5)")
+## ✱ armillary rings whose bead has stopped (outermost first).
+@export var rings_stalled: int = 0
+## ✱ armillary rings snapped open with a piece drifting off (outermost first; broken implies stalled).
+@export var rings_broken: int = 0
+## ✱ how far the Presence has already fled when the look is applied (0 = here, 1 = gone).
+@export_range(0.0, 1.0) var presence_fled: float = 0.0
+
+@export_group("Warp T1 (WARP-001 §2.2)")
+## Registry ids of the standing warp effects this look represents as Aether data; tests check each
+## id's data contract. Effects that are HUD, audio, sprite or gameplay are not Aether art.
+@export var warp_effects: PackedStringArray = PackedStringArray()
+## ✱ W1-06 Chromatic Edge: channel split at the frame edge, logical px. Drawn only while the far
+## layer's chromatic edge is switched on (Composure in Frayed) and photosensitivity is off.
+@export var chromatic_edge_px: float = 1.5
 
 
 func tunable_properties() -> PackedStringArray:
@@ -182,6 +209,7 @@ func tunable_properties() -> PackedStringArray:
 		"glow_threshold", "glow_intensity", "glow_bloom",
 		"leviathan_cross_s", "leviathan_period_s", "leviathan_phase_s", "camera_drift_px", "base_drain",
 		"star_strength", "value_deep", "glow_band_px", "glow_band_inset", "lantern_scatter", "vast_jelly_count",
+		"reveal_life_count", "rings_stalled", "rings_broken", "presence_fled", "chromatic_edge_px",
 		"missing",
 	])
 
@@ -196,4 +224,5 @@ func band_scroll(i: int) -> float:
 func colour_fields() -> PackedStringArray:
 	return PackedStringArray(["fog_deep", "fog_mid", "fog_high", "sphere_glass", "life_glow", "life_secondary",
 		"far_silhouette", "far_band_tint", "crack_edge", "behind_a", "behind_b", "shaft_tint", "rib_colour", "rib_accent",
-		"fog_glow", "star_colour", "brass", "accent", "leviathan_rim", "leviathan_lights"])
+		"fog_glow", "star_colour", "brass", "accent", "leviathan_rim", "leviathan_lights",
+		"presence_pearl", "presence_frost", "presence_light"])

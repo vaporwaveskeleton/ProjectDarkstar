@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3]
+[gd_scene load_steps=21 format=3]
 
 [ext_resource type="Script" path="res://features/aether/aether_backdrop.gd" id="1_bd"]
 [ext_resource type="Script" path="res://features/aether/aether_fog_band.gd" id="2_band"]
@@ -17,6 +17,9 @@
 [ext_resource type="Shader" path="res://shaders/aether/aether_grade.gdshader" id="15_grade"]
 [ext_resource type="Shader" path="res://shaders/aether/entity_presence.gdshader" id="16_ent"]
 [ext_resource type="Script" path="res://features/aether/far_set_pieces.gd" id="17_set"]
+[ext_resource type="Script" path="res://features/aether/frost_presence.gd" id="18_pres"]
+[ext_resource type="Shader" path="res://shaders/aether/frost_presence.gdshader" id="19_pres"]
+[ext_resource type="Shader" path="res://shaders/aether/aether_edge_split.gdshader" id="20_edge"]
 
 [node name="AetherBackdrop" type="Node2D"]
 script = ExtResource("1_bd")
@@ -62,6 +65,15 @@ unique_name_in_owner = true
 position = Vector2(132, 150)
 script = ExtResource("9_smudge")
 
+[node name="PresenceLayer" type="Parallax2D" parent="."]
+unique_name_in_owner = true
+scroll_scale = Vector2(0.08, 0.08)
+
+[node name="FrostPresence" type="ColorRect" parent="PresenceLayer"]
+unique_name_in_owner = true
+script = ExtResource("18_pres")
+shader = ExtResource("19_pres")
+
 [node name="RibLayer" type="Parallax2D" parent="."]
 unique_name_in_owner = true
 scroll_scale = Vector2(0.1, 0.1)
@@ -79,6 +91,13 @@ position = Vector2(320, 180)
 script = ExtResource("6_life")
 kind = 4
 extents = Vector2(520, 300)
+
+[node name="RevealLife" type="GPUParticles2D" parent="RibLayer/FarLife"]
+unique_name_in_owner = true
+position = Vector2(320, 150)
+script = ExtResource("6_life")
+kind = 5
+extents = Vector2(480, 220)
 
 [node name="Ribs" type="Node2D" parent="RibLayer"]
 unique_name_in_owner = true
@@ -222,3 +241,14 @@ offset_right = 640.0
 offset_bottom = 360.0
 script = ExtResource("4_rect")
 shader = ExtResource("15_grade")
+
+[node name="EdgeCopy" type="BackBufferCopy" parent="GradeLayer"]
+unique_name_in_owner = true
+copy_mode = 2
+
+[node name="EdgeSplit" type="ColorRect" parent="GradeLayer"]
+unique_name_in_owner = true
+offset_right = 640.0
+offset_bottom = 360.0
+script = ExtResource("4_rect")
+shader = ExtResource("20_edge")

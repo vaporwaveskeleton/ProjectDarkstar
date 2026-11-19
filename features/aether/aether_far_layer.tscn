@@ -1,0 +1,20 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://features/aether/aether_far_layer.gd" id="1_far"]
+[ext_resource type="PackedScene" path="res://features/aether/aether_view.tscn" id="2_view"]
+[ext_resource type="PackedScene" path="res://features/aether/aether_backdrop.tscn" id="3_bd"]
+[ext_resource type="Resource" path="res://data/aether/pale_marches_t1.tres" id="4_look"]
+
+[node name="AetherFarLayer" type="Node"]
+script = ExtResource("1_far")
+look = ExtResource("4_look")
+
+[node name="View" parent="." instance=ExtResource("2_view")]
+unique_name_in_owner = true
+
+[node name="Backdrop" parent="View/World" instance=ExtResource("3_bd")]
+unique_name_in_owner = true
+
+[node name="Camera" type="Camera2D" parent="View/World"]
+unique_name_in_owner = true
+position = Vector2(320, 180)
