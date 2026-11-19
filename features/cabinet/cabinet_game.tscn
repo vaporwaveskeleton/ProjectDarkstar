@@ -29,6 +29,8 @@
 [ext_resource type="Script" path="res://features/cabinet/arcade_screen.gd" id="27"]
 [ext_resource type="Resource" path="res://data/cabinet/cabinet_screen.tres" id="28"]
 [ext_resource type="Script" path="res://features/cabinet/bezel_field.gd" id="29"]
+[ext_resource type="Script" path="res://features/cabinet/video_registers.gd" id="vreg_script"]
+[ext_resource type="Resource" path="res://data/cabinet/screen_registers.tres" id="vreg_data"]
 
 [sub_resource type="ShaderMaterial" id="crt_mat"]
 resource_local_to_scene = true
@@ -72,6 +74,11 @@ offset_right = 256.0
 offset_bottom = 304.0
 script = ExtResource("27")
 spec = ExtResource("28")
+
+[node name="Registers" type="Node" parent="Rig/ArcadeScreen"]
+unique_name_in_owner = true
+script = ExtResource("vreg_script")
+spec = ExtResource("vreg_data")
 
 [node name="ScreenViewport" type="SubViewport" parent="Rig/ArcadeScreen"]
 unique_name_in_owner = true

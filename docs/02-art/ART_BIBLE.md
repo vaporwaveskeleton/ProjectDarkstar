@@ -354,6 +354,13 @@ Code: `features/cabinet/bezel_art.gd`, `bezel_piece.gd`, `bezel_print.gd`, `cabi
 - **Peel-ready seam:** the art is a list of `BezelPiece` (id, ink, z, pivot) so the zoom (§12.7 "The zoom"; ART-004 §7.1 bar ≥ 9) can drive pieces individually: peel from an edge about the pivot, crack along a seeded fracture graph, decay by ink fade and halftone dropout (shader). **Not built yet.**
 - **Resolution:** vectors drawn in the 640×360 logical space. Since PR A (2026-11-18) the bezel renders at native resolution under `canvas_items` with MSAA 2D (TECH-001 §1.2), so it is vector-sharp and halftone dots can be round; the text on it is still `PixelText` in the interim; the decided bezel text is `VectorText` (PR C, not built; TECH-001 §11.2). Misregistration (1 px plate offset) is deferred.
 
+**Cabinet realism direction (owner, relayed by the PM session, 2026-11-18; for PR C).** Owner's words: "the Diagetic aspects of the bezel such as the coin slot are too cartoony, they should look realistic. As if you are really infront of an old arcade cabinet. You should feel as if you could reach out and touch it's grimy surface."
+- Physical cabinet parts move from cartoon to tactile realism: coin door and slot, coin return, buttons and control panel, T-molding, bezel glass, screws, metal and plastic. Worn paint, scratches, chipped edges, grime in recesses, fingerprints and smudges on the glass, specular highlights on metal and plastic, wear where hands go (round the coin slot and buttons).
+- Printed art may stay comic-book (real cabinets had printed comic art) but must read as printed on a worn surface: fading, scuffs, peeling edges.
+- Still generated in code only (D-13): runtime vector plus canvas shaders (procedural noise for grime, bump-style lighting, layered specular and dirt masks) or pxl renders; never photos or hand-made textures. The bezel stays native resolution and outside the screen palette and registers (§15.2a).
+- Process: a coin-door prototype capture goes to the owner's delegate (PM) for yes/adjust before the rest is built.
+- This supersedes the "cartoon" wording above (e.g. "cartoon reliquary moon" is a printed-art motif and stays; the chrome coin door and other physical parts follow this direction).
+
 **Approved re-composition (owner, 2026-11-18; PR C, NOT BUILT): Sinistar-style portrait cabinet.** The screen is a **256×304 portrait** tube (PR B, built; TECH-001 §1.3) with 28 units of thick black tube mask above and below and 192-unit side panels on the 640×360 reference; the bezel fills the whole window at any aspect (no bars). Composition: a **large emblem illustration in each side panel**, an **instruction card beside the screen**, a **slim marquee strip** across the top (logo lettering plus the large logo in the upper side panels), a **thick tube mask**, **restrained inks** (a smaller share of the ink set than the interim bezel), and a **control panel** carrying `CoinSlot` plus the NEW VIGIL / SETTINGS / QUIT buttons (one focus domain with the coin slot). **All live readouts (score, Vigils, HI, magazine, Sepulchre progress, credits) move onto the screen**, in an on-screen HUD strip; the bezel carries printed art and the coin door only. Bezel text is `VectorText` (code-generated stroke alphabet, tessellated to polygons; no font files; D-13), drawn natively, sharp at any scale, with MSAA for edges. This borrows Sinistar's layout, not its face: the §12.7a motif rule (no mouth, no two eyes, no skull) stands. The HUD strip is 40 px (Q-T31, resolved); the marquee strip height is still open (Q-T32). **Until PR C, the printed bezel described above is the interim design.**
 
 ### 12.8 Steady Ledger, visually (WARP-001 §4.4)
@@ -469,7 +476,7 @@ First asset (2026-11-18): `ds_ui_paletteSwatch` (`art/src/reference.px.js`), the
 
 **The game starts as a neon arcade machine and becomes something richer as it reveals itself.** Act 0 looks like a classic 1983 cabinet: neon colours on black, flat vector shapes, no lighting. After THE PRETENCE the Aether look takes over (§16: retro-future Victorian space), and the graphics are allowed to *transcend* arcade limits: real 2D lighting with the lantern as the key light, shadows, fog and volumetric haze, bloom, complex particle systems, normal-mapped and shader-rich bodies. Gameplay stays top-down 2D throughout; the Act 0 screen's pixel grid is 256×304 (TECH-001 §1.1) and 640×360 is the logical space, which renders at native resolution after Act 0 (owner, 2026-11-18). This section governs; where §4–§5 or §14 read as a hard cap on colours or lighting, this section wins.
 
-**Neon Cabinet video limits (owner, 2026-11-18; layer one only, never the bezel, never after Act 0; approved, NOT built).** Act 0 screen colours must fit 16 RGB332 registers. The register bank and the quantize pass come in the next PR. Breaking the limit during THE PRETENCE reveal is in-fiction. The limits are: 16 colours on screen at once from a 256-colour palette (3 bits red, 3 green, 2 blue); registers writable at any time, so colour cycling and fades are register writes; frame time 16.64 ms (counter arithmetic in TECH-001 §1.1). Until the quantize pass lands the screen still draws from the Neon Cabinet palette and no test enforces the limit.
+**Neon Cabinet video limits (owner, 2026-11-18; layer one only, never the bezel, never after Act 0; built 2026-11-18).** Act 0 screen colours must fit 16 RGB332 registers (`VideoRegisters`, table in §15.2a). Breaking the limit during THE PRETENCE reveal is in-fiction. The limits are: 16 colours on screen at once from a 256-colour palette (3 bits red, 3 green, 2 blue); registers writable at any time, so colour cycling and fades are register writes; frame time 16.64 ms (counter arithmetic in TECH-001 §1.1). The quantize pass runs in the CRT shaders of the arcade screen and the attract hole only; the limits fade out as `Look.t` goes 0 to 1 (THE PRETENCE).
 
 ### 15.1 The ladder
 
@@ -500,6 +507,22 @@ The same 32 roles as §4, re-voiced as a 1983 arcade machine. Entry *n* here mor
 | NULL / SIGNAL | `#000000` / `#FF1F3D` | the hole / danger |
 
 Source of truth in code: `core/ui/look.gd` (`Look.NEON`), checked against this table and the palette file by `core/ui/tests/test_theme_palette.gd`. The cabinet draws every colour through `Look.c()`, which returns the neon entry at `Look.t = 0`, the Aether entry at `Look.t = 1`, and the blend between them during THE PRETENCE.
+
+### 15.2a The 16 colour registers (T0 screen only; built 2026-11-18)
+Source of the values: `data/cabinet/screen_registers.tres` (`ScreenRegisters`, `ds_cabinet.registers`); this table mirrors the power-on state, the data file wins. Mechanism (nearest-match assignment, write recolours every pixel on a register, alpha snaps to the nearest register): TECH-001 §1.1 and §2.10 "Video registers". Layer one only: the bezel, coin slot and any native-resolution content are never quantized.
+
+| Reg | RGB332 colour | Reg | RGB332 colour |
+|---|---|---|---|
+| 0 | black `#000000` | 8 | magenta `#FF00FF` |
+| 1 | deep blue `#000055` | 9 | pink `#FFB6FF` |
+| 2 | blue `#2424FF` | 10 | teal `#0092AA` |
+| 3 | light blue `#496DFF` | 11 | cyan `#00FFFF` |
+| 4 | dim bone `#4949AA` | 12 | pale cyan `#B6FFFF` |
+| 5 | light bone `#B6B6FF` | 13 | orange `#FF9200` |
+| 6 | white `#FFFFFF` | 14 | yellow `#FFFF00` |
+| 7 | Choir dark magenta `#B600AA` | 15 | cycling register, SIGNAL red `#FF0000` |
+
+Pal entry to register (`pal_map`): VOID-0, VOID-1, CHOIR-0, PHOS-0, GAS-0, NULL → 0; VOID-2, VOID-3 → 1; VOID-4 → 2; VOID-5 → 3; BONE-0, BONE-1 → 4; BONE-2, BONE-3 → 5; BONE-4, BONE-5 → 6; CHOIR-1, CHOIR-2 → 7; CHOIR-3, CHOIR-4 → 8; CHOIR-5 → 9; PHOS-1, PHOS-2 → 10; PHOS-3, PHOS-4 → 11; PHOS-5 → 12; GAS-1, GAS-2 → 13; GAS-3, GAS-4, GAS-5 → 14; SIGNAL → 15. Register 15 is reserved for flashes, explosions and SIGNAL; its cycling has no caller yet.
 
 ### 15.3 Rendering toolkit from T1 (TECH-001 §5.5)
 2D lights (`PointLight2D` for the lantern, emitters on Shroud, glass and veins), `LightOccluder2D` for shadows, `CanvasModulate` for ambient darkness, normal maps on generated bodies, `GPUParticles2D` with generated textures (no image files: particle sprites come from shaders or pxl renders), fog and volumetric shaders, and the 2D HDR glow/bloom post. Every effect still obeys the readability rules in §15.1 and the frame budget (SYS-001 §9, TECH-001 §8.1). Photosensitivity and Reduced Motion variants are required for every flicker or motion effect (§12, WARP-001 §4.5).
