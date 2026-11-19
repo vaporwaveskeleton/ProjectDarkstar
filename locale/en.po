@@ -137,7 +137,7 @@ msgstr "SECOND VIGIL"
 
 #. WORDING PROPOSED.
 msgid "CAB_STAGE_A0_2_SUB"
-msgstr "THE GRUBS STEAL. BREAK IT ANYWAY."
+msgstr "THE GRUBS STEAL. BREAK THE SEPULCHRE."
 
 #. A0-3 title card: the first level where the entity wakes. WORDING PROPOSED.
 msgid "CAB_STAGE_A0_3"
