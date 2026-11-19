@@ -148,6 +148,14 @@ func update_motion(t: float, life_fade: float, current_heading: float, flee_loca
 	draw_mat.set_shader_parameter(&"time_s", t)
 
 
+## The camera's parallax velocity for this field (px/s, emitter-local): the drifting field streams
+## past and wraps inside its own box (Q-T127 long flights). The school ignores it.
+func set_scroll_velocity(v: Vector2) -> void:
+	if motion_mat == null:
+		return
+	motion_mat.set_shader_parameter(&"scroll_velocity", v)
+
+
 func update_school(centre: Vector2, heading: float, scatter: float, scatter_pos: Vector2) -> void:
 	if motion_mat == null:
 		return

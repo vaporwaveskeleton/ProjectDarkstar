@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://features/aether/aether_arrival.gd" id="1_arr"]
 [ext_resource type="PackedScene" path="res://features/aether/aether_view.tscn" id="2_view"]
 [ext_resource type="PackedScene" path="res://features/aether/aether_backdrop.tscn" id="3_bd"]
-[ext_resource type="PackedScene" path="res://features/aether/lantern_marker.tscn" id="4_lm"]
+[ext_resource type="PackedScene" path="res://features/aether/last_lamp.tscn" id="4_lm"]
 [ext_resource type="Resource" path="res://data/aether/pale_marches_t1.tres" id="5_look"]
 
 [node name="AetherArrival" type="Node"]

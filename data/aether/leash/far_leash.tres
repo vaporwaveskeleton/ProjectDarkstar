@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="AetherFarLeash" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://features/aether/aether_far_leash.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+ds_namespace = "ds_aether.far_leash"
+source_section = "engineering ✱ (Q-T127 option B long flights); not a game number"
+time_constant_s = 20.0
+cap_px = 180.0
+saturation = 2.0
+max_step_px = 3.0
+band_period_px = 32768.0
+wrap_window_px = 1024.0

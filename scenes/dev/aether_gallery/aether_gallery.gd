@@ -21,6 +21,12 @@ extends Node
 ##                                      fresh process, MEASURE_WARMUP frames, then AETHER_COST over
 ##                                      MEASURE_FRAMES frames, then quits (entity exhibit holds
 ##                                      SWEEP_DRAIN)
+##   --aether-long-flight=S             a one-way flight (Q-T127 leash / band-wrap check): the camera
+##                                      travels at FLIGHT_VELOCITY from FLIGHT_START_S; at that moment S
+##                                      simulated seconds are fast-forwarded (leash stepped at 60 Hz),
+##                                      then the flight goes on in real time. Prints AETHER_FLIGHT lines.
+##                                      Capture: tests/scenarios/aether_far_leash_capture (args [] as
+##                                      the suite requires) with this arg added after `--` by hand.
 ## No class_name: scenes/dev is excluded from release builds.
 
 signal sphere_glinted
@@ -67,6 +73,11 @@ const ARG_QUALITY := "--aether-quality="
 const ARG_SWEEP := "--aether-sweep"
 const ARG_EXHIBIT := "--aether-exhibit="
 const ARG_MEASURE := "--aether-measure"
+const ARG_LONG_FLIGHT := "--aether-long-flight="
+## ✱ dev stand-in flight velocity (backdrop px/s) for --aether-long-flight; not a game number.
+const FLIGHT_VELOCITY := Vector2(300.0, -45.0)
+const FLIGHT_START_S := 3.0       ## ✱ --aether-long-flight: seconds into the exhibit the flight starts
+const FLIGHT_SIM_DT := 1.0 / 60.0 ## ✱ --aether-long-flight: fast-forward step
 
 var exhibit := 0
 var exhibit_time := 0.0
@@ -95,6 +106,10 @@ var _sweep_base := 0.0
 var _sweep_off_layer: StringName = &""
 var _sweep_off_ms := 0.0
 var _measure_on := false
+## --aether-long-flight: simulated seconds to fast-forward (< 0 = off), flight seconds so far.
+var _flight_ff_s := -1.0
+var _flight_t := 0.0
+var _flight_on := false
 
 @onready var _world: SubViewport = %World
 @onready var _screen: TextureRect = %Screen
@@ -126,6 +141,8 @@ func _ready() -> void:
 			_sweep_only = start
 		elif a.begins_with(ARG_FLEE_AT):
 			_flee_at = a.trim_prefix(ARG_FLEE_AT).to_float()
+		elif a.begins_with(ARG_LONG_FLIGHT):
+			_flight_ff_s = maxf(a.trim_prefix(ARG_LONG_FLIGHT).to_float(), 0.0)
 	if args.has(ARG_LANTERN_DOWN):
 		lantern_lit = false
 	set_quality(asked if asked in AetherQuality.LEVELS else "high")
@@ -212,6 +229,9 @@ func _show(index: int) -> void:
 	_silenced = false
 	var look := _looks[index]
 	_backdrop.apply_look(look)
+	_backdrop.reset_travel()
+	_flight_t = 0.0
+	_flight_on = false
 	drain = look.base_drain
 	_backdrop.set_drain(drain)
 	_lantern.configure(look)
@@ -237,6 +257,7 @@ func _process(delta: float) -> void:
 	_camera.position = cam
 	_lantern.position = cam + LANTERN_OFFSET
 	_backdrop.set_camera(cam, 1.0)
+	_step_flight(delta)
 	_backdrop.set_time(exhibit_time)
 	_backdrop.set_lantern(CAMERA_HOME + LANTERN_OFFSET, look.lantern_radius, _lantern.light.color, _lantern.light.energy)
 	if _flee_at >= 0.0 and not _flee_fired and exhibit_time >= _flee_at:
@@ -253,6 +274,37 @@ func _process(delta: float) -> void:
 		_sweep_step()
 	else:
 		_measure_cost()
+
+
+## --aether-long-flight: fast-forward the leash through the simulated flight once, then fly on.
+func _step_flight(delta: float) -> void:
+	if _flight_ff_s < 0.0 or exhibit_time < FLIGHT_START_S:
+		return
+	if not _flight_on:
+		_flight_on = true
+		var steps := int(_flight_ff_s / FLIGHT_SIM_DT)
+		for i in steps:
+			_flight_t += FLIGHT_SIM_DT
+			_backdrop.set_travel(FLIGHT_VELOCITY * _flight_t)
+			_backdrop.step_travel(FLIGHT_SIM_DT)
+		_log_flight()
+		return
+	_flight_t += delta
+	_backdrop.set_travel(FLIGHT_VELOCITY * _flight_t)
+	if int(_flight_t) != int(_flight_t - delta):
+		_log_flight()
+
+
+func _log_flight() -> void:
+	var parts := PackedStringArray()
+	var layers := _backdrop.landmark_layers()
+	for ch: StringName in layers:
+		parts.append("%s=%.1f" % [ch, _backdrop.landmark_offset(ch).length()])
+	var bands := PackedStringArray()
+	for i in 5:
+		bands.append("%.1f" % _backdrop.band_offset(i).length())
+	print("AETHER_FLIGHT t=%.1f travel=%.1f landmarks %s bands=%s" % [_flight_t, _backdrop.travel().length(),
+		" ".join(parts), ",".join(bands)])
 
 
 func _step_drain() -> void:

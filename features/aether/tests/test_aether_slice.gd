@@ -42,9 +42,13 @@ func test_far_layer_is_prewired_and_forwards() -> void:
 	f.set_tier(3)
 	assert_int(f.backdrop.tier).is_equal(3)
 	f.set_camera(Vector2(400.0, 250.0), 1.0)
-	assert_vector(f.backdrop.camera_centre).is_equal(Vector2(400.0, 250.0))
+	# Q-T127 option B: the Camera2D stays home; the travel since the origin (HOME before any
+	# set_field) goes to the backdrop
+	assert_vector(f.camera_centre).is_equal(Vector2(400.0, 250.0))
+	assert_vector(f.backdrop.camera_centre).is_equal(AetherFarLayer.HOME)
+	assert_vector(f.backdrop.travel()).is_equal(Vector2(80.0, 70.0))
 	var cam := f.find_child("Camera", true, false) as Camera2D
-	assert_vector(cam.position).is_equal(Vector2(400.0, 250.0))
+	assert_vector(cam.position).is_equal(AetherFarLayer.HOME)
 	# world → screen: the camera centre lands on the middle of the logical frame
 	var half := f.backdrop.get_viewport_rect().size * 0.5
 	f.set_lantern(Vector2(400.0, 272.0), 120.0, true)
