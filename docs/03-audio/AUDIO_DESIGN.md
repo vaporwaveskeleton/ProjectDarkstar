@@ -339,7 +339,7 @@ Act 0 has no other entity line. The whole act is a costume (GDD-001 §6.1, §11)
 | Length | ≤ 8 words authored; ≤ 2 rendered lines 🔒 (GDD-001 §10 UI copy rule) |
 | Break | the tables below mark the intended break with `/`; if a block wraps on its own, the break moves to the nearest foot of the litany's metre (§5.1) |
 | Legibility test 🔒 | the line must be readable as a 60 × 34 px thumbnail — the screenshot test of GDD-001 §10 |
-| Type | the entity's own face: heavy, wide-tracked, all caps, on Void black with a Gaslight-amber keyline ✱ (palette: GDD-001 §11) |
+| Type | Act 0 ("IT WAKES."): the entity's own face: heavy, wide-tracked, all caps, on Void black with a Gaslight-amber keyline ✱ (palette: GDD-001 §11). **From Act 1: the borrowed Cabinet face** (NARR-001 §4.5; PM ruling 2026-11-18): the cheerful machine's type in the wrong place, matching its borrowed words. Size, one block at a time and the hard cut are unchanged (🔒 display rule) |
 | Timing ✱ | in: hard cut (no fade — a fade-in of big type reads as a startle risk); hold: max(1.6 s, 0.30 s × words); out: hard cut |
 | Concurrency | one entity block at a time; a queued line waits ≥ 1.0 s ✱ behind it |
 | Protected zones | never over the Charge pips, the Ledger Compass strip, the Composure wick, the chant indicator ring (§5.5) or the caption slot (§8.2) |
@@ -355,7 +355,7 @@ Act 0 has no other entity line. The whole act is a costume (GDD-001 §6.1, §11)
 | Room | a real room mic at −18 dB ✱, used only in Acts 3–4; Acts 0–2 are fully dry — the entity gets a room as it gets a body (SYS-001 §2) |
 | Level | short-term −19 LUFS ✱, ceiling −3 dBTP ✱; never ducked (§7.3); never louder than the player's own Charge detonation, so it cannot startle (§1.4) |
 | Delivery | declarative: no shouting, no sneer, no rasp. The fear is the certainty of the phrasing. Pauses inside a block are performed, not added in post |
-| Consonants | hard consonants kept intact; plosives controlled by mic technique rather than EQ'd away — the entity has a mouth, which is what separates it from a monster preset |
+| Consonants | hard consonants kept intact; plosives controlled by mic technique rather than EQ'd away — the entity has a voice, never a mouth (NARR-001 §3.4, N4); the intact consonants are what separate it from a monster preset |
 | Whisper channel | the Quickening whisper (§4.14) is the same voice at −26 LUFS ✱, close, breath audible; the player must lean in to hear it, and the captions carry it either way (§8.2) |
 | Silence | the entity never speaks over the Awakening silence; the line comes after it (GDD-001 §12) |
 
@@ -1364,7 +1364,7 @@ Both new cues are chirp renders (mono, from `audio/src/cabinet.cx.js`, `assets/a
 
 **W0-08 (the Costume Removal)** is a transformation, not a cut: the bit-crush lifts (bits 9 to 10 up to clean), square upper harmonics smear into slow bowed-glass partials, the dry room grows into the medium, and one buried square pulse survives as a ghost of the cabinet (the same pulse The Black keeps, §3), gone by T5. It is a mix job between two renders and needs the two-slot bed player below. The crossfade itself is deferred.
 
-**Entity presence = subtraction gradient.** The entity voice keeps §4.3 exactly (dry, flat, unprocessed, head-centred on `BUS-ENT`, never ducked); this section changes nothing about it. Its presence is not a voice: as it nears, Life stops first, then Glass loses its top end, then the reverb shortens toward dry, and last the bed itself fades out (`set_ambience(&""`). The entity makes no sound of its own: it is heard only as sound removed (Cosmic horror design N9, proposed; consistent with §1.1). At full presence the world is dry and nearly silent, so the voice needs no processing to be terrifying.
+**Entity presence = subtraction gradient.** The entity voice keeps §4.3 exactly (dry, flat, unprocessed, head-centred on `BUS-ENT`, never ducked); this section changes nothing about it. Its presence is not a voice: as it nears, Life stops first, then Glass loses its top end, then the reverb shortens toward dry, and last the bed itself fades out (`set_ambience(&""`). The entity makes no sound of its own: its *presence* is heard only as sound removed (N9, PM-approved 2026-11-18; consistent with §1.1). Its spoken lines are not a sound of its own: they are borrowed words (NARR-001 §3.2), delivered dry and unprocessed per §4.3 on `BUS-ENT`. N9 governs its presence, never its borrowed speech. At full presence the world is dry and nearly silent, so the voice needs no processing to be terrifying.
 
 **Wrongness cues** (no sting): pre-echo (a reverse-reverb swell into a note that never arrives: `aether_wrong`); the early end (a glass tone stops a beat early); the near-unison (two voices a few cents apart, beating slower, then one goes still); the pitch that settles low (each loop slightly lower, never read as tempo); displacement (the medium bending, never a creature sound). Each has an onset ramp of at least 0.35 s and peaks under the §1.4 bed limit.
 
