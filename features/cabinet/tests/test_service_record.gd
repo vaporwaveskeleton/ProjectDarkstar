@@ -181,6 +181,7 @@ func _unmake_for_real() -> void:
 	game.record.glass_mined = 21
 	game.record.charges_thrown = 15
 	game.record.glass_carried = 12
+	game.stage_index = game.stages.size() - 1   # the full roll belongs to the shift's last stage
 	world.start(_stage(t.segments_total))
 	world.ritual.hits_left = 1
 	world.ritual._hit_entity(world.ritual.entity_pos)    # the last Charge: emits entity_unmade
@@ -202,13 +203,25 @@ func test_the_full_roll_has_the_four_true_stat_lines_after_your_quota_is_met() -
 	assert_str(c[10]).is_equal(tr("CAB_CREDITS_7"))
 
 
-func test_the_short_stage_one_roll_has_no_stats() -> void:
+## PM 2026-11-19: a mid-shift stage end shows its banner only, so a0_5's roll is the first credits.
+func test_a_mid_shift_stage_end_rolls_nothing() -> void:
 	game.record.grubs_destroyed = 7
 	game.state = game.State.CLEARED
 	game._on_timer()
-	assert_int(messages.credits.size()).is_equal(3)
-	for line in messages.credits:
-		assert_bool(line.contains(":")).is_false()
+	assert_float(messages.credits_t).is_less(0.0)
+	assert_int(messages.credits.size()).is_equal(0)
+
+
+## The stage tally content (Sizzle's P3 card): the 1-based title, then this stage's deltas only.
+func test_the_tally_lines_hold_the_title_and_the_per_stage_counts() -> void:
+	var now: Array[int] = [7, 21, 15, 12]
+	var at_start: Array[int] = [3, 1, 15, 2]
+	var lines: PackedStringArray = CabinetGame.tally_lines(2, now, at_start)
+	assert_array(Array(lines)).is_equal(["VIGIL 2 TALLY", "GRUBS DESTROYED: 4", "GLASS MINED: 20",
+		"CHARGES THROWN: 0", "GLASS CARRIED: 10"])
+	for i: int in CabinetGame.TALLY_STAT_INDICES:
+		assert_bool(lines[i].contains(":")).override_failure_message("tally line %d is a stat line" % i).is_true()
+	assert_bool(lines[0].contains("{n}")).is_false()
 
 
 func test_the_last_line_is_in_view_when_the_roll_ends() -> void:

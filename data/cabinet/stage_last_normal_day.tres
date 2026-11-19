@@ -4,12 +4,14 @@
 
 [resource]
 script = ExtResource("1")
-id = &"a0_3"
-title_key = "CAB_STAGE_A0_3"
-subtitle_key = "CAB_STAGE_A0_3_SUB"
-geodes = 11
+id = &"a0_5"
+title_key = "CAB_STAGE_A0_5"
+subtitle_key = "CAB_STAGE_A0_5_SUB"
+zone_key = "CAB_ZONE_STILLWATER"
+zone_cue = &"zone_stillwater"
+geodes = 8
 grubs = 4
-acolytes = 1
+acolytes = 2
 guard_acolytes = 1
 sepulchre_start_segments = 0
 sepulchre_wakes = true
