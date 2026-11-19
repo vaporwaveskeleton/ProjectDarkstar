@@ -16,7 +16,13 @@ extends Control
 ##
 ## Launch (beat 11): the hangar mouth is dark until a Lantern Tree lamp is lit; the pilot lamp
 ## gutters at the dark and will not pass. Walking it into the lit mouth calls `launch()`, the one
-## place a run starts from the Ruins. `ui_cancel` returns to the title (or closes the Codex page).
+## place a run starts from the Ruins. `ui_cancel` closes the Codex page; otherwise it (or `pause`) opens the
+## pause screen (Q-T190, ruled): Resume, Settings, Leave for the Title with a confirm; the clock and the
+## tree are held while it is open (`ruins_menu`).
+##
+## Sound hooks (Q-T194, ruled; the Aether sound chat fills them): the hall bed `AMBIENCE_ID` (set on
+## entry; AudioService ignores an id it has no bed for), and the one-shot cues in `CUES`, played only
+## when the cue exists. Chalk has its own cue, never `lie_tell_chalk`.
 ##
 ## Lantern Tree hook (Q-T191): the Tree station today lights its first lamp without a purchase.
 ## The Lantern Tree feature replaces `_use_tree()` with a real node purchase (LOOP-001 §3) and
@@ -26,7 +32,17 @@ const STATS := preload("res://data/interactions/ruins_onboarding.tres")
 const SECTOR_ROUTE := &"sector"
 const TITLE_ROUTE := &"attract"
 ## ✱ seconds before ui_cancel can leave for the title (a stray press on arrival never quits).
-const CANCEL_GATE_S := 3.0
+const PAUSE_SCENE := preload("res://scenes/sector/pause_screen.tscn")
+## The Ruins hall's ambience bed id (AUDIO-001; Q-T194). Level drops with the pilot lamp down.
+const AMBIENCE_ID := &"ruins_hall"
+## ✱ ambience level with the lamp up and with it down (the hall leans in when you go dark).
+const AMBIENCE_LEVEL := 0.8
+const AMBIENCE_LEVEL_DARK := 0.45
+## Every one-shot cue the Ruins calls (Q-T194): chalk stroke, payout clatter, tickets settling, the
+## lamp guttering at the dark, a Tree lamp catching, a Codex page turning, the hidden chalk showing,
+## a station coming into reach.
+const CUES: Array[StringName] = [&"ruins_chalk_write", &"ruins_ticket_payout", &"ruins_tickets_land",
+	&"ruins_lamp_gutter", &"ruins_tree_lamp", &"ruins_codex_page", &"ruins_dark_chalk", &"ruins_station_near"]
 ## ✱ seconds the Cabinet's marquee shows SCORE BANKED before INSERT CREDIT returns.
 const MARQUEE_BANKED_S := 5.0
 ## ✱ chalk face: cap height and stroke (logical px) for the slate, the floor and the marquee.
@@ -72,6 +88,10 @@ var _marquee_t := -1.0
 var _dark_alpha := 0.0
 var _chalk_face: VectorFace
 var _floor_face: VectorFace
+var _dust: DustMotes
+var _menu_paused := false
+var _last_focus: StringName = &""
+@onready var _overlays: ScreenStack = %Overlays
 
 # --- automation reads (core/automation/ui_view.gd `ruins/onboarding`): scalars only ---------------
 var beat: String:
@@ -117,6 +137,8 @@ func _ready() -> void:
 	# Deferred: runs once, after on_route_entered (or without it when the scene is run directly).
 	_arrive.call_deferred()
 	AudioService.set_chant(0.08)
+	AudioService.set_ambience(AMBIENCE_ID, AMBIENCE_LEVEL)
+	_overlays.emptied.connect(_on_overlays_emptied)
 
 
 func on_route_entered(params: Dictionary) -> void:
@@ -237,6 +259,10 @@ func _apply_look() -> void:
 	look.add_prop(&"mark_page", _marks[&"page"], look.codex_desk_pos + Vector2(0, -36))
 	look.add_prop(&"tickets", _tickets, Vector2.ZERO)
 	look.add_prop(&"pilot_lamp", _lamp, Vector2(stats.lamp_start_x, fy - 2))
+	_dust = DustMotes.new()
+	_dust.name = "Dust"
+	_dust.still = bool(SettingsService.get_value(&"reduced_motion"))
+	look.add_prop(&"dust", _dust, Vector2.ZERO)
 
 
 func _build_text() -> void:
@@ -329,6 +355,8 @@ func _set_codex_paused(on: bool) -> void:
 
 func _exit_tree() -> void:
 	AudioService.set_chant(0.0)
+	AudioService.set_ambience(&"")
+	_release_menu_pause()
 	if onboarding != null and onboarding.codex_open:
 		_set_codex_paused(false)
 	_hold_clock(false)
@@ -399,8 +427,17 @@ func _mirror(delta: float) -> void:
 	for k: Variant in _marks.keys():
 		(_marks[k] as StationMark).visible = ob.can_move   # Sable's marks show with the lamp
 	_lamp.down = ob.lamp_down
+	_lamp.walk_speed = Input.get_axis(&"move_left", &"move_right") if ob.can_move and not ob.codex_open else 0.0
+	AudioService.set_ambience(AMBIENCE_ID, AMBIENCE_LEVEL_DARK if ob.lamp_down else AMBIENCE_LEVEL)
+	var near := ob.focus()
+	if near != _last_focus and near != &"":
+		_cue(&"ruins_station_near")
+	_last_focus = near
 	if look != null:
 		_lamp.position = Vector2(ob.lamp_x, fy - 2)
+		if _dust != null:
+			_dust.lights = PackedVector2Array([look.hall_lantern_pos, _lamp.position + Vector2(0, -14)])
+			_dust.light_down = ob.lamp_down
 		var f := ob.focus()
 		for id: StringName in RuinsOnboarding.STATIONS:
 			var state := RuinsLook.PROP_IDLE
@@ -461,8 +498,11 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		if onboarding.close_codex():
 			_set_codex_paused(false)
-		elif _t >= CANCEL_GATE_S and router != null:
-			router.call("go_to", TITLE_ROUTE)
+		else:
+			open_pause()
+	elif event.is_action_pressed(&"pause") and not event.is_echo():
+		get_viewport().set_input_as_handled()
+		open_pause()
 	elif event.is_action_pressed(&"ui_accept") and not event.is_echo():
 		get_viewport().set_input_as_handled()
 		_react(onboarding.use())
@@ -497,3 +537,35 @@ func _draw() -> void:
 		draw_rect(r, Pal.BONE_4)
 		draw_rect(r.grow(-6), Pal.BONE_3, false, 0.6)
 		draw_circle(r.position + Vector2(r.size.x - 22, r.size.y - 22), 8.0, Color(Pal.PHOS_3, 0.8))
+
+
+## The pause screen (Q-T190, ruled): the tree and the clock hold while it is open.
+func open_pause() -> Screen:
+	if _overlays == null or not _overlays.is_empty():
+		return null
+	get_tree().paused = true
+	if session != null and not _menu_paused:
+		session.pause_clock(RunSessionCore.PAUSE_RUINS_MENU)
+		_menu_paused = true
+	var pause: Screen = PAUSE_SCENE.instantiate()
+	pause.set("leave_to_title", true)
+	pause.connect(&"title_requested", _on_title_requested)
+	return _overlays.push(pause)
+
+
+func _on_overlays_emptied() -> void:
+	get_tree().paused = false
+	_release_menu_pause()
+
+
+func _release_menu_pause() -> void:
+	if _menu_paused and session != null:
+		session.resume_clock(RunSessionCore.PAUSE_RUINS_MENU)
+	_menu_paused = false
+
+
+func _on_title_requested() -> void:
+	get_tree().paused = false
+	_release_menu_pause()
+	if router != null:
+		router.call("go_to", TITLE_ROUTE)

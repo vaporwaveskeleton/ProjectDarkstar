@@ -48,6 +48,19 @@ msgid "CONFIRM_KEEP_PLAYING"
 msgstr "Keep Playing"
 
 #. Confirmation when the POWER rocker is pressed on the attract screen.
+#. The Ruins pause (TECH-001 Q-T190): leave the Ruins for the title screen.
+msgid "MENU_LEAVE_TO_TITLE"
+msgstr "Leave for the Title"
+
+msgid "CONFIRM_LEAVE_RUINS_TITLE"
+msgstr "Leave the Ruins?"
+
+msgid "CONFIRM_LEAVE_RUINS_BODY"
+msgstr "What you bought stays. The lamp will be here when you return."
+
+msgid "CONFIRM_LEAVE_RUINS_YES"
+msgstr "Leave"
+
 msgid "CONFIRM_QUIT_TITLE"
 msgstr "Quit the game?"
 

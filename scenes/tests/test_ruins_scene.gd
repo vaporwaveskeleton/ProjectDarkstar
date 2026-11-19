@@ -118,3 +118,31 @@ func test_leaving_releases_every_hold() -> void:
 	var ruins := await _ruins(core, RouterSpy.new(), {"act0_vigil_index": 12000, "first_visit": true})
 	remove_child(ruins)
 	assert_bool(core.is_clock_paused()).is_false()
+
+
+## Q-T190 (ruled): Esc opens the pause screen; the tree and the clock hold; leaving goes to the title.
+func test_pause_holds_the_clock_and_can_leave_for_the_title() -> void:
+	var core := RunSessionCore.new(STATS, saver)
+	core.arrive_at_ruins({})
+	var router := RouterSpy.new()
+	var ruins := await _ruins(core, router, {})
+	var pause: Screen = ruins.call("open_pause")
+	assert_object(pause).is_not_null()
+	assert_bool(get_tree().paused).is_true()
+	assert_bool(core.pause_reasons().has(RunSessionCore.PAUSE_RUINS_MENU)).is_true()
+	assert_object(ruins.call("open_pause")).is_null()          # one at a time
+	pause.emit_signal(&"title_requested")
+	assert_bool(get_tree().paused).is_false()
+	assert_bool(core.pause_reasons().has(RunSessionCore.PAUSE_RUINS_MENU)).is_false()
+	assert_str(String(router.calls[-1][0])).is_equal("attract")
+
+
+func test_closing_the_pause_resumes() -> void:
+	var core := RunSessionCore.new(STATS, saver)
+	core.arrive_at_ruins({})
+	var ruins := await _ruins(core, RouterSpy.new(), {})
+	var pause: Screen = ruins.call("open_pause")
+	pause.close()
+	await get_tree().process_frame
+	assert_bool(get_tree().paused).is_false()
+	assert_bool(core.is_clock_paused()).is_false()

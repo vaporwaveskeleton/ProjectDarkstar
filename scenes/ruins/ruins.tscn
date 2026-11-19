@@ -1,8 +1,9 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scenes/ruins/ruins.gd" id="1"]
 [ext_resource type="Shader" path="res://shaders/aether_fog.gdshader" id="2"]
 [ext_resource type="PackedScene" path="res://features/aether/ruins_look.tscn" id="3"]
+[ext_resource type="Script" path="res://core/ui/screen_stack.gd" id="4"]
 
 [sub_resource type="ShaderMaterial" id="aether_mat"]
 shader = ExtResource("2")
@@ -31,3 +32,9 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+
+[node name="Overlays" type="CanvasLayer" parent="."]
+unique_name_in_owner = true
+process_mode = 3
+layer = 10
+script = ExtResource("4")

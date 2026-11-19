@@ -1111,13 +1111,15 @@ ONB-D's 3 min is a playtest target, not a game number; it is not a SYS-001 row.
 | A4 | **Photosensitivity** (existing setting): the pilot lamp's gutter dims without flicker; no full-field luminance step anywhere (WARP-001 §4.5) | the Ruins (built); global | ships (setting) |
 | A5 | **Text scale 200%** (existing setting) | global (GDD §10) | ships (setting) |
 | A6 | **One press, never a hold** for every Ruins interaction; no timing windows | the Ruins (built) | ships, always on |
-| — | Difficulty assists that change a SYS-001 number (a slower Hourglass, a softer D-08 hull, slower Choir) | — | **not in the set.** Deferred until the M2 playtest has ONB-D and TEST-ONB-02 data; reopening it needs SYS-001 rows (TECH-001 Q-T192) |
+| — | Difficulty assists that change a SYS-001 number (a slower Hourglass, a softer D-08 hull, slower Choir) | — | **not in the set.** Ruled (TECH-001 Q-T192): none ship. If the onboarding tests fail, the base numbers are tuned for everyone |
 
 #### 10.5.6 Hooks left open
 
 - **The Lantern Tree station (Q-T191).** The ship-handling design chat owns the Tree's handling nodes. The Ruins calls one hook when the player uses the Tree; the Tree feature replaces it with a purchase and forwards every lit node to `RuinsLook.light_lamp`. The gate rule (`RuinsOnboarding.gate_open()`: a lamp burns) does not change.
-- **The Ruins' own art (Q-T193).** The desks, the Cabinet, the Tree and the Hourglass are RuinsLook's lit stand-ins today; each gets its own art without changing the stations.
-- **Ruins cues (Q-T194).** The scene calls `ruins_chalk_write`, `ruins_ticket_payout`, `ruins_tickets_land`, `ruins_lamp_gutter`, `ruins_tree_lamp`, `ruins_codex_page` and `ruins_dark_chalk` only when the cue exists (AUDIO-001 E08 is the chalk-on-slate sound). The Aether sound chat authors them.
+- **The Ruins' own art (Q-T193, ruled).** The desks, the Cabinet, the Tree and the Hourglass are RuinsLook's lit stand-ins today. Each becomes runtime vector art in the lit hall (it must take lamp light and show live sand), without changing the stations.
+- **The hall's air.** Dust motes drift in the hall and glint as they cross the hall lantern's and the pilot lamp's light; under reduced motion they hang still. The pilot lamp swings back against the walk. The hall is haunted and lamp-lit, and it is alive.
+- **Leaving (Q-T190, ruled).** Esc opens the pause screen (Resume, Settings, Leave for the Title behind a confirm); the clock holds while it is open. The Ruins has no other menu.
+- **Ruins sound (Q-T194, ruled).** The hall bed is `ruins_hall`, and it sinks when the pilot lamp goes down: the hall leans in when you go dark. The one-shots are `ruins_chalk_write`, `ruins_ticket_payout`, `ruins_tickets_land`, `ruins_lamp_gutter`, `ruins_tree_lamp`, `ruins_codex_page`, `ruins_dark_chalk` and `ruins_station_near`, each played only when it exists (AUDIO-001 E08 is the chalk-on-slate sound). The Aether sound chat authors them.
 
 ---
 
