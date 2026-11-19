@@ -53,3 +53,57 @@ func test_a_charge_in_flight_brings_the_sepulchre_into_frame() -> void:
 	var framer: RaceFramer = runner.find_child("RaceFramer")
 	assert_float(framer.lean.length()).is_greater(1.0)
 	assert_float(framer.lean.dot(d)).is_greater(0.0)   # it leans toward the Sepulchre
+
+
+# --- Q-T211 pull-out ------------------------------------------------------------------------------
+
+func test_offscreen_helper() -> void:
+	assert_bool(RaceFramer.offscreen(Vector2(330, 0), Vector2(320, 180))).is_true()
+	assert_bool(RaceFramer.offscreen(Vector2(0, -190), Vector2(320, 180))).is_true()
+	assert_bool(RaceFramer.offscreen(Vector2(300, 170), Vector2(320, 180))).is_false()
+
+
+func test_pull_out_is_bounded_by_its_data() -> void:
+	assert_float(STATS.race_pull_zoom).is_greater(0.0)
+	assert_float(STATS.race_pull_zoom).is_less(STATS.zoom)   # a pull OUT, never in
+	assert_float(STATS.race_pull_max_s).is_greater(0.0)
+
+
+func _framer_with(target: Vector2) -> Array:
+	var cam := SectorCamera.new()
+	cam.stats = STATS
+	var anchor := Node2D.new()
+	add_child(anchor)
+	add_child(cam)
+	auto_free(cam)
+	auto_free(anchor)
+	var f := RaceFramer.new()
+	f.camera = cam
+	f.anchor = anchor
+	f.pull_target = func() -> PackedVector2Array: return PackedVector2Array([target])
+	auto_free(f)
+	return [f, cam]
+
+
+func test_offscreen_sepulchre_pulls_out_then_returns_after_the_cap() -> void:
+	var pair := _framer_with(Vector2(900, 0))
+	var f: RaceFramer = pair[0]
+	var cam: SectorCamera = pair[1]
+	for i in 60:
+		f.step(1.0 / 60.0)
+	assert_bool(f.pulling).is_true()
+	assert_float(cam.zoom.x).is_less(STATS.zoom)
+	for i in roundi(STATS.race_pull_max_s * 60.0) + 120:
+		f.step(1.0 / 60.0)
+	assert_bool(f.pulling).is_false()
+	assert_float(cam.zoom.x).is_equal_approx(STATS.zoom, 0.02)
+
+
+func test_onscreen_sepulchre_keeps_zoom_one() -> void:
+	var pair := _framer_with(Vector2(100, 40))
+	var f: RaceFramer = pair[0]
+	var cam: SectorCamera = pair[1]
+	for i in 60:
+		f.step(1.0 / 60.0)
+	assert_bool(f.pulling).is_false()
+	assert_float(cam.zoom.x).is_equal_approx(STATS.zoom, 0.001)
