@@ -106,7 +106,7 @@ func test_the_sector_shows_pm01_aether_behind_the_play_layer() -> void:
 	assert_str(sector.far_look).is_equal(PM01_LOOK)
 	var far := sector.get_node("Far") as CanvasLayer
 	assert_int(far.layer).is_less(0)                          # behind the play layer
-	assert_bool((sector.get_node("%Floor") as SectorFloor).draw_base).is_false()   # never covers it
+	assert_object(sector.find_child("Floor")).is_null()   # no M1 grid over the Aether (Q-T163)
 
 
 func test_the_far_centre_is_continuous_across_a_rebase() -> void:

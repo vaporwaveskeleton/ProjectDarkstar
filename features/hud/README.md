@@ -11,6 +11,8 @@ Status: Ledger Compass built beyond the stub (2026-11-19; TECH-001 §5.4):
 - `ledger_compass_stats.gd` (`LedgerCompassStats`): data in `data/hud/ledger_compass.tres`, `ds_hud.compass.*`.
 - `composure_wick.gd` (`ComposureWick`): the Composure wick, 64 × 16, bottom-right of the sector `Hud`, always honest; the flame height steps by Composure band only, four heights (Q-T119). Data `composure_wick_stats.gd` (`ComposureWickStats`), `data/hud/composure_wick.tres`, `ds_hud.wick.*`.
 
+- Aether-tier brass HUD (2026-11-19; TECH-001 §5.4): `brass.gd` (`Brass`, static `plate`, `rivet`, `lamp` drawing helpers) and `brass_hud.gd` (`BrassHud`: Steady Ledger tier top-left, Vigil Index top-right, Charge pips bottom-left, Seam index bottom-centre, hull line only when max HP > 1 or on breach). Values pushed by the sector (`set_values`), redraw on change, always honest. Text is `VectorLabel` + `tr()`; faces `data/hud/brass_face.tres` and `brass_face_small.tres`. The compass bezel and the wick bracket are restyled as riveted brass. Open: Q-T210 (Hourglass surface).
+
 Stubs and gaps: the sector list is a **one-cell stub** (no doc specifies its fields yet). The entity marker frame is drawn and empty (no entity in M1). `HudLiar`, `HudView`, the corruption layer and H16 are not built.
 
 Tests in `tests/`; bench `tests/perf/bench_ledger_compass.tscn`. Follow docs/04-production/ADDING_A_FEATURE.md before adding code.

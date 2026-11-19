@@ -97,6 +97,24 @@ msgstr[1] "Hull {count}"
 msgid "HUD_HULL_BREACHED"
 msgstr "Hull breached"
 
+#. Engraved caption on the brass Vigil Index plate (score), Aether HUD top-right.
+msgid "HUD_PLATE_INDEX"
+msgstr "INDEX"
+
+#. Engraved caption on the brass Charge pip strip, Aether HUD bottom-left.
+msgid "HUD_PLATE_CHARGES"
+msgstr "CHARGES"
+
+#. Engraved caption on the brass Seam index plaque, Aether HUD bottom-centre.
+msgid "HUD_PLATE_SEAM"
+msgstr "SEAM"
+
+#. Steady Ledger honest Warp Tier read (WARP-001 §4.4). {count} is the tier number.
+msgid "HUD_LEDGER_TIER"
+msgid_plural "HUD_LEDGER_TIER_PLURAL"
+msgstr[0] "TIER {count}"
+msgstr[1] "TIER {count}"
+
 msgid "MSG_SAVE_FAILED"
 msgstr "Progress could not be saved. Your last saved progress is safe. Try again from the Ruins."
 
