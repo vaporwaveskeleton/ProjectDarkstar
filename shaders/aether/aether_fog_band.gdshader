@@ -53,6 +53,10 @@ uniform float deep_k = 0.35;           // brightness of the fog away from the lu
 uniform float glow_band_px = 70.0;     // half-width of the luminous band inside the shell
 uniform float glow_band_inset = 55.0;  // how far inside the shell the band peaks
 uniform float missing = 0.0;           // pass 6: the look's monotonic "missing" cue (0 T1 … 0.85 T5)
+// Q-T129 (ZONES-001 §2.3): lantern down at T3+, the missing slice shows a faint phosphor engraving of
+// the fog it replaced (phosphor = truth: what was there). 0 = off; the backdrop ramps it with the reveal.
+uniform float ghost = 0.0;
+uniform vec3 ghost_col : source_color = vec3(0.38, 0.81, 0.66);
 // Long flights (Q-T127 option B): the band's parallax offset (camera travel x scroll factor) arrives
 // wrapped into +-period/2 per axis, so no uniform ever carries a raw 1e5-range world offset and float32
 // stays sub-pixel. The noise does not tile, so each wrap is hidden: around it `wrap_mix` rises to 1 and
@@ -66,6 +70,9 @@ varying vec2 v_px;
 
 // ✱ pass 6 (B1): twist of the drain stretch off the radial, radians at the hole's edge.
 const float A_DRAIN_TWIST = 0.5;
+// ✱ Q-T129 ghost trace: contour lines per unit of luma, and its strength at full reveal.
+const float A_GHOST_LINES = 9.0;
+const float A_GHOST_K = 0.42;
 
 void vertex() {
 	v_px = VERTEX;
@@ -218,7 +225,16 @@ vec4 fog_eval(vec2 vp, vec2 spx, vec4 loss, vec3 toward, float mz) {
 		// the middle step of the subtraction: a FLAT cold VOID (no fog texture, no stars, no glow)
 		col = mix(col, mix(void_lo, void_hi, 0.22), loss.z);
 		// pass 6: the missing slice is the same flat cold VOID (never black)
+		vec3 was = col;
 		col = mix(col, mix(void_lo, void_hi, 0.22), mz);
+		if (ghost > 0.001 && mz > 0.001) {
+			// Q-T129: contour lines of the vanished fog, like an engraved plate, and a hairline at the
+			// slice's torn rim; faint (A_GHOST_K) so it never rivals the lantern or the Presence
+			float lu = a_luma(was) * A_GHOST_LINES;
+			float iso = smoothstep(0.78, 0.96, abs(fract(lu) - 0.5) * 2.0);
+			float rim = clamp(mz * (1.0 - mz) * 4.0, 0.0, 1.0);
+			col = mix(col, ghost_col, (iso * 0.6 + rim * 0.9) * mz * ghost * A_GHOST_K);
+		}
 	}
 	// drain: a cold VOID cast everywhere but the lantern pool
 	col = mix(col, cold(col), drain * 0.92 * (1.0 - lp * 0.85));
