@@ -1,6 +1,8 @@
-# DARKSTAR CI (TECH-001 §9.2): on every pull request and on pushes to main, run the same checks as
+# DARKSTAR CI (TECH-001 §9.2): at milestone gates only (owner, 2026-11-19), a pushed tag matching
+# `milestone/*` (e.g. milestone/m1-exit) or a manual run (workflow_dispatch), run the same checks as
 # CLAUDE.md §4 on a clean Linux machine: import, the GdUnit4 suite, the boot smoke and the
-# automation scenarios. Nothing here builds, signs or publishes a release.
+# automation scenarios. Pull requests and pushes to main do not trigger it: the per-PR gate is the
+# local suite and smoke, counts in the PR body. Nothing here builds, signs or publishes a release.
 #
 # Notes for maintainers:
 # - Actions are pinned to full commit SHAs (the comment gives the tag they were resolved from on
@@ -13,9 +15,9 @@
 name: CI
 
 on:
-  pull_request:
+  workflow_dispatch:
   push:
-    branches: [main]
+    tags: ["milestone/*"]
 
 permissions:
   contents: read
