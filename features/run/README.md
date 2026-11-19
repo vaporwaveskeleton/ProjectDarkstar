@@ -1,5 +1,5 @@
 # features/run
 
-Run state: Run Sigils, Relics, Pacts (the game's 'inventory'). Owner docs: LOOP-001 §2.
+Run, Iteration and profile Ember state behind the `RunSession` autoload. Owner docs: LOOP-001 §2; contract TECH-001 §4.2a.
 
-Status: empty (bootstrap). Follow docs/04-production/ADDING_A_FEATURE.md before adding code.
+Status: built (M2 PR 1): `RunSessionCore` (all rules, injected stats + saver), `RunState`, `IterationState`, `ProfileState`, `SeamReport`, `RunPayload` (typed payload reads), `RunSessionStats` (`data/run/run_session.tres`, `ds_run.session.*`). Run Sigils, Relics and Pacts are fields only; no content yet.

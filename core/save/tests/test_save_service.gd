@@ -33,6 +33,14 @@ func test_run_slot_refuses_mid_run_saves() -> void:
 	assert_int(svc.save_slot(&"run", {"seam": 2}, &"seam_boundary")).is_equal(OK)
 
 
+## Q-T139: `run_end` is allowed on the run and iteration slots only, never on the profile.
+func test_run_end_reason_is_allowed_on_run_and_iteration_only() -> void:
+	assert_int(svc.save_slot(&"run", {"seam_index": 0}, &"run_end")).is_equal(OK)
+	assert_int(svc.save_slot(&"iteration", {"skies_dark": 1}, &"run_end")).is_equal(OK)
+	assert_int(svc.save_slot(&"profile", {"ember_banked": 1}, &"run_end")).is_equal(ERR_UNAUTHORIZED)
+	assert_bool(mem.exists("profile")).is_false()
+
+
 func test_unknown_slot_is_refused() -> void:
 	assert_int(svc.save_slot(&"cheats", {}, &"ruins_entry")).is_equal(ERR_INVALID_PARAMETER)
 	assert_str(String(svc.load_slot(&"cheats").reason)).is_equal("unknown_slot")

@@ -225,8 +225,9 @@ func _on_extra_life() -> void:
 func _on_reveal_finished() -> void:
 	_profile["act0_complete"] = true
 	_profile["pretence_seen"] = true
+	_profile["act0_pending_vi"] = score.score   # Q-T141: RunSession banks it if the param is lost
 	_save_hi_score()
-	SceneRouter.go_to(&"ruins")
+	SceneRouter.go_to(&"ruins", {} if demo else {"act0_vigil_index": score.score})   # TECH-001 §4.2a
 
 
 func _save_hi_score() -> void:
