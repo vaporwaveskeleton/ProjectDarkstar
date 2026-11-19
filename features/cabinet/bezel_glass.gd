@@ -33,6 +33,8 @@ func _ready() -> void:
 	CabinetLighting.apply(_mat, surface)
 	_mat.set_shader_parameter(&"edge_color", surface.glass_edge_color)
 	_mat.set_shader_parameter(&"reflection", surface.glass_reflection)
+	_mat.set_shader_parameter(&"band_gain", surface.glass_band)
+	_mat.set_shader_parameter(&"screen_reflection", surface.glass_screen_reflection)
 	_mat.set_shader_parameter(&"edge_tint", surface.glass_edge_tint)
 	_mat.set_shader_parameter(&"dust", surface.glass_dust)
 	_mat.set_shader_parameter(&"smudges", surface.glass_smudge)
