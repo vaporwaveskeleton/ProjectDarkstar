@@ -111,7 +111,8 @@ func test_marks_never_touch_the_rng_even_when_drawn() -> void:
 	world.vigil.kill(world.vigil.pos + Vector2(20, 0), Vector2.RIGHT, 3.0)
 	var st1 := world.rng.state   # kill's bursts draw rng; the mark itself must not
 	world.fx.death_mark(Vector2(1, 1), 3.0, Vector2.UP, Vector2(2, 2))
-	world.fx.death_sweep(world.fx.death_marks[0])
+	world.fx.death_outline_frac(world.fx.death_marks[0])
+	world.fx.death_arrow_frac(world.fx.death_marks[0])
 	world.fx.death_edge_tick(world.fx.death_marks[0])
 	assert_int(world.rng.state).is_equal(st1)
 	await await_idle_frame()
@@ -127,22 +128,6 @@ func test_marks_clear_on_respawn_and_on_world_start() -> void:
 	world.fx.death_mark(Vector2(1, 1), 3.0, Vector2.UP, Vector2(2, 2))
 	world.start(_stage())
 	assert_int(world.fx.death_marks.size()).is_equal(0)
-
-
-func test_sweep_grows_over_sim_time_and_is_full_under_reduced_motion() -> void:
-	world.fx.death_mark(Vector2(1, 1), 3.0, Vector2.UP, Vector2(2, 2))
-	var m: FxLayer.DeathMark = world.fx.death_marks[0]
-	assert_float(world.fx.death_sweep(m)).is_equal(0.0)
-	for i in 6:
-		world.fx.tick(DT)
-	var part := world.fx.death_sweep(m)
-	assert_float(part).is_between(0.2, 0.8)
-	for i in 30:
-		world.fx.tick(DT)
-	assert_float(world.fx.death_sweep(m)).is_equal(1.0)
-	m.age = 0.0
-	SettingsService.set_value(&"reduced_motion", true)
-	assert_float(world.fx.death_sweep(m)).is_equal(1.0)
 
 
 func test_off_view_killer_gets_an_edge_tick_toward_it() -> void:
@@ -172,76 +157,152 @@ func test_in_view_killer_gets_no_edge_tick() -> void:
 	assert_int(world.fx.death_edge_tick(world.fx.death_marks[0]).size()).is_equal(0)
 
 
-func test_chalk_is_dashed_with_real_gaps_and_a_fixed_pattern() -> void:
-	var spans := world.fx.dash_spans(10.0, 1.0)
-	assert_int(spans.size()).is_greater(3)
-	for i in spans.size():
-		var nxt := spans[(i + 1) % spans.size()]
-		var gap_angle: float = nxt.x - spans[i].y if i + 1 < spans.size() else (nxt.x + TAU) - spans[i].y
-		assert_float(gap_angle * 10.0).is_greater(1.5)       # a gap of at least 1.5 px along the arc
-		assert_float((spans[i].y - spans[i].x) * 10.0).is_greater(1.0)
-	assert_array(world.fx.dash_spans(10.0, 1.0)).is_equal(spans)   # no rng, no clock
-	var line := world.fx.dash_line(Vector2.ZERO, Vector2(30, 0))
-	assert_int(line.size()).is_greater(2)
-	assert_float(line[1][0].x - line[0][1].x).is_greater(1.5)
-
-
-func test_sweep_clips_the_dashes() -> void:
-	var full := world.fx.dash_spans(10.0, 1.0)
-	var half := world.fx.dash_spans(10.0, 0.5)
-	assert_int(half.size()).is_less(full.size())
-	assert_float(half[half.size() - 1].y).is_less_equal(-PI * 0.5 + PI + 0.0001)
-	assert_int(world.fx.dash_spans(10.0, 0.0).size()).is_equal(0)
-
-
 func test_ring_gap_exceeds_the_entity_plate_spacing() -> void:
 	var plate_spacing := TAU * SepulchreRitual.BODY_RADIUS / float(world.tuning.segments_total)
 	assert_float(fx.death_ring_pad_px).is_greater(plate_spacing * 0.5)   # clear gap vs the ~5 px between plates
 	assert_float(fx.death_ring_pad_px).is_greater(5.0)
 
 
-func test_chevron_points_along_the_hit_direction() -> void:
+
+
+func _seg_len(segs: Array[PackedVector2Array]) -> Array[float]:
+	var out: Array[float] = []
+	for s in segs:
+		out.append(s[0].distance_to(s[1]))
+	return out
+
+
+func test_dash_rhythms_are_2_on_1_off_small_and_3_3_for_the_big_ring() -> void:
+	assert_float(FxLayer.DASH_SMALL_ON).is_equal(2.0)
+	assert_float(FxLayer.DASH_SMALL_OFF).is_equal(1.0)
+	assert_float(FxLayer.DASH_RING_ON).is_equal(3.0)
+	assert_float(FxLayer.DASH_RING_OFF).is_equal(3.0)
+	# a straight 30 px path: dashes start every 3 px and are 2 px long
+	var segs := world.fx.dash_path(PackedVector2Array([Vector2.ZERO, Vector2(30, 0)]), 1.0)
+	assert_int(segs.size()).is_equal(10)
+	assert_float(segs[0][0].x).is_equal(0.0)
+	assert_float(segs[0][1].x).is_equal(2.0)
+	assert_float(segs[1][0].x).is_equal(3.0)
+	assert_array(world.fx.dash_path(PackedVector2Array([Vector2.ZERO, Vector2(30, 0)]), 1.0)).is_equal(segs)   # fixed pattern
+	assert_int(world.fx.dash_path(PackedVector2Array([Vector2.ZERO, Vector2(30, 0)]), 0.5).size()).is_less(segs.size())
+	# the ring round a shot (radius 9, diameter 18 > hull 15) is coarse; a tiny ring would be fine
+	assert_bool(world.fx.ring_uses_coarse_dashes(9.0)).is_true()
+	assert_bool(world.fx.ring_uses_coarse_dashes(5.0)).is_false()
+	var spans := world.fx.dash_spans(9.0, 1.0)
+	assert_int(spans.size()).is_greater(3)
+	for i in spans.size():
+		var nxt := spans[(i + 1) % spans.size()]
+		var gap: float = (nxt.x - spans[i].y) if i + 1 < spans.size() else (nxt.x + TAU - spans[i].y)
+		assert_float(gap * 9.0).is_greater(1.5)
+
+
+func test_outline_is_the_vigils_hull_at_the_death_spot_and_facing() -> void:
+	world.vigil.facing = 0.7
 	var v0 := world.vigil.pos
-	world.fx.death_mark(v0 + Vector2(40, 0), 3.0, Vector2.RIGHT, v0)   # hit came from the right
-	var ch := world.fx.death_chevron(world.fx.death_marks[0])
-	assert_int(ch.size()).is_equal(3)
-	assert_float(ch[1].x).is_less(ch[0].x)      # the tip leads, travelling right-to-left (killer -> Vigil)
-	assert_float(ch[1].x).is_less(ch[2].x)
-	assert_float(ch[0].y).is_not_equal(ch[2].y)
-	assert_float(ch[1].x).is_greater(world.to_screen(v0).x)   # sits on the hit side of the hull
-	assert_float(absf(ch[0].x - ch[1].x)).is_greater(world.vigil.radius * 0.5)
+	world.vigil.kill(v0 + Vector2(10, 0), Vector2.RIGHT, 3.0)
+	var m: FxLayer.DeathMark = world.fx.death_marks[0]
+	assert_float(m.facing).is_equal(0.7)
+	var out := world.fx.death_outline(m)
+	assert_int(out.size()).is_equal(4)
+	var expect := world.vigil.hull_points(world.to_screen(v0).round(), 0.7)
+	for i in 4:
+		assert_vector(out[i]).is_equal(expect[i])
+	# 15 px nose to tail
+	var f := Vector2.from_angle(0.7)
+	assert_float((out[0] - (out[1] + out[3]) * 0.5).dot(f)).is_equal_approx(VigilShip.HULL_LENGTH, 0.01)
 
 
-func test_big_killer_gets_a_contact_ring_and_leader_and_a_shot_gets_a_whole_ring() -> void:
+func test_arrow_is_at_least_a_hull_long_and_points_in_from_the_killers_side() -> void:
 	var v0 := world.vigil.pos
-	world.fx.death_mark(v0 + Vector2(80, 0), SepulchreRitual.BODY_DRAWN_RADIUS, Vector2.RIGHT, v0)
-	world.fx.death_mark(v0 + Vector2(10, 0), ShotLayer.HOSTILE_SHOT_RADIUS, Vector2.RIGHT, v0)
-	var big: FxLayer.DeathMark = world.fx.death_marks[0]
-	var shot: FxLayer.DeathMark = world.fx.death_marks[1]
-	assert_bool(world.fx.death_is_big(big)).is_true()
-	assert_bool(world.fx.death_is_big(shot)).is_false()
-	assert_vector(world.fx.death_contact_point(big)).is_equal(v0 + Vector2(world.vigil.radius, 0))
-	assert_int(world.fx.death_leader(shot).size()).is_equal(0)
-	assert_int(world.fx.death_leader(big).size()).is_equal(2)
-	# the shot's ring encloses its whole silhouette; the big killer's contact ring is small
-	assert_float(world.fx.death_ring_radius(shot)).is_less(fx.death_big_killer_px)
-	assert_float(fx.death_contact_ring_px).is_less(SepulchreRitual.BODY_DRAWN_RADIUS)
+	world.fx.death_mark(v0 + Vector2(60, 0), 3.0, Vector2.RIGHT, v0)   # killer to the right
+	var m: FxLayer.DeathMark = world.fx.death_marks[0]
+	var arrow := world.fx.death_arrow(m)
+	var c := world.to_screen(v0).round()
+	assert_float(arrow[0].distance_to(arrow[1])).is_greater_equal(VigilShip.HULL_LENGTH)
+	assert_float(fx.death_arrow_px).is_greater_equal(VigilShip.HULL_LENGTH)
+	assert_float(arrow[0].x).is_greater(arrow[1].x)         # tail is out toward the killer
+	assert_float(arrow[1].x).is_greater(c.x)                # tip lands inside the outline, on the killer's side
+	assert_float(arrow[1].x - c.x).is_less(VigilShip.HULL_LENGTH * 0.5)
+	assert_float(arrow[2].x).is_greater(arrow[1].x)         # barbs sweep back toward the killer
+	assert_float(arrow[3].x).is_greater(arrow[1].x)
+	assert_float(arrow[2].y).is_not_equal(arrow[3].y)
+	assert_int(world.fx.death_marks.size()).is_equal(1)
 
 
-func test_leader_tracks_the_moving_entity_and_ends_at_the_edge_when_off_view() -> void:
+func test_leader_only_when_the_killer_is_far_and_it_tracks_the_live_entity() -> void:
 	var v0 := world.vigil.pos
-	world.ritual.entity_pos = v0 + Vector2(80, 0)
+	# adjacent (a shot, or the body touching): the arrow alone
+	world.ritual.entity_pos = v0 + Vector2(40, 0)
 	world.fx.death_mark(world.ritual.entity_pos, SepulchreRitual.BODY_DRAWN_RADIUS, Vector2.RIGHT, v0)
 	var m: FxLayer.DeathMark = world.fx.death_marks[0]
+	assert_int(world.fx.death_leader(m).size()).is_equal(0)
+	# far: the leader appears and follows the live position, not the death-time one
+	world.ritual.entity_pos = v0 + Vector2(90, 0)
 	var a := world.fx.death_leader(m)
-	world.ritual.entity_pos = v0 + Vector2(100, 0)
+	assert_int(a.size()).is_equal(2)
+	assert_vector(a[0]).is_equal(world.fx.death_arrow(m)[0])        # it continues the shaft
+	world.ritual.entity_pos = v0 + Vector2(110, 0)
 	var b := world.fx.death_leader(m)
-	assert_float(b[1].x - a[1].x).is_equal_approx(20.0, 1.0)     # it follows the live position
-	assert_vector(m.killer_pos).is_equal(v0 + Vector2(80, 0))      # death-time anchor untouched
-	# off-view: the leader meets the edge tick
+	assert_float(b[1].x - a[1].x).is_equal_approx(20.0, 1.0)
+	assert_vector(m.killer_pos).is_equal(v0 + Vector2(40, 0))        # the death-time anchor is untouched
+	# a shot never tracks: it stays where it killed
+	var s0 := FxLayer.DeathMark.new()
+	s0.killer_pos = v0 + Vector2(5, 0)
+	s0.vigil_pos = v0
+	s0.from_dir = Vector2.RIGHT
+	s0.killer_radius = ShotLayer.HOSTILE_SHOT_RADIUS
+	world.ritual.entity_pos = v0 + Vector2(500, 500)
+	assert_vector(world.fx.death_killer_pos(s0)).is_equal(v0 + Vector2(5, 0))
+	assert_int(world.fx.death_leader(s0).size()).is_equal(0)
+
+
+func test_off_view_entity_ends_the_leader_at_the_edge_tick() -> void:
+	var v0 := world.vigil.pos
+	world.ritual.entity_pos = v0 + Vector2(40, 0)
+	world.fx.death_mark(world.ritual.entity_pos, SepulchreRitual.BODY_DRAWN_RADIUS, Vector2.RIGHT, v0)
+	var m: FxLayer.DeathMark = world.fx.death_marks[0]
 	world.ritual.entity_pos = world.torus.wrap(v0 + Vector2(0, world.view_size.y))
 	var tick := world.fx.death_edge_tick(m)
 	assert_int(tick.size()).is_equal(2)
-	var c := world.fx.death_leader(m)
-	assert_int(c.size()).is_equal(2)
-	assert_vector(c[1]).is_equal(tick[1])
+	var lead := world.fx.death_leader(m)
+	assert_int(lead.size()).is_equal(2)
+	assert_vector(lead[1]).is_equal(tick[1])
+
+
+func test_a_shot_gets_the_silhouette_ring_as_well_as_the_outline() -> void:
+	var v0 := world.vigil.pos
+	world.fx.death_mark(v0 + Vector2(10, 0), ShotLayer.HOSTILE_SHOT_RADIUS, Vector2.RIGHT, v0)
+	var m: FxLayer.DeathMark = world.fx.death_marks[0]
+	assert_bool(world.fx.death_is_big(m)).is_false()
+	assert_float(world.fx.death_ring_radius(m)).is_equal(ShotLayer.HOSTILE_SHOT_RADIUS + fx.death_ring_pad_px)
+	assert_int(world.fx.death_outline(m).size()).is_equal(4)
+
+
+func test_draw_on_order_outline_completes_before_the_arrow_starts() -> void:
+	world.fx.death_mark(Vector2(1, 1), 3.0, Vector2.UP, Vector2(2, 2))
+	var m: FxLayer.DeathMark = world.fx.death_marks[0]
+	assert_float(world.fx.death_outline_frac(m)).is_equal(0.0)
+	assert_float(world.fx.death_arrow_frac(m)).is_equal(0.0)
+	var seen_partial_outline := false
+	var last_outline := 0.0
+	for i in 40:
+		world.fx.tick(DT)
+		var o := world.fx.death_outline_frac(m)
+		var a := world.fx.death_arrow_frac(m)
+		assert_float(o).is_greater_equal(last_outline)
+		last_outline = o
+		if a > 0.0:
+			assert_float(o).is_equal(1.0)         # the arrow never starts before the outline is complete
+		if o > 0.0 and o < 1.0:
+			seen_partial_outline = true
+			assert_float(a).is_equal(0.0)
+	assert_bool(seen_partial_outline).is_true()
+	assert_float(world.fx.death_arrow_frac(m)).is_equal(1.0)   # held until respawn
+
+
+func test_reduced_motion_shows_everything_at_once() -> void:
+	SettingsService.set_value(&"reduced_motion", true)
+	world.fx.death_mark(Vector2(1, 1), 3.0, Vector2.UP, Vector2(2, 2))
+	var m: FxLayer.DeathMark = world.fx.death_marks[0]
+	assert_float(world.fx.death_outline_frac(m)).is_equal(1.0)
+	assert_float(world.fx.death_arrow_frac(m)).is_equal(1.0)

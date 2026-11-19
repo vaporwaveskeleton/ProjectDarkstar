@@ -147,6 +147,7 @@ func test_buffer_clears_on_respawn_and_reset() -> void:
 func test_ghosts_are_corner_brackets_that_shrink_and_never_close() -> void:
 	var hull := PackedVector2Array([Vector2(9, 0), Vector2(-6, 6), Vector2(-3, 0), Vector2(-6, -6)])
 	var ft := world.fx_tuning
+	assert_float(ft.ghost_bracket_frac_1).is_equal(0.6)
 	var last_len := INF
 	for i in range(1, 4):
 		var segs := v.ghost_brackets(hull, i)
@@ -155,14 +156,21 @@ func test_ghosts_are_corner_brackets_that_shrink_and_never_close() -> void:
 		for s in segs:
 			assert_int(s.size()).is_equal(2)
 			total += s[0].distance_to(s[1])
+			assert_bool(s[0].distance_to(hull[2]) > 0.5).is_true()   # the notch is never a bracket origin
 		assert_float(total).is_less(last_len)
 		last_len = total
-		# no edge is fully covered: the two brackets on one edge leave a gap (never a closed outline)
-		var frac := [ft.ghost_bracket_frac_1, ft.ghost_bracket_frac_2, ft.ghost_bracket_frac_3][i - 1] as float
-		assert_float(frac * 2.0).is_less(1.0)
-		# the notch vertex is never a bracket origin
-		for s in segs:
-			assert_bool(s[0].distance_to(hull[2]) > 0.5).is_true()
+		# per hull edge, the bracket coverage must leave a gap: the ghost is never a closed outline
+		var edges := [[0, 1], [0, 3], [1, 2], [3, 2]]
+		for e in edges:
+			var a: Vector2 = hull[e[0]]
+			var b: Vector2 = hull[e[1]]
+			var covered := 0.0
+			for s in segs:
+				var on_edge := (s[0].distance_to(a) < 0.51 and absf((s[1] - a).angle_to(b - a)) < 0.2) \
+					or (s[0].distance_to(b) < 0.51 and absf((s[1] - b).angle_to(a - b)) < 0.2)
+				if on_edge:
+					covered += s[0].distance_to(s[1])
+			assert_float(covered).is_less(a.distance_to(b) - 1.0)
 	assert_float(ft.ghost_bracket_frac_1).is_greater(ft.ghost_bracket_frac_2)
 	assert_float(ft.ghost_bracket_frac_2).is_greater(ft.ghost_bracket_frac_3)
 

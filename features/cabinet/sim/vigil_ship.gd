@@ -9,6 +9,8 @@ var vel := Vector2.ZERO
 var facing := -PI / 2.0
 var alive := true
 var radius := 6.0
+const HULL_LENGTH := 15.0        ## px nose to tail of the drawn hull (9 + 6): the S6 death arrow is at least this long
+const GHOST_SHARED_EDGE_MAX := 0.4   ## x edge length: max bracket per end on an edge two brackets share (S5)
 var shield := 0.0                ## respawn invulnerability (s)
 var input_enabled := true
 
@@ -187,7 +189,9 @@ func ghost_brackets(hull: PackedVector2Array, i: int) -> Array[PackedVector2Arra
 	for pair in [[0, 1], [0, 3], [1, 0], [1, 2], [3, 0], [3, 2]]:
 		var a := hull[pair[0]]
 		var b := hull[pair[1]]
-		out.append(PackedVector2Array([a.round(), a.lerp(b, frac).round()]))
+		# the two nose edges get a bracket from BOTH ends: cap those so a gap always remains (never closed)
+		var shared: bool = (pair[0] == 0 or pair[1] == 0)
+		out.append(PackedVector2Array([a.round(), a.lerp(b, minf(frac, GHOST_SHARED_EDGE_MAX) if shared else frac).round()]))
 	return out
 
 
@@ -196,7 +200,8 @@ func ghost_color(i: int) -> Color:
 	return Look.c(ramp[clampi(i - 1, 0, ramp.size() - 1)])
 
 
-func _hull(c: Vector2, ang: float) -> PackedVector2Array:
+## The Vigil's 4 hull points around screen centre `c` facing `ang` (nose, tail, notch, tail).
+func hull_points(c: Vector2, ang: float) -> PackedVector2Array:
 	var f := Vector2.from_angle(ang)
 	var r := f.orthogonal()
 	return PackedVector2Array([c + f * 9.0, c - f * 6.0 + r * 6.0, c - f * 3.0, c - f * 6.0 - r * 6.0])
@@ -268,7 +273,7 @@ func _draw_trail(c: Vector2) -> void:
 			if not trail_has(k):
 				continue
 			var gc := (c + trail_offset(k)).round()
-			for seg in ghost_brackets(_hull(gc, trail_facing(k)), i):
+			for seg in ghost_brackets(hull_points(gc, trail_facing(k)), i):
 				draw_line(seg[0], seg[1], ghost_color(i), 1.0)
 	if wake_active():
 		for j in range(ft.wake_dots, 0, -1):
