@@ -9,6 +9,7 @@ var game: Node
 var world: ArcadeWorld
 var _saved_photo: Variant
 var _saved_reduced: Variant
+var _saved_muzzle: Variant
 
 
 func before_test() -> void:
@@ -16,8 +17,11 @@ func before_test() -> void:
 	SaveService.set_backend(MemorySaveBackend.new())
 	_saved_photo = SettingsService.get_value(&"photosensitivity")
 	_saved_reduced = SettingsService.get_value(&"reduced_motion")
+	_saved_muzzle = SettingsService.get_value(&"muzzle_flash")
+	SettingsService.persist = false   # never write the player's settings.cfg
 	SettingsService.set_value(&"photosensitivity", false)
 	SettingsService.set_value(&"reduced_motion", false)
+	SettingsService.set_value(&"muzzle_flash", true)
 	game = SCENE.instantiate()
 	add_child(game)
 	game.set_process(false)
@@ -36,6 +40,8 @@ func before_test() -> void:
 func after_test() -> void:
 	SettingsService.set_value(&"photosensitivity", _saved_photo)
 	SettingsService.set_value(&"reduced_motion", _saved_reduced)
+	SettingsService.set_value(&"muzzle_flash", _saved_muzzle)
+	SettingsService.persist = true
 	if is_instance_valid(game):
 		game.free()
 	AudioService.muted_for_tests = false
@@ -64,6 +70,20 @@ func test_muzzle_star_lasts_exactly_the_tuned_drawn_frames() -> void:
 
 
 func test_muzzle_star_is_suppressed_under_photosensitivity() -> void:
+	SettingsService.set_value(&"photosensitivity", true)
+	_fire_once()
+	assert_int(world.vigil.muzzle_frames_left).is_equal(0)
+
+
+func test_muzzle_star_is_off_when_the_player_turns_it_off_but_recoil_stays() -> void:
+	SettingsService.set_value(&"muzzle_flash", false)
+	_fire_once()
+	assert_int(world.vigil.muzzle_frames_left).is_equal(0)
+	assert_int(world.vigil.recoil_frames_left).is_equal(world.fx_tuning.recoil_frames)
+
+
+func test_muzzle_star_stays_off_with_flash_on_and_photosensitivity_on() -> void:
+	SettingsService.set_value(&"muzzle_flash", true)
 	SettingsService.set_value(&"photosensitivity", true)
 	_fire_once()
 	assert_int(world.vigil.muzzle_frames_left).is_equal(0)

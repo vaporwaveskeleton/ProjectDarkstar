@@ -516,7 +516,7 @@ The rule that governs this whole subsection, from GDD-001 §10 and repeated here
 | Boiling rim (W2-07), Shroud growth (W2-02) | Rims render static; cells are fully drawn from the frame they appear in | Cell boundaries drawn at full contrast from frame one | A fade-in that hides a hazard for its first frames |
 | Chromatic edge (W1-06), Ink-bleed tells | Colour split disabled; the Smear family tell is replaced by a static edge-notch glyph | The tell family is still named, in a static form | Removing a tell entirely (breaks L1 and L2) |
 | Full-field luminance steps | Banned outright in warp presentation, on and off (§1.4 entry rule) | n/a | Any effect whose punch depends on a flash |
-| Flicker anywhere | Capped at 3 full luminance cycles per second, on any surface, at any tier `✱` | n/a | A tell that only reads through flashing |
+| Flicker anywhere | Capped at 3 full luminance cycles per second, on any surface, at any tier `✱` | n/a | A tell that only reads through flashing. (Owner ruling 2026-11-18: the few-pixel Cabinet muzzle star is not a luminance flash under this cap; see AUDIO-001 §8.3.) |
 | Big-type typing (W4-08) | Text appears complete, no per-character reveal | Subtitles carry the same line | Delaying the line's content |
 | Screen shake (SYS-001 §9 row) | Reduced to 2 px for warp causes; the row's own cap still binds non-warp causes | Hit direction is drawn as a chalk arc on the frame `✱` | Removing the record that you were hit |
 

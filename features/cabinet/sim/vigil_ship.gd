@@ -90,7 +90,7 @@ func tick(delta: float) -> void:
 		_fire_cooldown = 1.0 / world.tuning.lance_rate
 		var dir := Vector2.from_angle(facing)
 		world.shots.fire_lance(pos + dir * 9.0, dir, vel)
-		if not SettingsService.get_value(&"photosensitivity"):
+		if SettingsService.get_value(&"muzzle_flash") and not SettingsService.get_value(&"photosensitivity"):
 			muzzle_frames_left = world.fx_tuning.muzzle_star_frames
 		if not SettingsService.get_value(&"reduced_motion"):
 			recoil_frames_left = world.fx_tuning.recoil_frames

@@ -18,10 +18,12 @@ const DEFAULTS := {
 	&"reduced_motion": false,
 	&"photosensitivity": false,    # kills flicker/strobe; never hides information (GDD §10)
 	&"steady_ledger": true,        # WARP-001 §4.4: ships ON
+	&"muzzle_flash": true,         # S4 owner ruling 2026-11-18: ships ON; the player may turn it off
 }
 
 var _values: Dictionary = {}
 var persist: bool = true   # tests turn this off
+var settings_path: String = PATH   # tests point this at a temp file
 
 
 func _ready() -> void:
@@ -32,7 +34,7 @@ func load_settings() -> void:
 	_values = DEFAULTS.duplicate()
 	if persist:
 		var cfg := ConfigFile.new()
-		if cfg.load(PATH) == OK:
+		if cfg.load(settings_path) == OK:
 			for key in DEFAULTS:
 				var v: Variant = cfg.get_value(SECTION, String(key), DEFAULTS[key])
 				if typeof(v) == typeof(DEFAULTS[key]):
@@ -78,6 +80,6 @@ func _save() -> void:
 	var cfg := ConfigFile.new()
 	for key in _values:
 		cfg.set_value(SECTION, String(key), _values[key])
-	var err := cfg.save(PATH)
+	var err := cfg.save(settings_path)
 	if err != OK:
 		push_warning("SettingsService: could not write settings (%d)" % err)

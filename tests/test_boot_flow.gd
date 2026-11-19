@@ -44,3 +44,5 @@ func test_default_settings_match_accessibility_rules() -> void:
 	# WARP-001 §4.4: Steady Ledger ships ON. GDD §10: photosensitivity is opt-in presentation only.
 	assert_bool(SettingsService.DEFAULTS[&"steady_ledger"]).is_true()
 	assert_float(SettingsService.DEFAULTS[&"text_scale"]).is_equal(1.0)
+	# S4 owner ruling 2026-11-18: the muzzle star ships ON; the player may turn it off.
+	assert_bool(SettingsService.DEFAULTS[&"muzzle_flash"]).is_true()
