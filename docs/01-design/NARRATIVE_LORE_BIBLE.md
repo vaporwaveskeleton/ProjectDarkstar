@@ -1,6 +1,7 @@
 # DARKSTAR — Narrative & Lore Bible
 
-**Doc ID:** NARR-001 · **Version:** 1.1 · **Date:** 2026-11-17 · **Owner:** narrative · **Status:** complete-draft — §0–§14 written; Codex has 41 sample entries (LOOP-001 §8.2 ID scheme) and a style guide, the full entry set is owed (§14 Q-10)
+**Doc ID:** NARR-001 · **Version:** 1.2 · **Date:** 2026-11-18 · **Owner:** narrative · **Status:** complete-draft — §0–§14 written; Codex has 45 sample entries (LOOP-001 §8.2 ID scheme) and a style guide, the full entry set is owed (§14 Q-10)
+**Rev 1.2 (2026-11-18):** cosmic horror design rev 3 applied (PM ruling 2026-11-18 (owner grant), cosmic horror design rev 3; CHD-01, -04, -09, -11, -15, -16): N-rules (§3.4), borrowed entity lines and the borrowed face (§3.2, §4.5), Choir liturgy fragments (§2.1), Penitents you meet are you (§2.3, §5.5), L12 discrepancy lines (§7.2), biome grief (§6.5), the Codex gates rule nodes instead of paying Ink, rumours, the 27 gating ids and their reconciliation (§8.3, §8.6, §8.7), new questions Q-11…Q-16 (§14). **Same-day reconciliation (2026-11-18):** gating ids folded (`cx_choir_acolyte`, `cx_choir_deacon`, `cx_place_the_drowned_observatory`, `cx_rule_the_glimpse`) and LOOP-001 §8.2's classes widened, recount 144 (§8.2, §8.6, §8.7); L12 keys are `MSG_DEATH_LIE_*`, Compass live, Charges and Index reserved (§7.2); the D-04 amendment noted under N1 (§3.4); the Procession has no Matron (§8.4); Relic wording retired (§5.3); Q-11, Q-15, Q-16 closed, Q-12 closed except the Hollow sector's two entries.
 **Upstream:** `docs/01-design/GDD_DARKSTAR_v0.2.md` (GDD-001) · `docs/01-design/SYSTEMS_BIBLE_STATS.md` (SYS-001) · `docs/01-design/ROGUELIKE_LOOP_AND_LANTERN_TREE.md` (LOOP-001)
 **This doc owns:** the fiction, the factions' theology, the entity's interior logic, the Ruins' cast, the Codex prose, the endings as fiction, the chronicle, the writing's refusals, and the voice/text inventory outside the entity's state announcements.
 
@@ -186,9 +187,20 @@ The Choir has no pope, no throne and no celebrant. The service is performed *at*
 | Part | Choir name | What it is | What the player sees |
 |---|---|---|---|
 | 1 | **The Carrying** | processions bring glass | Grubs on routes (ZONES-001 §6.4) |
-| 2 | **The Litany** | nine syllables over eight ring-nodes, always one short (AUDIO-001 §5.1) | the Litany Ring (SYS-001 §3.1) |
+| 2 | **The Litany** | written in nine syllables, sung in eight over eight ring-nodes, always one short (AUDIO-001 §5.1) | the Litany Ring (SYS-001 §3.1) |
 | 3 | **The Quickening** | the hymn hurries because the body twitches | phase 3 (SYS-001 §2) |
 | 4 | **The Silence** | the hymn stops on purpose so the god can speak first | the 1.2 s silence before the Awakening line (GDD-001 §12) — the Choir's most sacred beat is a held breath |
+
+**Liturgy fragments (samples; PM ruling 2026-11-18 (owner grant), cosmic horror design rev 3, CHD-16).** Choir register (§4.1): sentence case, present tense. The Litany is **written in nine syllables and sung in eight, always one short**: the ninth is the late ninth voice's, and only ending 3 sings it complete (§9.3). The 8-syllable sample lines below are the sung form (§14 Q-11, closed 2026-11-18). Where these appear (Codex *Choir:* quotes, captions, or chant) is open: any sung or spoken form is AUDIO-001 §5's (handed to the Game audio chat).
+
+| # | Line | Who, when | Check |
+|---|---|---|---|
+| 1 | *Bear the glass where the light was meant.* | a Litany line | 8 syllables |
+| 2 | *Carry it gently. It is someone's.* | the Carried's bearing words | present tense (sample read "It was someone's"; fixed to the register's present tense) |
+| 3 | *We are not afraid of the dark. We are afraid of it ending unfinished.* | doctrine | — |
+| 4 | *The ninth voice is late. The ninth voice is always late.* | doctrine; the gap | — |
+| 5 | *Lampkeeper, you carry fire into a house of mourning.* | a Matron, on being silenced | — |
+| 6 | *Let it pass. Let it pass. Let it pass over.* | the Comforters, at the leading edge of a Passing (WARP-001, the Passing, CHD-02) | — |
 
 **The Salt Mother.** The Choir's only saint is a Matron who, during the first service anyone remembers, salted her own Sepulchre so it could not take the last deposit, then sang the Litany to the end anyway. The Choir venerates her for finishing the hymn, not for stopping the god; they have never noticed the contradiction, or they have and they keep it. Her favour is the name of PACT-24 (LOOP-001 §7.3): *a face you never mine stays clean.* The Salt Mother is the only Choir figure Brother Wick still prays to (§5.3).
 
@@ -211,6 +223,8 @@ Deacons of Lies cast phantom Grubs and Acolytes (SYS-001 §3). The player experi
 **The Lampkeepers** were the staff. They flew **Vigils** — brass lantern skiffs — into the Hollow Skies to mine Mourning Glass, on quotas, in shifts the Office called vigils. Recruitment ran through Vigil halls, and every Vigil hall had a training cabinet titled DARKSTAR, built by an Office engineer named **Theodora Lune** (§5.4). Lampkeepers wore a brass ring set with a small lamp; the lamp was lit at enlistment and was supposed to be relit at discharge. Very few were.
 
 **The Penitent** is what is left when a Lampkeeper dies with the lamp lit. It is not a ghost (§11.6 — the writing does not decide whether there is an afterlife). It is a residue, like glass is a residue: an intention to come home, unfinished, drifting through danger because that is where it was last going. Shooting it grants a Vigil Boon (SYS-001 §3) because what it carries is a last act of help that never landed. The Choir took the lanterns of the dead as relics; three of those salvaged lamps are visible on Choir bodies (the Deceiver's offering lamp, an Acolyte's broken halo, the Penitent's own broken ring — ART-001 §4 law 1 exception). None of them is lit. No Choir hand has ever lit a lantern.
+
+**The Penitents you meet are you** (PM ruling 2026-11-18 (owner grant), cosmic horror design rev 3, CHD-09). The player is the last Lampkeeper, and the player dies with the lamp lit. So in a Chronicle, a Penitent drifting where you once fell (ZONES-001 §4.5, death-site Penitents) is *your* residue: your own intention to come home, still going. It is the same Penitent as any other (shoot it, be blessed; SYS-001 §3) and shares its sector cap with the Coma Penitent (SYS-001, death-site Penitent cap row). `TRUE`: the death sites survive Hard Unmaking (LOOP-001 §2, anchored state) because a lit lamp left behind is an unfinished intention, and unfinished intentions are the one thing in this system that keeps (§1.3). The writing still refuses the afterlife question (§11.6): it is *what you left*, never *where you went*. Never call it a ghost, a copy or "your spirit"; never let a line say "you died here".
 
 ### 2.4 Names registry
 
@@ -283,6 +297,22 @@ The entity has no language of its own. **Every word it says is a word somebody i
 
 This is a TRUE fact and one of the slow reveals of Act 2–3 (§10.3 tier S3): players who read the Cabinet's attract text in the Ruins will recognise the entity's vocabulary in it. Nothing in the game points this out. The Codex never states it. Ilse's marginalia comes closest, once (§8.4, `cx_ruins_cabinet_02`).
 
+**It borrows the voice and the face** (PM ruling 2026-11-18 (owner grant), cosmic horror design rev 3, CHD-16). Its lines are borrowed words, delivered unprocessed (AUDIO-001 §4.3: dry, flat, no growl or pitch work): nothing is added to them, because nothing in them is its own. From Act 1 the face its lines are set in is the Cabinet's (§4.5). The cheerful voice of Act 0 is the one that talks to you in the dark.
+
+**Borrowed lines (samples; each line names its source).** Entity register (§4.1): ALL CAPS, 1–8 words, true when spoken (AUDIO-001 L2). AUDIO-001 §4 owns entity lines (§7.1), so these are offered to it, not placed: the rows and keys are handed to the Game audio chat. Each was checked against the §4.1 register and the §3.2 source rule; fixes are noted.
+
+| Line | Words | Source (verify where) | When | Check |
+|---|---|---|---|---|
+| "RUN, LITTLE LANTERN." | 3 | the Cabinet (§7.5 attract) | existing, AUDIO-001 §4.5 | — |
+| "INSERT CREDIT." | 2 | the Cabinet (§7.5; `locale/en.po`) | the start of an Iteration after a Hard Unmaking | sample read "INSERT COIN."; the Cabinet never says COIN, so the borrowed words are fixed to its own |
+| "PLAYER 1." | 2 | the Cabinet (§7.5 "PLAYER 1 · STILL ON DUTY"; §4.4) | Act 3, when Your Own Vigil enters (ZONES-001 §7) | sample read "PLAYER ONE."; fixed to the Cabinet's own form (spoken "player one") |
+| "QUOTA MET." | 2 | Office duty log (`cx_glass_quota`); the Cabinet credits (`CAB_CREDITS_3`) | when the Sepulchre completes | — |
+| "KEEP THE VIGIL." | 3 | the Observatory's last order (`cx_chron_hu_08`) | Act 4, said back sincerely | — |
+| "LEFT. LEFT. LEFT." | 3 | your play: turn history (telemetry, as AUDIO-001 §4.10) | Act 3, in a Remembered kit (ZONES-001, kit memory, CHD-11) | — |
+| "ONE SHORT." | 2 | the Choir's Litany, "always one short" (§2.1) | when the player is one Charge short of an unmake | must be true at that moment (L2) |
+| "STILL ON DUTY." | 3 | the Cabinet (§7.5, Ruins Act 1) | on a late death in a Chronicle (which death: value owed, SYS-001 row requested) | sample read "WELCOME BACK." [cabinet high-score screen]; no Cabinet text says it, so it had no verifiable source. Replaced with a Cabinet line that exists |
+| "THANK YOU." | 2 | existing, sincere (AUDIO-001 §4.7) | existing | — |
+
 ### 3.3 How it relates to the loop
 
 The entity did not make the loop and does not control it. The loop is the **Ninth Sky Observatory still running its last order** (§10.1, `cx_chron_hu_08`): *KEEP THE VIGIL.* The Office's will to finish the light is, like everything unfinished here, a substance; it crystallised in the Observatory's broken lens housing, and the Lantern Tree grows out of it (§4.3). Each time a sky goes dark the Observatory does the only thing it was built to do: it tries again.
@@ -303,6 +333,25 @@ So the system contains two unfinished intentions wearing shapes. The entity is t
 | the 1983 original's lines or their structures | RES-001 §5; §12 | original lines only |
 | a name other than Nhael'Gharoth, the Dark Star, the Waking Dark, the Hollow King, the Star That Failed | §13 | — |
 | humour in its mouth | it never jokes. "THANK YOU." (AUDIO-001 §4.7) is not a joke; it is the worst line in the game because it is sincere | — |
+
+**Never fully seen: the N-rules** (PM ruling 2026-11-18 (owner grant), cosmic horror design rev 3, CHD-01). Horror here is subtraction: the entity is shown only by what stops being there. Horror is an undertone at T1–T2 and overt from T3 (WARP-001, horror reading per tier). The teen envelope holds (§11), and there is zero startle: CH-6 is a hard rule, so nothing about the entity may jump, flash or sting. These rules bind prose and art alike; a line that describes the entity breaking one is cut.
+
+| # | Rule | For the writing |
+|---|---|---|
+| N1 | Never more than a fraction of its silhouette on screen at once (SYS-001, entity max on-screen silhouette row), except in the Unmaking cinematic (N8) | no text describes its whole shape |
+| N2 | At least one of its edges is always off-screen or occluded. Nobody sees where it ends | no text says where it ends |
+| N3 | Never lit from the front. It is seen only by what it removes: stars, fog scatter, colour, reflections in crystal spheres | describe the absence, never the surface |
+| N4 | No face, mouth, eye, or symmetry that reads as a face (extends the row above) | the entity never gazes, watches or looks, and has no "maw" or "eye". The Choir's gaze cones are theirs, and the gaze in the Waking is the *player's*, at it |
+| N5 | A **Glimpse** is a soft rim-light along part of its edge: eased in and out, silent, never a flash (within the WARP-001 §4.5 flicker cap), no longer than SYS-001's Glimpse duration max row, and caused only by the player's own light (a Charge hit, a Surgelight burn). A reveal the player caused, never a startle | a Glimpse is something *you* did |
+| N6 | Its scale is never confirmed. No reference object is ever shown beside its whole extent | no size words with a measure in them |
+| N7 | It moves like a tide or an eclipse: slow fronts, no limbs, no strikes. Its attacks are subtractions | no "lunges", "strikes", "claws" |
+| N8 | It fills the screen only in the Unmaking cinematic, and even then the black spreads from inside the picture, not from the edges | — |
+| N9 | It has no sound of its own: its presence is heard as sound being removed. Its spoken lines are borrowed words (§3.2), not its own sound | no roar, no breath, no "it screamed" |
+| N10 | It is the only true black (ART-001 §16.1), and so are its projectiles, which are pieces of it; each has a luminous Aether rim so black on colour always reads | — |
+
+**N1 and the Awakening (WARP-001 §6.1 D-04, amended 2026-11-18, PM ruling Q-A).** At the Awakening the entity's full body is present for the first time, every edge of it inside the sector, drawn as an outline of absence. This is its debut. The camera never frames more than the N1 maximum at once and pans along it. The single full-body view is kept for the first Unmaking cinematic (N8). This amends an earlier owner decision under the PM's grant (2026-11-18); the PM has flagged it to the owner for reconfirmation. For the writing: no text describes the whole body even here; it is crossed, never surveyed.
+
+The art half of these rules is ART-001's: the **ART-001 §16 cross-reference is handed to the Aether art chat**, which owns that doc. Numbers live in SYS-001; this table only names the rows.
 
 ---
 
@@ -375,6 +424,17 @@ The arcade costume of Act 0 is not the game lying. It is the **Office's vocabula
 | THE LIGHT | the goal | the Ninth Light, which could not finish | ending 4 |
 | LITTLE LANTERN | the Cabinet's affectionate name for a new player | the youngest recruits. The entity says it now (§3.2) | AUDIO-001 §4.5 "RUN, LITTLE LANTERN." |
 
+### 4.5 The tear, and the borrowed face
+
+PM ruling 2026-11-18 (owner grant), cosmic horror design rev 3, CHD-16.
+
+| Beat | Rule | Why |
+|---|---|---|
+| **Cabinet (Act 0)** | imperative, cheerful, transactional: it wants your credit. INSERT CREDIT. PLAYER 1. | the Office's recruitment voice (§4.4) |
+| **The tear** | after "THAT WAS A PRETENCE." there is **no text at all** for the opening of the Aether, for SYS-001's tear silence row. Colour, fog and room tone only. No caption, prompt, tooltip or entity line in that time | the first thing the player meets after the lie is a world, not a sentence |
+| **First words** | the first words the player reads after the Pretence are in the Ruins, in sentence case, from a person: **Sable Vane** at the Chalk Desk (§7.5, first visit). No other Ruins text (the Cabinet's marquee, Ilse's notes) may be read before it (§14 Q-14) | a human voice, after a machine's |
+| **The inversion** | from Act 1, **the Cabinet's face is the one the entity borrows**: its lines are set in the Cabinet's type (ART-001 owns the face). The cheerful voice of Act 0 comes back as the entity's | the player's own training (the Lampkeepers' curriculum) is what talks to them in the dark. AUDIO-001 §4.2 was brought into line by the Game audio chat (§14 Q-15, closed 2026-11-18) |
+
 ---
 
 ## 5. The Ruins cast
@@ -419,7 +479,7 @@ Four people and one machine. None of them is a vendor; each one owns a system (G
 
 **Voice.** Slow, kind, liturgical habits he can't shake (counts things under his breath in nines). Calls the player "Lampkeeper", never by number. The only Ruins character who will say the Choir's names for things, and he says them gently.
 
-**Arc.** Arrives at beat 1 (*The First Dark*), sitting under the Tree; in Act 1 the Tree grows alone. Beat 2: names the gap. Act 2 the sympathy vehicle (GDD-001 §9.1): he explains Choir rites when you bring back their salvaged lanterns (Relic pickups), hangs them unlit in the Tree. Act 3 asks you, once, to silence a Matron instead of killing her "if it costs you nothing" — it always costs something (SYS-001 §3, §1.5). Beat 6: offers ending 2 at the last lamp (§5.6). Ending 3: he is the one who stops you, or tries, with one line (§9.3).
+**Arc.** Arrives at beat 1 (*The First Dark*), sitting under the Tree; in Act 1 the Tree grows alone. Beat 2: names the gap. Act 2 the sympathy vehicle (GDD-001 §9.1): he explains Choir rites when you bring back their salvaged lanterns (rare Run Sigils taken at a Seam boundary, the former Relics; LOOP-001 §5, CHD-14), hangs them unlit in the Tree. Act 3 asks you, once, to silence a Matron instead of killing her "if it costs you nothing" — it always costs something (SYS-001 §3, §1.5). Beat 6: offers ending 2 at the last lamp (§5.6). Ending 3: he is the one who stops you, or tries, with one line (§9.3).
 
 ### 5.4 The Cabinet, and Theodora Lune
 
@@ -434,6 +494,8 @@ Four people and one machine. None of them is a vendor; each one owns a system (G
 ### 5.5 The Penitent, as cast
 
 Not a speaker. It first drifts through the Ruins at beat 7 (*The Choir Sings Your Name*, LOOP-001 §10.4) — the first time anything from the skies enters the anchored pocket — and from then on once per Iteration, through the Lantern Tree, leaving a lit lamp on one branch that goes out when you leave. It is the closest the game comes to a ghost and the writing still refuses the question (§11.6).
+
+In the skies, the Penitents you meet where you fell are you (§2.3, CHD-09). A chosen one can be **rekindled** with Ember (LOOP-001, the post-tree Ember sink, CHD-15; the per-kit limit is SYS-001's rekindled Penitents row): it keeps its lamp lit through Hard Unmakings, a remembered grave. It gains no words and no power. Nobody in the Ruins comments on it.
 
 ### 5.6 The cast across the Hard Unmaking beats
 
@@ -506,6 +568,19 @@ One sentence per kit, written for the `cx_place_` entry and the environmental ch
 
 A sector gone **Hollow** (ZONES-001 §1.2, §6.5) gets a Codex `cx_place_` amendment written in the Choir register — the only time the Codex quotes the Choir without Ilse's comment: *Here the service finished.* The original entry stays legible beneath it, struck through, in the same two-line form as an eaten rule (§8.2).
 
+### 6.5 Each biome's grief, told in art
+
+PM ruling 2026-11-18 (owner grant), cosmic horror design rev 3, CHD-16. Each biome has one environmental story told **only in art**: no caption, no prompt, no chalk label. A Codex entry confirms it *after* the player has seen it, in the `cx_place_` voice (§8.2: the place before and after). ZONES-001 §2 lists each story for placement; the Aether art chat draws it. Entry prose is owed (§8.7).
+
+| Biome | The story in the fog | Codex (after) | Note |
+|---|---|---|---|
+| Pale Marches | an Office recruitment sign, KEEP THE VIGIL (§7.6), frosted over and still lit | `cx_place_marches_sign` | — |
+| Ossuary Belt | survey stakes in the vertebrae, numbered past the last one anyone mined | `cx_place_belt_stakes` | echoes OB-06 Quiet Gallery (§6.3); keep the two distinct |
+| The Litany | one pew in the Nave is lit; the others are dark. The Lampkeeper's place, kept | `cx_place_litany_pew` | also gates WARD-9 (§8.6) |
+| Green Rot | a Vigil hull grown into the reef, its lamp still lit (§2.3: your dead stay lit) | `cx_place_rot_hull` | close to GR-05 Green Silence's lifeboat (§6.3); one of the two should change |
+| The Drowned Observatory | a lantern floating upward through the inverted hall, never arriving | `cx_place_observatory_lantern` | — |
+| The Black | a Lampkeeper's brass ring, unlit, turning slowly (§2.3: rings were to be relit at discharge) | `cx_vigil_unlit_ring` | class conflict: `cx_vigil_` is *your* record (§8.2); see §8.6 |
+
 ---
 
 ## 7. Voice and text inventory
@@ -516,6 +591,7 @@ A sector gone **Hollow** (ZONES-001 §1.2, §6.5) gets a Codex `cx_place_` amend
 |---|---|---|
 | Entity **state** lines (Waking, acquisition, Rampage, charges, threads, alternates, telegraphs, Vigil Index, capstones, Hard Unmaking, Ruins lines) | **AUDIO-001 §4** (164 lines) | this doc never restates them; it explains where their words come from (§3.2) |
 | Death-line **clauses** and situational overrides | **AUDIO-001 §4.10** | §7.2 here gives the fiction, the printed report format and composed examples |
+| The L12 **discrepancy lines** (WARP-001 §4.2) | **NARR-001 §7.2** | text only; Office register |
 | The 18 **eat lines** (telegraph + arrival for H2…H18) | **NARR-001 §7.3** | requested by WARP-001 §8 R-08 |
 | The **H14 Chalk Desk line** | NARR-001 §7.4 | specified by LOOP-001 §7.4 |
 | Ruins cast lines (Sable, Ilse, Wick), Cabinet text, Theodora Lune's message | NARR-001 §7.5, §9.5 | |
@@ -550,6 +626,18 @@ VIGIL REPORT · <KEY A LABEL> <n> · <KEY B LABEL> <n>
 | `warp_max` | SKY DEVIATION |
 
 The labels are the Office's euphemisms (§4.4): it never wrote "killed", and it filed `hunger` under *unassigned* because the Office never admitted there was something on the other side of the ledger.
+
+**The discrepancy line** (WARP-001 §4.2 L12; PM ruling 2026-11-18 (owner grant), cosmic horror design rev 3, CHD-04). If a HUD lie was live within SYS-001's lie death-attribution window before the death, the death screen prints one more line under the Vigil Report, naming the lied-about reading in the Office register's euphemism. It teaches; it never blames, and it never says *why* (§11.10). Text only: never spoken, never voiced by the entity.
+
+| Lied-about reading | Key (`tr()`) | Line | State |
+|---|---|---|---|
+| the Ledger Compass | `MSG_DEATH_LIE_COMPASS` | COMPASS READING DISCREPANCY NOTED. | **live** (the Compass lies of WARP-001 §2 can trigger it) |
+| the Charge tally | `MSG_DEATH_LIE_CHARGES` | CHARGE TALLY DISCREPANCY NOTED. | **reserved**: authored, no trigger in the current registry (under widened L6 no legal lie concerns the Charge tally) |
+| the Vigil Index | `MSG_DEATH_LIE_INDEX` | INDEX READING DISCREPANCY NOTED. | **reserved**: authored, no trigger in the current registry (no current lie targets the Vigil Index) |
+
+The keys were agreed with the Game audio chat and are recorded in AUDIO-001 §12.14 (2026-11-18); they replace the draft `NARR_REPORT_LIE_*` keys, which are not used.
+
+Rules: the line appears **only** for lie-attributed deaths, and it appears with Steady Ledger on as well. There is **no Hourglass line**: the clock never lies (WARP-001 §4.2 L6), so nothing about it can be "noted". If more than one lie was live, the report prints **one line per lying element, the Compass line first** (2026-11-18, cosmic horror design call within CHD-04, flagged in the Phase 2 PR; §14 Q-16).
 
 **Composed examples** (top key first; every one ≤ 8 words; every one true by construction):
 
@@ -612,7 +700,7 @@ LOOP-001 §7.4: plain-spoken, no system vocabulary, spoken at the Chalk Desk by 
 
 > *Stone Hook.*
 
-No verb, no apology, no explanation. Template: `"<STRUCK SIGIL NAME>."` in sentence case (Ruins register), spoken in Sable's voice. The Codex records it under REL-18 Mourning Ledger when that Relic is held (LOOP-001 §7.4), and in the `cx_rule_h14` entry always (§8.4).
+No verb, no apology, no explanation. Template: `"<STRUCK SIGIL NAME>."` in sentence case (Ruins register), spoken in Sable's voice. The Codex records it under REL-18 Mourning Ledger when that rare Sigil is held (LOOP-001 §7.4), and in the `cx_rule_h14` entry always (§8.4).
 
 ### 7.5 Ruins cast and Cabinet line sets
 
@@ -732,7 +820,10 @@ Posters and stencils in Act 0 and in Pale Marches / Ossuary Belt ruins. Office r
 | Eat lines | 18 | `NARR_EAT_H<n>_TEL` / `_ARR` | authored |
 | H14 desk template | 1 | `NARR_SABLE_H14` | authored |
 | Vigil Report labels | 10 | `NARR_REPORT_` | authored |
+| L12 discrepancy lines (§7.2) | 3 | `MSG_DEATH_LIE_` (AUDIO-001 §12.14) | authored 2026-11-18; COMPASS live, CHARGES and INDEX reserved |
 | Composed death examples | 24 | (composed at runtime from AUDIO-001 clauses) | examples only |
+| Entity borrowed lines (§3.2) | 9 (7 new, 2 existing) | AUDIO-001 §4 keys (handed to the Game audio chat) | samples, not placed |
+| Choir liturgy fragments (§2.1) | 6 | `NARR_CHOIR_` (if shown as text) | samples; channel open (§2.1) |
 | Sable Vane | 13 | `NARR_SABLE_` | authored |
 | Ilse Marrow | 13 | `NARR_ILSE_` | authored |
 | Brother Wick | 15 | `NARR_WICK_` | authored |
@@ -741,14 +832,17 @@ Posters and stencils in Act 0 and in Pale Marches / Ossuary Belt ruins. Office r
 | Hard Unmaking beat lines | 8 scenes | (in the cast sets above) | authored (§5.6) |
 | Office environmental | 6 | `NARR_OFFICE_` | authored |
 | Theodora Lune's message | 10 screens | `NARR_LUNE_` | authored (§9.5) |
-| Codex samples | 41 | `CX_<CLASS>_<SLUG>` | authored samples (§8.4) of LOOP-001 §8.2's 122; full set owed |
+| Codex samples | 45 | `CX_<CLASS>_<SLUG>` | authored samples (§8.4) of LOOP-001 §8.2's 144 (122 planned plus the 22 ids added 2026-11-18, §8.7); full set owed |
+| Codex rumour titles (§8.3) | 4 | title field of the reserve kits' entries (ids owed, §14 Q-13) | authored 2026-11-18 |
+| Codex gating entries (§8.6) | 27 | `CX_<CLASS>_<SLUG>` | 7 authored, 20 prose owed |
+| Biome grief entries (§6.5) | 6 | `CX_<CLASS>_<SLUG>` | ids set; prose owed |
 
 
 ---
 
 ## 8. The Codex
 
-LOOP-001 §8 owns the mechanics (unlocks, Ink payouts, clock pause). This section owns the prose.
+LOOP-001 §8 owns the mechanics (unlocks, which entries gate which Lantern Tree nodes, the backstops, clock pause). This section owns the prose. Since 2026-11-18 the Codex **pays no Unwritten Ink**: a stamp now *gates* (PM ruling 2026-11-18 (owner grant), cosmic horror design rev 3, CHD-15; §8.3, §8.6).
 
 ### 8.1 Entry format
 
@@ -760,6 +854,7 @@ LOOP-001 §8 owns the mechanics (unlocks, Ink payouts, clock pause). This sectio
 | Struck block (rule entries only) | the old rule in chalk, struck through; the new rule beneath; never erased (LOOP-001 §7.6) |
 | Marginalia | Ilse Marrow's note, ≤ 15 words, handwritten face, appears from Iteration 2 on entries she has something to say about. Never on `cx_vigil_` (those are yours) |
 | Unlock | stated in LOOP-001 §8; shown as a stamp, not a sentence |
+| Rumour state | title only, in Sable Vane's chalk, no body, no stamp. The body is written when the thing is found (§8.3). The title is the entry's own title, so it obeys the title rule above |
 
 ### 8.2 Class style guide
 
@@ -775,13 +870,34 @@ LOOP-001 §8 owns the mechanics (unlocks, Ink payouts, clock pause). This sectio
 | `cx_chron_` chronicle | Office minutes and letters: one per Hard Unmaking beat (`hu_01…08`), one per ending (`end_01…05`), one per Entropy tier | a date in Vigil years | the whole truth in one page |
 | `cx_vigil_` your record | Office report register about *you* | your own numbers as the Vigil Report prints them | marginalia |
 
+**Additions (2026-11-18, CHD-15/16; LOOP-001 §8.2 widened its classes to match, §8.7):**
+
+| Case | Shape |
+|---|---|
+| `cx_rule_` **taught** entries: gating entries that name a rule the player meets but that is not an eat (`cx_rule_gaze`, `cx_rule_the_passing`…, §8.6) | no struck block. A fact-first body saying *what* the rule is as the player met it, then at most one Choir quote in italics. Still never *why* (§11.10) |
+| `cx_chron_` pages written **after** the Office, in the scar (`cx_chron_first_absence`, `cx_chron_unmade_at_t3`, `cx_chron_thread_iv`) | instead of a Vigil-year date they read *Undated*: the scar keeps no years (§4.3) |
+| `cx_choir_` **sacred things and rites** that are not units (`cx_choir_shrine`, `cx_choir_litany_ring`, `cx_choir_procession`, `cx_choir_saint`) | same voice as the bestiary; in place of a rank title, the name the Choir give the thing, and what they believe it does |
+| `cx_vigil_` **authored pages** about your own Chronicle's dead (`cx_vigil_still_lit`, `cx_vigil_unlit_ring`) | Office report register about *you*, but no numbers of yours are required; still no marginalia |
+
 ### 8.3 What the Codex is for, in fiction
 
-The Codex is the Office's records room kept by its last clerk. Reading it costs no time because the room is in the scar (§4.3). It pays Unwritten Ink because a fact written down is a rule the world has to keep — that is literally what Unwritten Ink is (GDD-001 §7.1: rules currency).
+The Codex is the Office's records room kept by its last clerk. Reading it costs no time because the room is in the scar (§4.3). **Knowing an entry opens a rule node** on the Lantern Tree (LOOP-001 §3; CHD-15): a fact written down is a rule the world has to keep, so the Tree, which grows along the Office's will (§4.3), can only grow a rule you already understand. Nothing is paid for it. The 27 entries that gate nodes are listed in §8.6; LOOP-001 owns which node each opens and the backstops that stamp an entry if the player never finds it. (Before 2026-11-18 the Codex paid Unwritten Ink; that currency is retired, and no player-visible text may mention it.)
 
-### 8.4 Sample entries (41)
+**Rumours** (PM ruling 2026-11-18 (owner grant), cosmic horror design rev 3, CHD-11). Some entries arrive before the thing they describe. Sable Vane chalks the **title** up at the Chalk Desk; the entry sits in the Codex in its rumour state (§8.1), title only, until the player finds the place or meets the thing, and then Ilse writes the body. A rumour is an unfinished Codex entry, not a new kind of thing: no new noun, never called "rumour" on screen. Fiction: Sable writes terms, and a place you have heard of but not seen is a term not yet met. Sable never explains a rumour and never says where it is.
 
-IDs and classes follow LOOP-001 §8.2 (`cx_<class>_<slug>`; 122 Ink-paying entries at 1.0 plus `cx_vigil_`). Rule entries follow LOOP-001 §8.3's shape: struck line, replacement line with Hunger and Seam, restore footer.
+| Rumoured | When the title is chalked | Title (≤ 4 words, §8.1) | Kit fiction (§6.3) |
+|---|---|---|---|
+| PM-05 Sacred Ground (reserve kit, ZONES-001 §3) | Act 2 entry | *The Lamp Still Warm* | the village green consecrated around a still-warm lamp |
+| OB-02 Censer Walk (reserve kit) | Act 2 entry | *A Lamp Below* | owed |
+| LT-04 Nine Altars (reserve kit) | Act 2 entry | *The Bare Altar* | the ninth altar the Choir leaves bare |
+| GR-03 Deceiver's Pew (reserve kit) | Act 2 entry | *The Offering Pew* | the pews hung with stolen Charges |
+| the Herald of the run's Seam 2 or Seam 4 | at Seam 1's exit | the Herald's own `cx_choir_` title | §2.1, the Six |
+
+The rumour titles of the design draft (*A Lamp Below the Belt*, *The Sky That Kept Its Stars*, *Where the Pew Is Empty*, *The Observatory's Other Door*) are replaced above: the first three broke the §8.1 title rule (more than 4 words, or not a noun phrase), and the second and fourth matched no reserve kit (no Drowned Observatory kit is held back). The reserve kits' entry ids are owed (§14 Q-13).
+
+### 8.4 Sample entries (45)
+
+IDs and classes follow LOOP-001 §8.2 (`cx_<class>_<slug>`; 144 counted entries at 1.0 since the 2026-11-18 recount (§8.7), plus `cx_vigil_`; none pays Ink since 2026-11-18). Four samples were added 2026-11-18 from the cosmic horror design rev 3 (`cx_choir_procession`, `cx_rule_the_passing`, `cx_chron_first_absence`, `cx_vigil_still_lit`), each checked against §8.1 and §8.5 and fixed where it broke a rule (noted under each). Rule entries follow LOOP-001 §8.3's shape: struck line, replacement line with Hunger and Seam, restore footer.
 
 **Bestiary — `cx_choir_`**
 
@@ -803,6 +919,9 @@ IDs and classes follow LOOP-001 §8.2 (`cx_<class>_<slug>`; 122 Ink-paying entri
 
 > **cx_choir_entity · Nhael'Gharoth** — The Waking Dark; to the Choir, the Hollow King. Seven lines, written as you witness each phase: *Seed. Procession. Guard. Quickening. Awakening. Rampage. Unravel.* It states what it is. It has never stated what it wants.
 > *— Marginalia:* It has a large vocabulary for something that was never taught to speak.
+
+> **cx_choir_procession · The Carried Dead** *(gates MADNESS-11, §8.6)* — The Choir do not bury Mourning Glass. The Carried bear it to the Sepulchre in procession, led by the Comforters, who sing the Litany one syllable short. To the Choir the glass is someone being taken home. A Lampkeeper who lets a procession pass is not attacked. No Office manual records this. Several Lampkeepers did it anyway.
+> *(Fixed from the draft: "four bearers" removed, since the class may carry no numbers; a sentence of what they believe added, which the class requires. 2026-11-18: "behind one of the Mothers" replaced, because the Procession has no Matron; the Deacons lead it, ZONES-001 §6.6.)*
 
 **The making — `cx_glass_`**
 
@@ -841,7 +960,12 @@ IDs and classes follow LOOP-001 §8.2 (`cx_<class>_<slug>`; 122 Ink-paying entri
 > Taken on Seam 1: **<SIGIL NAME>**. That run it had: <the Sigil's one-line effect, LOOP-001 §4.2>.
 > *— Marginalia:* I left the line blank on purpose. Some things you file empty.
 
-**Relics — `cx_relic_`**
+> **cx_rule_the_passing · What Passes Over** *(taught entry, §8.2 additions; gates LANTERN-11, §8.6; stamped by the first distant Passing witnessed)* — When the Dark Star crosses a sector, lit objects in its path cease. Unlit objects are not affected. The Office logged eleven such crossings, then stopped logging. Survivors reported no sensation, only that the lamp went heavy.
+> *Choir:* "It does not take the dark. The dark is already its own."
+> *— Marginalia:* The Office stopped logging at eleven. I did not.
+> *(Fixed from the draft: its margin, "Lamp down. Do not pray. Prayer is a light too.", was a mechanics hint, which §8.5 forbids; the Choir doctrine moved into the one allowed source-register quote.)*
+
+**Rare boundary Sigils (the former Relics) — `cx_relic_`**
 
 > **cx_relic_wick_left_burning · Wick Left Burning** — A lamp wick that will not go out. It belonged to a Lampkeeper who stood down in the Pale Marches with the lamp lit. The Choir kept it on an altar for a long time without touching it.
 > *— Marginalia:* Lit lamps were not supposed to come back. This one did, without its owner.
@@ -918,13 +1042,20 @@ IDs and classes follow LOOP-001 §8.2 (`cx_<class>_<slug>`; 122 Ink-paying entri
 > **cx_chron_hu_08 · The Last Order** — "To the Observatory, from the Office, in the event that no member of the Office remains to give further orders: KEEP THE VIGIL."
 > *— Marginalia:* We wrote it as a formality. It was the only order anything ever obeyed.
 
+> **cx_chron_first_absence · One Star Less** *(the First Absence, Act 1: GDD-001 act map, CHD-08)* — Iteration log, the Chalk Desk. Undated: the scar keeps no years. During the Waking at the fifth Seam, a star in the outer sky stopped. Not dimmed: stopped. No debris. No light delay. Sable Vane counted the sky twice and recorded the second count. The star was never named in any Office chart. It is now in no sky at all.
+> *— Marginalia:* Sable counted three times. Wrote two.
+> *(Fixed from the draft: the margin read "She counted three times", which would give Sable a gender, and §5.1 / §14 Q-07 keep that unstated.)*
+
 > **cx_chron_end_05 · The Pretence Kept** — "Archivist's note, appended: the cabinet-maker's message has been recovered and filed. Every Choir entry in this Codex has been corrected. I should have done it years ago. — I.M."
 
-**Your Vigil — `cx_vigil_`** (generated; never pays Ink)
+**Your Vigil — `cx_vigil_`** (generated)
 
 > **cx_vigil_first_stand_down · First Stand-Down** — VIGIL REPORT. *(The first death's composed line and report, §7.2.)*
 
 > **cx_vigil_honour_roll · Honour Roll** — The initials you entered on the Cabinet in Act 0, your best Vigil Index beside them, one line below T.L. *(Needs Act 0 initials entry — §14 Q-03.)*
+
+> **cx_vigil_still_lit · Still Lit** *(gates HULL-8, §8.6; stamped by the first death-site Penitent met)* — Penitents are found where Lampkeepers fell with the lamp burning. In this Chronicle, some are found where you fell. They do not speak. They bless whoever fires on them. The Office called this a malfunction of the lamp. It was not a malfunction.
+> *(Fixed from the draft: "found only where you fell" was false, since other Penitents exist (§2.3, §6.3 BK-04), and the TRUE layer allows no false line. It carries none of your numbers, which the widened `cx_vigil_` class allows, §8.2 additions, §8.7.)*
 
 ### 8.5 Ilse's marginalia — rules
 
@@ -938,6 +1069,73 @@ LOOP-001 §8.4 owns timing and budget (from Iteration 2; ≤ 1 note per entry pe
 | Never on | `cx_vigil_` entries (they are yours); `cx_ruins_ilse_last` (it is hers); any entry above the current spoiler tier (§10.3) |
 | Archivist variant (ending 5) | every `cx_choir_` entry gains one extra, corrected note signed "— Archivist". **Gating ✱:** the corrected notes that state the families truth (§10.1, tier S4) show only once Act 3 is open, even if ending 5 was earned in Act 0; before Act 3 the corrected notes read "Correction pending. — Archivist." |
 | Tone ceiling | she never writes "sorry", "love" or "grief". If she would, she writes a date instead |
+
+### 8.6 The 27 gating entries
+
+PM ruling 2026-11-18 (owner grant), cosmic horror design rev 3, CHD-15. Each Lantern Tree node that was priced in Unwritten Ink now opens when one Codex entry is known. LOOP-001 owns the node list, the tiers, each entry's discovery source and the backstops (the tier floor and "death teaches"); this table is the prose owner's list of the ids and their state. A backstop can stamp an entry the player never witnessed, so **every gating entry must read well cold**: it may not assume the player saw the event that normally stamps it.
+
+"Sample" = authored in §8.4. "In plan" = inside LOOP-001 §8.2's original 122-entry plan. "Beyond plan" = a new entry outside the 122, now counted in LOOP-001 §8.2's widened classes (144 since 2026-11-18, §8.7).
+
+| Node (LOOP-001) | Node tier | Gating entry | Reconciliation | Prose |
+|---|---:|---|---|---|
+| WARD-1 Short Rite | 1 | `cx_choir_shrine` | beyond plan (the Shrine is not one of the eight units; `cx_choir_` now covers the Choir's sacred things, LOOP-001 §8.2) | owed |
+| MADNESS-2 Look Away | 1 | `cx_rule_gaze` | beyond plan (taught `cx_rule_`) | owed |
+| MADNESS-3 Tremor Hand | 1 | `cx_rule_frayed` | beyond plan (taught `cx_rule_`) | owed |
+| LANTERN-4 Wick Ledger | 1 | `cx_rule_lantern_dark` | beyond plan (taught `cx_rule_`) | owed |
+| HULL-8 Long Watch | 2 | `cx_vigil_still_lit` | `cx_vigil_` (outside the count; the class now admits authored pages that gate, LOOP-001 §8.2) | sample |
+| ORDNANCE-5 Pierce | 2 | `cx_choir_acolyte` | **same id** as a sample (*The Vested*; folded from the proposed `cx_choir_vested`, 2026-11-18) | sample |
+| WARD-6 Silence the Choir | 2 | `cx_choir_matron` | **same id** as a sample | sample |
+| MADNESS-5 Clear Eyed | 2 | `cx_rule_unmoored` | beyond plan (taught `cx_rule_`) | owed |
+| MADNESS-7 Hollow Ledger | 2 | `cx_rule_bleeding` | beyond plan (taught `cx_rule_`) | owed |
+| LANTERN-10 Keel Light | 3 | `cx_place_the_drowned_observatory` | in plan (a biome); renamed from the proposed `cx_place_drowned_observatory` to match the biome samples' full names (`cx_place_the_litany`, `cx_place_the_black`), 2026-11-18 | owed |
+| LANTERN-11 Blackout Dash | 3 | `cx_rule_the_passing` | beyond plan (taught `cx_rule_`) | sample |
+| HULL-9 Anchor Field | 3 | `cx_choir_grave_tide` | in plan (a Rite) | owed |
+| ORDNANCE-9 Charge Capacity II | 3 | `cx_glass_null_iron` | **same id** as a sample | sample |
+| ORDNANCE-11 Homing Song | 3 | `cx_choir_listener` | **same id** as a sample | sample |
+| WARD-9 Choir's Own Bell | 3 | `cx_place_litany_pew` | beyond plan; also The Litany's grief entry (§6.5) | owed |
+| MADNESS-11 Communion | 3 | `cx_choir_procession` | beyond plan (a rite, not a unit; `cx_choir_` widened) | sample |
+| MADNESS-12 Hollow Chain | 3 | `cx_rule_hollowed` | beyond plan (taught `cx_rule_`) | owed |
+| HULL-16 Anchor Overdrive | 4 | `cx_choir_unnumbered` | in plan (a Rite) | owed |
+| ORDNANCE-13 Nine-Syllable Lance | 4 | `cx_choir_litany_ring` | beyond plan (a rite object, not a unit; `cx_choir_` widened) | owed |
+| WARD-13 False Lantern | 4 | `cx_choir_deacon` | **same id** as a sample (*The Comforters*; folded from the proposed `cx_choir_comforters`, 2026-11-18) | sample |
+| MADNESS-14 Blessed Fracture | 4 | `cx_rule_inverted` | beyond plan (taught `cx_rule_`) | owed |
+| LANTERN-18 Lamp of the Failed Sky | 5 | `cx_glass_ninth_light` | **same id** as a sample | sample |
+| HULL-18 Hollow Hull | 5 | `cx_rule_hollow_sector` | beyond plan (taught `cx_rule_`); overlaps the Hollow `cx_place_` amendment of §6.4 (one subject, two entries) | owed |
+| ORDNANCE-17 Null-Iron Hymn | 5 | `cx_chron_unmade_at_t3` | beyond plan (a Chronicle milestone; `cx_chron_` widened) | owed |
+| WARD-18 Unconsecrated Sky | 5 | `cx_choir_saint` | beyond plan (`cx_choir_` widened); overlaps sample `cx_ruins_wick_01` (*The Salt Mother*, a different class) | owed |
+| MADNESS-17 Unravel Focus | 5 | `cx_chron_thread_iv` | beyond plan (a Chronicle milestone; `cx_chron_` widened) | owed |
+| MADNESS-18 The Ninth Sky Looks Back | 5 | `cx_rule_the_glimpse` | beyond plan (taught `cx_rule_`); replaces the proposed `cx_entity_glimpsed`, which had no class (2026-11-18) | owed |
+
+Writing notes: `cx_rule_gaze` is the *Choir's* gaze cone, never the entity's (N4); `cx_rule_the_glimpse` describes a part of an edge, never a whole (N1, N2, N5); `cx_choir_saint` must agree with §2.1's Salt Mother and keep Ilse's correction of Wick (`cx_ruins_wick_01`) intact.
+
+### 8.7 Reconciliation with LOOP-001 §8.2, and what is owed
+
+**The sample count (Q-10).** §8.4 holds 41 samples before this revision (counted 2026-11-18: 6 `cx_choir_`, 4 `cx_glass_`, 4 `cx_rule_`, 3 `cx_relic_`, 1 `cx_sigil_`, 5 `cx_place_`, 7 `cx_ruins_`, 9 `cx_chron_`, 2 `cx_vigil_`). §14 Q-10 said 32; that was stale, and is corrected. With the four new samples there are **45**.
+
+**The gating ids against the plan.** Of the 27 gating ids (§8.6):
+
+| Group | Count | Ids |
+|---|---:|---|
+| already a sample, same id | 6 | `cx_choir_matron`, `cx_choir_listener`, `cx_glass_null_iron`, `cx_glass_ninth_light`, `cx_choir_acolyte`, `cx_choir_deacon` |
+| new sample this revision | 3 | `cx_choir_procession`, `cx_rule_the_passing`, `cx_vigil_still_lit` |
+| in plan, prose owed | 3 | `cx_choir_grave_tide`, `cx_choir_unnumbered`, `cx_place_the_drowned_observatory` |
+| beyond plan, prose owed | 15 | `cx_choir_shrine`, `cx_choir_litany_ring`, `cx_choir_saint`; the nine taught `cx_rule_` other than `the_passing` (`gaze`, `frayed`, `lantern_dark`, `unmoored`, `bleeding`, `hollowed`, `inverted`, `hollow_sector`, `the_glimpse`); `cx_place_litany_pew`; `cx_chron_unmade_at_t3`, `cx_chron_thread_iv` |
+
+That makes 9 gating entries with prose and 18 owed.
+
+**Folded ids (2026-11-18, cosmic horror design call within CHD-15, flagged in the Phase 2 PR).** The proposed gating ids that duplicated a sample's subject, or had no class, use the existing or correctly named id everywhere (here and in LOOP-001 §3.3, §3.7): `cx_choir_vested` → `cx_choir_acolyte`; `cx_choir_comforters` → `cx_choir_deacon`; `cx_place_drowned_observatory` → `cx_place_the_drowned_observatory`; `cx_entity_glimpsed` → `cx_rule_the_glimpse` (a taught rule; it describes a part of an edge, never a whole). The old ids are not used.
+
+**Count change for LOOP-001 §8.2** (LOOP owns the totals, and has adopted these). New ids beyond the 122-entry plan in the counted classes: 17 from the gating map (the 15 owed above plus `cx_choir_procession` and `cx_rule_the_passing`) and 5 more from this revision (`cx_chron_first_absence` and the four `cx_place_` grief entries other than `litany_pew`): **22**, for **144** in all. Add 4 more if the reserve kits get their own `cx_place_` entries (§14 Q-13). `cx_vigil_still_lit` and `cx_vigil_unlit_ring` are `cx_vigil_` and sit outside the count. The Ink-payout column of §8.2 no longer applies.
+
+**Class scope, settled in LOOP-001 §8.2 by widening the class descriptions** (2026-11-18; §14 Q-12):
+1. `cx_rule_` now holds eaten rules (struck/restored) **and taught rules** (the ten taught gating ids; shape in §8.2 additions).
+2. `cx_chron_` now holds Chronicle milestones written after the Office (`cx_chron_first_absence`, `cx_chron_unmade_at_t3`, `cx_chron_thread_iv`) as well as beats, endings and Entropy tiers.
+3. `cx_vigil_` now admits authored pages about your own Chronicle's dead that carry none of your numbers (`cx_vigil_still_lit`, `cx_vigil_unlit_ring`), and a `cx_vigil_` entry may gate a node; the class stays outside the count and completion (shape in §8.2 additions).
+4. No `cx_entity_` class is needed: `cx_entity_glimpsed` became `cx_rule_the_glimpse`.
+5. `cx_choir_` now holds the Choir's sacred things and rites (the Shrine, the Litany Ring, the Procession, the saint) as well as units, Heralds, Rites and the entity.
+6. **Still open:** the Hollow sector already has a `cx_place_` amendment (§6.4); `cx_rule_hollow_sector` would be a second entry on one subject. Not a class-scope question, so widening does not settle it.
+
+**Prose owed:** the 18 gating entries marked "owed" in §8.6; the six grief entries of §6.5 (`cx_place_litany_pew` is counted in both); the reserve kits' bodies (written on finding) and OB-02's kit fiction line (§6.3).
 
 
 ---
@@ -1182,4 +1380,10 @@ MARKET-001 uses this table. A tier may appear in a channel only if the channel's
 | **Q-07** | **Is Sable Vane a previous Lampkeeper?** | **Unresolved by design.** Evidence on screen: the ring (one frame in the Rehearsal), knowledge of restores, the chalk colour in Act 4. Staff do not answer it, in docs, in community posts or to each other. Any line that would confirm or deny it is cut | narrative (sealed) |
 | Q-08 | Does ending 3's "becomes the Lampkeeper" need a Codex page? | yes, one `cx_chron_` page in Choir register only: "The ninth voice came." | narrative |
 | Q-09 | Theodora's message requires never using Surgelight or Ward in Act 0. Is that discoverable without a guide? | yes, eventually, by streamers; seed one community rumour at launch +60 days (MARKET-001), never confirm in official channels | marketing |
-| Q-10 | Full Codex: how many entries at 1.0? | owed to LOOP-001 §12 content cost; this doc supplies 32 samples and the style guide | narrative + producer |
+| Q-10 | Full Codex: how many entries at 1.0? | owed to LOOP-001 §12 content cost; this doc supplies 45 samples (41 before 2026-11-18; the old "32" here was stale) and the style guide. The cosmic horror design rev 3 adds 22 ids beyond the 122 plan; LOOP-001 §8.2 now counts 144 (2026-11-18), plus up to 4 reserve-kit entries (§8.7, Q-13) | narrative + producer |
+| Q-11 | The Litany: the ruling (CHD-16) says a Litany line runs **eight** syllables, "always one short"; §1.5, §2.1 (liturgy row 2), §10.1 (Y7) and AUDIO-001 §5.1 say **nine syllables over eight ring-nodes**, and §9.3 sings the "complete nine-syllable Litany" in ending 3 | **Closed 2026-11-18** (cosmic horror design call within CHD-16, flagged in the Phase 2 PR): written in nine, sung in eight, always one short. The Choir sing eight, one per ring-node, and leave the ninth to "the ninth voice", which is always late; only ending 3 sings all nine. The 8-syllable sample lines (§2.1) are the sung form. §2.1's table now reads "written in nine syllables, sung in eight"; §1.5 and §10.1 Y7 already state the written form and stand | narrative + audio |
+| Q-12 | Codex classes: the 27 gating ids (§8.6) collide with LOOP-001 §8.2's class scope and with two sample ids (§8.7: `cx_choir_vested`/`cx_choir_acolyte`, `cx_choir_comforters`/`cx_choir_deacon`, `cx_place_drowned_observatory` naming, no `cx_entity_` class, `cx_rule_`/`cx_chron_`/`cx_vigil_` scope, the Hollow sector's two entries) | **Closed 2026-11-18** (cosmic horror design call within CHD-15, flagged in the Phase 2 PR), except the Hollow sector's two entries, which stay open (§8.7 item 6). WARD-13 gates on `cx_choir_deacon`, ORDNANCE-5 on `cx_choir_acolyte`; LANTERN-10 on `cx_place_the_drowned_observatory`; `cx_entity_glimpsed` became the taught rule `cx_rule_the_glimpse`; LOOP-001 §8.2 widened `cx_rule_` (taught rules), `cx_chron_` (Chronicle milestones), `cx_vigil_` (authored pages; may gate) and `cx_choir_` (sacred things and rites), and recounted to 144. Ids are invariant once saved (LOOP-001 §8.2) | LOOP-001 owner + narrative |
+| Q-13 | The reserve kits' rumours (§8.3) need entry ids, but LOOP-001 §8.2 has no per-kit `cx_place_` entries (though §6 here writes a fiction line per kit). The design draft's `cx_place_rumour_*` placeholders are not used: a rumour is a state of an entry, not a second entry | one `cx_place_` entry per reserve kit, id pattern set by LOOP-001; NARR then writes the four bodies | LOOP-001 + ZONES-001 + narrative |
+| Q-14 | The tear (§4.5) requires Sable Vane's first line to be the first text read after the Pretence. The Cabinet's Ruins marquee ("PLAYER 1 · STILL ON DUTY", §7.5) and Ilse's first written note could be read first, depending on where the player arrives (LOOP-001 §1) | the Cabinet's marquee stays in attract without text, and the Codex alcove stays unlit, until Sable's first-visit line has been shown | narrative + LOOP-001 + UI |
+| Q-15 | The entity's voice and face against the N-rules: AUDIO-001 §4.2's Type row ("the entity's own face") conflicts with CHD-16 (the Cabinet's face from Act 1); AUDIO-001 §4.3 says "the entity has a mouth" (a voicing note) while §3.4 and N4 forbid a mouth that speaks; N9 says it has no sound of its own | **Closed 2026-11-18:** resolved by the Game audio chat in AUDIO-001 §4.2, §4.3 and §12.12 (2026-11-18). (The recommendation was: read N9 as its *presence* being silent, heard as sound removed, and its lines as borrowed words, not its own sound (§3.4 N9); reword AUDIO-001's "mouth" note as a delivery note.) | audio + narrative |
+| Q-16 | L12 (§7.2): if two lies were live within the death-attribution window, does the death screen print one discrepancy line or more, and in what order? | **Closed 2026-11-18** (cosmic horror design call within CHD-04, flagged in the Phase 2 PR): one line per lying element, the Compass line first (§7.2). Only the Compass line is live today, so in practice one line prints; CHARGES and INDEX are reserved (WARP-001 Q-14) | WARP-001 owner |
