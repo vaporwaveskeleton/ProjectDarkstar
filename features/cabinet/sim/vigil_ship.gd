@@ -102,6 +102,7 @@ func kill() -> void:
 	world.fx.burst(pos, Look.c(Pal.GAS_2), world.fx_tuning.vigil_death_burst_b_count, world.fx_tuning.vigil_death_burst_b_speed)
 	world.fx.ring(pos, Look.c(Pal.GAS_3), world.fx_tuning.vigil_death_ring_radius)
 	world.shake(world.fx_tuning.vigil_death_shake_amp, world.fx_tuning.vigil_death_shake_dur)
+	world.hitstop(world.fx_tuning.hitstop_vigil_death_frames)
 	world.vigil_destroyed.emit()
 
 

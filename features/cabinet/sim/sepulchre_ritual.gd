@@ -146,6 +146,7 @@ func _knock_modules(at: Vector2) -> void:
 	world.fx.burst(pos, Look.c(Pal.BONE_4), world.fx_tuning.modules_knocked_burst_per_module * n, world.fx_tuning.modules_knocked_burst_speed)
 	world.fx.ring(at, Look.c(Pal.PHOS_4), world.fx_tuning.modules_knocked_ring_radius)
 	world.shake(world.fx_tuning.modules_knocked_shake_amp, world.fx_tuning.modules_knocked_shake_dur)
+	world.hitstop(world.fx_tuning.hitstop_modules_knocked_frames)
 	_set_phase(_phase_for(segments))
 	if segments <= 0 and world.stage.goal == CabinetStage.Goal.CLEAR_SEPULCHRE:
 		world.sepulchre_cleared.emit()
@@ -159,6 +160,7 @@ func _hit_entity(at: Vector2) -> void:
 	world.fx.burst(at, Look.c(Pal.BONE_4), world.fx_tuning.entity_hit_burst_count, world.fx_tuning.entity_hit_burst_speed)
 	world.fx.ring(at, Look.c(Pal.PHOS_5), world.fx_tuning.entity_hit_ring_radius)
 	world.shake(world.fx_tuning.entity_hit_shake_amp, world.fx_tuning.entity_hit_shake_dur)
+	world.hitstop(world.fx_tuning.hitstop_charge_hits_entity_frames)
 	_twitch = 0.5
 	if phase == Phase.AWAKENING and _awaken_t <= t.awakening_silence + t.stagger_window:
 		_stagger_hits += 1
@@ -177,6 +179,7 @@ func _unmake() -> void:
 	world.fx.burst(entity_pos, Look.c(Pal.PHOS_5), world.fx_tuning.entity_unmade_burst_b_count, world.fx_tuning.entity_unmade_burst_b_speed)
 	world.fx.ring(entity_pos, Look.c(Pal.BONE_5), world.fx_tuning.entity_unmade_ring_radius)
 	world.shake(world.fx_tuning.entity_unmade_shake_amp, world.fx_tuning.entity_unmade_shake_dur)
+	world.hitstop(world.fx_tuning.hitstop_entity_unmade_frames)
 	AudioService.set_chant(0.0)
 	world.entity_unmade.emit()
 
@@ -208,6 +211,7 @@ func tick(delta: float) -> void:
 				world.entity_line.emit("ENTITY_IT_WAKES")
 				world.sfx(&"wake_hit")
 				world.shake(world.fx_tuning.it_wakes_shake_amp, world.fx_tuning.it_wakes_shake_dur)
+				world.hitstop(world.fx_tuning.hitstop_it_wakes_frames)
 				world.fx.ring(pos, Look.c(Pal.NULL), world.fx_tuning.it_wakes_ring_radius)
 				AudioService.set_chant(0.0)
 			if _awaken_t >= t.awakening_silence + t.stagger_window:
