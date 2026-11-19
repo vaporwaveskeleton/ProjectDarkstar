@@ -49,7 +49,13 @@ validator and this CLI). Comparators on `wait_until` / `assert`: exactly one of 
 Ids: `<route>/ui/<UniqueName>` for controls, plus `cabinet/game` (`state`, `stage_index`, `demo`),
 `cabinet/score` (`score`, `lives`), `cabinet/record` (`grubs_destroyed`, `glass_mined`,
 `charges_thrown`, `glass_carried`), `sector/vigil` (`vigil_x`, `vigil_y`, `vigil_speed`, `hull_max_hp`,
-`camera_x`, `compass_markers`, `camera_gap`; scenario `m1_sector_feel`). Fixtures: `{"profile": "<name>"}` loads
+`camera_x`, `compass_markers`, `camera_gap`, `facing_deg`, `aim_x`, `aim_y`; scenario `m1_sector_feel`),
+`sector/field` (`geodes_alive`, `geodes_detonated`, `shards_free`, `charges`, `score`; scenarios
+`m1_geode_mine` (feathered fire, calm mining), `m1_magnet_collect` (mine, then fly in and collect
+glass), `m1_overfire` (held fire detonates a 3-face geode; it lines up with `move_up` and aims
+with `mouse_move`), `m1_mouse_aim` (`mouse_move`, then asserts `facing_deg`, `aim_x`, `aim_y`; TECH-001 §9.1 "Mouse aim
+and injected input")). `mouse_move` coordinates are logical 640×360 (the catalog wording "window coordinates" is a known
+follow-up). Fixtures: `{"profile": "<name>"}` loads
 `tests/fixtures/saves/<name>.json` into the in-memory save.
 
 The same runner runs inside GdUnit: `tests/test_scenarios.gd` plays every scenario that is valid for

@@ -89,14 +89,37 @@ func test_calm_mining_frees_glass_face_by_face() -> void:
 	assert_int(world.glass.shards.size()).is_equal(t.shards_calm + 1)
 
 
-func test_overfire_detonates_and_scatters() -> void:
+## A still 3-face geode dead ahead, and the Vigil holding the lance through the real fire path
+## (scripted input, world.step, the tuned lance_rate). Returns the geode once it is gone or after
+## `max_s`.
+func _hold_lance_on_geode(max_s: float) -> GeodeField.Geode:
+	var g := world.geodes.add_geode(world.vigil.pos + Vector2(120, 0), 2)
+	g.vel = Vector2.ZERO
+	var v := world.vigil
+	v.shield = 0.0
+	v.use_scripted = true
+	v.scripted_move = Vector2.ZERO
+	v.scripted_aim = Vector2.RIGHT * 10.0
+	v.facing = 0.0
+	v.scripted_fire = true
+	for i in roundi(max_s / DT):
+		world.step(DT)
+		if not g.alive:
+			break
+	v.scripted_fire = false
+	return g
+
+
+func test_held_lance_overfires_and_scatters() -> void:
 	world.start(_stage())
-	var g := world.geodes.add_geode(world.vigil.pos + Vector2(200, 0), 2)
-	for k in t.overfire_hits:
-		world.time += t.overfire_window / (t.overfire_hits + 1)
-		world.geodes.lance_hit(g)
+	world.glass.set_charges(0)
+	# calm mining of this geode takes 3 × face_hits hits; held fire must detonate it long before
+	var g := _hold_lance_on_geode(3.0 * t.face_hits / t.lance_rate)
 	assert_bool(g.alive).is_false()
-	assert_int(world.glass.shards.size()).is_between(t.shards_detonated_min, t.shards_detonated_max)
+	assert_int(g.faces_left).override_failure_message("detonated, not mined out").is_greater(0)
+	assert_int(g.recent.size()).is_equal(t.overfire_hits)
+	var freed := world.glass.shards.size() + world.glass.charges
+	assert_int(freed).is_between(t.shards_detonated_min, t.shards_detonated_max)
 
 
 # --- Glass and Charges (SYS-001 §1.4) -----------------------------------------------------

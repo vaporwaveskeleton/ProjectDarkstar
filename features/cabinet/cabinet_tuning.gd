@@ -10,7 +10,7 @@ extends TunableResource
 @export var lance_length: float = 14.0           ## px (visual)
 @export var lance_life: float = 0.9              ## s ✱ (range ≈ 300 px)
 @export var face_hits: int = 5                   ## hits to shatter a geode face (0.9 s at base rate) 🔒
-@export var overfire_hits: int = 9               ## ✱ hits within the window that detonate a geode
+@export var overfire_hits: int = 7               ## ✱ hits within the window that detonate a geode (PM 2026-11-18)
 @export var overfire_window: float = 1.2         ## s ✱
 @export var shards_calm: int = 3                 ## 🔒 shards from a calmly mined geode
 @export var shards_detonated_min: int = 4        ## ✱

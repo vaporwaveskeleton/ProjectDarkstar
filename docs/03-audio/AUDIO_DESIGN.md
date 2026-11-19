@@ -709,7 +709,7 @@ IDs are stable for TECH-001's audio tables (TECH-001 §6). Levels are relative t
 | A04 | Geode crack | the crack threshold (SYS-001 §1.3) | a chalk line tearing; the first real tell that the face is giving | −13 dB |
 | A05 | Geode shatter | SYS-001 §1.3 | glass falling in three pieces, one of them late | −12 dB |
 | A06 | Shard pickup | SYS-001 §1.3 | a five-note ascending ladder, one note per shard, so the magazine's shape is heard | −15 dB |
-| A07 | Over-fire warning rise | the SYS-001 §1.3 consecutive-hit threshold | a sine climbing with the hit count; **it rises in pitch, never in level** (§1.4). Built as `overfire_warn`: one rise, called once at 6 hits by the caller; pitch only | −20 → −12 dB |
+| A07 | Over-fire warning rise | the SYS-001 §1.3 consecutive-hit threshold | a sine climbing with the hit count; **it rises in pitch, never in level** (§1.4). Built as `overfire_warn`: one rise, called once per geode when sustained fire reaches the SYS-001 §1.3 warn count (5 hits inside the over-fire window; detonation at 7) by the caller; pitch only | −20 → −12 dB |
 | A08 | Over-fire detonation | SYS-001 §1.3 (player-owned cause, §1.4) | a glass chord struck from inside, then a 0.4 s ✱ vacuum decay. Built as `overfire_burst` | −9 dB |
 | A09 | Dry fire | empty magazine | one dull chalk tick | −18 dB |
 | A10 | Lance vent | the SYS-001 §1.3 cooldown rows | a brass sigh, downward | −19 dB |
@@ -727,7 +727,7 @@ IDs are stable for TECH-001's audio tables (TECH-001 §6). Levels are relative t
 | B08 | Charge intercepted | SYS-001 §5.2 | a hard bell stop, a choked tail | −13 dB |
 | B09 | Charge recovered | SYS-001 §1.4 | the chime's pitch resolving back up | −15 dB |
 | B10 | Charge armed (`charge_armed`) | the magazine gains a pip from a collected shard | a short wet glass ring, below the A06 ladder | −17 dB |
-| B11 | Magazine full (`magazine_full`) | a shard collected at cap stays in the world | two muted notes down, never an alarm | −20 dB |
+| B11 | Magazine full (`magazine_full`) | the magazine reaches its cap (played once by the collection that fills it; afterwards the magnet is off and further shards stay in the world, §12.13) | two muted notes down, never an alarm | −20 dB |
 | B12 | Charge gutters out (`charge_gutter`) | a thrown Charge expires with no hit | the glass ring dying: slow attack, muffled and falling; deliberately unlike B06 (the player's loss, not the Choir's) | −17 dB |
 | C01 | Lantern up | SYS-001 §1.2 | gaslight catch, one breath of hiss | −16 dB |
 | C02 | Lantern down | SYS-001 §1.2 | the hiss dying, a brass tick | −17 dB |
@@ -1406,7 +1406,7 @@ Both new cues are chirp renders (mono, from `audio/src/cabinet.cx.js`, `assets/a
 | `charge_gutter` | B12 | 0.9 s | −17 / −26.91 | `BUS-FLY`, P2, 2 voices | UNAUDITIONED |
 | `grub_steal` | F11 | 0.35 s | −17.37 / −30.68 | `grub_keen`'s bus, P3, 2 voices, 80 ms gate, ±25 cents jitter | UNAUDITIONED |
 
-`lance_dull` (§12.11) is now §6.2 A14 and `grub_die` is F12 (`act0_only` false). `act0_only` is a documentation label only; `AudioService` never checks it. **Wiring (owed by the M1 chat):** PR 3 calls A07, A08, A13, B10, B11; PR 4 calls F11 and B12. `overfire_warn` is called once, at 6 hits, by the caller (pitch only, §1.4). **Not built:** A10 vent, B01, B03, B05, B07 to B09, and a magnet loop hum (skipped by M1). Cue ids 45 and policy entries 34, verified against the data files.
+`lance_dull` (§12.11) is now §6.2 A14 and `grub_die` is F12 (`act0_only` false). `act0_only` is a documentation label only; `AudioService` never checks it. **Wiring:** PR 3 calls A07, A08, A13, B10, B11 (**wired 2026-11-18, M1 slice 3 PR 3**, TECH-001 §4.3; still unauditioned); PR 4 calls F11 and B12 (owed). As wired: `overfire_warn` is called once per geode when sustained fire reaches 5 hits inside the over-fire window (the SYS-001 §1.3 warn count; detonation at 7), pitch only (§1.4); `overfire_burst` on the detonation; `magnet_latch` when a shard enters the magnet radius; `charge_armed` once per Charge gained; `magazine_full` once, when a collection brings the magazine to its cap (not on every later shard: with the magazine full the magnet is off and overflow glass stays in the world). PR 3 also calls the existing `geode_hit`, `geode_crack`, `geode_break` and `shard_chime`. **Not built:** A10 vent, B01, B03, B05, B07 to B09, and a magnet loop hum (skipped by M1). Cue ids 45 and policy entries 34, verified against the data files.
 
 ### 12.14 Cosmic horror handoffs (PM-directed 2026-11-18; source: Cosmic horror design proposal §7.2, rev 2)
 
