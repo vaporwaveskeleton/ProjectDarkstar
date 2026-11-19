@@ -273,6 +273,8 @@ Not covered yet: Composure, the full Ledger Compass and the Litany Ring are not 
 
 Scored by The Reviewer from captured evidence only; anything without a capture is "not evaluated" (ART-004). Each item passes or fails on its evidence. Source: research/act1_vertical_slice.md §5 (items 1–17, PM ruling 2026-11-18); items 18–19 added by the same ruling, amended after The Reviewer's notes. Shares and thresholds marked owner-set have no number yet.
 
+**G-2 tier sort (PM ruling 2026-11-19, before 07:00).** The human cold-viewer sort of the tier stills (G-2, §2 row 2) is scheduled with the owner's M2 test round. Model-viewer pilots (fresh AI agents, not humans) are evidence for direction only: the first, on Aether pass 5, gave 0 of 5 exact orders (T5 last 5 of 5); see ART-001 §16.6e. No human sort has been done. Open: the current gallery set is five biomes at five tiers, which confounds the sort (viewers sort places, not damage); proposed wording is one biome at every tier (TECH-001 Q-T126, owner to decide).
+
 | # | Item | Passes when | Evidence |
 |---|---|---|---|
 | 1 | One continuous move (G-5) | no cut, curtain or black frame from the frozen text to the Aether | motion capture of beats 1–3 (`tear_mid`, `aether_first`) |

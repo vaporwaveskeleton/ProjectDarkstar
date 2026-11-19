@@ -165,6 +165,10 @@ extends TunableResource
 @export var lantern_scatter: float = 0.3
 ## ✱ vast, far, cropped jelly-lanterns (very dim).
 @export var vast_jelly_count: int = 0
+## ✱ pass 6 (G-2 tier sort): the ONE monotonic "missing" cue, 0..1, that only grows T1 → T5. It
+## drives the backdrop's saturation drain, the VOID share of the frame (a slice of the far layer that
+## is not there, aether_common a_missing) and star dropout, together. Never black.
+@export_range(0.0, 1.0) var missing: float = 0.0
 
 
 func tunable_properties() -> PackedStringArray:
@@ -178,6 +182,7 @@ func tunable_properties() -> PackedStringArray:
 		"glow_threshold", "glow_intensity", "glow_bloom",
 		"leviathan_cross_s", "leviathan_period_s", "leviathan_phase_s", "camera_drift_px", "base_drain",
 		"star_strength", "value_deep", "glow_band_px", "glow_band_inset", "lantern_scatter", "vast_jelly_count",
+		"missing",
 	])
 
 
