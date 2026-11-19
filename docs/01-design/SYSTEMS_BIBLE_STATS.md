@@ -1,10 +1,11 @@
 # DARKSTAR — Systems Bible (Numbers)
 
-**Doc ID:** SYS-001 · **Version:** 1.3 · **Status:** Authoritative for all numbers · **Last updated:** 2026-11-18
+**Doc ID:** SYS-001 · **Version:** 1.4 · **Status:** Authoritative for all numbers · **Last updated:** 2026-11-18
 **Owner:** Design (systems) · **Upstream:** `GDD_DARKSTAR_v0.2.md` (GDD-001) · **Downstream:** every other doc in this set
 **Data target:** `docs/04-production/TECH_ARCHITECTURE.md` §6 (data-driven tables) — every table below maps 1:1 to a `.tres`/JSON resource.
 **Rev 1.1 (2026-11-17):** the Anchor field rows in §1.1 (owner decision D-11 of GDD-001 §18); **rev 1.2 (2026-11-17, owner-delegated rulings R-01, R-04, R-10, R-11, R-14):** §1.2 post-hit grace, §9 resolution closed to 640×360, hitbox diameter and entity exception, on-screen caps; §2.2 ninth-sky Hunger as one +2 row, §6 Hourglass budget/death cost/refund, §7.2 Codex stamp note, §7.5 Fragments and Threads (LOOP-001 LR-09…LR-13); the warp-owned numbers WARP-001 asked for in its §8 R-01 to R-05, added to §6, §9 and §10; and the §2.2 eaten-rule pointer corrected from WARP-001 §6 to §3. **No pre-existing number in this doc was changed by that revision.**
 **Rev 1.3 (2026-11-18, cosmic horror design rev 3; PM ruling 2026-11-18 (owner grant), GDD-001 §18 D-15, CHD-17):** first-pass rows for the Passing, the Glimpse, gaze and the entity's on-screen silhouette (new §2.3); gaze drain and the Procession let-pass gain (§1.5); hull Charge lamps (§1.4); kit memory, reserve kits, the Procession and the death-site Penitent cap (new §4.1); the Hourglass in-run show threshold (§6); the lie-law rows and the tear silence (§9); Codex gating, the respec row and the post-tree Ember sink (new §7.6). **Retired (CHD-15, Unwritten Ink):** the §7.2 `Codex firsts` Ink row, the §7.3 Ink multiplier column, the §6 Shrine purge Ink payout and the §7.5 20 : 1 overflow valve. Every new game-visible row is marked **PM-approved 2026-11-18 under owner grant; retune at playtest** (not `✱`). Rows with no ruled value say "value owed" and are listed in TECH-001 §11.1 (Q-T66).
+**Rev 1.4 (2026-11-18, Act 1 vertical slice; PM ruling 2026-11-18 (owner grant)):** §7.1 new row "Act 0 bank (first Ruins visit, once)" (the existing Ember formula applied once; PM-approved 2026-11-18 under owner grant; retune at playtest); §6 Hourglass Clock budget row notes the first-visit start at the first launch (GDD §6.2 exception). **No pre-existing number was changed.** Open: the bank's save reason (TECH-001 §11.1 Q-T101).
 
 ---
 
@@ -305,7 +306,7 @@ Cosmic horror design rev 3 (PM ruling 2026-11-18 (owner grant)). The rules are Z
 | Field | Value |
 |---|---|
 | Seams per run | 5 🔒 |
-| Hourglass Clock budget | 120 loop-minutes per **Iteration** at Entropy 0 🔒 (GDD §6.2); a sky darkens each time one ninth is spent (13⅓ loop-min, derived); only the ninth ends the run (LOOP-001 §6.5) |
+| Hourglass Clock budget | 120 loop-minutes per **Iteration** at Entropy 0 🔒 (GDD §6.2); a sky darkens each time one ninth is spent (13⅓ loop-min, derived); only the ninth ends the run (LOOP-001 §6.5). Starts at the first launch on the first Ruins visit (GDD §6.2 exception; PM ruling 2026-11-18 (owner grant), Act 1 vertical slice) |
 | Hourglass in-run show threshold | ≤ 15 loop-minutes remaining in the Iteration's budget. The default HUD drops the constant Hourglass; in-run it shows as the sand vignette from this point (it also shows at Seam boundaries, on death and in the Ruins). In Act 4 it shows constantly; with Steady Ledger on it is always an honest number (WARP-001 §4.1, §4.4). PM-approved 2026-11-18 under owner grant; retune at playtest |
 | Death clock cost | `10 + 2 × (Seam index − 1)` loop-minutes ✱ (Seam 1 = 10, Seam 5 = 18; GDD §6.2 range) |
 | Run-won refund | +15 loop-minutes ✱, never above the 120 budget (LOOP-001 LR-09) |
@@ -338,6 +339,7 @@ Cosmic horror design rev 3 (PM ruling 2026-11-18 (owner grant)). The rules are Z
 | Rite boss | 15,000 | 15,000 | ✱ same weight as the entity: the Choir's rites *are* its body |
 | **Warp multiplier** | ×1.0 | **×1.0 (T0–T1), ×1.2 (T2–T3), ×1.5 (T4–T5)** | ✱ the horror pays better; score is diegetic telemetry, not reward |
 | Chain bonus | none | +10% per 3 s of continuous fire, cap +50%, resets on hit-taken | ✱ arcade-feel hook for clips |
+| Act 0 bank (first Ruins visit, once) | Ember = `floor(Act 0 Vigil Index / 200)` | — | the existing Ember formula below, applied once, at the first Ruins visit; the wall Cabinet pays it out in tickets (GDD §7.1; NARR-001 §5.7). A Cabinet replay never banks again (LOOP-001 §11.6; save reason open, TECH-001 §11.1 Q-T101). PM-approved 2026-11-18 under owner grant; retune at playtest |
 
 Score is **Ember's primary input**: `Ember = floor(score / 200)` plus milestone bonuses. The design note that matters: score never buys power *inside* a run (anti-pillar, GDD §3).
 

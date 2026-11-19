@@ -1,9 +1,11 @@
 # DARKSTAR — Production Plan & Milestones
 
-**Doc ID:** PROD-001 · **Version:** 1.1 · **Date:** 2026-11-18 · **Owner:** producer · **Status:** M0 done; M1 in progress
+**Doc ID:** PROD-001 · **Version:** 1.2 · **Date:** 2026-11-18 · **Owner:** producer · **Status:** M0 done; M1 in progress
 **Upstream:** GDD-001 §2, §15, §16, §17; TECH-001 §9 (tests), §11 (open questions); ZONES-001 §3 (kits); WARP-001 §6.1 D-10/D-11 (slice tranche, warp lint); MARKET-001 §13 (beat calendar) · **Downstream:** every milestone review, MARKET-001 beat gating, CLAUDE.md §6 definition of done
 
 **Number discipline.** Dates, team sizes, hour budgets and counts that are not GDD/SYS facts are **planning assumptions `✱`**. Game numbers stay in SYS-001. A milestone is "done" only when its exit criteria were *measured*; nothing here is claimed as measured unless its row says so.
+
+**Rev 1.2 (2026-11-18, PM ruling under owner grant, Act 1 vertical slice):** M2 gains a polished front, the first ten minutes after THE PRETENCE (§3 M2 rows, §4 rows, new §4.1 socks-off checklist = M2 exit test 7). Additive: GDD-001 §17 slice content and criteria 1–6 are unchanged. Source: research/act1_vertical_slice.md; decisions in TECH-001 §11.2; warp-effect count conflict open as TECH-001 Q-T100. **Same day, amended after The Reviewer's notes:** the checklist grows to 19 items (photosensitivity-safe erasure, skip after the first watch); the §4 Unmaking row gains the look-only reveal, the inside-out erasure and the afterglow ember; the §4 Ruins row gains the physical launch gate and the EMBER tickets.
 
 ---
 
@@ -124,12 +126,12 @@ An imagined 1.0 review scored the game 9/10, with sub-scores for graphics and ar
 ### M2 — Vertical slice (target 2027-04 ✱)
 | | |
 |---|---|
-| Goal | the GDD-001 §17 slice, polished enough to sell the game |
-| Exit criteria | GDD-001 §17 criteria 1–6, all measured: (1) 10/10 testers understand "the boss is being built from the same ore I need" unprompted; (2) median tester dies ≥ 2 times to the Awakening and retries immediately; (3) 0 input-latency complaints in mouse aim; (4) the twist is named unprompted by 6/10; (5) 60 FPS at internal 640×360 on minimum spec with T2 shaders; (6) a 15-second clip gets a "what is this?" from 5/10 non-players |
-| Code | full Waking lifecycle at T1–T2; Acolytes + Litany Ring; Deceiver; Matron gate; Ruins hub with a 30-node Tree stub; 12 Run Sigils; 6 warp effects; WarpComposer T0–T2 (TECH-001 §5.1); Steady Ledger HUD pinning (TECH-001 §5.3); save cadence wired to `SaveService` (TECH-001 §7.2); warp lint as a CI step or the WARP-001 §6.1 D-11 manual checklist |
-| Art | PM and OB kits used by the slice (§5), Acolyte, Deceiver, Matron, Ruins hub first pass, Act 0 cabinet costume layer (ART-001 §7), Ledger/Litany/Cabinet bitmap faces (ART-001 typography) |
-| Audio | Act 0 chiptune; T1 bed + Choir chant stems for one biome; entity voice from the formant synthesiser (AUDIO-001 §11.3); the 1.2 s Awakening silence (GDD-001 §12) |
-| Narrative | Act 0 text; the first Ruins scene (states the anchor diegetically, GDD-001 §6.2); slice Codex entries (`cx_choir_`, `cx_glass_`); the H2/H4/H14 eat lines (WARP-001 §6.1 D-10 tranche; NARR-001 §7) |
+| Goal | the GDD-001 §17 slice, polished enough to sell the game; its polished front is the first ten minutes after THE PRETENCE (16 beats: the tear and in-engine first Unmaking, the first Ruins visit, Run 1 Seam 1 in PM-01 to the first Run Sigil; source research/act1_vertical_slice.md, PM ruling 2026-11-18) |
+| Exit criteria | GDD-001 §17 criteria 1–6, all measured: (1) 10/10 testers understand "the boss is being built from the same ore I need" unprompted; (2) median tester dies ≥ 2 times to the Awakening and retries immediately; (3) 0 input-latency complaints in mouse aim; (4) the twist is named unprompted by 6/10; (5) 60 FPS at internal 640×360 on minimum spec with T2 shaders; (6) a 15-second clip gets a "what is this?" from 5/10 non-players; (7) the 19-item socks-off checklist (§4.1), scored by The Reviewer from captured evidence only (uncaptured = not evaluated) |
+| Code | full Waking lifecycle at T1–T2; Acolytes + Litany Ring; Deceiver; Matron gate; Ruins hub with a 30-node Tree stub; 12 Run Sigils; 6 warp effects (**conflict, open:** the slice uses 8 T1 effects, plus W1-06 when Frayed; TECH-001 §11.1 Q-T100); WarpComposer T0–T2 (TECH-001 §5.1); Steady Ledger HUD pinning (TECH-001 §5.3); save cadence wired to `SaveService` (TECH-001 §7.2); warp lint as a CI step or the WARP-001 §6.1 D-11 manual checklist. Slice front (full list: research/act1_vertical_slice.md §4): `SectorHost` assembling PM-01 + 1 satellite with a fixed seed; `RunSession`; the playable Ruins hub (Chalk Desk, Cabinet, Lantern Tree T1, Codex desk, launch); L10 hull reads; Act 0 score banked as Ember; `skip_curtain` (TECH-001 Q-T60); automation scenario `a1_slice_first_ten` |
+| Art | PM and OB kits used by the slice (§5), Acolyte, Deceiver, Matron, Ruins hub first pass, Act 0 cabinet costume layer (ART-001 §7), Ledger/Litany/Cabinet bitmap faces (ART-001 typography). Slice front (research/act1_vertical_slice.md §4): PR D tear and zoom; Pale Marches T1 sector backdrop; the Pale Marches Presence with flee; the `entity_presence` erasure; the lantern-down reveal layer; the Ruins first-visit look; a Deck `low` preset that keeps information |
+| Audio | Act 0 chiptune; T1 bed + Choir chant stems for one biome; entity voice from the formant synthesiser (AUDIO-001 §11.3); the 1.2 s Awakening silence (GDD-001 §12). Slice front (research/act1_vertical_slice.md §4): protected silences (the 10 s black after the erasure); `set_subtraction` and `presence_flee` in the cinematic; the Ruins room tone; the Cabinet ticket clatter; the chalk stamp E08 |
+| Narrative | Act 0 text; the first Ruins scene (states the anchor diegetically, GDD-001 §6.2); slice Codex entries (`cx_choir_`, `cx_glass_`); the H2/H4/H14 eat lines (WARP-001 §6.1 D-10 tranche; NARR-001 §7). Slice front: the first-visit Ruins lines (NARR-001 §5.7 "The first Ruins visit") |
 | Docs | TECH-001 §5.1–§5.4, §8.1–§8.2; UI-001 HUD section |
 | Marketing | store page assets (MARKET-001 §4), announcement trailer (MARKET-001 §4.7) cut from slice capture |
 | Risks | slice polish eats the content schedule → the slice is the *only* polished content until M4 |
@@ -202,10 +204,42 @@ An imagined 1.0 review scored the game 9/10, with sub-scores for graphics and ar
 | Full Waking lifecycle at T1–T2 | GDD-001 §8.4 | M2 |
 | 30-node Lantern Tree stub in the Ruins | GDD-001 §17 | M2 |
 | 12 Run Sigils | GDD-001 §17 | M2 |
-| 6 warp effects | GDD-001 §17; WARP-001 §2 | M2 |
+| 6 warp effects (**conflict, open:** the slice uses the T1 set W1-01, 02, 03, 05, 08 standing plus W1-07, 09, 10 transient = 8, and W1-06 when Frayed; TECH-001 §11.1 Q-T100) | GDD-001 §17; WARP-001 §2 | M2 |
 | Eat tranche H2, H4, H14 with PACT-01/PACT-04 | WARP-001 §6.1 D-10 | M2 |
 | Entity voice (formant synthesiser, AUDIO-001 §11.3) | GDD-001 §17 | M2 |
-| 60 s polished | GDD-001 §17 | M2 |
+| The first ten minutes after THE PRETENCE, polished (research/act1_vertical_slice.md) | GDD-001 §17; PM ruling 2026-11-18 | M2 |
+| The in-engine first Unmaking (≤ 90 s from the tear to black, agency 0 first time except a look-only Aether reveal; the erasure spreads from a point inside the frame, never from the edges). **Afterglow:** through the 10 s of black that end it, one phosphor ember of the last lamp fades across the full 10 s, so the screen is never dead; everything else is the entity's black | GDD-001 §6.1 A0-3; NARR-001 §3.4 N8; WARP-001 §4.5; research/act1_vertical_slice.md §2 beats 2–6; TECH-001 §11.2 (2026-11-18) | M2 |
+| The first Ruins visit as a diegetic tutorial (no tooltips). **The gate is physical:** the hangar mouth is dark, lit only by the Lantern Tree's lamps, so the Vigil cannot launch until one node is bought and its lamp lights the way; the brass tickets have EMBER printed on them | GDD-001 §6.2; NARR-001 §5.7; research/act1_vertical_slice.md §2 beats 7–11 | M2 |
+| Run 1 Seam 1 in PM-01 with a fixed seed | ZONES-001 §3 PM-01; research/act1_vertical_slice.md §2 beats 12–16; TECH-001 §11.2 (2026-11-18) | M2 |
+| The Pale Marches Presence and the lantern-down reveal (CH-1, CH-3) | ZONES-001 §2.3; research/act1_vertical_slice.md §2 beats 4–5, 15 | M2 |
+| L10 hull reads | WARP-001 §4.2 (L10); research/act1_vertical_slice.md §4 (M1 / sector) | M2 |
+| Automation scenario `a1_slice_first_ten`, capture checkpoints `tear_mid`, `aether_first`, `presence_flee`, `entity_black`, `ruins_open`, `grub_contact` (+ greyscale), `lantern_down_reveal`, `sigil_pick` | TECH-001 §9.1; research/act1_vertical_slice.md §4 (Automation) | M2 |
+
+### 4.1 Socks-off checklist (M2 exit test 7)
+
+Scored by The Reviewer from captured evidence only; anything without a capture is "not evaluated" (ART-004). Each item passes or fails on its evidence. Source: research/act1_vertical_slice.md §5 (items 1–17, PM ruling 2026-11-18); items 18–19 added by the same ruling, amended after The Reviewer's notes. Shares and thresholds marked owner-set have no number yet.
+
+| # | Item | Passes when | Evidence |
+|---|---|---|---|
+| 1 | One continuous move (G-5) | no cut, curtain or black frame from the frozen text to the Aether | motion capture of beats 1–3 (`tear_mid`, `aether_first`) |
+| 2 | The colour shock | cold viewers describe space as *full* (fog, light, life), not dark | clip of beat 4 shown to cold viewers (clip length per research/act1_vertical_slice.md §5); interview notes |
+| 3 | The arrival reads as erasing, not switching off | viewers say the colour is "taken" or "erased"; the only (0,0,0) pixels are the entity's | `entity_black` capture; `test_aether_black_roles`; interview notes |
+| 4 | The Presence is vast and indifferent (CH-1) | a cold viewer says it is bigger than the playfield and notices it leave before the black | `presence_flee` motion capture; interview notes |
+| 5 | Zero startle (CH-6) | the AUDIO-001 startle-budget test passes across the slice; no gore; the entity has no face | startle-budget test log; slice captures |
+| 6 | Silence lands | beat 6's black holds silence and no tester presses a key to "wake" it | playtest recording; crash-belief interview question (PROPOSED in the source) |
+| 7 | No tutorial UI | zero tooltip or pop-up instruction boxes from beat 7 to beat 16 | full-slice motion capture |
+| 8 | The anchoring is understood | after the Ruins, testers say in their own words what they keep when they die | interview notes |
+| 9 | The noun test (P-5) | after the Ruins and Seam 1, testers name every HUD resource: Charges, Composure (flame or wick), the Compass, the score | interview notes |
+| 10 | The race is still understood | first understanding within the GDD-001 §15 target from first Grub contact | timed playtest recording from `grub_contact` |
+| 11 | The lantern reveal is found unprompted (CH-3) | a share of testers (owner-set) turn the lantern off and react to the far life untold | `lantern_down_reveal` capture; playtest recordings |
+| 12 | Recognition | testers say unprompted that PM-01 is "the first level from the arcade, but real" | interview notes |
+| 13 | Readability floor (CH-2) | in greyscale and colour stills, testers find the Vigil, every Grub and every shard | `grub_contact` and its greyscale variant |
+| 14 | Wrongness without lies | testers report "something's off" and none reports the HUD *lying* (T1 allows 0 lies, WARP-001 §4.2) | interview notes; slice captures |
+| 15 | The reaction (TEST-ONB-02) | asked what happened to the game, testers give some wording of "what the hell was that" | interview notes |
+| 16 | Budget (CH-7) | TECH-001 §8.1 frame budgets hold on the reference PC and on the Deck `low` preset, information-carrying effects intact | measured frame-time captures on both targets |
+| 17 | The 15-second clip (P6) | beats 4–6 cut to 15 s read with no context | the 15 s clip; cold-viewer notes |
+| 18 | Photosensitivity-safe erasure (goal X-3) | the erasure passes the WARP-001 §4.5 photosensitivity rules: a spreading front, no full-field luminance step | motion captures of beats 5–6 with photosensitivity mode on and off |
+| 19 | Skippable after the first watch | on a later watch the cinematic can be skipped, and skipping lands on the first Ruins frame with the save intact | capture of a skip on a second watch; save contents before and after |
 
 ---
 

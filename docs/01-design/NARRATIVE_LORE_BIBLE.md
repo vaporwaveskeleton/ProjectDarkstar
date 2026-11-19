@@ -1,7 +1,8 @@
 # DARKSTAR — Narrative & Lore Bible
 
-**Doc ID:** NARR-001 · **Version:** 1.2 · **Date:** 2026-11-18 · **Owner:** narrative · **Status:** complete-draft — §0–§14 written; Codex has 45 sample entries (LOOP-001 §8.2 ID scheme) and a style guide, the full entry set is owed (§14 Q-10)
+**Doc ID:** NARR-001 · **Version:** 1.3 · **Date:** 2026-11-18 · **Owner:** narrative · **Status:** complete-draft — §0–§14 written; Codex has 45 sample entries (LOOP-001 §8.2 ID scheme) and a style guide, the full entry set is owed (§14 Q-10)
 **Rev 1.2 (2026-11-18):** cosmic horror design rev 3 applied (PM ruling 2026-11-18 (owner grant), cosmic horror design rev 3; CHD-01, -04, -09, -11, -15, -16): N-rules (§3.4), borrowed entity lines and the borrowed face (§3.2, §4.5), Choir liturgy fragments (§2.1), Penitents you meet are you (§2.3, §5.5), L12 discrepancy lines (§7.2), biome grief (§6.5), the Codex gates rule nodes instead of paying Ink, rumours, the 27 gating ids and their reconciliation (§8.3, §8.6, §8.7), new questions Q-11…Q-16 (§14). **Same-day reconciliation (2026-11-18):** gating ids folded (`cx_choir_acolyte`, `cx_choir_deacon`, `cx_place_the_drowned_observatory`, `cx_rule_the_glimpse`) and LOOP-001 §8.2's classes widened, recount 144 (§8.2, §8.6, §8.7); L12 keys are `MSG_DEATH_LIE_*`, Compass live, Charges and Index reserved (§7.2); the D-04 amendment noted under N1 (§3.4); the Procession has no Matron (§8.4); Relic wording retired (§5.3); Q-11, Q-15, Q-16 closed, Q-12 closed except the Hollow sector's two entries.
+**Rev 1.3 (2026-11-18):** Act 1 vertical slice applied (PM ruling 2026-11-18 (owner grant), Act 1 vertical slice; `research/act1_vertical_slice.md` beats 7–11): new §5.7 *The first Ruins visit* (who is present, Sable's three first-visit chalk lines, the Cabinet's ticket payout "SCORE BANKED", the stamped Pretence page); §7.5 and §7.7 inventory updated; §4.5's first-words pointer now cites §5.7; `cx_place_act0_3`'s body extended (§8.4), no new Codex id (§8.7). **Same day, amended after The Reviewer's notes:** Q-T102 resolved (on the first visit the chalk writes itself, no hand; line 1 now "You're back. Most aren't."; the old "first visit" Pact line re-triggered to the first Pact offered); §5.7 gains the physical launch gate (Sable's chalk "Light one. The dark is long.") and EMBER printed on the tickets; §3.4 N8 gains the first Unmaking's erasure origin (TECH-001 §11.1 Q-T103, resolved).
 **Upstream:** `docs/01-design/GDD_DARKSTAR_v0.2.md` (GDD-001) · `docs/01-design/SYSTEMS_BIBLE_STATS.md` (SYS-001) · `docs/01-design/ROGUELIKE_LOOP_AND_LANTERN_TREE.md` (LOOP-001)
 **This doc owns:** the fiction, the factions' theology, the entity's interior logic, the Ruins' cast, the Codex prose, the endings as fiction, the chronicle, the writing's refusals, and the voice/text inventory outside the entity's state announcements.
 
@@ -345,7 +346,7 @@ So the system contains two unfinished intentions wearing shapes. The entity is t
 | N5 | A **Glimpse** is a soft rim-light along part of its edge: eased in and out, silent, never a flash (within the WARP-001 §4.5 flicker cap), no longer than SYS-001's Glimpse duration max row, and caused only by the player's own light (a Charge hit, a Surgelight burn). A reveal the player caused, never a startle | a Glimpse is something *you* did |
 | N6 | Its scale is never confirmed. No reference object is ever shown beside its whole extent | no size words with a measure in them |
 | N7 | It moves like a tide or an eclipse: slow fronts, no limbs, no strikes. Its attacks are subtractions | no "lunges", "strikes", "claws" |
-| N8 | It fills the screen only in the Unmaking cinematic, and even then the black spreads from inside the picture, not from the edges | — |
+| N8 | It fills the screen only in the Unmaking cinematic, and even then the black spreads from inside the picture, not from the edges. **The first Unmaking** (2026-11-18, PM ruling, Act 1 vertical slice; TECH-001 Q-T103): the erasure begins at a point inside the frame, where the Presence was, and spreads outward as a moving front, with no full-field luminance step (WARP-001 §4.5). Its edges are never framed until the end of the last-light beat, when the black has filled the frame from the inside; that moment is the single full-body view (D-04, below) | describe a front moving outward, never an edge closing in |
 | N9 | It has no sound of its own: its presence is heard as sound being removed. Its spoken lines are borrowed words (§3.2), not its own sound | no roar, no breath, no "it screamed" |
 | N10 | It is the only true black (ART-001 §16.1), and so are its projectiles, which are pieces of it; each has a luminous Aether rim so black on colour always reads | — |
 
@@ -434,7 +435,7 @@ PM ruling 2026-11-18 (owner grant), cosmic horror design rev 3, CHD-16.
 |---|---|---|
 | **Cabinet (Act 0)** | imperative, cheerful, transactional: it wants your credit. INSERT CREDIT. PLAYER 1. | the Office's recruitment voice (§4.4) |
 | **The tear** | after "THAT WAS A PRETENCE." there is **no text at all** for the opening of the Aether, for SYS-001's tear silence row. Colour, fog and room tone only. No caption, prompt, tooltip or entity line in that time | the first thing the player meets after the lie is a world, not a sentence |
-| **First words** | the first words the player reads after the Pretence are in the Ruins, in sentence case, from a person: **Sable Vane** at the Chalk Desk (§7.5, first visit). No other Ruins text (the Cabinet's marquee, Ilse's notes) may be read before it (§14 Q-14) | a human voice, after a machine's |
+| **First words** | the first words the player reads after the Pretence are in the Ruins, in sentence case, from a person: **Sable Vane** at the Chalk Desk (§5.7; §7.5, first Ruins visit). No other Ruins text (the Cabinet's marquee, Ilse's notes) may be read before it (§14 Q-14) | a human voice, after a machine's |
 | **The inversion** | from Act 1, **the Cabinet's face is the one the entity borrows**: its lines are set in the Cabinet's type (ART-001 owns the face). The cheerful voice of Act 0 comes back as the entity's | the player's own training (the Lampkeepers' curriculum) is what talks to them in the dark. AUDIO-001 §4.2 was brought into line by the Game audio chat (§14 Q-15, closed 2026-11-18) |
 
 ---
@@ -513,6 +514,35 @@ LOOP-001 §10.4 gives each beat one cast moment. These are the scenes. Each is �
 | 6 · The Unlit Room | **Wick** and the last lamp | Wick stands by the one lamp left in the room. If ending 2 has not been taken he offers it; if it has, he thanks you for coming back | Wick (offer): "It's only one lamp now. You could let it rest. I'd sit with you." · Wick (after ending 2): "You lit it again. I'm glad. I'd have understood." |
 | 7 · The Choir Sings Your Name | the **Penitent** enters | the chant comes through the walls; the Penitent drifts in through the lattice, leaves a lit lamp on the Tree, and goes | none — the chant is the line |
 | 8 · The Ninth Sky Remembers | **all cast together** | the Ruins cycle through every shape. Wick, Ilse and Sable are in the same room for the only time. Ilse reads the last chronicle page aloud; Wick lights his censer for the first time; Sable writes nothing | Ilse: "'Keep the vigil.' That was the whole order. We kept it." |
+
+### 5.7 The first Ruins visit
+
+PM ruling 2026-11-18 (owner grant), Act 1 vertical slice, amended the same day after The Reviewer's notes; scene from `research/act1_vertical_slice.md` §2 beats 7–11. This is the first scene after the tear (§4.5) and the M2 slice's diegetic tutorial (PROD-001 §4): no tooltip, no menu, every interaction is a place. SYS-001 owns every number named here; LOOP-001 §10.4 owns the Ruins' Act 1 shape (§4.3: rubble, chalk marks, one lamp).
+
+**Who is present.**
+
+| Character | On the first visit | Why |
+|---|---|---|
+| the Cabinet | on the wall, attract mode running. Its marquee shows no text until Sable's first line has been written (§4.5, §14 Q-14); then INSERT CREDIT | the machine was on when the light failed (§4.3) |
+| Sable Vane | **unseen**: the chalk at the Chalk Desk writes itself, and no hand is seen (§5.1 Arc; the sleeve first appears at Hard Unmaking beat 2, §5.6) | a human voice, after a machine's (§4.5); a person is there, and keeps out of sight |
+| Ilse Marrow | unseen. The Codex is in her handwriting; marginalia start at Iteration 2 (§5.2, §8.5) | she writes before she speaks |
+| Brother Wick | **absent**. He arrives at beat 1, *The First Dark* (§5.6) | in Act 1 the Tree grows alone (§5.3) |
+
+**The scene, in order** (beats 7–11; the order keeps Sable's first line the first text read after the Pretence, §4.5):
+
+1. **Cold open.** No title card. A lamp catches; one lantern lights a cramped, half-ruined hall. At the Chalk Desk, chalk begins to write on a slate by itself.
+2. **The Chalk Desk** (Ruins register, sentence case; key prefix `NARR_SABLE_`). Sable's chalk lines are the first words read after THE PRETENCE:
+   - "You're back. Most aren't." (present tense, Sable's voice, §5.1)
+   - "What you buy here stays. The rest goes back into the dark." This is the anchoring rule (GDD-001 §6.2; LOOP-001 §2), stated **once**, diegetically. It never appears in a menu.
+   - Then a chalk tally: the player's own Act 0 Vigil Index.
+3. **The Cabinet pays out.** Brass tickets clatter from the wall Cabinet: the Act 0 score banked as Ember (SYS-001 §7.1; GDD-001 §7.1). Each ticket has **EMBER** printed on it, so the noun arrives with the object. The tickets drift to the Lantern Tree. The Cabinet's one line here, Cabinet register (key prefix `NARR_CAB_`): "SCORE BANKED". Checked against §4.1: ALL CAPS, 2 words (≤ 6), arcade vocabulary (SCORE from HIGH SCORE); a statement rather than an imperative, as the register already allows ("THE LIGHT IS SAFE", §7.5). No period, matching the other marquee lines.
+4. **The Lantern Tree.** A bare brass sapling, one unlit lamp per node, each with its cost in tickets. Sable's chalk under the Tree: "Light one. The dark is long." **The gate is physical:** the hangar mouth is dark, lit only by the Tree's lamps, so the Vigil cannot launch until one node is bought and its lamp lights the way. Any T1 node will do.
+5. **The Codex desk.** One page has stamped itself, with the chalk-on-slate sound (AUDIO-001 E08): `cx_place_act0_3` (§8.4), stamped at the A0-3 clear (LOOP-001 §8.2, Act 0 stage clears). It is the Pretence page, so **no new Codex id** is added and the §8 counts do not change. Its body carries beat 10's facts (the training rotation; a simulation in which the Dark Star always lost, by design). No marginalia (Iteration 1).
+6. **The Hourglass, by the hangar mouth.** A brass Hourglass, full. Under it, Sable's chalk: "The sand starts when you leave." The Hourglass Clock starts at the first launch, not on arrival, on this visit only (GDD-001 §6.2 exception). The Vigil waits, lamp lit, in the light of the Tree's lamp; walking into it launches.
+
+**The noun budget for the first visit:** Ember (printed on the tickets), Lantern Tree, Codex, Hourglass. Nothing else is named on screen. Pacts, Entropy, Threads and the word Composure come later; Sable's Pact line moves to the first time a Pact is offered (§7.5).
+
+*Resolved 2026-11-18 (TECH-001 §11.1 Q-T102, design calls within the PM ruling):* no hand on the first visit (the chalk writes itself, matching §5.1 and §5.6); the old "first visit" Pact line re-triggered; line 1 in the present tense.
 
 
 ---
@@ -712,7 +742,11 @@ UI copy rule (GDD-001 §10): ≤ 2 lines per screen. Every line below fits one l
 
 | Trigger | Line |
 |---|---|
-| first visit | "Sign, and the terms hold until the run ends." |
+| first Ruins visit, first chalk (§5.7; the first words after the Pretence, §4.5; the chalk writes itself) | "You're back. Most aren't." |
+| first Ruins visit, second chalk (§5.7; the anchoring rule, stated once) | "What you buy here stays. The rest goes back into the dark." |
+| first Ruins visit, under the Lantern Tree (§5.7; the launch gate) | "Light one. The dark is long." |
+| first Ruins visit, under the Hourglass by the hangar mouth (§5.7) | "The sand starts when you leave." |
+| the first time a Pact is offered (was "first visit"; re-triggered 2026-11-18, TECH-001 Q-T102) | "Sign, and the terms hold until the run ends." |
 | a Pact is offered | "This is what it costs. This is what it buys." |
 | a restore Pact (PACT-01/04/07/10/13/16/19/22) | "Held while you hold it. Not one breath longer." |
 | player declines a Pact | "Unsigned is also a term." |
@@ -783,6 +817,7 @@ Community rule: Sable is the only character who speaks outside the game (Discord
 | Act 0 high score table header | "HONOUR ROLL" |
 | Act 0 game over | "STAND DOWN" |
 | Act 0 final screen | "THAT WAS A PRETENCE." |
+| Ruins, first visit, the ticket payout (§5.7; after Sable's first line, §4.5) | "SCORE BANKED" |
 | Ruins, Act 1 | "PLAYER 1 · STILL ON DUTY" |
 | Ruins, Act 1 | "HIGH SCORE: YOU" |
 | Ruins, Act 2 | "VIGILS KEPT: <n>" |
@@ -826,11 +861,12 @@ Posters and stencils in Act 0 and in Pale Marches / Ossuary Belt ruins. Office r
 | Composed death examples | 24 | (composed at runtime from AUDIO-001 clauses) | examples only |
 | Entity borrowed lines (§3.2) | 9 (7 new, 2 existing) | AUDIO-001 §4 keys (handed to the Game audio chat) | samples, not placed |
 | Choir liturgy fragments (§2.1) | 6 | `NARR_CHOIR_` (if shown as text) | samples; channel open (§2.1) |
-| Sable Vane | 13 | `NARR_SABLE_` | authored |
+| Sable Vane | 17 (4 first-visit lines added 2026-11-18, §5.7) | `NARR_SABLE_` | authored |
 | Ilse Marrow | 13 | `NARR_ILSE_` | authored |
 | Brother Wick | 15 | `NARR_WICK_` | authored |
 | the Lampkeeper | 2 | `NARR_KEEPER_` | authored |
-| Cabinet | 27 (16 marquee/attract + 11 credits) | `NARR_CAB_` | authored |
+| Cabinet | 28 (17 marquee/attract + 11 credits; "SCORE BANKED" added 2026-11-18, §5.7) | `NARR_CAB_` | authored |
+| First Ruins visit scene (§5.7) | 1 scene (4 Sable lines and 1 Cabinet line, counted in the rows above; the EMBER ticket print; 1 Codex page, the existing `cx_place_act0_3`) | (in the cast sets above) | authored 2026-11-18 (PM ruling, Act 1 vertical slice) |
 | Hard Unmaking beat lines | 8 scenes | (in the cast sets above) | authored (§5.6) |
 | Office environmental | 6 | `NARR_OFFICE_` | authored |
 | Theodora Lune's message | 10 screens | `NARR_LUNE_` | authored (§9.5) |
@@ -993,7 +1029,7 @@ IDs and classes follow LOOP-001 §8.2 (`cx_<class>_<slug>`; 144 counted entries 
 
 > **cx_place_sky_4 · The Fourth Sky** — Written the first time it went dark. A sky is one layer of every place at once; when it goes out, every biome loses a layer of light and the Ledger Compass loses a row. *The chant lost a voice.*
 
-> **cx_place_act0_3 · Last Normal Day (cabinet stage)** — Pretence Hall curriculum, stage three. Final screen retained as written by the curriculum's author.
+> **cx_place_act0_3 · Last Normal Day (cabinet stage)** *(the first Ruins visit's stamped page, §5.7)* — Pretence Hall curriculum, stage three, the last of the training rotation. A simulation: in it the Dark Star always lost, by design. Final screen retained as written by the curriculum's author.
 
 **The Ruins — `cx_ruins_`** (cast letters; LOOP-001 §8.2: Sable ×4, Ilse ×4, Wick ×4, Cabinet ×3, the Chalk Desk ledger)
 
@@ -1112,7 +1148,7 @@ Writing notes: `cx_rule_gaze` is the *Choir's* gaze cone, never the entity's (N4
 
 ### 8.7 Reconciliation with LOOP-001 §8.2, and what is owed
 
-**The sample count (Q-10).** §8.4 holds 41 samples before this revision (counted 2026-11-18: 6 `cx_choir_`, 4 `cx_glass_`, 4 `cx_rule_`, 3 `cx_relic_`, 1 `cx_sigil_`, 5 `cx_place_`, 7 `cx_ruins_`, 9 `cx_chron_`, 2 `cx_vigil_`). §14 Q-10 said 32; that was stale, and is corrected. With the four new samples there are **45**.
+**The sample count (Q-10).** §8.4 holds 41 samples before this revision (counted 2026-11-18: 6 `cx_choir_`, 4 `cx_glass_`, 4 `cx_rule_`, 3 `cx_relic_`, 1 `cx_sigil_`, 5 `cx_place_`, 7 `cx_ruins_`, 9 `cx_chron_`, 2 `cx_vigil_`). §14 Q-10 said 32; that was stale, and is corrected. With the four new samples there are **45**. (2026-11-18, Act 1 vertical slice: the first Ruins visit's page is the existing `cx_place_act0_3`, its body extended with beat 10's facts, §5.7. No id is added, so 45 samples and LOOP-001 §8.2's 144 stand.)
 
 **The gating ids against the plan.** Of the 27 gating ids (§8.6):
 
