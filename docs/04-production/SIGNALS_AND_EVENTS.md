@@ -56,6 +56,13 @@ Rules: signal names are past tense (`hull_breached`, `save_failed`), payloads ar
 | `AetherBackdrop` (`features/aether`) | `sphere_glinted` | — (the crystal sphere's travelling glint passed; re-emitted by the dev gallery root) | optional audio cue sync (AUDIO-001 §12.12); no listener required | built (gallery pass 1) |
 | `AetherBackdrop` (`features/aether`) | `leviathan_entered` | — (the leviathan silhouette enters the frame; re-emitted by the gallery root) | optional audio cue sync (swell); no listener required | built (gallery pass 1) |
 | `AetherBackdrop` (`features/aether`) | `leviathan_closest` | — (the leviathan's closest point; re-emitted by the gallery root) | optional audio cue sync (`aether_wrong`); no listener required | built (gallery pass 1) |
+| `RunSessionCore` (`features/run`, TECH-001 §4.2a) | `iteration_started` | — (a new Iteration began at a Ruins arrival) | tests; future Ruins presentation | built |
+| `RunSessionCore` | `run_started` | `run_seed: int` | tests; future Ruins / HUD | built |
+| `RunSessionCore` | `seam_entered` | `seam_index: int` (1–5) | tests; future music / HUD | built |
+| `RunSessionCore` | `seam_cleared` | `seam_index: int` (the Seam just cleared) | tests; future Run-Sigil pick flow | built |
+| `RunSessionCore` | `run_ended` | `outcome: StringName` (`died`, `won`, `abandoned`, `ninth_sky`) | tests; future Ruins return flow | built |
+| `RunSessionCore` | `sky_darkened` | `skies_dark: int` (1–9; one emit per sky crossed, a lump can emit two) | tests; future sky presentation (HUD polls, never listens) | built |
+| `RunSessionCore` | `iteration_ended` | — (the ninth sky) | tests; future Hard Unmaking flow | built |
 | `ScenarioRunner` (dev/QA only, `core/automation`) | `scenario_finished` | `outcome: StringName` (`pass`, `fail`, `timeout`, `invalid`, `refused`) | GdUnit adapter (`tests/test_scenarios.gd`), dev/QA builds only | built |
 
 Add a row before you add a signal. Remove the row when you remove the signal.

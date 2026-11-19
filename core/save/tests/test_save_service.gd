@@ -33,6 +33,14 @@ func test_run_slot_refuses_mid_run_saves() -> void:
 	assert_int(svc.save_slot(&"run", {"seam": 2}, &"seam_boundary")).is_equal(OK)
 
 
+## Q-T139: `run_end` is allowed on the run and iteration slots only, never on the profile.
+func test_run_end_reason_is_allowed_on_run_and_iteration_only() -> void:
+	assert_int(svc.save_slot(&"run", {"seam_index": 0}, &"run_end")).is_equal(OK)
+	assert_int(svc.save_slot(&"iteration", {"skies_dark": 1}, &"run_end")).is_equal(OK)
+	assert_int(svc.save_slot(&"profile", {"ember_banked": 1}, &"run_end")).is_equal(ERR_UNAUTHORIZED)
+	assert_bool(mem.exists("profile")).is_false()
+
+
 ## PM 2026-11-19: the Cabinet saves the furthest Act 0 stage reached at each stage start.
 func test_profile_accepts_the_cabinet_stage_reason() -> void:
 	assert_int(svc.save_slot(&"profile", {"act0_stage_reached": 2}, &"cabinet_stage")).is_equal(OK)

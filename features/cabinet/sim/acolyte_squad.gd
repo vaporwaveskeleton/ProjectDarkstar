@@ -4,6 +4,8 @@ extends ArcadeLayer
 ## to face you but lags 0.25 s behind the body (the teachable tell: lead your own movement and the
 ## censer fires where you were). Every shot has a 21-frame tell. When the Vigil is far they guard
 ## the Sepulchre and mine geodes at half the Vigil's rate. At the Guard phase more arrive.
+## P2 stage switches (CabinetStage): censer-bell reinforcements from beyond the view edge, and
+## escorts that trail laden Grubs instead of mining.
 
 const RADIUS := 7.0
 const HOLD_DISTANCE := 170.0   ## ✱ preferred range when engaging
@@ -22,15 +24,29 @@ class Acolyte:
 	var alive: bool = true
 	var slot: float = 0.0                 ## orbit angle around the Sepulchre
 	var id: int = 0                       ## stable id, never reused (automation addresses Acolytes by it)
+	var guard: bool = false               ## joined at the Guard phase: holds the Litany Ring, never escorts
+
+## The view edges a reinforcement can come through, as inward unit normals (top, bottom, left, right).
+const REINFORCE_EDGES: Array[Vector2] = [Vector2.DOWN, Vector2.UP, Vector2.RIGHT, Vector2.LEFT]
 
 var items: Array[Acolyte] = []
 var _guard_spawned := false
 var _next_id: int = 1                     ## NOT reset in reset(), like GrubFlock's ids
 
+# Censer bells (P2, CabinetStage.acolyte_reinforce_s). All sim time: frozen in hit-stop, slowed by slow-mo.
+var _reinforce_clock := 0.0               ## s of play since the last bell interval closed
+var _reinforce_left := -1.0               ## s of warning left; < 0 = no reinforcement pending
+var _reinforce_edge := Vector2.ZERO       ## inward normal of the edge it comes through
+var _reinforce_along := 0.0               ## 0..1 position along that edge (left→right / top→bottom)
+
 
 func reset() -> void:
 	items.clear()
 	_guard_spawned = false
+	_reinforce_clock = 0.0
+	_reinforce_left = -1.0
+	_reinforce_edge = Vector2.ZERO
+	_reinforce_along = 0.0
 	for i in world.stage.acolytes:
 		spawn(world.torus.wrap(world.ritual.pos + Vector2.from_angle(world.rng.randf() * TAU) * GUARD_ORBIT))
 
@@ -53,12 +69,14 @@ func on_guard_phase() -> void:
 	_guard_spawned = true
 	for i in world.stage.guard_acolytes:
 		var a := spawn(world.torus.wrap(world.ritual.pos + Vector2.from_angle(TAU * i / maxi(1, world.stage.guard_acolytes)) * GUARD_ORBIT))
+		a.guard = true
 		world.fx.ring(a.pos, Look.c(Pal.CHOIR_4), world.fx_tuning.acolyte_guard_ring_radius)
 
 
 func tick(delta: float) -> void:
 	var t := world.tuning
 	var lag_ticks := maxi(1, roundi(t.acolyte_turret_lag * Engine.physics_ticks_per_second))
+	var escorted := {}                    # Grub id → true: at most one escort per laden Grub (this tick)
 	for a in items:
 		if not a.alive:
 			continue
@@ -67,6 +85,7 @@ func tick(delta: float) -> void:
 		var to_v := world.torus.delta(a.pos, v.pos)
 		var engaged := v.alive and to_v.length() < t.acolyte_range and not world.ritual.awake
 		var target := a.pos
+		var escorting := false
 		if engaged:
 			# hold range and circle: approach if far, back off if close
 			var radial := to_v.normalized()
@@ -74,8 +93,16 @@ func tick(delta: float) -> void:
 			var want := radial * (dist - HOLD_DISTANCE) + radial.orthogonal() * 40.0
 			target = world.torus.wrap(a.pos + want)
 		else:
-			a.slot += delta * 0.4
-			target = world.torus.wrap(world.ritual.pos + Vector2.from_angle(a.slot) * GUARD_ORBIT)
+			var ward: GrubFlock.Grub = null
+			if world.stage.acolyte_escort and not a.guard:
+				ward = _escort_ward(a, escorted)
+			if ward != null:
+				escorting = true
+				escorted[ward.id] = true
+				target = _trail_point(a, ward)
+			else:
+				a.slot += delta * 0.4
+				target = world.torus.wrap(world.ritual.pos + Vector2.from_angle(a.slot) * GUARD_ORBIT)
 		var d := world.torus.delta(a.pos, target)
 		var desired_vel := d.normalized() * minf(t.acolyte_speed, d.length() * 2.0)
 		a.vel = a.vel.lerp(desired_vel, clampf(delta * 3.0, 0.0, 1.0))
@@ -92,9 +119,108 @@ func tick(delta: float) -> void:
 				if a.cycle <= 0.0:
 					a.cycle = t.acolyte_cycle
 					world.shots.fire_censer(a.pos + Vector2.from_angle(a.turret) * 8.0, Vector2.from_angle(a.turret), a.id)
-		else:
+		elif not escorting:
 			_mine(a, delta)
 	items.assign(items.filter(func(a: Acolyte) -> bool: return a.alive))
+	_tick_reinforcements(delta)
+
+
+## Living Acolytes, the guard ring included (the reinforcement cap counts them all).
+func living_count() -> int:
+	var n := 0
+	for a in items:
+		if a.alive:
+			n += 1
+	return n
+
+
+# --- Censer bells: Acolyte reinforcements (P2, PM Q-T105) -------------------------------------
+# The interval clock runs on sim time (this tick's delta: frozen in hit-stop, slowed by slow-mo) and
+# only while the Vigil is alive and under control (not dead, not on the READY card or after the
+# stage ends). A bell rung before the Vigil died still brings its Acolyte. Off when the stage's
+# acolyte_reinforce_s is 0: then Acolytes never respawn.
+
+func _tick_reinforcements(delta: float) -> void:
+	var st := world.stage
+	if st.acolyte_reinforce_s <= 0.0:
+		return
+	if _reinforce_left >= 0.0:
+		_reinforce_left -= delta
+		if _reinforce_left <= 0.0:
+			var at := _entry_point()
+			_reinforce_left = -1.0
+			_reinforce_edge = Vector2.ZERO
+			if living_count() < st.acolyte_cap:   # the guard ring may have filled the cap meanwhile
+				spawn(at)
+	if not (world.vigil.alive and world.vigil.input_enabled):
+		return
+	_reinforce_clock += delta
+	if _reinforce_clock < st.acolyte_reinforce_s:
+		return
+	_reinforce_clock -= st.acolyte_reinforce_s
+	if _reinforce_left < 0.0 and living_count() < st.acolyte_cap:
+		_ring_bell()
+
+
+## Warning start: choose the edge and the spot along it (spawn decisions: world.rng), ring the bell.
+func _ring_bell() -> void:
+	_reinforce_edge = REINFORCE_EDGES[world.rng.randi_range(0, REINFORCE_EDGES.size() - 1)]
+	_reinforce_along = world.rng.randf()
+	_reinforce_left = world.tuning.reinforce_tell_s
+	world.sfx(&"censer_bell")
+
+
+## Read-only schedule for the tell (fx_layer draws it; never writes). True during the warning.
+func reinforcement_pending() -> bool:
+	return _reinforce_left >= 0.0
+
+
+## Sim seconds of warning left (0 when nothing is pending).
+func reinforcement_time_left() -> float:
+	return maxf(0.0, _reinforce_left) if reinforcement_pending() else 0.0
+
+
+## World-space arrival point: `reinforce_entry_px` outside the chosen edge of the CURRENT view, at
+## the chosen spot along it. It follows the camera, so the Acolyte always arrives just off-view.
+## Vector2.ZERO when nothing is pending.
+func reinforcement_entry() -> Vector2:
+	return _entry_point() if reinforcement_pending() else Vector2.ZERO
+
+
+func _entry_point() -> Vector2:
+	var half := world.view_size * 0.5
+	var n := _reinforce_edge
+	var tangent := n.orthogonal().abs()
+	var depth := absf(n.x) * half.x + absf(n.y) * half.y + world.tuning.reinforce_entry_px
+	var span := tangent.x * half.x + tangent.y * half.y
+	return world.torus.wrap(world.view_centre - n * depth + tangent * (_reinforce_along * 2.0 - 1.0) * span)
+
+
+## Unit normal of the view edge it comes through, pointing into the view (ZERO when none pending).
+func reinforcement_edge() -> Vector2:
+	return _reinforce_edge if reinforcement_pending() else Vector2.ZERO
+
+
+# --- Escort (P2, CabinetStage.acolyte_escort) --------------------------------------------------
+
+## The nearest laden Grub no other Acolyte escorts this tick, or null.
+func _escort_ward(a: Acolyte, taken: Dictionary) -> GrubFlock.Grub:
+	var best: GrubFlock.Grub = null
+	var best_d := INF
+	for g in world.grubs.items:
+		if not g.alive or not g.carrying or taken.has(g.id):
+			continue
+		var d := world.torus.distance_sq(a.pos, g.pos)
+		if d < best_d:
+			best_d = d
+			best = g
+	return best
+
+
+## `escort_distance` behind the Grub (along its heading; from the Acolyte's side when it is still).
+func _trail_point(a: Acolyte, g: GrubFlock.Grub) -> Vector2:
+	var back := -g.vel.normalized() if g.vel.length() > 1.0 else world.torus.delta(g.pos, a.pos).normalized()
+	return world.torus.wrap(g.pos + back * world.tuning.escort_distance)
 
 
 ## Acolytes mine too, at 50 % of the Vigil's lance rate (SYS-001 §3).

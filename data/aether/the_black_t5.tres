@@ -51,3 +51,4 @@ accent = Color(0.9098039, 0.8627451, 0.8470588, 1)
 star_strength = 0.4
 value_deep = 0.4
 lantern_scatter = 0.34
+missing = 0.85

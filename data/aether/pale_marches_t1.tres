@@ -47,3 +47,4 @@ star_strength = 0.9
 lantern_scatter = 0.38
 glow_band_px = 75
 glow_band_inset = 60
+missing = 0

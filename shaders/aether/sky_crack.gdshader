@@ -111,6 +111,7 @@ vec4 fracture(vec2 px, vec4 im, out float dim) {
 	float dimmed = pa * (1.0 - opened) * step(1.0 - A_DIM_PANES, a_hash(ida * 2.31 + im.w * 1.7));
 	float border = 1e9;
 	float drawn = 1e9;
+	float drawn_rim = 1e9;   // pass 6 (B3): rims of open and dim panes (no fringe fade)
 	for (int j = -1; j <= 1; j++) {
 		for (int i = -1; i <= 1; i++) {
 			vec2 o = mg + vec2(float(i), float(j));
@@ -129,10 +130,17 @@ vec4 fracture(vec2 px, vec4 im, out float dim) {
 			float pb = in_patch(idb, (lq + r) * cs / reach, im.w);
 			float ob = pb * step(0.66 + 0.4 * length((lq + r) * cs / reach), a_hash(idb * 0.73 + im.w * 5.1));
 			float hb = a_hash(ida + idb + abs(ida - idb) * 5.7 + im.w);
-			float keep = max(opened, ob) > 0.5 ? 1.0 : (pa + pb > 1.5 ? step(1.0 - A_KEEP_INNER, hb) : step(1.0 - A_KEEP_FRINGE, hb) * step(0.5, pa + pb));
+			// pass 6 (B3): a DIM pane gets the same lit crack rim as an open one (an unrimmed dim pane
+			// read as a dark blob floating in the sky)
+			float db = pb * (1.0 - ob) * step(1.0 - A_DIM_PANES, a_hash(idb * 2.31 + im.w * 1.7));
+			float rimmed = max(max(opened, ob), max(dimmed, db));
+			float keep = rimmed > 0.5 ? 1.0 : (pa + pb > 1.5 ? step(1.0 - A_KEEP_INNER, hb) : step(1.0 - A_KEEP_FRINGE, hb) * step(0.5, pa + pb));
 			if (keep > 0.5) {
-				float wgt = max(opened, ob) > 0.5 ? 1.0 : 0.45 + 1.2 * a_hash(ida * 3.3 + idb * 3.3 + im.w);
+				float wgt = rimmed > 0.5 ? 1.0 : 0.45 + 1.2 * a_hash(ida * 3.3 + idb * 3.3 + im.w);
 				drawn = min(drawn, e / wgt);
+				if (rimmed > 0.5) {
+					drawn_rim = min(drawn_rim, e);
+				}
 			}
 		}
 	}
@@ -142,6 +150,8 @@ vec4 fracture(vec2 px, vec4 im, out float dim) {
 	float line = drawn * px_k;
 	// hairlines fade toward the patch fringe (the fracture dies out in the glass)
 	line += 2.5 * smoothstep(0.55, 1.0, length(cca));
+	// pass 6 (B3): a pane's own rim never fades out at the patch fringe (a dim pane there read as a blob)
+	line = min(line, drawn_rim * px_k);
 	float cover = opened * smoothstep(OPEN_INSET, OPEN_INSET + 1.0, bpx);
 	dim = dimmed * smoothstep(OPEN_INSET, OPEN_INSET + 1.0, bpx);
 	vec2 off = (vec2(a_hash(ida + 11.0), a_hash(ida.yx + 23.0)) - 0.5) * 7.0 * pa;
