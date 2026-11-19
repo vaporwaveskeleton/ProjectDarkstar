@@ -5,7 +5,9 @@ render_mode unshaded;
 // the stars, at a depth behind the jellies, cropped by the frame. Pass 3 anatomy — alive means
 // asymmetric and curved: a long tapering head whose DORSAL CURVE climbs off the top of the frame,
 // a long belly curve that passes ABOVE the lantern (never enclosing it), and one swept pectoral vane
-// with a crisp, notched trailing edge running off-frame. Smooth back line with a few broken plates.
+// with a crisp, notched trailing edge running off-frame (pass 4: a dark translucent membrane on
+// four bony fanned spines, rimmed on both edges — never a flat pale slab). Smooth back line with a
+// few broken plates.
 // Rim: BACKSCATTER from the fog behind it, a thin fog-coloured edge (rim_col, below the lantern).
 // Flank lights follow the belly curve, staggered in size, spacing and phase (sequential drift,
 // under 1 Hz, below the lantern). VOID / AETHER tones — never black. Never a collider.
@@ -72,18 +74,39 @@ void fragment() {
 	chord -= thickness * 0.05 * vn * step(0.12, fa) * (0.6 + 0.4 * a_hash(vec2(floor(fa * 3.3 + 0.35), 2.0)));
 	float vane = step(0.0, fa) * step(fa, 1.0) * step(-2.0, fo) * (1.0 - smoothstep(chord - 1.5, chord + 1.0, fo));
 	vane *= 1.0 - body;
-	float vane_rib = step(0.45, abs(fract(fa * 6.0) - 0.5)) * vane;
-	float a = max(body * max_alpha, vane * 0.6);
+	// pass 4: not a slab. A dark translucent membrane stretched over four bony spines that fan out
+	// from the root (the leading-edge spine runs the full length, the others reach the trailing
+	// edge at staggered points), tapering from root to tip; the membrane's leading edge is a rim
+	float spines = 0.0;
+	float vl = thickness * 1.05;
+	for (int k = 0; k < 4; k++) {
+		float fk = float(k);
+		// the leading-edge spine runs the full length; the rest cross the membrane steeply (a fan)
+		float reach_k = (fk < 0.5 ? 1.0 : 0.62 / fk) * (0.92 + 0.08 * a_hash(vec2(fk, 6.1)));
+		float w0 = 0.04 + 0.05 * fk;                       // a little apart at the root
+		float t = clamp(fa / reach_k, 0.0, 1.0);
+		float tgt = mix(w0, 0.96, t * (fk > 0.0 ? 1.0 : 0.0)) * chord;
+		float slope = (0.96 - w0) * chord / max(reach_k * vl, 1.0) * step(0.5, fk);
+		float dist = abs(fo - tgt) / sqrt(1.0 + slope * slope);
+		float half_w = mix(2.0, 0.6, t) * step(fa, reach_k);
+		spines = max(spines, 1.0 - smoothstep(half_w, half_w + 1.0, dist));
+	}
+	spines *= vane;
+	float a = max(body * max_alpha, vane * 0.42);
+	a = max(a, spines * 0.85);
 	// colour: a smooth back, plate seams catching a little light
 	vec3 col = body_col;
 	float seam = (1.0 - smoothstep(0.4, 1.4, abs(sd + 9.0))) * step(dy, 0.0) * step(0.55, ph) * body;
 	col = mix(col, plate_col, seam * 0.6);
-	col = mix(col, plate_col, vane * 0.45 + vane_rib * 0.25);
+	col = mix(col, mix(body_col, plate_col, 0.25), vane);
+	col = mix(col, mix(plate_col, rim_col, 0.4), spines);
 	// rim: backscatter of the fog behind it, strongest along the belly (lit from below by the
 	// lantern-warmed fog), broken by slow streaks; a thin edge just inside the silhouette
 	float streak = 0.55 + 0.45 * smoothstep(0.3, 0.75, a_noise(vec2(spx.x * 0.03, time_s * 0.03)));
-	float edge_d = min(abs(sd + 1.5), mix(1e4, abs(fo - chord + 1.5), vane));
-	float rim = exp(-edge_d / 1.6) * mix(0.45, 1.0, step(0.0, dy)) * streak * rim_strength;
+	// the membrane: a bright leading edge, a faint trailing edge (its notches stay dark, never a bolt)
+	float edge_d = min(abs(sd + 1.5), mix(1e4, abs(fo + 0.5), vane));
+	float trail = exp(-abs(fo - chord + 1.5) / 1.2) * vane * 0.3;
+	float rim = max(exp(-edge_d / 1.6), trail) * mix(0.45, 1.0, step(0.0, dy)) * streak * rim_strength;
 	col = mix(col, rim_col, clamp(rim, 0.0, 1.0) * 0.75);
 	a = max(a, clamp(rim, 0.0, 1.0) * 0.8 * step(-1.0, -sd) * step(0.0, u));
 	// flank lights: following the belly curve, staggered size / spacing / phase, drifting in
