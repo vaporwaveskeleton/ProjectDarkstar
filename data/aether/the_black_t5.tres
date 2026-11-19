@@ -25,6 +25,7 @@ rib_accent = Color(0.3529412, 0.3607843, 0.4039216, 1)
 fog_band_count = 3
 subtraction = true
 black_holes = true
+set_ring_fragments = true
 refraction = true
 mote_count = 80
 subtraction_amount = 0.7

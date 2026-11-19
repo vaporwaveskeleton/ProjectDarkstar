@@ -1,9 +1,9 @@
 class_name AetherBackdrop
 extends Node2D
 ## The Aether world backdrop (ART-001 §15–§16): a lit sea of coloured fog inside a glass sky, with
-## far set pieces, life, and the entity's presence. Back to front: far fog (stars), crystal sphere
-## (orrery shells) + cracks + smudge, set pieces + orrery ribs, mid fog, the Presence (leviathan),
-## mid fog, god-rays, life, near fog, veil fog, entity, grade.
+## far set pieces, life, and the entity's presence. Back to front: far fog (stars), the far halves of the
+## armillary rings, crystal sphere (orrery shells) + cracks + smudge, set pieces + orrery ribs, mid fog,
+## the Presence (leviathan), mid fog, god-rays, life, near fog, veil fog, entity, grade.
 ## Every layer can be switched off to measure its cost. A quality rung (AetherQuality, CH-7)
 ## trades octaves, resolution and particle counts; every rung keeps the sphere curve, the entity's
 ## exact black and the play-band fog cap. Owns no game state; callers drive it with
@@ -54,6 +54,7 @@ var _mats: Array[ShaderMaterial] = []
 @onready var _far_layer: Parallax2D = %FarLayer
 @onready var _sky_layer: Parallax2D = %SkyLayer
 @onready var _rib_layer: Parallax2D = %RibLayer
+@onready var _rib_back_layer: Parallax2D = %RibBackLayer
 @onready var _mid_a_layer: Parallax2D = %MidLayerA
 @onready var _lev_layer: Parallax2D = %LeviathanLayer
 @onready var _mid_b_layer: Parallax2D = %MidLayerB
@@ -67,6 +68,7 @@ var _mats: Array[ShaderMaterial] = []
 @onready var _cracks_copy: BackBufferCopy = %CracksCopy
 @onready var _smudge: StillSmudge = %Smudge
 @onready var _set_pieces: FarSetPieces = %SetPieces
+@onready var _set_pieces_back: FarSetPieces = %SetPiecesBack
 @onready var _ribs: OrreryRibs = %Ribs
 @onready var _far_life: Node2D = %FarLife
 @onready var _leviathan: AetherLeviathan = %Leviathan
@@ -122,7 +124,8 @@ func apply_quality(q: AetherQuality) -> void:
 	if not is_node_ready():
 		return
 	for band in _bands:
-		band.set_offscreen_scale(q.fog_resolution_scale)
+		var mid := band == _bands[1] or band == _bands[2]
+		band.set_offscreen_scale(minf(q.mid_fog_resolution_scale, q.fog_resolution_scale) if mid else q.fog_resolution_scale)
 	_shafts.set_offscreen_scale(q.shaft_resolution_scale)
 	for e: EntityPresence in [_entity] + _holes:
 		e.set_edge_octaves(q.entity_edge_octaves)
@@ -145,6 +148,8 @@ func apply_look(new_look: AetherLook) -> void:
 	_sphere.set_param(&"seam_col", Pal.PHOS_5)
 	_sphere.set_param(&"crack_col", Pal.BONE_4)
 	_sphere.set_param(&"brass_col", look.brass)
+	_sphere.set_param(&"brass_hi", Pal.BONE_4)
+	_sphere.set_param(&"brass_shadow", Pal.VOID_3)
 	_sphere.set_param(&"floor_col", Pal.VOID_0)
 	_sphere.set_param(&"refraction_px", look.refraction_strength if (look.refraction and q.sphere_refraction == 1) else 0.0)
 	_sphere.set_param(&"shells", q.nested_shells)
@@ -171,6 +176,7 @@ func apply_look(new_look: AetherLook) -> void:
 	_ribs.configure(look)
 	_smudge.configure(look)
 	_set_pieces.configure(look)
+	_set_pieces_back.configure(look)
 	var counts: Array[int] = [look.mote_count if look.motes else 0, look.jelly_count if look.jellies else 0,
 		look.spore_count if look.spores else 0, look.school_count if look.school else 0,
 		look.vast_jelly_count if look.jellies else 0]
@@ -304,6 +310,7 @@ func _refresh_visibility() -> void:
 	_cracks_copy.visible = _cracks.visible
 	_smudge.visible = _layer_active(&"smudge")
 	_set_pieces.visible = _layer_active(&"set_pieces")
+	_set_pieces_back.visible = _set_pieces.visible and _set_pieces_back.any_shown()
 	_ribs.visible = _layer_active(&"orrery")
 	_leviathan.visible = _layer_active(&"leviathan")
 	_shafts.set_drawn(_layer_active(&"shafts"))
@@ -320,6 +327,7 @@ func _apply_parallax() -> void:
 		_set_scroll(layers[i], look.band_scroll(i))
 	_set_scroll(_sky_layer, look.band_scroll(0) * 1.5)
 	_set_scroll(_rib_layer, look.band_scroll(0) * 2.5)
+	_set_scroll(_rib_back_layer, look.band_scroll(0) * 2.5)
 	_set_scroll(_lev_layer, (look.band_scroll(1) + look.band_scroll(2)) * 0.5)
 	_set_scroll(_life_layer, look.band_scroll(2) * 1.7)
 	_set_scroll(_entity_layer, look.band_scroll(1) * 1.6)
@@ -365,6 +373,7 @@ func refresh() -> void:
 		band.set_param(&"lantern_px", lantern_screen)
 		band.set_param(&"lantern_r", lantern_radius)
 		band.set_param(&"lantern_col", lantern_colour)
+		band.set_param(&"lantern_outer", Pal.GAS_3)
 		band.set_param(&"lantern_energy", lantern_energy if look.lantern_light else 0.0)
 	_sphere.set_param(&"camera_offset", cam_off)
 	_sphere.update_glint(time_s, camera_centre - _sky_layer.position)
@@ -390,6 +399,7 @@ func refresh() -> void:
 		h.set_time(time_s)
 	_ribs.set_time(t)
 	_set_pieces.set_time(t)
+	_set_pieces_back.set_time(t)
 	_update_life(t, masks[0])
 	var px := get_viewport().get_visible_rect().size
 	var vp := get_viewport()

@@ -16,6 +16,8 @@ uniform vec3 glass_col : source_color = vec3(0.38, 0.81, 0.66);
 uniform vec3 seam_col : source_color = vec3(0.66, 0.94, 0.82);
 uniform vec3 crack_col : source_color = vec3(0.89, 0.87, 0.82);
 uniform vec3 brass_col : source_color = vec3(0.54, 0.55, 0.58);
+uniform vec3 brass_hi : source_color = vec3(0.89, 0.87, 0.82);
+uniform vec3 brass_shadow : source_color = vec3(0.16, 0.19, 0.34);
 uniform vec3 floor_col : source_color = vec3(0.039, 0.039, 0.07);
 uniform vec2 centre = vec2(400.0, 1500.0);    // local px
 uniform float radius = 1380.0;
@@ -39,14 +41,50 @@ void vertex() {
 	v_px = VERTEX;
 }
 
-// the engraved brass band riding inside a seam at signed distance d, arc length `arc`
-float brass_band(float d, float arc, float fw) {
-	float l1 = 1.0 - smoothstep(0.35, 0.35 + fw * 1.5, abs(d + 7.0));
-	float l2 = 1.0 - smoothstep(0.35, 0.35 + fw * 1.5, abs(d + 13.0));
-	float tick_x = abs(fract(arc / 9.0) - 0.5) * 9.0;
-	float major = step(0.8, fract(arc / 45.0 + 0.1));
-	float tick = (1.0 - smoothstep(0.3, 0.3 + fw * 1.5, tick_x)) * step(-13.0, d) * step(d, mix(-8.0, -4.0, major));
-	return max(max(l1, l2) * 0.9, tick * 0.7);
+float thin_line(float x, float w, float fw) {
+	return 1.0 - smoothstep(w, w + fw * 1.5, abs(x));
+}
+
+// The engraved brass meridian band (pass 3: brass is BRASS) riding inside a seam at signed distance
+// d, arc length `arc`. Returns x = metal body, y = highlight edge (toward the seam), z = engraving
+// shadow (inner edge, graduations, marks). Two-tone metal: brass_col body, brass_hi edge,
+// brass_shadow engraving. Minor graduations every 9 px over the inner half of the band, majors
+// every 45 px across it, each with its own weight; at every major a little group of engraved
+// strokes below the band, numeral-like but never a readable glyph.
+vec3 brass_band(float d, float arc, float fw) {
+	float aa = fw * 1.2;
+	float body = smoothstep(-15.0 - aa, -15.0 + aa, d) * (1.0 - smoothstep(-6.0 - aa, -6.0 + aa, d));
+	float hi = thin_line(d + 6.7, 0.45, fw);
+	float lo = thin_line(d + 14.3, 0.4, fw);
+	float mi = floor(arc / 9.0 + 0.5);
+	float tx = arc - mi * 9.0;
+	float mj = floor(arc / 45.0 + 0.5);
+	float mx = arc - mj * 45.0;
+	float is_major = step(abs(mx), 4.5);
+	float w_minor = 0.22 + 0.3 * a_hash(vec2(mi, 1.3));
+	float w_major = 0.55 + 0.45 * a_hash(vec2(mj, 7.1));
+	float tw = mix(w_minor, w_major, is_major);
+	float tick = thin_line(tx, tw, fw) * step(-14.5, d) * step(d, mix(-10.5, -7.0, is_major));
+	// engraved marks under each major: a dot and two or three short strokes, each its own slant and
+	// height, so the group reads as an engraver's mark but never as a glyph (no I / II / III runs)
+	float marks = 0.0;
+	float md = d + 20.0;                                     // 0 at the middle of the marks row
+	if (abs(md) < 3.2 && abs(mx) < 7.0) {
+		float count = 2.0 + step(0.55, a_hash(vec2(mj, 3.3)));
+		for (int k = 0; k < 3; k++) {
+			if (float(k) >= count) {
+				break;
+			}
+			float hk = a_hash(vec2(mj * 1.7 + float(k), 5.9));
+			float slant = (hk - 0.5) * 1.8 * (float(k) - 0.8);
+			float tall = 0.9 + 1.9 * a_hash(vec2(float(k), mj + 2.2));
+			float lift = (hk - 0.5) * 1.6;
+			float stroke = thin_line(mx + 3.0 - 2.6 * float(k) - (md - lift) * slant, 0.3, fw);
+			marks = max(marks, stroke * step(abs(md - lift), tall));
+		}
+		marks = max(marks, 1.0 - smoothstep(0.45, 0.45 + fw, length(vec2(mx - 4.2, md + 1.8))));
+	}
+	return vec3(body, hi * body, max(lo * body, max(tick, marks)));
 }
 
 void fragment() {
@@ -73,7 +111,7 @@ void fragment() {
 			float th = -0.42 + 0.4 * float(i) + 0.05 * sin(float(i) * 7.0);
 			vec2 hit = centre + radius * vec2(sin(th), -cos(th));
 			vec2 tang = vec2(cos(th), sin(th));
-			vec2 g = a_glass(v_px, hit, 190.0 * crack_amount * (1.0 - 0.25 * float(i == 1)), 2.3 + float(i) * 3.1, tang, 0.5);
+			vec2 g = a_glass(v_px, hit, 190.0 * crack_amount * (1.0 - 0.25 * float(i == 1)), 2.3 + float(i) * 3.1, tang, 0.5, 3.4);
 			crack = max(crack, (1.0 - smoothstep(0.5 * fw, 1.6 * fw, g.x)) * 0.45);
 			off += normalize(v_px - hit + vec2(0.01)) * g.y * 6.0;
 		}
@@ -94,7 +132,8 @@ void fragment() {
 		a = (band * 0.18 + sky_tint * step(0.0, d)) * keep;
 	}
 	// brass meridian band and graduation (engraved, fogged: below the seam's brightness)
-	float br = brass_band(d, arc, fw) * brass_strength;
+	vec3 bb = brass_band(d, arc, fw) * brass_strength;
+	float br = 0.0;
 	// faint meridians fading down into the fog, and one dashed parallel
 	float mer_x = abs(fract(ang / 0.09) - 0.5) * 0.09 * radius;
 	float mer = (1.0 - smoothstep(0.3, 0.3 + fw * 1.5, mer_x)) * smoothstep(-130.0, -16.0, d) * step(d, -14.0) * 0.35;
@@ -113,8 +152,10 @@ void fragment() {
 		br = max(br, (1.0 - smoothstep(0.3, 0.3 + fw * 1.5, abs(d2 + 6.0))) * brass_strength * 0.45 / fk);
 		a = max(a, s2 * 0.8);
 	}
-	col = mix(col, brass_col, br * keep);
-	a = max(a, br * keep);
+	col = mix(col, brass_col, max(br, bb.x * 0.85) * keep);
+	col = mix(col, brass_shadow, bb.z * keep);
+	col = mix(col, brass_hi, bb.y * keep);
+	a = max(a, max(br, max(bb.x * 0.85, max(bb.y, bb.z))) * keep);
 	col += glass_add * keep;
 	a = max(a, clamp(core + halo * 0.6, 0.0, 1.0) * keep);
 	// the glint, travelling along the seam

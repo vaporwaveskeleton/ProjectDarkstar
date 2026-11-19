@@ -24,6 +24,7 @@ uniform vec3 void_hi : source_color = vec3(0.235, 0.27, 0.455);   // cold cast, 
 uniform vec3 star_col : source_color = vec3(0.9, 0.87, 0.82);
 uniform vec4 tint : source_color = vec4(0.0);   // far-band incense haze (CHOIR, T4 only)
 uniform vec3 lantern_col : source_color = vec3(0.95, 0.78, 0.36);
+uniform vec3 lantern_outer : source_color = vec3(0.85, 0.6, 0.18);   // in-scatter at the pool's rim
 uniform vec2 lantern_px = vec2(320.0, 202.0);
 uniform float lantern_r = 120.0;
 uniform float lantern_energy = 1.6;
@@ -153,12 +154,17 @@ void fragment() {
 	// the lantern: warm light pooled into the fog (the last warm thing)
 	float ld = length(spx - lantern_px) / max(lantern_r, 1.0);
 	float lp = exp(-ld * ld * 4.0);
-	vec3 lc = lantern_col * lantern_energy;
-	col += lc * lp * (col * 0.8 + vec3(scatter) * (0.35 + 0.65 * max(dens, is_far)));
+	// pass 3: in-scatter tinted gold-amber (lantern_outer at the rim of the pool, the lantern's own
+	// colour at its heart) and multiplied by the fog's VALUE more than its hue, so the pool reads
+	// warm in every tier instead of a yellow-green smear over teal fog
+	vec3 lc = mix(lantern_outer, lantern_col, smoothstep(0.15, 0.8, lp)) * lantern_energy;
+	vec3 fog_term = mix(col, vec3(a_luma(col)), 0.7) * 0.8;
+	col += lc * lp * (fog_term + vec3(scatter) * (0.35 + 0.65 * max(dens, is_far)));
 	// the entity: the medium near it goes cold and loses its layers (never darker than VOID)
 	col = mix(col, cold(col), loss.w * 0.75);
 	if (is_far > 0.5) {
-		col = mix(col, mix(void_lo, void_hi, 0.15 + 0.25 * n), loss.z);
+		// the middle step of the subtraction: a FLAT cold VOID (no fog texture, no stars, no glow)
+		col = mix(col, mix(void_lo, void_hi, 0.22), loss.z);
 	}
 	// drain: a cold VOID cast everywhere but the lantern pool
 	col = mix(col, cold(col), drain * 0.92 * (1.0 - lp * 0.85));
