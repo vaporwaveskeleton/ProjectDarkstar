@@ -2,7 +2,7 @@ class_name CabinetBezel
 extends RefCounted
 ## Shared layout and drawing for the Cabinet's printed bezel (WARP-001 W0-01): the two printed side
 ## columns (BezelArt / BezelPrint) flush against the screen hole, the plain print field around it
-## (BezelField) and the coin door. Used by the attract screen and the in-game HUD so both show the
+## (BezelField) and the coin door (drawn by CoinDoorFace). Used by the attract screen and the in-game HUD so both show the
 ## same machine. The bezel is a real object, the 1983 marketing print for the fake game, drawn in
 ## BezelInks (owner decision D-B). It carries no readouts: score, Vigils, scanner and the rest are
 ## lit on the screen's HUD strip (CabinetScreenHud, P5). PR C re-composes it.
@@ -46,49 +46,48 @@ static func to_screen(column: StringName, r: Rect2) -> Rect2:
 
 
 # --- The coin door ---------------------------------------------------------------------------------
+# Features are plate-local (0..56 × 0..80); CoinDoorFace (shaders/cabinet/coin_door.gdshader) draws them.
+const SLOT_C := Vector2(28, 20)           ## the coin slot's centre
+const SLOT_HALF := Vector2(1.6, 9.0)      ## half size of the drawn slot opening
+const PLATE_Y := 46.0                     ## the lit reject / price plate's centre y
+const PLATE_MARGIN := 0.3                 ## clear plate each side of the text, plate units
+const PLATE_MAX_HALF_X := 23.8            ## widest plate inside the door's inner panel
+const PLATE_HALF_Y := 5.5                 ## 7 px text + 2 units above and below
 
-## The coin slit inside a plate drawn at `plate`.
+
+## The plate's centre: the text starts on a whole unit, so an odd-width text puts the plate half a unit
+## right of the door centre.
+static func button_center() -> Vector2:
+	var w := PixelText.width(TranslationServer.translate("CAB_COIN_PRICE"), 1)
+	return Vector2(28.0 + (0.5 if w % 2 == 1 else 0.0), PLATE_Y)
+
+
+## Half size of the lit reject / price plate: the translated price's width at scale 1 plus a margin,
+## clamped to the door's inner panel. `fits_price()` says whether the text really fits at scale 1.
+static func button_half() -> Vector2:
+	var w := float(PixelText.width(TranslationServer.translate("CAB_COIN_PRICE"), 1))
+	return Vector2(minf(w * 0.5 + PLATE_MARGIN, PLATE_MAX_HALF_X), PLATE_HALF_Y)
+
+
+## True while the price text (scale 1) fits on the plate with no clipping.
+static func fits_price() -> bool:
+	return float(PixelText.width(TranslationServer.translate("CAB_COIN_PRICE"), 1)) * 0.5 + PLATE_MARGIN <= PLATE_MAX_HALF_X + 0.0001
+
+
+## The coin slit inside a plate drawn at `plate`: exactly the drawn slot opening.
 static func slit(plate: Rect2) -> Rect2:
-	return Rect2(plate.position + Vector2(plate.size.x * 0.5 - 2.0, 12.0), Vector2(4, 22))
+	return Rect2(plate.position + SLOT_C - SLOT_HALF, SLOT_HALF * 2.0)
 
 
-## The coin door: a chrome plate with brass screws, the slit (lit by `glow` 0 → 1) in a key-black
-## surround, the coin-return button and the orange price sticker. The slit glow is a lamp.
-static func draw_coin_plate(ci: CanvasItem, plate: Rect2, glow: float, price: String, inks: BezelInks = null) -> void:
+## The lit reject / price plate's rect inside a door drawn at `plate`. It carries the price text.
+static func price_button(plate: Rect2) -> Rect2:
+	var h := button_half()
+	return Rect2(plate.position + button_center() - h, h * 2.0)
+
+
+## The price printed in dark ink on the lit plate (placeholder until VectorText, PR C).
+static func draw_price(ci: CanvasItem, plate: Rect2, price: String, inks: BezelInks = null) -> void:
 	var ink := inks if inks != null else (BezelInks.default() as BezelInks)
-	var black := ink.key_black
-	var light := ink.chrome_light
-	var dark := ink.chrome_dark
-	var face := dark.lerp(light, 0.55)
-	ci.draw_rect(plate.grow(1), black)
-	ci.draw_rect(plate, face)
-	ci.draw_rect(Rect2(plate.position, Vector2(plate.size.x, 1)), light)
-	ci.draw_rect(Rect2(plate.position, Vector2(1, plate.size.y)), light)
-	ci.draw_rect(Rect2(plate.position + Vector2(0, plate.size.y - 1), Vector2(plate.size.x, 1)), dark)
-	ci.draw_rect(Rect2(plate.position + Vector2(plate.size.x - 1, 0), Vector2(1, plate.size.y)), dark)
-	# brass screws in the corners
-	for sx in [5.0, plate.size.x - 6.0]:
-		for sy in [5.0, plate.size.y - 6.0]:
-			var sp := plate.position + Vector2(sx, sy)
-			ci.draw_rect(Rect2(sp - Vector2(1, 1), Vector2(3, 3)), black)
-			ci.draw_rect(Rect2(sp, Vector2(1, 1)), ink.brass)
-			ci.draw_rect(Rect2(sp - Vector2(1, 0), Vector2(3, 1)), ink.brass)
-			ci.draw_rect(Rect2(sp - Vector2(0, 1), Vector2(1, 3)), ink.brass)
-	# the slit: key-black surround, the lamp glow, the opening
-	var s := slit(plate)
-	ci.draw_rect(s.grow(4), dark)
-	ci.draw_rect(s.grow(3), black)
-	ci.draw_rect(s.grow(2), Look.c(Pal.GAS_0).lerp(Look.c(Pal.GAS_4), clampf(glow, 0.0, 1.0)))
-	ci.draw_rect(s, black)
-	# coin-return button
-	var ret := Rect2(plate.position + Vector2(plate.size.x * 0.5 - 6.0, 44.0), Vector2(12, 8))
-	ci.draw_rect(ret.grow(1), black)
-	ci.draw_rect(ret, light)
-	ci.draw_rect(Rect2(ret.position + Vector2(0, ret.size.y - 2), Vector2(ret.size.x, 2)), dark)
-	ci.draw_rect(Rect2(ret.position + Vector2(3, 3), Vector2(6, 1)), black)
-	# the orange price sticker
-	var sticker := Rect2(plate.position + Vector2(3, 57), Vector2(plate.size.x - 6.0, 15))
-	ci.draw_rect(sticker.grow(1), black)
-	ci.draw_rect(sticker, ink.orange)
-	ci.draw_rect(Rect2(sticker.position, Vector2(sticker.size.x, 1)), ink.yellow)
-	PixelText.draw_centered(ci, sticker.get_center().x, sticker.position.y + 4.0, price, black)
+	var b := price_button(plate)
+	var x := b.get_center().x - PixelText.width(price) * 0.5
+	PixelText.draw(ci, Vector2(x, roundf(b.get_center().y - PixelText.H * 0.5)), price, ink.key_black)

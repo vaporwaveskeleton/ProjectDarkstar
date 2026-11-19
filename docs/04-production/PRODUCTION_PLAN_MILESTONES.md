@@ -117,7 +117,7 @@ An imagined 1.0 review scored the game 9/10, with sub-scores for graphics and ar
 **Owner items still open** (rows in TECH-001 §11.1, checked 2026-11-18; Q-T31 is closed and omitted):
 - Q-T29: detonation shard count (3-5 vs 4-6).
 - Q-T30: Act 0 Acolyte engagement range value.
-- Q-T32, Q-T33: marquee strip/logo size; spawn distance, scanner and other Act 0 values.
+- Q-T33: spawn distance, scanner and other Act 0 values.
 - Q-T34: attract pages hidden at 200 % text until they move to the bezel.
 - Q-T35..Q-T43: audio and doc-consistency questions raised by PR #8.
 
