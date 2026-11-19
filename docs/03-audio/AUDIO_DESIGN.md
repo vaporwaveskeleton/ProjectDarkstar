@@ -1,6 +1,7 @@
 # DARKSTAR — Audio Design
 
 **Doc ID:** AUDIO-001 · **Version:** 1.1 · **Date:** 2026-11-18 · **Owner:** Audio / Design · **Status:** authored, pending review
+**Rev 1.7 (2026-11-18): §6.2 gains A13, A14, B10–B12, F11, F12 and built-cue ids on A07/A08; §12.13 added (M1 slice 3 cues, seven new renders, all unauditioned); cue ids 38 to 45.**
 **Rev 1.6 (2026-11-18): §12.12 adds `aether_bed_t4` and `aether_bed_t5` (owner-approved follow-up, Q-T52), both unauditioned; cue ids 36 to 38.**
 
 **Rev 1.5 (2026-11-18): §12.12 added (Aether sound direction, PM-requested; owner review pending): five unauditioned cues (`aether_bed_t1`..`t3`, `aether_swell`, `aether_wrong`), `AudioService.set_ambience`, `BUS-AMB` now used; §12.1 counts, format and bus rows updated; no design change to §1–§11.**
@@ -707,12 +708,14 @@ IDs are stable for TECH-001's audio tables (TECH-001 §6). Levels are relative t
 | A04 | Geode crack | the crack threshold (SYS-001 §1.3) | a chalk line tearing; the first real tell that the face is giving | −13 dB |
 | A05 | Geode shatter | SYS-001 §1.3 | glass falling in three pieces, one of them late | −12 dB |
 | A06 | Shard pickup | SYS-001 §1.3 | a five-note ascending ladder, one note per shard, so the magazine's shape is heard | −15 dB |
-| A07 | Over-fire warning rise | the SYS-001 §1.3 consecutive-hit threshold | a sine climbing with the hit count; **it rises in pitch, never in level** (§1.4) | −20 → −12 dB |
-| A08 | Over-fire detonation | SYS-001 §1.3 (player-owned cause, §1.4) | a glass chord struck from inside, then a 0.4 s ✱ vacuum decay | −9 dB |
+| A07 | Over-fire warning rise | the SYS-001 §1.3 consecutive-hit threshold | a sine climbing with the hit count; **it rises in pitch, never in level** (§1.4). Built as `overfire_warn`: one rise, called once at 6 hits by the caller; pitch only | −20 → −12 dB |
+| A08 | Over-fire detonation | SYS-001 §1.3 (player-owned cause, §1.4) | a glass chord struck from inside, then a 0.4 s ✱ vacuum decay. Built as `overfire_burst` | −9 dB |
 | A09 | Dry fire | empty magazine | one dull chalk tick | −18 dB |
 | A10 | Lance vent | the SYS-001 §1.3 cooldown rows | a brass sigh, downward | −19 dB |
 | A11 | Does the Vigil's thrust, brake and drift get a sound? §6.2 has no cue for it | the 340 px/s inertia feel (GDD-001 §4.2) is the M1 feel target and is silent today | One soft thrust bed morphed at runtime from speed (`BUS-FLY`, one voice, below the §7.1 floor for identity) plus a brake cue; or keep the ship silent and say so in §1.2. Decide before M1 closes | AUDIO-001 + M1 chat | M1 exit |
 | A12 | What format do the long music stems ship in? | 41 stems and ≈ 78 looped minutes (§9.1) are about 0.8 GB as PCM WAV in LFS (arithmetic, §12.6) | Spike three options at M2 and record size, boot time and CPU: `chirp --ogg`, imported WAV, and load-time worker-thread rendering (§11.5) | AUDIO-001 + TECH-001 | M2 |
+| A13 | Magnet latch (`magnet_latch`) | a shard enters the magnet radius | tiny rising tick, quiet, many per second | −22 dB |
+| A14 | Lance on the Sepulchre or entity (`lance_dull`, built 2026-11-18, §12.11) | the Arc-Lance hits a target that does not bite | a chalk tick, "does not bite"; lower and flatter than A03 | −18 dB |
 | B01 | Charge draw | SYS-001 §1.4 | a wet glass ring, held | −17 dB |
 | B02 | Charge throw | SYS-001 §1.4 | chalk snap plus a short glass tail | −15 dB |
 | B03 | Charge in flight | SYS-001 §1.4 | the glass singing a fifth, pitch by arc height | −16 dB |
@@ -722,6 +725,9 @@ IDs are stable for TECH-001's audio tables (TECH-001 §6). Levels are relative t
 | B07 | Charge stolen by a Grave-Tide Deceiver | SYS-001 §3, §5.2 | the chime, then pulled upward out of tune | −12 dB |
 | B08 | Charge intercepted | SYS-001 §5.2 | a hard bell stop, a choked tail | −13 dB |
 | B09 | Charge recovered | SYS-001 §1.4 | the chime's pitch resolving back up | −15 dB |
+| B10 | Charge armed (`charge_armed`) | the magazine gains a pip from a collected shard | a short wet glass ring, below the A06 ladder | −17 dB |
+| B11 | Magazine full (`magazine_full`) | a shard collected at cap stays in the world | two muted notes down, never an alarm | −20 dB |
+| B12 | Charge gutters out (`charge_gutter`) | a thrown Charge expires with no hit | the glass ring dying: slow attack, muffled and falling; deliberately unlike B06 (the player's loss, not the Choir's) | −17 dB |
 | C01 | Lantern up | SYS-001 §1.2 | gaslight catch, one breath of hiss | −16 dB |
 | C02 | Lantern down | SYS-001 §1.2 | the hiss dying, a brass tick | −17 dB |
 | C03 | Radius change tell | SYS-001 §1.2 | a two-tone interval: up a tone for wider, down for narrower | −18 dB |
@@ -760,6 +766,8 @@ IDs are stable for TECH-001's audio tables (TECH-001 §6). Levels are relative t
 | F08 | Penitent | SYS-001 §3 | weeping at a fixed low level; the boon is a field-wide dim, not a sound | −22 dB |
 | F09 | Ring node bell | SYS-001 §3.1; §2.8 here | one bell per node, all in the same tuning so a missing node is obvious | −17 dB |
 | F10 | Ring break | SYS-001 §3.1 | every bell stopping in the same bar | −16 dB |
+| F11 | Grub steals a shard (`grub_steal`) | a Grub takes a shard from the world | a short rising, sliding Choir voice, keening's family (F06), brief | −18 dB |
+| F12 | Grub destroyed (`grub_die`, built in Act 0) | a Grub is destroyed | the built `grub_die` cue | −16 dB |
 | G01 | Deposit thud | SYS-001 §2 phase 1 | a low strike in the Sepulchre's own register; the run's real clock | −12 dB |
 | G02 | Deposit halted | SYS-001 §3.1; §2.5 here | the thud's decay cut short, then keening (F06) | −13 dB |
 | G03 | Quickening onset | SYS-001 §2 phase 3 | a sine swell with no transient (§1.4) | −15 dB |
@@ -1132,7 +1140,7 @@ Level targets: SFX peaks −6 to −14 dBFS; only the entity's set pieces (`wake
 | Engine, targets | Godot 4.7.2; Windows x86-64 + Steam is the only 1.0 target | TECH-001 §1.1, §1.4 |
 | Service | One autoload, `AudioService`: a pool of 24 one-shot `AudioStreamPlayer`s (`VOICES`). **Now (C2):** priority stealing and per-cue policy (§12.6); was blind round-robin. One looping chant player, `silence(seconds)`, `set_chant(level)`, `stop_all()`, `muted_for_tests`; new public helpers `active_count(id)`, `has_cue(id)` | `autoload/audio_service.gd` |
 | Cue source | **Now (C1):** `AudioService` loads the render `res://assets/audio/generated/sfx/<id>.wav` for every id in `data/audio/cue_ids.tres` and builds `SfxSynth` (22.05 kHz mono 16-bit, GDScript) only if a fallback cue lacks a render; with all renders present it builds zero synth cues. Was: the whole synth set built every boot | `audio_service.gd`, `core/audio/sfx_synth.gd`, `core/audio/cue_ids.gd` |
-| Sources | **Now (§12.12): 2 sources, 38 cue ids (31 + 7).** `audio/src/cabinet.cx.js`: 30 cues + the chant bed (31 files; the 5 M1 cues of C4 and the 2 Sizzle cues of §12.11 were added); `audio/src/aether_beds.cx.js`: 5 Aether renders (§12.12). Rendered to `assets/audio/generated/sfx/`. The 36 total is 31 + 5 by count; re-check against `data/audio/cue_ids.tres` after the code lands | §11.7 |
+| Sources | **Now (§12.13): 2 sources, 45 cue ids (38 + 7 of §12.13; verified against `data/audio/cue_ids.tres`).** Before §12.13: 38 (31 + 7). `audio/src/cabinet.cx.js`: 30 cues + the chant bed (31 files; the 5 M1 cues of C4 and the 2 Sizzle cues of §12.11 were added); `audio/src/aether_beds.cx.js`: 5 Aether renders (§12.12). Rendered to `assets/audio/generated/sfx/`. The 36 total is 31 + 5 by count; re-check against `data/audio/cue_ids.tres` after the code lands | §11.7 |
 | Loading | Synchronous `load()` of every listed cue in `_ready()` at boot. No streaming, no preload list, no loading screen (TECH-001 §2.1). Boot time **not measured** after C1 | `audio_service.gd` |
 | Buses | `Master` (= BUS-MST), `BUS-MUS`, `BUS-CHO`, `BUS-ENT`, `BUS-UI`, `BUS-FLY`, `BUS-AMB`, all to Master. No effects, no ducking, no sidechain | `data/audio/default_bus_layout.tres` |
 | Bus use | **Now (C2):** per-cue bus from `cue_policy.tres`: `wake_hit` and `entity_unmade` on `BUS-ENT`; menu, H and I cues on `BUS-UI`; `grub_keen` on `BUS-CHO`; the rest on `BUS-FLY`; the chant on `BUS-CHO`. All buses are at 0 dB. `BUS-MUS` is used by no code. **`BUS-AMB` is now used by the ambience slot and the two Aether one-shots (§12.12).** Was: every voice on `BUS-FLY` | `audio_service.gd`, `data/audio/cue_policy.tres` |
@@ -1378,3 +1386,19 @@ Both new cues are chirp renders (mono, from `audio/src/cabinet.cx.js`, `assets/a
 **Deferred:** a sphere-glint cue (soft, low, inharmonic, must never resemble B06); the W0-08 crossfade; `BUS-AMB` sidechain ducking (§7.2 not built); positional audio.
 
 **Owner items** (TECH-001 Q-T51 to Q-T53; Q-T51 decided: beds to Ogg, blocked until ffmpeg is installed; Q-T52 decided: T4/T5 beds in a follow-up PR; Q-T53 open): bed format and size (three stereo WAV beds are about 8.5 MB, against Ogg, see Q-T43); T4 and T5 beds now or with Act 3 and 4 content; GDD §19 glossary lacks "Aether" and "Pretence".
+
+### 12.13 M1 slice 3 cues (PM-directed 2026-11-18, requested by the M1 chat)
+
+**Status: built, all UNAUDITIONED (no one has listened); LUFS not measured.** Seven mono chirp renders added to `audio/src/cabinet.cx.js`, rendered to `assets/audio/generated/sfx/`. Levels in §6.2 for these cues are ✱ engineering. Peak and RMS are dBFS from the build report.
+
+| Id | §6.2 id | Length | Peak / RMS dBFS | Policy (all ✱) | Status |
+|---|---|---|---|---|---|
+| `overfire_warn` | A07 | 0.63 s | −17.08 / −24.18 | `BUS-FLY`, P3, 1 voice, 300 ms gate | UNAUDITIONED |
+| `overfire_burst` | A08 | 0.54 s | −6.6 / −19.93 | `BUS-FLY`, P2, 2 voices | UNAUDITIONED |
+| `magnet_latch` | A13 | 0.04 s | −17.08 / −27.67 | `BUS-FLY`, P5, 3 voices, 30 ms gate, ±30 cents jitter | UNAUDITIONED |
+| `charge_armed` | B10 | 0.25 s | −14.51 / −26.73 | `BUS-FLY`, P3, 2 voices, 40 ms gate | UNAUDITIONED |
+| `magazine_full` | B11 | 0.16 s | −14.38 / −23.24 | `BUS-FLY`, P4, 1 voice, 150 ms gate | UNAUDITIONED |
+| `charge_gutter` | B12 | 0.9 s | −17 / −26.91 | `BUS-FLY`, P2, 2 voices | UNAUDITIONED |
+| `grub_steal` | F11 | 0.35 s | −17.37 / −30.68 | `grub_keen`'s bus, P3, 2 voices, 80 ms gate, ±25 cents jitter | UNAUDITIONED |
+
+`lance_dull` (§12.11) is now §6.2 A14 and `grub_die` is F12 (`act0_only` false). `act0_only` is a documentation label only; `AudioService` never checks it. **Wiring (owed by the M1 chat):** PR 3 calls A07, A08, A13, B10, B11; PR 4 calls F11 and B12. `overfire_warn` is called once, at 6 hits, by the caller (pitch only, §1.4). **Not built:** A10 vent, B01, B03, B05, B07 to B09, and a magnet loop hum (skipped by M1). Cue ids 45 and policy entries 34, verified against the data files.

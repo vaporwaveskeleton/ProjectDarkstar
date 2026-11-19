@@ -186,3 +186,45 @@ sfx("lance_dull", { vol: 0.4 },
 // no tail, so a seven-line roll never builds into a phrase.
 sfx("tally_blip", { vol: 0.22, fx: [crush({ bits: 10 })] },
   tone({ wave: "square", freq: 1320, dur: 0.05, duty: 0.25, env: [0.001, 0.03, 0.2, 0.015] }))
+
+// --- M1 slice 3 (AUDIO-001 §6.2 A07, A08, A13, B10–B12, F11; requested by the M1 chat 2026-11-18) ----
+
+// A07 over-fire warning: a sine-ish rise, pitch only, never level (§1.4). Called once at 6 hits.
+// Triangle 520 → 980 Hz, below the B06 chime's 1.2 kHz and never pure.
+sfx("overfire_warn", { vol: 0.2 },
+  tone({ wave: "triangle", freq: 520, to: 980, slide: 0.5, curve: "lin", dur: 0.55, env: [0.06, 0.1, 0.8, 0.08], vibrato: { rate: 9, depth: 0.15 } }))
+
+// A08 over-fire detonation: a glass chord struck from inside, then a 0.4 s vacuum decay (the air
+// pulled out: low-pass sweeping down). Player-owned cause, so it may be loud (§1.4).
+sfx("overfire_burst", { vol: 0.45, fx: [drive({ amount: 1.3 }), limiter()] },
+  tone({ wave: "fm", fm: { ratio: 3.5, index: 4, decay: 0.3 }, freq: "A4", dur: 0.08, env: [0.001, 0.15, 0.3, 0.4], vol: 0.6 }),
+  tone({ wave: "fm", fm: { ratio: 3.5, index: 4, decay: 0.3 }, freq: "D#5", dur: 0.08, env: [0.001, 0.15, 0.3, 0.4], vol: 0.45 }),
+  noise({ color: "white", dur: 0.06, env: [0.001, 0.05, 0, 0.03], filter: { type: "hp", cutoff: 2500 }, vol: 0.5 }),
+  at(0.05, noise({ color: "pink", dur: 0.4, env: [0.01, 0.3, 0.2, 0.1], filter: { type: "lp", from: 4000, to: 150 }, vol: 0.6 })),
+  at(0.12, ["E6", "A5", "C#6"].map((n, i) => at(i * 0.07, tone({ wave: "fm", fm: { ratio: 2.76, index: 1.5, decay: 0.1 }, freq: n, dur: 0.03, env: [0.001, 0.05, 0, 0.1], vol: 0.25 })))))
+
+// A13 magnet latch: a shard enters the magnet radius. Tiny and quiet, many per second.
+sfx("magnet_latch", { vol: 0.2 },
+  tone({ wave: "triangle", freq: 1500, to: 2100, slide: 0.04, dur: 0.04, env: [0.003, 0.03, 0, 0.03] }))
+
+// B10 Charge armed: the magazine gains a pip. A short wet glass ring, lower than the A06 ladder.
+sfx("charge_armed", { vol: 0.2 },
+  tone({ wave: "fm", fm: { ratio: 1.4, index: 1.2, decay: 0.15 }, freq: 660, dur: 0.05, env: [0.003, 0.1, 0.2, 0.2] }),
+  tone({ wave: "sine", freq: 330, dur: 0.05, env: [0.003, 0.08, 0.1, 0.15], vol: 0.4 }))
+
+// B11 magazine full: a shard collected at cap stays in the world. Two muted notes down, not an alarm.
+sfx("magazine_full", { vol: 0.22 },
+  tone({ wave: "square", freq: 440, dur: 0.04, duty: 0.5, env: [0.002, 0.03, 0.3, 0.03], filter: { type: "lp", cutoff: 1500 } }),
+  at(0.07, tone({ wave: "square", freq: 370, dur: 0.05, duty: 0.5, env: [0.002, 0.03, 0.3, 0.04], filter: { type: "lp", cutoff: 1200 } })))
+
+// B12 Charge gutters out (6 s, no hit): the glass ring dying, slow attack, muffled and falling.
+// Deliberately unlike B06 (no fast attack, no clean 1.2 kHz): this loss is the player's, not the Choir's.
+sfx("charge_gutter", { vol: 0.18 },
+  tone({ wave: "fm", fm: { ratio: 1.5, index: 0.8 }, freq: 880, to: 620, slide: 0.6, dur: 0.6, env: [0.08, 0.2, 0.5, 0.3], filter: { type: "lp", from: 3000, to: 500 } }),
+  noise({ color: "pink", dur: 0.5, env: [0.1, 0.2, 0.3, 0.2], filter: { type: "bp", from: 1500, to: 400, q: 1.5 }, vol: 0.2 }))
+
+// F11 Grub steals a shard: a short sliding Choir voice rising (keening's family, but brief and
+// pleased). Choir timbre only (saw through a vowel band-pass); never a player-feedback instrument.
+sfx("grub_steal", { vol: 0.3 },
+  tone({ wave: "saw", freq: 300, to: 460, slide: 0.22, dur: 0.25, env: [0.03, 0.08, 0.6, 0.1], filter: { type: "bp", cutoff: 900, q: 3 }, vibrato: { rate: 6, depth: 0.2 } }),
+  tone({ wave: "saw", freq: 302, to: 463, slide: 0.22, dur: 0.25, env: [0.04, 0.08, 0.5, 0.1], filter: { type: "bp", cutoff: 1300, q: 4 }, vol: 0.5 }))

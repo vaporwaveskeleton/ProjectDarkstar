@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="CuePolicy" load_steps=30 format=3]
+[gd_resource type="Resource" script_class="CuePolicy" load_steps=37 format=3]
 
 ; AUDIO-001 12.6 first-pass voice policy. EVERY number here is an engineering value (tune in the slice).
 ; priority is the 7.2 level (lower = more important; P0 and P1 are never stolen). Buses: default_bus_layout.tres.
@@ -249,8 +249,71 @@ max_concurrent = 1
 min_retrigger_ms = 2000
 pitch_jitter_cents = 0.0
 
+[sub_resource type="Resource" id="p27"]
+script = ExtResource("2")
+id = &"overfire_warn"
+bus = &"BUS-FLY"
+priority = 3
+max_concurrent = 1
+min_retrigger_ms = 300
+pitch_jitter_cents = 0.0
+
+[sub_resource type="Resource" id="p28"]
+script = ExtResource("2")
+id = &"overfire_burst"
+bus = &"BUS-FLY"
+priority = 2
+max_concurrent = 2
+min_retrigger_ms = 0
+pitch_jitter_cents = 0.0
+
+[sub_resource type="Resource" id="p29"]
+script = ExtResource("2")
+id = &"magnet_latch"
+bus = &"BUS-FLY"
+priority = 5
+max_concurrent = 3
+min_retrigger_ms = 30
+pitch_jitter_cents = 30.0
+
+[sub_resource type="Resource" id="p30"]
+script = ExtResource("2")
+id = &"charge_armed"
+bus = &"BUS-FLY"
+priority = 3
+max_concurrent = 2
+min_retrigger_ms = 40
+pitch_jitter_cents = 0.0
+
+[sub_resource type="Resource" id="p31"]
+script = ExtResource("2")
+id = &"magazine_full"
+bus = &"BUS-FLY"
+priority = 4
+max_concurrent = 1
+min_retrigger_ms = 150
+pitch_jitter_cents = 0.0
+
+[sub_resource type="Resource" id="p32"]
+script = ExtResource("2")
+id = &"charge_gutter"
+bus = &"BUS-FLY"
+priority = 2
+max_concurrent = 2
+min_retrigger_ms = 0
+pitch_jitter_cents = 0.0
+
+[sub_resource type="Resource" id="p33"]
+script = ExtResource("2")
+id = &"grub_steal"
+bus = &"BUS-CHO"
+priority = 3
+max_concurrent = 2
+min_retrigger_ms = 80
+pitch_jitter_cents = 25.0
+
 [resource]
 script = ExtResource("1")
 ds_namespace = "ds_audio"
 source_section = "AUDIO-001 12.6 (engineering values, not SYS-001)"
-entries = [SubResource("p0"), SubResource("p1"), SubResource("p2"), SubResource("p3"), SubResource("p4"), SubResource("p5"), SubResource("p6"), SubResource("p7"), SubResource("p8"), SubResource("p9"), SubResource("p10"), SubResource("p11"), SubResource("p12"), SubResource("p13"), SubResource("p14"), SubResource("p15"), SubResource("p16"), SubResource("p17"), SubResource("p18"), SubResource("p19"), SubResource("p20"), SubResource("p21"), SubResource("p22"), SubResource("p23"), SubResource("p24"), SubResource("p25"), SubResource("p26")]
+entries = [SubResource("p0"), SubResource("p1"), SubResource("p2"), SubResource("p3"), SubResource("p4"), SubResource("p5"), SubResource("p6"), SubResource("p7"), SubResource("p8"), SubResource("p9"), SubResource("p10"), SubResource("p11"), SubResource("p12"), SubResource("p13"), SubResource("p14"), SubResource("p15"), SubResource("p16"), SubResource("p17"), SubResource("p18"), SubResource("p19"), SubResource("p20"), SubResource("p21"), SubResource("p22"), SubResource("p23"), SubResource("p24"), SubResource("p25"), SubResource("p26"), SubResource("p27"), SubResource("p28"), SubResource("p29"), SubResource("p30"), SubResource("p31"), SubResource("p32"), SubResource("p33")]
