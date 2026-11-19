@@ -495,13 +495,41 @@ func test_act0_shift_cues_are_listed_rendered_mono_and_have_policy() -> void:
 		assert_float(rule.pitch_jitter_cents).is_equal(w[4])
 
 
+# --- Composure wick cues (AUDIO-001 §12.17) -------------------------------------------------------
+
+func test_composure_wick_cues_are_listed_rendered_mono_and_have_policy() -> void:
+	var ids: CueIds = load(AudioServiceScript.CUE_IDS_PATH)
+	var pol: CuePolicy = load(AudioServiceScript.CUE_POLICY_PATH)
+	var want := {
+		&"wick_frayed": "E01",
+		&"wick_unmoored": "E02",
+		&"wick_hollowed": "E03",
+		&"wick_recovery": "E04",
+	}
+	for id: StringName in want:
+		var row := ids.entry(id)
+		assert_object(row).is_not_null()
+		assert_str(row.doc_id).is_equal(want[id])
+		assert_bool(row.act0_only).is_false()
+		assert_bool(row.has_synth_fallback).is_false()
+		assert_bool(row.is_loop).is_false()
+		var wav := AudioServiceScript.chirp_stream(id) as AudioStreamWAV
+		assert_bool(wav != null and not wav.stereo).override_failure_message("%s is not a mono WAV" % id).is_true()
+		var rule := pol.entry_for(id)
+		assert_str(rule.bus).is_equal("BUS-FLY")
+		assert_int(rule.priority).is_equal(2)
+		assert_int(rule.max_concurrent).is_equal(1)
+		assert_int(rule.min_retrigger_ms).is_equal(500)
+		assert_float(rule.pitch_jitter_cents).is_equal(0.0)
+
+
 # --- sizzle cues, bed pitch bend, no hit-stop path (AUDIO-001 §12.11) ---------------------------
 
 func test_sizzle_cues_are_listed_rendered_and_have_policy() -> void:
 	var ids: CueIds = load(AudioServiceScript.CUE_IDS_PATH)
 	var pol: CuePolicy = load(AudioServiceScript.CUE_POLICY_PATH)
-	assert_int(ids.entries.size()).is_equal(74)
-	assert_int(pol.entries.size()).is_equal(68)
+	assert_int(ids.entries.size()).is_equal(78)
+	assert_int(pol.entries.size()).is_equal(72)
 	var want := {&"lance_dull": [2, 3, 40], &"tally_blip": [3, 1, 60]}
 	for id: StringName in want:
 		assert_bool(ids.has_id(id)).is_true()

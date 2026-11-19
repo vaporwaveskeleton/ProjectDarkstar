@@ -1,6 +1,7 @@
 # DARKSTAR — Audio Design
 
 **Doc ID:** AUDIO-001 · **Version:** 1.1 · **Date:** 2026-11-18 · **Owner:** Audio / Design · **Status:** authored, pending review
+**Rev 1.13 (2026-11-19, PM-directed, M1 Composure wick): §6.2 rows E01 to E04 gain built ids; §12.17 added (Composure wick cues: four band-change one-shots, all unauditioned); cue ids 74 to 78 and policy entries 68 to 72 (counted). No design change to §1–§11.**
 **Rev 1.12 (2026-11-19, PM-directed, coordinated with the Arcade layer chat): §12.16 added (The Act 0 shift: seven cues, all unauditioned); cue ids 67 to 74 and policy entries 61 to 68 (counted). No design change to §1–§11.**
 **Rev 1.11 (2026-11-19, M1 slice 3 PR 4; PM under owner autonomy grant 2026-11-19): §6.2 trigger rules for B06 (interception only; guttering plays B12), F06 (only a carrying Grub's death) and G01 (`segment_deposit` once per completed segment, TECH-001 Q-T113); §12.13 wiring: F11 and B12 wired. No new cue, no render or policy change.**
 **Rev 1.10 (2026-11-18): §6.2 gains built ids on F01, F04, F05, B08; §12.15 added (The Six (Heralds) and Choir tells: ten new renders, all unauditioned); cue ids 57 to 67 and policy entries 46 to 56 (counted).**
@@ -805,10 +806,10 @@ IDs are stable for TECH-001's audio tables (TECH-001 §6). Levels are relative t
 | D08 | Unravel Focus latch | GDD-001 §4.1, LOOP-001 MADNESS-17 | a taut thread being plucked | −13 dB |
 | D09 | Thread hit | SYS-001 §2 phase 6 | the pluck, up a tone per hit | −12 dB |
 | D10 | Thread snap | SYS-001 §2 phase 6 | the pluck ending in silence; the bed loses a layer (§2.12) | −11 dB |
-| E01 | Wick — Frayed entered | SYS-001 §1.5 | the wick hiss gains a second, beating layer | −20 dB |
-| E02 | Wick — Unmoored entered | SYS-001 §1.5 | the beat speeds; still no transient | −19 dB |
-| E03 | Wick — Hollowed entered | SYS-001 §1.5 | the hiss stops dead; the field goes dry (the build's own reward, §1.1) | −22 dB |
-| E04 | Wick recovery | SYS-001 §1.5 | the hiss thinning upward over 2 s ✱ | −21 dB |
+| E01 | Wick — Frayed entered (`wick_frayed`, built, UNAUDITIONED, §12.17) | SYS-001 §1.5 | the wick hiss gains a second, beating layer | −20 dB |
+| E02 | Wick — Unmoored entered (`wick_unmoored`, built, UNAUDITIONED, §12.17) | SYS-001 §1.5 | the beat speeds; still no transient | −19 dB |
+| E03 | Wick — Hollowed entered (`wick_hollowed`, built, UNAUDITIONED, §12.17) | SYS-001 §1.5 | the hiss stops dead; the field goes dry (the build's own reward, §1.1) | −22 dB |
+| E04 | Wick recovery (`wick_recovery`, built, UNAUDITIONED, §12.17) | SYS-001 §1.5 | the hiss thinning upward over 2 s ✱ | −21 dB |
 | E05 | False chant cue | the SYS-001 §1.5 Frayed band | the litany's rhythm, one voice, in a biome tuning that is not the current biome's (§3) — see §6.8 | −22 dB |
 | E06 | Warp Tier step-up | GDD-001 §8.7 | one detuned bell, pitch dropping with the Tier; never loud (§1.4) | −14 dB |
 | E07 | Compass lie tell | SYS-001 §6 | a soft out-of-tune tick on the Compass strip, so the lie is hearable (L2: the truth stays in the music, §7.3) | −20 dB |
@@ -1557,3 +1558,18 @@ The reinforcement timings behind `censer_bell` are the Arcade layer's PROPOSED n
 **Reused, no new cue:** `extra_life` (H10), `quota` (stage cleared), `tally_blip` (final roll). **Not needed:** the attract demo stays silent (§2.1 shell layer only); Grub re-entry is silent; the intermission tally card is P3 and not built.
 
 **Counts (counted in the data files):** cue ids 67 + 7 = 74 and policy entries 61 + 7 = 68.
+
+### 12.17 Composure wick cues (PM-directed 2026-11-19, M1 Composure)
+
+**Status: built; renders in `audio/src/composure.cx.js`; all UNAUDITIONED; levels are dBFS from the chirp build info, LUFS not measured; all mono.** These are the four band-CHANGE one-shots of §6.2 E01 to E04: M1's Composure (PR #60) calls `AudioService.play` with exactly these ids on each band change. The continuous wick layer of §6.5 (a hiss whose level tracks `composure_band` and whose position follows `chant_proximity`) is a runtime layer and is **not built yet**. Numbers are first-pass ✱.
+
+| Cue | E-id | Length | Peak / RMS dBFS | Bus, priority, voices, gate, jitter |
+|---|---|---|---|---|
+| `wick_frayed` | E01 | 1.87 s | −23.32 / −34.5 | `BUS-FLY`, P2, 1 voice, 500 ms gate, 0 jitter |
+| `wick_unmoored` | E02 | 1.86 s | −21.08 / −33.8 | same |
+| `wick_hollowed` | E03 | 0.61 s | −21.24 / −33.12 | same |
+| `wick_recovery` | E04 | 2.37 s | −22.05 / −35.58 | same |
+
+`wick_hollowed` is the hiss swelling, then stopping dead: the field goes dry (a build state, not a punishment, §1.1). Caller: M1's Composure (PR #60), once per band change.
+
+**Counts (counted in the data files):** cue ids 74 + 4 = 78 and policy entries 68 + 4 = 72.
