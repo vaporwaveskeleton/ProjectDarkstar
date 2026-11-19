@@ -9,7 +9,7 @@ extends Node2D
 ##
 ## Pool exhaustion: shards never despawn (SYS-001 §1.4), so when every slot holds a live shard a new
 ## spawn is refused (`spawn` returns -1, `spawns_refused` counts it). Nothing crashes, nothing is
-## recycled. Pool size is PM ruling Q-T58 (144).
+## recycled. Pool size is PM ruling Q-T59 (144).
 
 const FLAG_ALIVE := 1
 const FLAG_CLAIMED := 2   ## a Grub has claimed it (Grub hook; no Grubs in M1 yet)
@@ -23,7 +23,7 @@ const CORE_RATIO := 0.35
 ## overflow glass stays in the world (SYS-001 §1.4).
 @export var magazine: ChargeMagazine
 
-## Injected by the sector (TECH-001 §4.3; one world size, Q-T57).
+## Injected by the sector (TECH-001 §4.3; one world size, Q-T58).
 var torus: Torus
 ## The magnet's centre (the Vigil). Null = no magnet.
 var collector: Node2D

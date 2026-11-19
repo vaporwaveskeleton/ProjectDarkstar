@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1")
 ds_namespace = "ds_charges.shards"
-source_section = "SYS-001 §1.4 (magnet radius, pull, drag, score); TECH-001 §4.3 (grid, Grub query ✱); Q-T58 pool 144; Cabinet literals ✱ (steer, shard radius, margin)"
+source_section = "SYS-001 §1.4 (magnet radius, pull, drag, score); TECH-001 §4.3 (grid, Grub query ✱); Q-T59 pool 144; Cabinet literals ✱ (steer, shard radius, margin)"
 pool_size = 144
 grid_cell_px = 64.0
 magnet_radius_px = 96.0

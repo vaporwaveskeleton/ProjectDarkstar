@@ -1,6 +1,6 @@
 extends Node
 ## bench_shard_field (TECH-001 §8.3): drives ShardField at its worst case (the full 144-shard pool,
-## Q-T58) for 60 s of 60 Hz ticks with a fixed seed, and writes p50/p95/p99 of the per-tick
+## Q-T59) for 60 s of 60 Hz ticks with a fixed seed, and writes p50/p95/p99 of the per-tick
 ## subsystem time to reports/perf/<date>_<build>.json. Budget: ≤ 0.3 ms per tick ✱ (§4.3, §8.1).
 ## Run: <godot> --headless --path . res://tests/perf/bench_shard_field.tscn
 ##
@@ -10,7 +10,7 @@ extends Node
 ## number of glass carriers is not set yet ✱), spread 4 per tick. The render upload (MultiMesh) is
 ## timed separately because it belongs to the "Other rendering" row of §8.1.
 
-const WORLD := Vector2(1920, 720)   ## Q-T57 M1 torus ✱
+const WORLD := Vector2(1920, 720)   ## Q-T58 M1 torus ✱
 const TICKS := 3600                 ## 60 s at 60 Hz (§8.3)
 const DT := 1.0 / 60.0
 const SEED := 20261118

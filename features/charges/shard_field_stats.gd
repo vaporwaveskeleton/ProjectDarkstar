@@ -3,7 +3,7 @@ extends TunableResource
 ## Mourning Glass shard field tunables (TECH-001 §4.3). Values live in data/charges/shard_field.tres.
 ## Never edit numbers here; edit the .tres (and SYS-001 first).
 
-## Shard pool size (PM ruling Q-T58, 2026-11-18: 144 = 24 geodes × 6 detonated shards) ✱.
+## Shard pool size (PM ruling Q-T59, 2026-11-18: 144 = 24 geodes × 6 detonated shards) ✱.
 ## Shards never despawn (SYS-001 §1.4); a spawn past the pool is refused and counted, never a crash.
 @export var pool_size: int = 0
 ## Spatial grid cell (px). TECH-001 §4.3: 64 px, one module (ART-002 §1) ✱.
