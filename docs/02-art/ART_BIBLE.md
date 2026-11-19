@@ -41,7 +41,7 @@ Mood keywords: *aether, crystal spheres, orrery, gaslight, brass, glass, fog, no
 
 | Role | Shape language | Signature tell |
 |---|---|---|
-| **Vigil** (player) | Wedge + lantern globe. Small, round-topped, brass. Symmetric, honest, *simple*. | The lamp globe is the brightest pixel in the frame and pulses with the Lantern state. Aether tier: a longer brass skiff with a keel and visible modules (§16.7, PROPOSED) |
+| **Vigil** (player) | Wedge + lantern globe. Small, round-topped, brass. Symmetric, honest, *simple*. | The lamp globe is the brightest pixel in the frame and pulses with the Lantern state. Aether tier: a longer brass skiff with a keel and visible modules (§16.7) |
 | **Oubliette Grub** (worker) | Teardrop + 4 tiny limbs + a carried shard held overhead. Cute, pitiful. | Bows when it deposits a shard (a genuflection) |
 | **Acolyte** (warrior) | Tall bell/vestment shape + a **censer turret** hanging/rotating off one shoulder | Turret swings 0.25 s behind the body — a visible tell |
 | **Deacon of Lies** | Flat, 2D-paper-thin shape that is somehow *larger* than its outline | Its own shadow does not match its shape |
@@ -814,9 +814,9 @@ The look of the Ruins of the Ninth Sky on the first visit (NARR-001 §5.7, GDD �
 - Authored for 640×360; wider aspects not designed (TECH-001 Q-T159).
 
 
-### 16.7 The Aether Vigil: a brass lantern skiff with visible systems (PROPOSED, owner approval needed)
+### 16.7 The Aether Vigil: a brass lantern skiff with visible systems (ruled, PM under owner autonomy grant, 2026-11-19)
 
-> **Status: proposal, 2026-11-19, docs only.** Nothing here is ruled (TECH-001 Q-T170). It goes with the Aether handling profile (GDD §4.2a, SYS-001 §1.1a). Act 0's neon Vigil (§3, §15.2) is unchanged.
+> **Status: ruled, PM under owner autonomy grant, 2026-11-19** (TECH-001 Q-T170; queued for the owner's later review). It goes with the Aether handling profile (GDD §4.2a, SYS-001 §1.1a). Act 0's neon Vigil (§3, §15.2) is unchanged.
 
 **Intent.** In the Cabinet the Vigil is a simple wedge and a lamp. After THE PRETENCE the player should see the ship it always was: a hand-built Victorian lantern skiff with a keel, bellows and vanes. It is heavy, riveted and engraved, and every system the Lantern Tree brings online is a part you can see. The weight in the hands (GDD §4.2a) and the complexity in the art are the same idea.
 

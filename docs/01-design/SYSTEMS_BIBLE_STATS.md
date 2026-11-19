@@ -38,7 +38,7 @@ Conventions used everywhere:
 
 ### 1.1 Movement ⚙ (GDD §4.2 values kept exactly)
 
-This is the **Cabinet profile** (Act 0). A slower Aether profile for everything after THE PRETENCE is proposed in §1.1a (**PROPOSED, owner approval needed**). Until the owner rules, this table applies everywhere.
+This is the **Cabinet profile** (Act 0). Its 🔒 rows are locked for Act 0 only (Q-T164, PM under owner autonomy grant, 2026-11-19). Everything after THE PRETENCE flies the Aether profile, §1.1a.
 
 | Field | Base | Scaling / source | Notes |
 |---|---|---|---|
@@ -55,15 +55,15 @@ This is the **Cabinet profile** (Act 0). A slower Aether profile for everything 
 | `anchor_rearm` | 20 s | 14 s (HULL-12) | ✱ the timer starts when the freeze lands, not when the field is raised. |
 | `anchor` exclusions and cap | Sepulchre and The Penitent are never frozen; max 6 units per cast | — | ✱ frozen units still count against §4 spawn budgets and the §9 contact budget (`Simultaneous hostile contacts`). Stopping a deposit is WARD-6's job, not the ring's. |
 
-### 1.1a Aether handling profile — **PROPOSED, owner approval needed** (GDD §4.2a)
+### 1.1a Aether handling profile ✱ (GDD §4.2a; ruled, PM under owner autonomy grant, 2026-11-19)
 
-> **Status: proposal, 2026-11-19.** Every value in this table is **PROPOSED, owner approval needed**. None is decided, and none is in `data/` yet. §1.1 stays the **Cabinet profile** for Act 0, and it stays the only movement model until the owner rules (TECH-001 Q-T164, Q-T165). Once approved, the rows become ✱ (first-pass, retune at playtest).
+> **Status: ruled, PM under owner autonomy grant, 2026-11-19** (TECH-001 Q-T164, Q-T165; queued for the owner's later review). Every value here is ✱: first-pass, retuned at playtest. §1.1 stays the **Cabinet profile** for Act 0.
 
 The Aether profile replaces §1.1 for all flight after THE PRETENCE. The motor is the same as in §1.1 (`VigilMotor.step_velocity`): thrust adds `accel` along the input, capped at `max_speed`; coasting decays by `exp(-drag·t)`; braking removes `brake` per second. The derived figures below come from that model and still have to be checked by a motor test once the numbers are approved.
 
-| Field | Cabinet (§1.1) | Aether (PROPOSED) | `ds_` key (PROPOSED) | Notes |
+| Field | Cabinet (§1.1) | Aether ✱ | `ds_` key | Notes |
 |---|---|---|---|---|
-| Profile switch | — | `true` once approved | `ds_vigil.aether_move.enabled` | `false` = sectors fly the Cabinet profile. Keeps the change data-switchable for A/B, like D-08 |
+| Profile switch | — | `true` | `ds_vigil.aether_move.enabled` | `false` = sectors fly the Cabinet profile. Keeps the change data-switchable for A/B, like D-08 |
 | `max_speed` | 340 px/s 🔒 | **220 px/s** | `ds_vigil.aether_move.max_speed` | ≈ 65% of the Cabinet. Must stay above the Grub flee speed (§3, 190 px/s) so the race still holds |
 | `accel` | 2600 px/s² 🔒 | **560 px/s²** | `ds_vigil.aether_move.accel` | top speed from rest in ≈ 0.39 s (Cabinet ≈ 0.13 s) |
 | `drag` (coast) | 3.4 /s | **0.9 /s** | `ds_vigil.aether_move.drag` | coasts ≈ 245 px from top speed (v / drag), ≈ 5 body-lengths of 48 px (Cabinet ≈ 100 px) |
@@ -647,7 +647,7 @@ Hit-stop does **not** count toward the 1.5 s "Player agency loss" budget above: 
 | Hourglass Clock rate | 🔒 **not warp-writable.** Hiding the clock is legal (WARP-001 §4.3); stopping, slowing, reversing or spending it is not. The only open question is whether it runs during exploration at all, which is an A/B flag (`clock_runs_during_exploration`), not a warp permission (WARP-001 §6.1 D-01, its §8 R-04) | design + engineering |
 | Warp state seed contract | 🔒 the warp state must be derivable from the seed alone: world tier, Hunger preset and the WARP-001 §3.2 registry state are deterministic per seed ✱. No daily or weekly challenge mode exists without this row (WARP-001 §6.1 D-06, its §8 R-05) | engineering |
 | Cosmic horror first-pass rows (§1.4 hull lamps, §1.5 gaze and Procession, §2.3, §4.1, §6 Hourglass threshold, §7.6, §9 lie and tear rows) | PM-approved 2026-11-18 under owner grant; retune at playtest. Move one if `TEST-PASS-01` or `TEST-LIE-02` (WARP-001) shows a Passing or a lie reading as unfair, or if kit memory stages arrive far from the simulated runs 4 / 11 / 25 for the first kit (ZONES-001 §4.8) | design |
-| Aether handling profile (§1.1a) | **PROPOSED, not yet approved** (TECH-001 Q-T164–Q-T169). Once approved: move a row if a first-flight playtest shows the weight reading as broken controls rather than as a heavier ship (players pressing harder, fighting the keel), or if Aether deaths cluster on bullets that could not be dodged at the slower pace. Fix the numbers, and do not switch the profile off | design |
+| Aether handling profile (§1.1a) | PM under owner autonomy grant, 2026-11-19 (TECH-001 Q-T164–Q-T169). Move a row if a first-flight playtest shows the weight reading as broken controls rather than as a heavier ship (players pressing harder, fighting the keel), or if Aether deaths cluster on bullets that could not be dodged at the slower pace. Fix the numbers, and do not switch the profile off | design |
 
 ---
 

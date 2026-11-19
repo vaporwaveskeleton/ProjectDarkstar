@@ -91,13 +91,13 @@ Rule: `assets/sprites/generated/**` is **never edited by hand after it is used i
 | `compass` | Ledger Compass markers | 0.25 (16×16) | 16 | `markPlayer`, `markGrub`, `markAcolyte`, `markGeode`, `markSepulchre`, `markEntity`, `markSeam`, `markLying` |
 | `hub` | Ruins hub art (modular tiles) | 64 tiles | 64 tile grid | `floorTile`, `wallTile`, `archTile`, `pillarTile`, `windowTile`, `rubbleTile`, `treeTrunk`, `treeBranch`, `treeNodeLit`, `treeNodeDark`, `clockTile`, `deskTile`, `skyTileA`…`skyTileI` |
 
-### 4.1 The Aether Vigil: modules and sockets (PROPOSED, owner approval needed)
+### 4.1 The Aether Vigil: modules and sockets (ruled, PM under owner autonomy grant, 2026-11-19)
 
-> **Status: proposal, 2026-11-19.** Nothing here is ruled (TECH-001 Q-T170). The look is in ART-001 §16.7, and the node-to-module map is in LOOP-001 §3.8. The `vigil` row in §4 stays as it is until the owner rules.
+> **Status: ruled, PM under owner autonomy grant, 2026-11-19** (TECH-001 Q-T170). The look is in ART-001 §16.7, and the node-to-module map is in LOOP-001 §3.8. The `vigil` row in §4 stays the Act 0 Vigil.
 
 The Act 0 Vigil keeps the `vigil` row above. The Aether Vigil uses the same kit id and the same naming (§2: `ds_vigil_<part>[_<variant>]`), with the proposed parts and sockets below. Sockets are named points on the `core`; the §5.1 descriptor's `socket` field refers to them. Each part is symmetric about its socket axis (§6). `z` runs from back to front.
 
-| Socket (PROPOSED) | Parts and variants (PROPOSED) | Shown when | z |
+| Socket | Parts and variants | Shown when | z |
 |---|---|---|---|
 | `keel` | `keelSpine` (always), `keelFairing` (LANTERN-9), `keelLamp` (LANTERN-10), `keelBlade` (LANTERN-13) | always; variants by node | 0 |
 | `hull` | `hull` (existing) | always | 1 |

@@ -325,15 +325,15 @@ The gating map (design §10.2). Entry ids are reconciled with NARR-001 §8's sam
 
 Per branch, the gated nodes sit at: LANTERN tiers 1, 3, 3, 5; HULL 2, 3, 4, 5; ORDNANCE 2, 3, 3, 4, 5; WARD 1–5; MADNESS 1, 1, 2, 2, 3, 3, 4, 5, 5. Not every branch has a gated node at every tier: LANTERN has none at tiers 2 and 4, and HULL and ORDNANCE have none at tier 1. So a branch can wait on a gate for a tier step (HULL tier 3, where HULL-10 and HULL-12 both require HULL-9, is the tightest case). That wait was already there under Ink, and the tier floor bounds it at Iteration *t*. The pity rule does not depend on per-tier coverage: it holds through the two branch-blind backstops above, which reach every gating entry whatever branch it sits in.
 
-### 3.8 Handling nodes under the Aether profile (PROPOSED, owner approval needed)
+### 3.8 Handling nodes under the Aether profile (ruled, PM under owner autonomy grant, 2026-11-19)
 
-> **Status: proposal, 2026-11-19.** Nothing here is ruled (TECH-001 Q-T169). Until the owner rules, the §3.3 rows stand exactly as written. The Aether profile itself is GDD-001 §4.2a and SYS-001 §1.1a.
+> **Status: ruled, PM under owner autonomy grant, 2026-11-19** (TECH-001 Q-T169; queued for the owner's later review). The Aether readings below add to the §3.3 rows; where they differ, this table wins for the Aether profile. The Aether profile itself is GDD-001 §4.2a and SYS-001 §1.1a.
 
 **Rule.** Handling node effects are stated as percentages or multipliers, so they apply to whichever profile is active (Cabinet in Act 0, Aether afterwards). The tree is bought in the Ruins, after Act 0, so in practice it modifies the Aether profile. The §3.3 speed budget (+12% total) applies per profile. LANTERN-10 and LANTERN-13 keep scaling `accel` and `brake` with `max_speed`, so the Aether full reversal (≈ 0.79 s, SYS-001 §1.1a) stays fixed the same way the Cabinet's 0.28 s does.
 
 **Progression of capability.** A Vigil with no nodes flies the bare Aether profile: weak sideways thrust, a slow keel and one Surgelight. The tree brings systems online one by one: trim vanes (more sideways thrust), a keel (faster turns), bellows (Surgelight charges), brake shutters, plating. Each one is visible on the hull (ART-002 §4.1). The caps keep the weight: even a fully upgraded Vigil turns at ≤ 234 °/s, keeps sideways thrust ≤ 0.75 × `accel`, and never reaches the Cabinet's snap. No new node is added and the tree stays at 90. The proposal adds an **Aether reading** to existing nodes only:
 
-| Node | Today (§3.3) | Aether reading (PROPOSED addition) | Visible module (ART-002 §4.1 socket) |
+| Node | Today (§3.3) | Aether reading (addition) | Visible module (ART-002 §4.1 socket) |
 |---|---|---|---|
 | LANTERN-1 Surgelight Charges (T1) | 2 stored Surgelight charges | unchanged | `stern`: a second bellows |
 | LANTERN-3 Full Wick (T1) | `Lantern radius` 260 → 340 px | unchanged | `lamp`: a larger globe |
@@ -352,7 +352,7 @@ Per branch, the gated nodes sit at: LANTERN tiers 1, 3, 3, 5; HULL 2, 3, 4, 5; O
 
 Sideways thrust and turn rate are new levers (SYS-001 §1.1a), so they need no new budget row beyond the caps stated above. Run Sigil SIG-H-02 Ballast (brake distance −15%, §4.2) applies to the Aether `brake` unchanged.
 
-**What the M2 30-node stub needs** (PROD-001 §3 M2: the slice Tree shows tier 1 only, 20 nodes, the rest as dark lamps). The tier-1 handling nodes are LANTERN-1, LANTERN-3, HULL-1, HULL-3 and HULL-4, plus ORDNANCE-1's bow line. If the profile is approved for M2 (Q-T171), the stub needs:
+**What the M2 30-node stub needs** (PROD-001 §3 M2: the slice Tree shows tier 1 only, 20 nodes, the rest as dark lamps). The tier-1 handling nodes are LANTERN-1, LANTERN-3, HULL-1, HULL-3 and HULL-4, plus ORDNANCE-1's bow line. The profile lands in M2 (Q-T171), so the stub needs:
 - HULL-1's Aether reading (`thrust_lateral`): the one T1 node that changes how the ship turns;
 - the five T1 modules visible on the hull (`stern` bellows, `lamp` globe, `flankL`/`flankR` vanes, `cowl` shutters, `plate`), so buying a node in the Ruins visibly changes the ship that launches;
 - nothing for tiers 2–5: those nodes show as dark lamps and their Aether readings can come later (M5, the full 90-node tree).
