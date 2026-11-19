@@ -84,3 +84,68 @@ sfx("lie_tell_smear", { vol: 0.2 },
 sfx("lie_tell_absence", { vol: 0.1 },
   tone({ wave: "sine", freq: 740, dur: 0.07, env: [0.01, 0, 1, 0.004] }),
   tone({ wave: "triangle", freq: 1480, dur: 0.07, env: [0.01, 0, 1, 0.004], vol: 0.25 }))
+
+// --- Choir tells and phantoms (AUDIO-001 §6.2 F01, F04, F05; PM-directed 2026-11-18) -----------------
+
+// F01 Acolyte tell: the censer chain arriving late. Four small metal clinks spread over 0.25 s (the
+// turret lag 🔒 in SYS-001 §3 is the caller's timing; this cue only carries the sound).
+sfx("acolyte_tell", { vol: 0.9 },
+  [0, 0.06, 0.13, 0.22].map((t, i) => at(t,
+    tone({ wave: "fm", fm: { ratio: 3.7, index: 2.2, decay: 0.04 }, freq: [1900, 2150, 1780, 2050][i], dur: 0.015, env: [0.001, 0.02, 0, 0.05], vol: 0.25 - i * 0.03, pan: -0.2 + i * 0.12 }))))
+
+// F04 Deacon phantom materialises: the litany's rhythm in three feet, the middle foot one syllable
+// short (§5.2). Wordless Choir voices, quiet, ramping in (no startle).
+const pv = (t, f, vowel, vol) => at(t,
+  tone({ wave: "saw", freq: f, dur: 0.15, env: [0.05, 0.05, 0.6, 0.12], filter: { type: "bp", cutoff: vowel, q: 3 }, vol }),
+  tone({ wave: "saw", freq: f * 1.004, dur: 0.15, env: [0.06, 0.05, 0.5, 0.12], filter: { type: "bp", cutoff: vowel * 1.45, q: 4 }, vol: vol * 0.5 }))
+sfx("phantom_appear", { vol: 4.5, fx: [reverb({ size: 0.8, mix: 0.45 })] },
+  pv(0, 220, 700, 0.06), pv(0.2, 220, 1000, 0.07), pv(0.4, 196, 650, 0.07),
+  pv(0.75, 175, 700, 0.07), pv(0.95, 175, 1000, 0.07),
+  pv(1.5, 147, 650, 0.06), pv(1.7, 147, 700, 0.06), pv(1.9, 147, 1000, 0.05))
+
+// F05 Deacon phantom dispelled: the missing syllable arrives late, then nothing (reverb cut dry).
+sfx("phantom_dispel", { vol: 3.5 },
+  pv(0, 175, 650, 0.08))
+
+// --- The Six: Heralds of the Failed Star (SYS-001 §5.2; elite variants) ---------------------------
+
+// A Herald arrives: a full Choir chord with a cracked bell inside it (the failed star). Not
+// player-caused, so it rises over 0.5 s (§1.4); menace by register and layer, never by level.
+const heraldChord = (root) => [0, 3, 7, 10].map((s, i) =>
+  tone({ wave: "saw", freq: root * Math.pow(2, s / 12), dur: 1.4, env: [0.5, 0.3, 0.7, 0.6], filter: { type: "bp", cutoff: [600, 850, 1100, 1400][i], q: 3 }, vol: 0.09, pan: [-0.4, 0.3, -0.1, 0.5][i] }))
+sfx("herald_arrive", { vol: 1.3, fx: [reverb({ size: 0.9, damp: 0.5, mix: 0.4 }), limiter({ ceiling: 0.6 })] },
+  heraldChord(98),
+  at(0.55, tone({ wave: "fm", fm: { ratio: 2.76, index: 3, decay: 0.6 }, freq: 233, to: 220, slide: 1, dur: 0.1, env: [0.002, 0.4, 0.2, 1.2], vol: 0.12 })))
+
+// The Ninth Reckoning (E10 only, every counter at 10%): the same arrival a fourth lower, longer.
+sfx("herald_reckoning", { vol: 1.0, fx: [reverb({ size: 0.95, damp: 0.5, mix: 0.45 }), limiter({ ceiling: 0.6 })] },
+  heraldChord(73.4),
+  at(0.6, tone({ wave: "fm", fm: { ratio: 2.76, index: 3, decay: 0.8 }, freq: 175, to: 160, slide: 1.4, dur: 0.1, env: [0.002, 0.5, 0.2, 1.6], vol: 0.12 })))
+
+// Herald of the Ninth Sky dims the lantern (one cue per stack): a warm glass tone closing down.
+sfx("herald_dim", { vol: 0.18 },
+  tone({ wave: "triangle", freq: 660, to: 494, slide: 0.6, dur: 0.6, env: [0.06, 0.2, 0.5, 0.25], filter: { type: "lp", from: 5000, to: 600 } }),
+  tone({ wave: "sine", freq: 330, to: 247, slide: 0.6, dur: 0.6, env: [0.08, 0.2, 0.5, 0.25], vol: 0.5 }))
+
+// Herald of the Salted Chord taxes the Ward: a salted cluster (a minor second) laid over it.
+sfx("herald_salt", { vol: 1.4, fx: [reverb({ size: 0.5, mix: 0.2 })] },
+  tone({ wave: "saw", freq: 311, dur: 0.5, env: [0.08, 0.1, 0.6, 0.2], filter: { type: "bp", cutoff: 900, q: 3 }, vol: 0.25 }),
+  tone({ wave: "saw", freq: 330, dur: 0.5, env: [0.09, 0.1, 0.6, 0.2], filter: { type: "bp", cutoff: 1300, q: 3 }, vol: 0.2 }),
+  noise({ color: "white", dur: 0.4, env: [0.08, 0.1, 0.3, 0.1], filter: { type: "hp", cutoff: 5000 }, vol: 0.08 }))
+
+// Herald of the Long Vigil intercepts a Surgelight boost: the C04 rising note dragged back down.
+sfx("herald_intercept", { vol: 0.18, fx: [crush({ bits: 10 })] },
+  tone({ wave: "saw", freq: 1100, to: 520, slide: 0.3, dur: 0.3, env: [0.02, 0.1, 0.5, 0.1], filter: { type: "lp", from: 5000, to: 1200 } }),
+  tone({ wave: "saw", freq: 1104, to: 515, slide: 0.3, dur: 0.3, env: [0.03, 0.1, 0.4, 0.1], vol: 0.6, filter: { type: "lp", from: 5000, to: 1200 } }))
+
+// B08 Charge intercepted (Herald of the Broken Censer, and any intercept): a hard bell stop, the
+// tail choked. Unlike B06: no clean 1.2 kHz, no Choir half-note.
+sfx("charge_intercepted", { vol: 0.22 },
+  tone({ wave: "fm", fm: { ratio: 3.5, index: 3, decay: 0.05 }, freq: 784, dur: 0.06, env: [0.001, 0.05, 0.3, 0.02] }),
+  noise({ color: "pink", dur: 0.04, env: [0.001, 0.03, 0, 0.02], filter: { type: "bp", cutoff: 1500, q: 1.5 }, vol: 0.4 }))
+
+// Herald of the Quiet Pew lays its silence: a breath drawn in, then the room goes still. The chant
+// mute itself is the caller's (SYS-001 §5.2); §5.5's visual chant indicator keeps it fair (L3).
+sfx("herald_hush", { vol: 1.5, fx: [reverb({ size: 0.7, mix: 0.3 })] },
+  noise({ color: "pink", dur: 0.9, env: [0.85, 0, 1, 0.03], filter: { type: "bp", from: 300, to: 1200, q: 1.2 }, vol: 0.15 }),
+  tone({ wave: "sine", freq: 196, dur: 0.9, env: [0.8, 0, 1, 0.03], vol: 0.05 }))
