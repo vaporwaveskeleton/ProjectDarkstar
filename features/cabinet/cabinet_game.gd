@@ -70,6 +70,12 @@ var _has_early_params := false
 ## Whether the Pretence had been seen before this reveal started (read before the reveal's save sets it):
 ## the Unmaking that follows is skippable on the same terms as the reveal (Q-T153, TECH-001 §11.1).
 var _reveal_seen_before := false
+## The printed bezel wearing out (W0-11 Wear at stage start, then the Decay; ART-001 §12.7b). Built in _ready.
+var bezel_decay: BezelDecay
+var decay_tuning: CabinetDecayTuning = preload("res://data/cabinet/cabinet_decay.tres")
+## Ending 5 (LOOP-001 §11.6): no Surgelight used this shift (Act 0 has no Ward Pulse). Run-scoped, like the
+## shift total. Autopilot shifts (dev/QA) never count; `--clean-hands` (dev) forces it for captures.
+var clean_hands := true
 
 
 func _ready() -> void:
@@ -96,6 +102,12 @@ func _ready() -> void:
 	world.caption.connect(func(key: String) -> void: messages.caption(tr(key)))
 	messages.credits_stat_shown.connect(func(_i: int) -> void: AudioService.play(&"tally_blip"))   # cue owned by AUDIO-001 (unknown id = silent no-op)
 	reveal.finished.connect(_on_reveal_finished)
+	bezel_decay = BezelDecay.new()
+	bezel_decay.name = "BezelDecay"
+	bezel_decay.hole = screen
+	bezel_decay.rig = hud.get_parent() as ScreenRig
+	hud.get_parent().add_child(bezel_decay)
+	hud.get_parent().move_child(bezel_decay, hud.get_index() + 1)
 	world.stars.maw = reveal.maw        # S8: the star spine reads the live vertebra positions
 	reveal.maw.stars = world.stars      # ... and the maw draws the arrived stars on its own layer
 	autopilot.enabled = OS.get_cmdline_user_args().has("--autopilot")
@@ -264,8 +276,29 @@ func start_stage(i: int, carried: int = -1) -> void:
 	if st.zone_cue != &"":
 		AudioService.play(st.zone_cue)   # AUDIO-001 zone jingle (≤ READY_SECONDS); unknown id = silent no-op
 	_enter(State.INTRO, READY_SECONDS)
+	_apply_wear()
 	stage_record_start = record_values()
 	_write_stage_reached()
+
+
+## W0-11 Wear (PM under owner autonomy grant 2026-11-19, Q-T180 B): at a stage start only, the bezel ages
+## one level per stage from a0_3. Costume only: never the HUD strip, the registers or anything mid-play.
+func _apply_wear() -> void:
+	if bezel_decay == null:
+		return
+	var lvl := decay_tuning.wear_level(stage_index)
+	bezel_decay.bleach = decay_tuning.wear_bleach_per_level * float(lvl)
+	bezel_decay.smear = 0.0
+	bezel_decay.light = 0.0
+
+
+## Clean hands so far: any Surgelight, or the autopilot flying, spoils it (dev `--clean-hands` forces it).
+func _note_hands() -> void:
+	if OS.is_debug_build() and OS.get_cmdline_user_args().has("--clean-hands"):
+		clean_hands = true
+		return
+	if world.vigil.used_surgelight or autopilot.enabled:
+		clean_hands = false
 
 
 ## Stage start is a boundary (before play): save the furthest stage reached this shift.
@@ -355,13 +388,14 @@ func _on_timer() -> void:
 			else:   # mid-shift unmade (a0_3, a0_4): the banner holds, then the next stage
 				_hold_banner("CAB_ENTITY_DOWN")
 		State.CREDITS:
+			_note_hands()
 			var next := next_stage_index()
 			if next >= 0:
 				start_stage(next, _end_charges if _end_charges >= 0 else world.glass.charges)
 			else:
 				_enter(State.REVEAL)
 				_reveal_seen_before = bool(_profile.get("pretence_seen", false))
-				reveal.play(self, _reveal_seen_before)
+				reveal.play(self, _reveal_seen_before, clean_hands and not demo)
 
 
 ## A mid-shift stage end (PM 2026-11-19): banner only, no roll. The stage-end banner stays up for
@@ -421,6 +455,8 @@ func _on_reveal_finished() -> void:
 func _save_act0_complete() -> void:
 	_profile["act0_complete"] = true
 	_profile["pretence_seen"] = true
+	if reveal.ending5_shown:
+		_profile["pretence_kept"] = true   # LOOP-001 §11.6 / §11.7: ending 5 seen; the Archivist variant reads it
 	_profile[KEY_STAGE_REACHED] = -1
 	_profile["act0_pending_vi"] = shift_total()   # Q-T141: RunSession banks it if the param is lost; the shift total (all continues) is the Act 0 Vigil Index banked (PM direction 2026-11-19, Q-T132)
 	_save_hi_score()

@@ -138,8 +138,9 @@ func test_catalog_and_validator_agree() -> void:
 ## Long end-to-end scenarios run only from the CLI (tests/test_scenarios.gd skips them): they must
 ## still be valid scenarios, just not suite-eligible. Each entry is named here on purpose.
 ## a1_golden_path: coin → Act 0 → reveal → the 94 s Unmaking → Ruins → PM-01 (~20600 frames, Act 0
-## capture switches as args; TECH-001 §9.1).
-const LONG_SCENARIOS: Array[String] = ["a1_golden_path.scenario.json"]
+## capture switches as args; TECH-001 §9.1). a0_reveal_decay_capture: a0_5 by autopilot with `--clean-hands`,
+## then ending 5's ten screens, the line and the Decay (~3000 frames; ART-001 §12.7b).
+const LONG_SCENARIOS: Array[String] = ["a1_golden_path.scenario.json", "a0_reveal_decay_capture.scenario.json"]
 
 
 func test_shipped_scenarios_are_valid_for_the_suite() -> void:
