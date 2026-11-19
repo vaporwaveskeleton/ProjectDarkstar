@@ -395,7 +395,7 @@ func _save_act0_complete() -> void:
 	_profile["act0_complete"] = true
 	_profile["pretence_seen"] = true
 	_profile[KEY_STAGE_REACHED] = -1
-	_profile["act0_pending_vi"] = score.score   # Q-T141: RunSession banks it if the param is lost
+	_profile["act0_pending_vi"] = shift_total()   # Q-T141: RunSession banks it if the param is lost; the shift total (all continues) is the Act 0 Vigil Index banked (PM direction 2026-11-19, Q-T132)
 	_save_hi_score()
 
 
@@ -404,7 +404,7 @@ func _save_act0_complete() -> void:
 func _reveal_params() -> Dictionary:
 	var params := {"shift_total": shift_total()}
 	if not demo:
-		params["act0_vigil_index"] = score.score
+		params["act0_vigil_index"] = shift_total()
 	return params
 
 
