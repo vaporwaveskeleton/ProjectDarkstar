@@ -1,6 +1,8 @@
 class_name AetherLeviathan
 extends AetherShaderRect
-## A far leviathan crossing the frame: moves, fades at the ends of its pass, flees as drain rises.
+## The Presence (leviathan) crossing the frame: scale by occlusion — it passes in front of the
+## sphere line, blots out the stars, is cropped by both frame edges (body ~60% of frame height).
+## Moves, fades at the ends of its pass, flees as drain rises.
 ## Never a collider (no physics body anywhere under it). Emits `leviathan_entered` when it comes
 ## into the frame and `leviathan_closest` when its middle passes the frame centre.
 
@@ -10,7 +12,9 @@ signal leviathan_closest
 ## ✱ quad size in logical px: many times the frame, so it is only ever seen cropped.
 @export var quad_size: Vector2 = Vector2(2600.0, 900.0)
 ## ✱ y of the body's centre line in layer px (low, so the frame crops it).
-@export var body_y: float = 262.0
+@export var body_y: float = 176.0
+## ✱ body thickness in logical px (about 60% of the 360 px frame).
+@export var thickness: float = 230.0
 ## ✱ extra speed per unit of drain (it flees).
 @export var flee_speedup: float = 5.0
 
@@ -27,6 +31,7 @@ func _ready() -> void:
 	super._ready()
 	size = quad_size
 	set_param(&"quad_size", quad_size)
+	set_param(&"thickness", thickness)
 
 
 func configure(look: AetherLook) -> void:
@@ -37,8 +42,10 @@ func configure(look: AetherLook) -> void:
 	_inside = false
 	_closest_fired = false
 	set_param(&"body_col", look.far_silhouette)
-	set_param(&"rim_col", look.fog_high)
-	set_param(&"light_col", Pal.PHOS_2)
+	set_param(&"plate_col", look.fog_mid)
+	set_param(&"rim_col", look.leviathan_rim)
+	set_param(&"light_col", look.leviathan_lights)
+	set_param(&"thickness", thickness)
 	set_param(&"floor_col", Pal.VOID_0)
 
 
@@ -64,3 +71,14 @@ func advance(t: float, drain: float) -> void:
 	if visible_now and not _closest_fired and position.x + quad_size.x * 0.5 <= screen_width * 0.5:
 		_closest_fired = true
 		leviathan_closest.emit()
+
+
+## Screen position (logical px) of this quad's origin, for layers that read its body line.
+func screen_origin() -> Vector2:
+	return get_global_transform_with_canvas().origin
+
+
+## Current presence 0..1 (0 when absent).
+func presence() -> float:
+	var v: Variant = get_param(&"presence")
+	return float(v) if v != null else 0.0

@@ -4,7 +4,7 @@ extends GPUParticles2D
 ## shader (shared current, school formation, flee); drawing is aether_life_draw from a generated
 ## white GradientTexture2D (no image files, D-13). Colours are Pal entries from the look.
 
-enum Kind { MOTE, JELLY, SPORE, SCHOOL }
+enum Kind { MOTE, JELLY, SPORE, SCHOOL, VAST_JELLY }
 
 @export var kind: Kind = Kind.MOTE
 ## ✱ half-size of the field the particles wrap within, logical px.
@@ -55,9 +55,11 @@ static func _white_texture() -> GradientTexture2D:
 
 
 ## Set up this kind from a look. `count` 0 hides the node.
-func configure(look: AetherLook, count: int) -> void:
+func configure(look: AetherLook, count: int, quality_scale: float = 1.0) -> void:
 	_ensure()
-	var n := maxi(int(round(float(count) * look.life_density)), 0)
+	var n := maxi(int(round(float(count) * look.life_density * quality_scale)), 0)
+	if count > 0 and n == 0:
+		n = 1
 	visible = n > 0 and look.life
 	emitting = visible
 	if not visible:
@@ -72,13 +74,14 @@ func configure(look: AetherLook, count: int) -> void:
 	motion_mat.set_shader_parameter(&"align", 1.0)
 	motion_mat.set_shader_parameter(&"drift", Vector2(4.0, -1.5))
 	motion_mat.set_shader_parameter(&"swirl", 6.0)
+	motion_mat.set_shader_parameter(&"current_strength", 10.0)
 	match kind:
 		Kind.JELLY:
 			shape = 1
-			size_px = Vector2(26.0, 44.0)
+			size_px = Vector2(14.0, 64.0)
 			colour = look.life_glow
-			glow = 1.25 if look.emitters_bloom else 0.9
-			alpha = 0.85
+			glow = 1.35 if look.emitters_bloom else 1.0
+			alpha = 0.9
 			motion_mat.set_shader_parameter(&"align", 0.0)
 			motion_mat.set_shader_parameter(&"drift", Vector2(2.0, -3.0))
 			motion_mat.set_shader_parameter(&"swirl", 3.0)
@@ -89,9 +92,20 @@ func configure(look: AetherLook, count: int) -> void:
 			alpha = 0.55
 			motion_mat.set_shader_parameter(&"drift", Vector2(1.0, -5.0))
 			motion_mat.set_shader_parameter(&"swirl", 9.0)
+		Kind.VAST_JELLY:
+			# vast, far and cropped: very dim, slow, swallowed by the fog
+			shape = 1
+			size_px = Vector2(240.0, 340.0)
+			colour = look.life_glow
+			glow = 0.8
+			alpha = 0.35
+			motion_mat.set_shader_parameter(&"align", 0.0)
+			motion_mat.set_shader_parameter(&"drift", Vector2(0.6, -0.8))
+			motion_mat.set_shader_parameter(&"swirl", 0.6)
+			motion_mat.set_shader_parameter(&"current_strength", 1.0)
 		Kind.SCHOOL:
 			shape = 3
-			size_px = Vector2(6.0, 9.0)
+			size_px = Vector2(5.0, 7.0)
 			colour = look.life_glow.lerp(look.life_secondary, 0.4)
 			alpha = 0.8
 			motion_mat.set_shader_parameter(&"mode", 1)
@@ -104,6 +118,10 @@ func configure(look: AetherLook, count: int) -> void:
 	motion_mat.set_shader_parameter(&"speed_scale", look.life_speed)
 	draw_mat.set_shader_parameter(&"shape", shape)
 	draw_mat.set_shader_parameter(&"glow", glow)
+	# depth: a particle at the middle of the size range is "mid"; the vast ones count as far
+	var mid := (size_px.x + size_px.y) * 0.5 / float(TEX_PX)
+	draw_mat.set_shader_parameter(&"size_mid", mid * (4.0 if kind == Kind.VAST_JELLY else 1.0))
+	draw_mat.set_shader_parameter(&"fog_col", look.fog_mid)
 	restart()
 
 

@@ -45,6 +45,20 @@ const ALL := {
 	"NULL": NULL, "SIGNAL": SIGNAL,
 }
 
+## AETHER ramp: post-Pretence only; not a neon role; not in ALL; palette v2 pending (ART-001 §4).
+const AETHER_0 := Color8(0x2A, 0x21, 0x60)
+const AETHER_1 := Color8(0x46, 0x34, 0x90)
+const AETHER_2 := Color8(0x6F, 0x5B, 0xB8)
+const AETHER_3 := Color8(0x96, 0x8E, 0xD2)
+const AETHER_4 := Color8(0xE8, 0xDC, 0xD8)
+const AETHER_5 := Color8(0x80, 0xC4, 0xD0)
+
+## AETHER ramp by name (post-Pretence only; not a neon role; not in ALL; palette v2 pending, ART-001 §4).
+const AETHER := {
+	"AETHER-0": AETHER_0, "AETHER-1": AETHER_1, "AETHER-2": AETHER_2,
+	"AETHER-3": AETHER_3, "AETHER-4": AETHER_4, "AETHER-5": AETHER_5,
+}
+
 
 ## Vector "glow": a wide dim stroke under a thin bright one. Both colours are palette entries.
 static func glow_polyline(ci: CanvasItem, pts: PackedVector2Array, bright: Color, dim: Color, closed: bool = true) -> void:

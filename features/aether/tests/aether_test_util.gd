@@ -3,6 +3,7 @@ extends RefCounted
 
 const LOOK_DIR := "res://data/aether/"
 const BACKDROP := "res://features/aether/aether_backdrop.tscn"
+const QUALITY_DIR := "res://data/aether/quality/"
 
 
 static func look_paths() -> PackedStringArray:
@@ -25,6 +26,10 @@ static func same_rgb(a: Color, b: Color) -> bool:
 static func pal_name(c: Color) -> String:
 	for k: Variant in Pal.ALL.keys():
 		if same_rgb(Pal.ALL[k] as Color, c):
+			return str(k)
+	# the AETHER ramp is post-Pretence only and lives outside Pal.ALL (ART-001 §4, palette v2 pending)
+	for k: Variant in Pal.AETHER.keys():
+		if same_rgb(Pal.AETHER[k] as Color, c):
 			return str(k)
 	return ""
 

@@ -1,39 +1,57 @@
 shader_type canvas_item;
 render_mode unshaded;
-// The entity's presence (ART-001 §16): the only true black. A NULL mass with an irregular, slowly
-// breathing edge. No outline, no rim, no glow of its own: inside is exactly vec4(0,0,0,1),
-// outside is discarded. The world going out around it is done by the layers that read the
-// entity mask (entity_0..3), not here.
+// The entity's presence (ART-001 §16): the only true black. A WOUND in the picture, not a blob:
+// a hard torn edge (domain-warped noise at up to four scales plus fine fray), one knife-straight
+// ruled cut, one impossible square inner corner, and thin NULL filaments reaching out along slow
+// curving paths, tapering to a hairline and growing with drain. No outline, no rim, no glow and
+// no halo of its own: inside is exactly vec4(0,0,0,1), outside is discarded. The world losing its
+// layers around it is done by the layers that read the entity mask (a_loss), not here.
 
-uniform float radius = 40.0;          // px
+#include "res://shaders/aether/aether_common.gdshaderinc"
+
+uniform float radius = 40.0;           // px
 uniform vec2 half_size = vec2(200.0);  // half of the quad, px
 uniform float time_s = 0.0;
 uniform float seed = 0.0;
-uniform float wobble = 0.16;          // edge irregularity as a fraction of radius
-
-float e_hash(vec2 p) {
-	vec3 p3 = fract(vec3(p.xyx) * 0.1031);
-	p3 += dot(p3, p3.yzx + 33.33);
-	return fract((p3.x + p3.y) * p3.z);
-}
-
-float e_noise(vec2 p) {
-	vec2 i = floor(p);
-	vec2 f = fract(p);
-	vec2 u = f * f * (3.0 - 2.0 * f);
-	return mix(mix(e_hash(i), e_hash(i + vec2(1.0, 0.0)), u.x),
-		mix(e_hash(i + vec2(0.0, 1.0)), e_hash(i + vec2(1.0, 1.0)), u.x), u.y);
-}
+uniform int edge_octaves = 4;
+uniform float grow = 0.0;              // 0..1 tendril growth (drain)
+uniform int tendril_count = 7;
 
 void fragment() {
+	if (radius < 0.5) {
+		discard;
+	}
 	vec2 rel = (UV - 0.5) * half_size * 2.0;
-	float ang = atan(rel.y, rel.x);
-	vec2 ring = vec2(cos(ang), sin(ang)) * 1.6 + seed;
-	float breath = 0.5 + 0.5 * sin(time_s * 0.4 + seed);   // 0.064 Hz
-	float n = e_noise(ring + vec2(time_s * 0.05)) * 0.5 + e_noise(ring * 2.7 - vec2(time_s * 0.08)) * 0.3
-		+ e_noise(ring * 7.0 + vec2(time_s * 0.03)) * 0.2;
-	float r = radius * (1.0 + wobble * (n - 0.5) * 2.0 + 0.04 * breath);
-	if (length(rel) > r || radius < 0.5) {
+	vec2 p = rel / radius;
+	float s = a_entity_shape(p, seed, time_s, edge_octaves);
+	bool inside = s < 0.0;
+	if (!inside && grow > 0.0) {
+		float rho = length(p);
+		float ang = atan(p.y, p.x);
+		for (int i = 0; i < 9; i++) {
+			if (i >= tendril_count) {
+				break;
+			}
+			float h1 = a_hash(vec2(float(i) + 0.3, seed));
+			float h2 = a_hash(vec2(seed, float(i) + 7.7));
+			float len = (0.35 + 0.75 * h2) * grow;
+			float out_r = rho - 0.82;
+			if (out_r < 0.0 || out_r > len) {
+				continue;
+			}
+			float k = out_r / len;
+			float th = seed * 1.3 + float(i) * 0.83 + h1 * 0.5;
+			th += (0.25 + 0.3 * h1) * sin(out_r * 3.2 + time_s * 0.06 + float(i)) * k;
+			th += (h2 - 0.5) * 0.9 * k * k;
+			float lateral = abs(mod(ang - th + 3.14159265, 6.2831853) - 3.14159265) * rho * radius;
+			float w = mix(1.5, 0.3, k);   // half-width px: tapers to a hairline
+			if (lateral < w) {
+				inside = true;
+				break;
+			}
+		}
+	}
+	if (!inside) {
 		discard;
 	}
 	COLOR = vec4(0.0, 0.0, 0.0, 1.0);

@@ -2,7 +2,8 @@ shader_type particles;
 // Aether-life motion (ART-001 §16). Mode 0: a drifting field (glass motes, jelly-lanterns, spores)
 // carried by a shared slow current, so the whole field turns as one. Mode 1: a school holding
 // formation around a centre that GDScript steers; `scatter` blows it apart from an empty patch.
-// Every particle flees the entity and fades as the world is drunk. Positions are emitter-local.
+// Near the entity every particle drifts toward it, dims and is gone past a crisp boundary;
+// as the world is drunk, life fades and stops. Positions are emitter-local.
 // Particles never die (huge lifetime) and fade in over `fade_in_s`: zero startle.
 
 uniform int mode = 0;
@@ -19,7 +20,7 @@ uniform float fade_in_s = 3.0;
 uniform float life_fade = 1.0;                 // 1 alive … 0 gone (drain)
 uniform vec2 flee_pos = vec2(9999.0);           // emitter-local px
 uniform float flee_radius = 0.0;
-uniform float flee_strength = 90.0;
+uniform float flee_strength = 16.0;           // px/s drift toward the entity
 uniform vec2 school_centre = vec2(0.0);
 uniform float school_heading = 0.0;
 uniform vec2 school_spread = vec2(70.0, 24.0);
@@ -69,7 +70,7 @@ void process() {
 		vec2 cur = vec2(cos(current_heading), sin(current_heading)) * current_strength;
 		float n = l_noise(p / 140.0 + vec2(CUSTOM.y * 0.02, CUSTOM.x));
 		vec2 turb = vec2(cos(n * 6.2831), sin(n * 6.2831)) * swirl;
-		vec2 v = (drift + cur + turb) * speed_scale;
+		vec2 v = (drift + cur + turb) * speed_scale * life_fade;   // drained life stops
 		p += v * DELTA;
 		p = mod(p + extents, extents * 2.0) - extents;
 		ang = atan(v.y, v.x);
@@ -85,16 +86,17 @@ void process() {
 		vec2 away = p - scatter_pos;
 		p += normalize(away + vec2(0.001)) * scatter * 160.0 * DELTA * smoothstep(260.0, 0.0, length(away));
 	}
-	// flee the entity
+	// drawn slowly toward the entity (the world flows into it), dimming, then simply gone
 	if (flee_radius > 0.5) {
-		vec2 d = p - flee_pos;
+		vec2 d = flee_pos - p;
 		float dist = length(d);
-		float push = smoothstep(flee_radius * 3.5, flee_radius, dist);
-		p += normalize(d + vec2(0.001)) * push * flee_strength * DELTA;
+		float pull = smoothstep(flee_radius * 3.5, flee_radius * 1.3, dist);
+		p += normalize(d + vec2(0.001)) * pull * flee_strength * DELTA;
 	}
 	float fade = smoothstep(0.0, fade_in_s, CUSTOM.y) * life_fade;
 	if (flee_radius > 0.5) {
-		fade *= smoothstep(flee_radius * 1.1, flee_radius * 2.2, length(p - flee_pos));
+		float de = length(p - flee_pos);
+		fade *= step(flee_radius * 1.45, de) * mix(0.35, 1.0, smoothstep(flee_radius * 1.45, flee_radius * 2.6, de));
 	}
 	float tw = 0.75 + 0.25 * sin(TIME * 2.0 + CUSTOM.x);   // 0.32 Hz shimmer
 	COLOR = vec4(tint.rgb, tint.a * alpha_max * fade * tw);
