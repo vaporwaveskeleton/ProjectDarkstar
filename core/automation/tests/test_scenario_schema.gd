@@ -25,6 +25,17 @@ const MINIMAL := {
 	"mouse_button": {"button": "left", "pressed": true},
 	"reset": {},
 	"set_setting": {"key": "reduced_motion", "value": true},
+	"snapshot": {"name": "snap_one"},
+	"wait_event": {"event": "vigil_destroyed", "within": 5},
+	"perf_sample": {},
+	"set_stage": {"index": 1},
+	"set_lives": {"lives": 3},
+	"teleport": {"x": 10.5, "y": -20},
+	"spawn": {"kind": "acolyte", "dx": 0, "dy": -110},
+	"shoot_vigil": {"dx": 0, "dy": -450},
+	"kill_all": {},
+	"pause_sim": {"on": true},
+	"step_sim": {"frames": 30}, "wake_entity": {}, "place_entity": {"dx": 0, "dy": -20},
 }
 
 
@@ -75,7 +86,7 @@ func test_top_level_rules() -> void:
 
 
 func test_step_rules() -> void:
-	_expect(_sc([{"do": "teleport"}]), "unknown step 'teleport'")
+	_expect(_sc([{"do": "teleport_home"}]), "unknown step 'teleport_home'")
 	_expect(_sc([{"do": "wait_frames"}]), "missing arg 'frames'")
 	_expect(_sc([_step("wait_frames", {"extra": 1})]), "unknown arg 'extra'")
 	_expect(_sc([_step("wait_frames", {"frames": "ten"})]), "must be int")
@@ -157,3 +168,42 @@ func test_profile_field_values() -> void:
 	var b := _sc()
 	b["profile"] = "prod"
 	_expect(b, "profile must be")
+
+
+func test_phase2_steps_validate_and_reject_bad_args() -> void:
+	for n in ["snapshot", "wait_event", "perf_sample", "set_stage", "set_lives", "teleport", "spawn", "shoot_vigil", "kill_all", "pause_sim", "step_sim", "wake_entity", "place_entity"]:
+		assert_array(Schema.validate(_sc([_step(n)]), false)).override_failure_message(n).is_empty()
+	_expect(_sc([_step("snapshot", {"name": "Bad Name"})]), "name must match")
+	_expect(_sc([_step("wait_event", {"count": 0})]), "count")
+	_expect(_sc([_step("set_lives", {"lives": 10})]), "lives")
+	_expect(_sc([_step("set_lives", {"lives": -1})]), "lives")
+	_expect(_sc([_step("set_stage", {"index": -1})]), "index")
+	_expect(_sc([_step("teleport", {"x": 5000})]), "<= 4000")
+	_expect(_sc([_step("spawn", {"kind": "dragon"})]), "kind must be one of")
+	_expect(_sc([_step("spawn", {"dy": -4001})]), "<= 4000")
+	_expect(_sc([_step("shoot_vigil", {"dx": 0, "dy": 0})]), "cannot both be 0")
+	_expect(_sc([_step("place_entity", {"dx": 4001})]), "<= 4000")
+	_expect(_sc([_step("step_sim", {"frames": 3601})]), "step_sim")
+	_expect(_sc([_step("step_sim", {"frames": 0})]), "frames")
+
+
+func test_cabinet_dev_steps_are_dev_only_and_probe_ops() -> void:
+	var defs: Dictionary = Schema.catalog().steps
+	for n in ["set_stage", "set_lives", "teleport", "spawn", "shoot_vigil", "kill_all", "pause_sim", "step_sim", "wake_entity", "place_entity"]:
+		assert_bool(Schema.is_dev_step(n)).override_failure_message(n).is_true()
+		assert_bool(bool(defs[n].get("probe_op", false))).is_true()
+		assert_str(str(defs[n].route)).is_equal("cabinet")
+	for n in ["snapshot", "wait_event", "perf_sample"]:
+		assert_bool(Schema.is_dev_step(n)).override_failure_message(n).is_false()
+
+
+func test_fail_on_errors_and_allow_errors_types() -> void:
+	var a := _sc()
+	a["fail_on_errors"] = true
+	a["allow_errors"] = ["known noise"]
+	assert_array(Schema.validate(a, false)).is_empty()
+	a["fail_on_errors"] = "yes"
+	_expect(a, "fail_on_errors must be a bool")
+	var b := _sc()
+	b["allow_errors"] = [1]
+	_expect(b, "allow_errors must be an array of strings")
