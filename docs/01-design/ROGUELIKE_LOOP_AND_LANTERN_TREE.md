@@ -1,12 +1,14 @@
 # DARKSTAR — Roguelike Loop, Run Sigils, Pacts and the Lantern Tree
 
-**Doc ID:** LOOP-001 · **Version:** 1.3 · **Date:** 2026-11-18 · **Owner:** Design (systems / progression) · **Status:** §0–§14 authored (complete draft, pending review). Numbers marked "requested SYS-001 row" are proposals until SYS-001 adopts them.
+**Doc ID:** LOOP-001 · **Version:** 1.4 · **Date:** 2026-11-19 · **Owner:** Design (systems / progression) · **Status:** §0–§14 authored (complete draft, pending review). Numbers marked "requested SYS-001 row" are proposals until SYS-001 adopts them.
 
 Rev 1.1 (2026-11-17): §5 Relics, §6 run shape and the two escalators, §7 Pacts written out in full; the §4.1 Run-Sigil pick count corrected to SYS-001 §7.2's three; HULL-17's "Anchor ring" renamed to the **Anchor field** to match SYS-001 §1.1 and GDD-001 D-11. The 90 / 24 / 18 counts GDD-001 §7 promises are now all on disk. Requests **LR-01…LR-08** are open against SYS-001 and GDD-001 and are listed in §5.5, §6.5 and §7.5.
 
 Rev 1.2 (2026-11-17): §8 Codex, §9 economy flow, §10 Iteration unlocks, §11 endings, §12 content cost, §13 coverage and §14 open questions written. Three in-file corrections made while doing the arithmetic: **§6.5 LR-04 is reversed** — the Hourglass Clock is read per Iteration (GDD-001 §6.2 and §2), because the per-sky reading put 18 loop-hours in an Iteration and contradicted §6.5's own 3.5–6 h; §6.3's E10 gate now says "ending 2–5 seen", because ending 1 is shown at every Hard Unmaking and would have opened E10 after the first Iteration; §6.4's Hunger pacing budget is replaced by §10.3's cadence, which matches WARP-001 §3.2's act gates. The §2 Anchored row now follows ruling R-05 (accessibility settings are device-level).
 
 Rev 1.3 (2026-11-18, cosmic horror design rev 3; PM ruling 2026-11-18 (owner grant)): **Unwritten Ink retires** (CHD-15): the 27 Ink nodes cost 0 Ember and are gated by one Codex entry each (§3.3, new §3.7 gating map and backstops); respec is 10% of banked Ember (§3.5); the Codex stamp gates instead of paying (§8); Ink-paying Sigils pay Ember, SIG-S-14 and MADNESS-7 get new effects (§3.3, §4.2); the post-tree Ember sink (relighting the Ruins, rekindling a death-site Penitent) replaces the 20:1 overflow valve (§9.6); the §9.5 economy table is marked to re-run without Ink. **Relics fold into rare Run Sigils** offered at Seams 2/3/4 (CHD-14; §4.1, §5, §6.1); the noun "Relic" retires from player use. **Anchored state** gains the death-site list, per-kit visit counts and rekindled Penitents (CHD-09, CHD-11; §2). **The Eating of a Sky** makes the ninth-sky close playable, and **the Wrong Ruins** take one room away in Act 3 (CHD-08; §10.4, §11.2, §11.7). Ember amounts and sink prices are **value owed** (listed in §9.7 LR-14). Fragments and Threads are unchanged. **Same-day reconciliation (2026-11-18):** gating ids folded onto NARR-001's samples and the §8.2 classes widened (taught `cx_rule_`, Chronicle milestones, authored `cx_vigil_` pages, the Choir's sacred things), recount 144 (§3.3, §3.7, §8.2, §8.5, §12); the four gating discovery counts cite SYS-001 rows; within-tier death-backstop order is table order; SIG-S-14 and SIG-M-04 adopted, Q-03 closed (§4.2, §14); rekindled Penitents share the Penitent cap with Coma → rekindled → other precedence (§9.6); ending 4 always restores the Wrong Ruins room (§10.4, §11).
+
+Rev 1.4 (2026-11-19, PM under owner autonomy grant 2026-11-19, TECH-001 §11.1a Q-T145, Q-T146, Q-T148, Q-T149): the Lantern Tree tier prices and the Run Sigil reroll ladder moved to **SYS-001 §7.7** with no value change; §3.1 Cost, §3.3 rollup note, §3.6, §4.1 Reroll and §9.1–§9.2 now cite it, and the §3.3 Cost columns are marked as a derived view. §9.1 lists the Act 0 bank (SYS-001 §7.1, with its floor), tickets as the physical form of Ember (1 ticket = 1 Ember), and the Seam 5 clear paying Seam Ember.
 
 This is the progression contract. GDD-001 §6–§7 promises a run structure, a between-run tree, **90 nodes + 24 Pacts + 18 Relics** and "~120 Run Sigil pool entries". All of it is here, written out (the 18 Relic designs now ship as rare Run Sigils, §5). Numbers do not live in this doc: every stat, cost floor, yield and multiplier is in **SYS-001** (`SYSTEMS_BIBLE_STATS.md`), and where this doc needs a number it points at a SYS-001 row instead of inventing one. If a number here and a number in SYS-001 disagree, SYS-001 wins and this doc is a bug.
 
@@ -64,7 +66,7 @@ The tree grows in the Ruins (GDD-001 §6.4). Five branches, 18 nodes each, tiers
 |---|---|
 | ID | `<BRANCH>-<1..18>` where BRANCH ∈ LANTERN, HULL, ORDNANCE, WARD, MADNESS |
 | Tier | nodes 1–4 = T1, 5–8 = T2, 9–12 = T3, 13–16 = T4, 17–18 = T5 (capstones) |
-| Cost | Ember. The 27 nodes formerly priced in Unwritten Ink cost **0 Ember** (SYS-001 Ink-node Ember price row) and are **Codex-gated**: each needs its gating entry stamped (§3.7). Cost floors roll up in the node rollup below; the respec tax is 10% of banked Ember (§3.5; GDD-001 §7.3 as amended by CHD-15) |
+| Cost | Ember, one price per tier: SYS-001 §7.7 `Lantern Tree node price, tier 1…5` rows are the source (moved there 2026-11-19, TECH-001 §11.1a Q-T149). The Cost column of the §3.3 tables is a derived per-node view of those rows; if they disagree, SYS-001 wins and the column is a bug. The 27 nodes formerly priced in Unwritten Ink cost **0 Ember** (SYS-001 Ink-node Ember price row; §7.7 `Codex-gated nodes`) and are **Codex-gated**: each needs its gating entry stamped (§3.7). Cost floors roll up in the node rollup below; the respec tax is 10% of banked Ember (§3.5; GDD-001 §7.3 as amended by CHD-15) |
 | Requires | at least one node of a lower tier in the same branch; capstones require both T4 nodes of the branch. Cross-branch prerequisites are used **exactly twice in 90 nodes**, both in MADNESS, and both exist to make leaning into warp feel like a commitment. A Codex-gated node also lists its gating entry (`Codex cx_…`) in this column |
 | Legibility | GDD-001 §7.3: one line, and the effect must be observable in play. A node whose effect you cannot see in a 15-second clip does not ship |
 | Rules-bending share | 30 of 90 (33%), matching the "roughly 30%" of GDD-001 §7.3 |
@@ -98,7 +100,7 @@ Branch tables follow. "Rules-bending?" marks the 30 nodes that change a rule rat
 
 #### LANTERN (branch L) — light, mining, movement
 
-| ID | Node | Tier | Cost | Currency | Effect (numbers reference SYS-001) | Rules-bending? | Requires | Visible in play |
+| ID | Node | Tier | Cost (derived: SYS-001 §7.7 by tier) | Currency | Effect (numbers reference SYS-001) | Rules-bending? | Requires | Visible in play |
 |---|---|---|---:|---|---|---|---|---|
 | LANTERN-1 | Surgelight Charges | 1 | 40 | Ember | SYS-001 §1.1 `Surgelight impulse` becomes a stored charge: 2 held, spent at the row's 1.6 s cooldown. | yes | — | Two wick pips on the HUD; the stern brass vent stands open with a second flare |
 | LANTERN-2 | Wide Bellows | 1 | 40 | Ember | SYS-001 §1.1 `Surgelight Shroud burn` radius +25%. | no | — | Each dash opens a shoulder-wide smoking gap in Shroud |
@@ -121,7 +123,7 @@ Branch tables follow. "Rules-bending?" marks the 30 nodes that change a rule rat
 
 #### HULL (branch H) — plating, drift, braking, survival
 
-| ID | Node | Tier | Cost | Currency | Effect (numbers reference SYS-001) | Rules-bending? | Requires | Visible in play |
+| ID | Node | Tier | Cost (derived: SYS-001 §7.7 by tier) | Currency | Effect (numbers reference SYS-001) | Rules-bending? | Requires | Visible in play |
 |---|---|---|---:|---|---|---|---|---|
 | HULL-1 | Drift Control | 1 | 40 | Ember | SYS-001 §1.1 `drag` +25% (⚙): terminal drift falls from the ≈1.4 body-lengths of GDD-001 §4.2 to ≈1.1. | no | — | The skiff stops where you let go instead of sliding past the geode |
 | HULL-2 | Dead Reckoning | 1 | 40 | Ember | The Compass lie (SYS-001 §6 `Ledger Compass`, lies at T ≥ 3 or Composure ≤ 3) now carries a chalk strike, so you can see that it is a lie. | yes | — | A barred scratch across one compass blip; you learn to distrust it |
@@ -146,7 +148,7 @@ Branch tables follow. "Rules-bending?" marks the 30 nodes that change a rule rat
 
 No node here adds a lance fuel bar, a reload meter or an in-run upgrade roll (GDD-001 §3 anti-pillars 1, 2, 8). Charges stay fire-and-forget (GDD-001 §8.3) and the 13-hits-to-unmake requirement (GDD-001 §8.3) is never lowered.
 
-| ID | Node | Tier | Cost | Currency | Effect (numbers reference SYS-001) | Rules-bending? | Requires | Visible in play |
+| ID | Node | Tier | Cost (derived: SYS-001 §7.7 by tier) | Currency | Effect (numbers reference SYS-001) | Rules-bending? | Requires | Visible in play |
 |---|---|---|---:|---|---|---|---|---|
 | ORDNANCE-1 | Hookline | 1 | 40 | Ember | SYS-001 §1.4 `Shard magnet radius` 96 → 190 px. | no | — | A brass line trails from the bow and shards hook themselves onto it |
 | ORDNANCE-2 | First Sermon | 1 | 40 | Ember | The first Charge of each sector cannot be intercepted (SYS-001 §1.4 `Charge HP (interceptable)`; the §2.2 Hunger-4 interception rule does not apply to it). | yes | — | It flies through a wall of Grubs untouched, one chime on the way out |
@@ -169,7 +171,7 @@ No node here adds a lance fuel bar, a reload meter or an in-run upgrade roll (GD
 
 #### WARD (branch W) — rites, salt, silencing the litany
 
-| ID | Node | Tier | Cost | Currency | Effect (numbers reference SYS-001) | Rules-bending? | Requires | Visible in play |
+| ID | Node | Tier | Cost (derived: SYS-001 §7.7 by tier) | Currency | Effect (numbers reference SYS-001) | Rules-bending? | Requires | Visible in play |
 |---|---|---|---:|---|---|---|---|---|
 | WARD-1 | Short Rite | 1 | 0 | Ember | Ward Pulse cooldown −25% against the proposed base row (SYS-001 owes this row [^gap]). | no | Codex `cx_choir_shrine` | The pulse chime comes sooner and the chalk sigil on the hull blinks faster |
 | WARD-2 | Salt Glass Mines | 1 | 40 | Ember | SYS-001 §2 phase 0 carries the number: a salt ward blocks 1 deposit for 30 s. You now place them from the Tree instead of only via Pact. | yes | — | A jar of salt-glass at the Sepulchre's foot; the Grub walks in and the keening starts |
@@ -194,7 +196,7 @@ No node here adds a lance fuel bar, a reload meter or an in-run upgrade roll (GD
 
 MADNESS is the Codex branch: 9 of its 18 nodes are Codex-gated (0 Ember, unlocked by knowing one entry each, §3.7), more than any other branch, because its power comes from what you have *learned* about the entity (GDD-001 §7.1). It buys power with dread, never with a survival meter — no node here adds HP, a hunger bar or a second life beyond HULL-6 and the SYS-001 §1.5 Hollowed free death, and none of them stack.
 
-| ID | Node | Tier | Cost | Currency | Effect (numbers reference SYS-001) | Rules-bending? | Requires | Visible in play |
+| ID | Node | Tier | Cost (derived: SYS-001 §7.7 by tier) | Currency | Effect (numbers reference SYS-001) | Rules-bending? | Requires | Visible in play |
 |---|---|---|---:|---|---|---|---|---|
 | MADNESS-1 | Fray Reading | 1 | 40 | Ember | SYS-001 §1.5 Frayed-band `false audio cues` (1 per 40 s) halves to 1 per 80 s, and each cue instead points at the nearest real procession (new `✱` row). | no | — | The false chant arrives from the direction of the true Sepulchre |
 | MADNESS-2 | Look Away | 1 | 0 | Ember | While you sit inside the entity's acquisition cone and are not firing, the §1.5 `-1.0/s in gaze cone` drain stops: the stare becomes readable instead of expensive. | yes | Codex `cx_rule_gaze` | The great eye holds on you and your wick stops guttering |
@@ -226,7 +228,7 @@ MADNESS is the Codex branch: 9 of its 18 nodes are Codex-gated (0 Ember, unlocke
 | MADNESS | 18 | 2,400 | 9 | 6 |
 | **Total** | **90** | **17,480** | **27** | **30** |
 
-Counts by price: 63 nodes bought with Ember, 27 Codex-gated at 0 Ember (12 numeric + 15 rules-bending; these are the nodes priced in Unwritten Ink before Rev 1.3, CHD-15). 30 of 90 nodes (33%) are rules-bending, against the ~30% target in GDD-001 §7.3. All 10 tier-5 capstones are rules-bending: the cost model prices tier 5 only as 900 Ember or Codex-gated, so a purely numeric capstone has no legal price — a judgement call worth confirming. The Ember totals are unchanged by the retirement, because the 27 gated nodes never carried an Ember price.
+Counts by price: 63 nodes bought with Ember, 27 Codex-gated at 0 Ember (12 numeric + 15 rules-bending; these are the nodes priced in Unwritten Ink before Rev 1.3, CHD-15). 30 of 90 nodes (33%) are rules-bending, against the ~30% target in GDD-001 §7.3. All 10 tier-5 capstones are rules-bending: the cost model prices tier 5 only at the SYS-001 §7.7 tier-5 price or Codex-gated, so a purely numeric capstone has no legal price — a judgement call worth confirming. The Ember totals are unchanged by the retirement, because the 27 gated nodes never carried an Ember price.
 
 Pacing against the ~450–800 Ember per run in SYS-001 §7.2. Ember is the binding currency in four branches: LANTERN 6–10 runs, HULL 5–9, ORDNANCE 5–8, WARD 5–9 to full-clear; MADNESS needs only 3–6 runs of Ember, and its other 9 nodes wait on what the player *knows*, so **MADNESS is gated by the Codex, not by Ember** — endgame power comes from engaging the game (first kills, revelations, WARP-001 conditions) rather than from farming, and the §3.7 backstops guarantee every gate by Iteration *t* at the latest. The whole tree costs 17,480 Ember: 22–39 runs at Entropy 0 on Ember alone. The Rev 1.2 Ink-side pacing (and the combined completionist estimate built on it) is **to re-run without Ink** with §9.5.
 
@@ -259,7 +261,7 @@ Two of these disagreed with their own node row in §3.3 and went to the owner as
 
 ### 3.6 The ten tier-5 capstones
 
-Tier 5 is the top of a branch (two capstones per branch, 17th and 18th node). All ten are rules-bending, all ten are priced at 900 Ember or Codex-gated at 0 Ember (§3.7), and each one has a named counterplay so it never becomes a win button.
+Tier 5 is the top of a branch (two capstones per branch, 17th and 18th node). All ten are rules-bending, all ten are priced at the SYS-001 §7.7 tier-5 price or Codex-gated at 0 Ember (§3.7), and each one has a named counterplay so it never becomes a win button.
 
 | Node ID | Capstone | Branch | What it opens | Counterplay it adds / costs |
 |---|---|---|---|---|
@@ -334,7 +336,7 @@ GDD-001 §6.3 promises "~120 pool entries". Here they are. A Run Sigil is stampe
 | Choices | **3 per run**, after Seams 1–3 (SYS-001 §7.2 `Run-Sigil picks`). Seam 4 offers a **rare Run Sigil** instead (§5, the former Relic slot 3), and Seam 5 is the Waking, which offers neither. This row used to say "one after each of Seams 1–4", which disagreed with the SYS row above it: SYS-001 wins, and the fourth boundary belongs to the rare boundary offer rather than being a choice that does not exist |
 | Rare boundary offers | **3 per run**, at Seams 2, 3 (the gate) and 4 — where the Relic slots were (CHD-14; PM ruling 2026-11-18 (owner grant), cosmic horror design rev 3). They draw only from the 18 rare Sigils of §5 (the former Relics), follow §5.2's boundary rules, and are separate from the three card picks above |
 | Slots | 4. The choice is always 1-of-3; a fourth option appears only when the entity is offering a **Cursed** Sigil, drawn in a visibly different frame |
-| Reroll | bought in-run with Ember, 40 / 90 / 160 / 240 by choice number (GDD-001 §7.3) |
+| Reroll | bought in-run with Ember, priced by choice number: SYS-001 §7.7 `Run Sigil reroll` row (moved there 2026-11-19, Q-T149; GDD-001 §7.3) |
 | No duplicates | anything you already hold is removed from later pools |
 | Rarity | card pool: Common 60 · Uncommon 40 · Rare 16 · **Cursed 4** = 120. Plus the **18 rare boundary Sigils** of §5 (the former Relics), offered only at the Seam 2/3/4 boundaries and never in the card fan: 138 Run Sigils in all |
 | Cursed | offered only at Warp ≥ 3 or Entropy ≥ 5, or forced at Seam 1 on a **cursed seed** (GDD-001 §6.3). The price is printed on the card in one line. We never hide what a Cursed Sigil costs |
@@ -849,7 +851,7 @@ Three currencies, three jobs, and no exchange rate between them. Unwritten Ink w
 
 | Currency | Job | Sources (SYS-001) | Sinks | Persists |
 |---|---|---|---|---|
-| **Ember** | power, then memory | score → `floor(score / 200)` + milestones (§7.1); Seam clears 40 each; elites and Heralds 60–200 per run (§7.2); REL-18; Tithe (SIG-W-08); Shrine purge, first per biome per Iteration (SYS-001 §6; amount value owed, it replaced 15 Ink); the former Ink Sigils SIG-S-04, SIG-S-08, SIG-S-18, SIG-W-20 (amounts value owed) | Lantern Tree Ember nodes (17,480 total, §3.3); in-run Sigil rerolls 40/90/160/240 (§4.1), which SIG-S-14 lets banked Ember pay (adopted 2026-11-18, §4.2); REL-17 latches; respec at 10% of banked Ember (§3.5); after the tree, **relighting the Ruins** and **rekindling a death-site Penitent** (§9.6; prices value owed) | death, Hard Unmaking |
+| **Ember** | power, then memory | the Act 0 bank, once, at the first Ruins visit, paid out in tickets (1 ticket = 1 Ember; SYS-001 §7.1 `Act 0 bank`, which has a floor so a first T1 node is always affordable; TECH-001 §11.1a Q-T146, Q-T148); score → `floor(score / 200)` + milestones (§7.1); Seam clears 40 each, Seam 5 included (SYS-001 §7.2; Q-T145); elites and Heralds 60–200 per run (§7.2); REL-18; Tithe (SIG-W-08); Shrine purge, first per biome per Iteration (SYS-001 §6; amount value owed, it replaced 15 Ink); the former Ink Sigils SIG-S-04, SIG-S-08, SIG-S-18, SIG-W-20 (amounts value owed) | Lantern Tree Ember nodes (17,480 total, §3.3); in-run Sigil rerolls (SYS-001 §7.7; §4.1), which SIG-S-14 lets banked Ember pay (adopted 2026-11-18, §4.2); REL-17 latches; respec at 10% of banked Ember (§3.5); after the tree, **relighting the Ruins** and **rekindling a death-site Penitent** (§9.6; prices value owed) | death, Hard Unmaking |
 | **The Codex** (not a currency) | rules | stamps (§8); the §3.7 backstops (tier floor, death) | nothing is spent: 27 entries each *gate* one node (§3.7); the rest gate nothing | everything (anchored, §2) |
 | **Fragments of Unraveling** | the ending | high-tier Wakings, high-tier Rites, Heralds, Hard Unmakings, endings — **all requested SYS-001 rows, §9.4** | the five **Threads of Unraveling** (§9.4) | everything, even the loop (GDD-001 §7.1) |
 | **Mourning Glass / Charges** | the run | mining (SYS-001 §1.4) | Charges, interception, Grub theft | never |
@@ -862,7 +864,7 @@ Two laws: **no currency buys power inside a run** except the one-line Ember rero
 |---|---|---|---|
 | Won run (the Waking unmade) | 450–800 (SYS-001 §7.2 run total; plus the former-Ink Sigil and Shrine purge Ember, value owed) | the entries discovered this run, falling as the Codex fills (stamps are finite, §8.2) | per §9.4, only at Warp T ≥ 3 |
 | Death run | what the run earned so far — **modelled ✱ at about half a won run** (score and Seam clears stop accruing; this is a model assumption, not a game number) | the stamps it earned (unchanged by death), **plus** one pending gating entry from the death-teaches backstop (§3.7) | none from the Waking |
-| Reroll spend | −40 to −530 per run if all four rerolls are used | — | — |
+| Reroll spend | from the first to the sum of all four SYS-001 §7.7 `Run Sigil reroll` prices per run, if all four rerolls are used | — | — |
 
 ### 9.3 Knowledge is finite on purpose (formerly "Ink is finite on purpose")
 

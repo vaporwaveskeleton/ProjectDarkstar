@@ -18,10 +18,12 @@ const SLOT_ITERATION := &"iteration"
 const SLOT_RUN := &"run"
 
 ## Allowed save reasons per slot (SYS-001 §8 save cadence; LOOP-001 §2 "run slot, written between Seams only").
+## `run_end` (Q-T139, PM 2026-11-19): written by RunSession at death / win / abandon, so a quit after
+## a death can never resume the dead run. It is a run boundary, not mid-run.
 const ALLOWED_REASONS := {
 	&"profile": [&"ruins_entry", &"tree_purchase", &"iteration_end", &"cabinet_score", &"cabinet_tape", &"cabinet_stage"],
-	&"iteration": [&"ruins_entry", &"iteration_end", &"new_iteration"],
-	&"run": [&"seam_boundary"],
+	&"iteration": [&"ruins_entry", &"iteration_end", &"new_iteration", &"run_end"],
+	&"run": [&"seam_boundary", &"run_end"],
 }
 
 ## Player-safe meaning of each failure reason; the UI turns these into tr() text.
