@@ -158,9 +158,9 @@ Act 0 is a five-stage shift (~9–11 min skilled; GDD §6.1; TECH-001 §2.10). O
 | `a0_2` | Second Vigil / Drift (cold, Grub-heavy) | 16 | 7 | 1 | 1 | 10 | no | 0 |
 | `a0_3` | Third Vigil / Censer Watch (Acolyte-heavy, first full Waking) | 18 | 4 | 3 | 2 | 0 | yes | 1 |
 | `a0_4` | Fourth Vigil / Shoal (geode-rich) | 26 | 6 | 2 | 1 | 4 | yes | 1 |
-| `a0_5` | The Last Normal Day / Hollow (geode-scarce, last stage) | 8 | 5 | 2 | 2 | 0 | yes | 1 |
+| `a0_5` | The Last Normal Day / Stillwater (geode-scarce, last stage) | 8 | 4 | 2 | 1 | 0 | yes | 1 |
 
-`a0_1` is the old A0-1 stage and `a0_5` the old A0-3 stage (The Last Normal Day); `a0_2`–`a0_4` are new. Vigil rows (§1.1–§1.5) are not touched by the shift (the 340 px/s lock stays).
+`a0_5` margin (PM 2026-11-19, TECH-001 §11.1 Q-T130): Grubs 5 → 4 and Guard Acolytes 2 → 1; **retune at playtest (Reviewer: a0_5 sits on the 24-shard floor)**. `a0_1` is the old A0-1 stage and `a0_5` the old A0-3 stage (The Last Normal Day); `a0_2`–`a0_4` are new. Vigil rows (§1.1–§1.5) are not touched by the shift (the 340 px/s lock stays).
 
 ---
 
