@@ -1,0 +1,27 @@
+{
+	"format": "darkstar.scenario",
+	"version": 1,
+	"id": "cabinet_probe_tour",
+	"args": [],
+	"fail_on_errors": true,
+	"timeout_frames": 1200,
+	"steps": [
+		{"do": "wait_route", "route": "attract", "within": 120},
+		{"do": "coin"},
+		{"do": "wait_until", "id": "attract/ui/NewVigil", "prop": "enabled", "eq": true, "within": 240},
+		{"do": "activate", "id": "attract/ui/NewVigil"},
+		{"do": "wait_route", "route": "cabinet", "within": 240},
+		{"do": "wait_until", "id": "cabinet/game", "prop": "state", "eq": "play", "within": 600},
+		{"do": "snapshot", "name": "start"},
+		{"do": "perf_sample"},
+		{"do": "spawn", "kind": "geode", "dx": 60, "dy": 0},
+		{"do": "pause_sim", "on": true},
+		{"do": "step_sim", "frames": 30},
+		{"do": "assert", "id": "cabinet/world", "prop": "paused_sim", "eq": true},
+		{"do": "pause_sim", "on": false},
+		{"do": "autopilot", "on": true},
+		{"do": "wait_event", "event": "score_awarded", "within": 900},
+		{"do": "snapshot", "name": "end"},
+		{"do": "quit"}
+	]
+}

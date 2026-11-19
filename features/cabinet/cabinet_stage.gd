@@ -19,3 +19,4 @@ enum Goal { CLEAR_SEPULCHRE, UNMAKE_ENTITY }
 @export var chant: bool = true                       ## A0-2 rule: the chant is heard under the music
 @export var goal: Goal = Goal.UNMAKE_ENTITY
 @export var seed: int = 1
+@export var spine_stars: bool = false                ## S8: 20 faint stars trace the entity's spine (THE LAST NORMAL DAY only)
