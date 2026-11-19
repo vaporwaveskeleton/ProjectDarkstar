@@ -93,8 +93,8 @@ extends TunableResource
 
 # --- PR C pass 2 polish: glass reads through light, visible wear, UV fade, backlit marquee, room glow (all ✱) ---
 @export var glass_band_lift: float = 0.42                         ## peak alpha of the glass specular band (a pale veil: lowers contrast and saturation)
-@export var glass_smear_haze: float = 0.36                        ## peak alpha of the thumb-smear when the screen is bright
-@export_range(0.0, 1.0) var glass_smear_idle: float = 0.1         ## its share of that when the screen is dark
+@export var glass_smear_haze: float = 1.0                         ## peak alpha of the thumb-smear when the screen is bright
+@export_range(0.0, 1.0) var glass_smear_idle: float = 0.0         ## its share of that when the screen is dark
 @export_range(0.0, 1.0) var print_uv_fade: float = 0.8           ## reds and magentas fade toward pink / salmon where light fell (upper, outer art)
 @export var print_uv_edge: float = 9.0                            ## width of the unfaded band the T-molding shaded, rig units
 @export_range(0.0, 1.0) var print_grime: float = 0.6             ## dirt dulling the ink in the causal wear zones
@@ -102,6 +102,31 @@ extends TunableResource
 @export var marquee_shadow_depth: float = 0.6                     ## how much the shadow across the backlight darkens the lens and its lettering
 @export var marquee_spill: float = 0.55                           ## warm light the marquee throws on the bezel round it
 @export var room_glow: float = 0.6                                ## strength of the screen-coloured spill on the room round the cabinet
+
+
+# --- PR C pass 2c: the angled control panel, panel captions, the power rocker, real hazard tape (all ✱) ---
+@export_range(0.0, 1.0) var panel_lip: float = 0.85               ## brightness of the bevelled top lip where the panel meets the bezel under the tube
+@export var panel_lip_width: float = 1.6                          ## that lip's width, rig units
+@export_range(0.0, 1.0) var panel_front_shadow: float = 0.7       ## darkness of the shadow under the panel's front (lower) edge
+@export var panel_front_width: float = 5.5                        ## its reach, rig units
+@export_range(0.0, 1.0) var panel_contact: float = 0.8            ## darkness of the contact shadow under each button's bezel
+@export_range(0.0, 1.0) var panel_palm_polish: float = 0.8        ## palm-polish where hands rest beside START (smoother, glossier laminate)
+@export_range(0.0, 1.0) var panel_grain: float = 0.5              ## the laminate's fine grain (its own material, not the print's speckle)
+@export var panel_color: Color = Color8(0x1E, 0x21, 0x2C)         ## dark blue-grey laminate
+@export_range(0.0, 1.0) var start_decal_rub: float = 0.34         ## share of the START decal's ink rubbed off by thumbs (the left half goes first)
+@export_range(0.0, 1.0) var decal_rub: float = 0.12               ## the other decals' light wear
+@export var caption_cap: float = 4.4                              ## cap height of the panel captions (Settings, Quit game), rig units
+@export var caption_stroke: float = 0.95
+@export var caption_tracking: float = 0.8
+@export var caption_pad: Vector2 = Vector2(3.0, 2.0)              ## the caption plate's margin round its lettering
+@export var tape_sheen: float = 0.7                               ## gloss of the hazard tape's vinyl
+@export var tape_misregister: float = 0.4                         ## black plate's offset against the yellow, rig units
+@export_range(0.0, 1.0) var tape_lift: float = 0.8                ## how far the tape's long edges stand off the bezel (a shadow under them)
+@export_range(0.0, 1.0) var tape_dirt: float = 0.8                ## dirt caught on the adhesive edge
+@export_range(0.0, 1.0) var tape_crease: float = 0.8              ## the stress crease where the tape bends
+@export var tape_yellow: Color = Color8(0xE2, 0xB0, 0x14)         ## the tape's yellow vinyl
+@export var tape_black: Color = Color8(0x16, 0x14, 0x14)          ## its black ink
+@export var rocker_lamp_color: Color = Color8(0xFF, 0x4A, 0x1C)   ## the lit half of the POWER rocker
 
 const _DEFAULT_PATH := "res://data/cabinet/cabinet_surface.tres"
 

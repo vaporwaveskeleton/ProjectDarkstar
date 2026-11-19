@@ -3,7 +3,7 @@ shader_type canvas_item;
 // draws the rectangles that tile the bezel around it). Four things you can see: one broad soft diagonal
 // specular band from the cabinet light; the screen's glow reflected in it (the live screen colour,
 // crawling across the glass); dust lying ON TOP of the ink, brighter where the light catches it; and a
-// thumb-smear where a thousand kids leaned in (lower centre, under the screen). A faint green-blue tint
+// thumb-smear where a hand leaned in (beside the screen edge, in the glow path). A faint green-blue tint
 // hugs the glass edge and a few fine scratches remain. The printed art stays readable.
 #include "res://shaders/cabinet/cabinet_material.gdshaderinc"
 
@@ -18,8 +18,8 @@ uniform float dust : hint_range(0.0, 1.0) = 0.5;
 uniform float smudges : hint_range(0.0, 1.0) = 0.5;
 uniform float scratch : hint_range(0.0, 1.0) = 0.5;
 uniform float band_lift = 0.42;          // peak alpha of the specular band: a pale veil that lowers contrast and saturation
-uniform float smear_haze = 0.36;         // peak alpha of the thumb-smear when the screen is bright
-uniform float smear_idle = 0.1;          // its share of that when the screen is dark
+uniform float smear_haze = 1.0;          // peak alpha of the thumb-smear when the screen is bright
+uniform float smear_idle = 0.0;          // its share of that when the screen is dark
 
 varying vec2 lp;
 
@@ -67,17 +67,17 @@ void fragment() {
 	acc += mix(vec3(0.78, 0.76, 0.7), key / max(max(key.r, max(key.g, key.b)), 0.05), 0.5) * a_dust;
 	asum += a_dust;
 
-	// the thumb-smear: where kids leaned in to watch, lower centre under the opening. A broad greasy wipe
-	// with streaks along the lean, and two thumb ovals with ridges.
-	vec2 sc = vec2(hc.x - 6.0, cab_hole.y + cab_hole.w + 11.0);
-	vec2 sq = rot2(rp - sc, -0.12) / vec2(96.0, 13.0);
-	float streak = 0.55 + 0.6 * vnoise(rp * vec2(0.22, 2.2) + 11.0);
+	// the thumb-smear (pass 2c): on the glass beside the screen's left edge, in the glow's path, where a hand leaned in
+	// to steady itself: a tall greasy wipe hugging the edge with streaks along the lean, and two thumb ovals with ridges.
+	// It is the screen's own light scattering in the grease: invisible while the picture is dark, a clear haze when it is bright.
+	vec2 sc = vec2(cab_hole.x - 17.0, cab_hole.y + cab_hole.w * 0.62);
+	vec2 sq = rot2(rp - sc, 0.16) / vec2(15.0, 74.0);
+	float streak = 0.55 + 0.6 * vnoise(rp * vec2(2.4, 0.2) + 11.0);
 	float wipe = smoothstep(1.0, 0.1, length(sq)) * streak;
-	float thumb = max(print_blob(rp, sc + vec2(-22.0, 1.5), 0.25, vec2(9.0, 6.5), px), print_blob(rp, sc + vec2(14.0, -0.5), -0.15, vec2(8.0, 6.0), px));
-	// its visibility is the screen's light scattering in the grease: hazes up when the picture is bright,
-	// nearly vanishes when it is dark (cab_screen_light.a is the smoothed, photosensitivity-frozen light)
-	float lit_k = smear_idle + (1.0 - smear_idle) * clamp(cab_screen_light.a, 0.0, 1.0);
-	float a_sm = clamp(wipe * 0.55 + thumb * 0.7, 0.0, 1.0) * smear_haze * smudges * lit_k * (0.8 + 0.6 * key_l);
+	float thumb = max(print_blob(rp, sc + vec2(4.0, -26.0), 1.2, vec2(9.5, 6.5), px), print_blob(rp, sc + vec2(-4.0, 16.0), 1.45, vec2(9.0, 6.0), px));
+	float glow_path = exp(-max(dh, 0.0) / 40.0);
+	float lit_k = smear_idle + (1.0 - smear_idle) * smoothstep(0.5, 0.95, cab_screen_light.a);
+	float a_sm = clamp(wipe * 0.6 + thumb * 0.9, 0.0, 1.0) * smear_haze * smudges * lit_k * glow_path * (0.8 + 0.6 * key_l);
 	acc += mix(vec3(0.9, 0.92, 0.94), cab_screen_light.rgb * 1.1 + 0.15, 0.55) * a_sm;
 	asum += a_sm;
 
@@ -97,7 +97,7 @@ void fragment() {
 	vec2 dq = abs(rp - (door_rect.xy + door_rect.zw * 0.5)) - door_rect.zw * 0.5;
 	float dd = max(dq.x, dq.y);
 	float hide = smoothstep(0.0, 1.5, dd + 1.0);
-	float a = clamp(asum, 0.0, 0.6) * hide * in_sheet;
+	float a = clamp(asum, 0.0, 0.7) * hide * in_sheet;
 	vec3 c = asum > 1e-5 ? acc / asum : vec3(1.0);
 	COLOR = vec4(c, a);
 }
