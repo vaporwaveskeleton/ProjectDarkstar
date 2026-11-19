@@ -41,7 +41,19 @@ var show_lattice := false
 var show_dome := false
 var show_greenhouse := false
 var show_fragments := false
+## Damage ladder (ART-001 §15.4): armillary rings stalled / snapped open, outermost first.
+var rings_stalled := 0
+var rings_broken := 0
 var _t := 0.0
+
+## ✱ a stalled ring lists off its plane (extra tilt, rad) and sags (px); its bead stops.
+const STALL_TILT := 0.22
+const STALL_SAG := 16.0
+## ✱ a broken ring: the gap on its near half (rad), the snapped piece's drift (px) and turn (rad).
+const BREAK_GAP := Vector2(1.2, 1.7)
+const BREAK_PIECE := 0.45
+const BREAK_DRIFT := 16.0
+const BREAK_TURN := 0.07
 
 
 func configure(look: AetherLook) -> void:
@@ -53,7 +65,17 @@ func configure(look: AetherLook) -> void:
 	show_dome = look.set_dome
 	show_greenhouse = look.set_greenhouse
 	show_fragments = look.set_ring_fragments
+	rings_broken = clampi(look.rings_broken, 0, orrery_radii.size())
+	rings_stalled = clampi(maxi(look.rings_stalled, rings_broken), 0, orrery_radii.size())
 	queue_redraw()
+
+
+func _ring_stalled(i: int) -> bool:
+	return i >= orrery_radii.size() - rings_stalled
+
+
+func _ring_broken(i: int) -> bool:
+	return i >= orrery_radii.size() - rings_broken
 
 
 func any_shown() -> bool:
@@ -120,8 +142,10 @@ func _draw_orrery() -> void:
 		for i in orrery_radii.size():
 			var r: float = orrery_radii[i]
 			var depth := float(i) / float(maxi(orrery_radii.size() - 1, 1))
+			var st := _ring_stalled(i)
+			var rc := orrery_centre + (Vector2(0.0, STALL_SAG) if st else Vector2.ZERO)
 			# far halves: thinner, more fogged (the fog sits between us and them)
-			_brass_arc(orrery_centre, r, r * orrery_squash, orrery_tilt, PI, TAU,
+			_brass_arc(rc, r, r * orrery_squash, orrery_tilt + (STALL_TILT if st else 0.0), PI, TAU,
 				ring_width * (1.0 - 0.45 * depth) * 0.8, (0.75 - 0.35 * depth) * 0.6)
 	if not front:
 		return
@@ -136,13 +160,37 @@ func _draw_orrery() -> void:
 		var r: float = orrery_radii[i]
 		var ry := r * orrery_squash
 		var depth := float(i) / float(maxi(orrery_radii.size() - 1, 1))
-		_brass_arc(orrery_centre, r, ry, orrery_tilt, 0.0, PI, ring_width * (1.0 - 0.45 * depth), 0.95 - 0.35 * depth)
-		# the planet bead rides the ring; drawn only while on the near half
-		var a := fposmod(_t * orrery_speed / (1.0 + float(i)) + float(i) * 1.7, TAU)
-		if a < PI:
-			var bead := orrery_centre + rot * Vector2(cos(a) * r, sin(a) * ry)
+		var st := _ring_stalled(i)
+		var rc := orrery_centre + (Vector2(0.0, STALL_SAG) if st else Vector2.ZERO)
+		var tilt := orrery_tilt + (STALL_TILT if st else 0.0)
+		var w := ring_width * (1.0 - 0.45 * depth)
+		var al := 0.95 - 0.35 * depth
+		if _ring_broken(i):
+			_draw_broken_near_half(rc, r, ry, tilt, w, al)
+		else:
+			_brass_arc(rc, r, ry, tilt, 0.0, PI, w, al)
+		# the planet bead rides the ring; drawn only while on the near half (a stalled bead stops)
+		var bt := 0.0 if st else _t
+		var a := fposmod(bt * orrery_speed / (1.0 + float(i)) + float(i) * 1.7, TAU)
+		if a < PI and not (_ring_broken(i) and a > BREAK_GAP.x and a < BREAK_GAP.y + BREAK_PIECE):
+			var bead := rc + Transform2D(tilt, Vector2.ZERO) * Vector2(cos(a) * r, sin(a) * ry)
 			draw_circle(bead, 3.0 + float(i), _c(brass, 1.0))
 			draw_arc(bead, 3.0 + float(i), PI * 1.1, PI * 1.7, 12, _c(brass_hi, 1.2), 1.0, true)
+
+
+## A ring snapped open (ladder T4+): its near half with a gap, the snapped piece drifted outward and
+## turned a little, each torn end cut straight across the band.
+func _draw_broken_near_half(c: Vector2, r: float, ry: float, tilt: float, w: float, alpha: float) -> void:
+	_brass_arc(c, r, ry, tilt, 0.0, BREAK_GAP.x, w, alpha)
+	_brass_arc(c, r, ry, tilt, BREAK_GAP.y + BREAK_PIECE, PI, w, alpha)
+	var mid := (BREAK_GAP.y + BREAK_GAP.y + BREAK_PIECE) * 0.5
+	var away := Transform2D(tilt, Vector2.ZERO) * Vector2(cos(mid), sin(mid)).normalized() * BREAK_DRIFT
+	_brass_arc(c + away, r, ry, tilt + BREAK_TURN, BREAK_GAP.y, BREAK_GAP.y + BREAK_PIECE, w * 0.9, alpha * 0.85)
+	var rot := Transform2D(tilt, Vector2.ZERO)
+	for a: float in [BREAK_GAP.x, BREAK_GAP.y + BREAK_PIECE]:
+		var e := c + rot * Vector2(cos(a) * r, sin(a) * ry)
+		var cut := rot * Vector2(cos(a + 0.9), sin(a + 0.9))
+		draw_line(e - cut * w, e + cut * w, _c(brass_hi, alpha), 1.0, true)
 
 
 ## T2: a gaslit greenhouse vault in the lower right — pointed glasshouse arches receding into the

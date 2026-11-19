@@ -2,14 +2,21 @@ extends Node
 ## Dev-only Aether gallery (route `aether_gallery`, dev builds only — never in the shipped route
 ## table). Shows the post-Pretence world tier by tier: 0 T1 Pale Marches, 1 T2 Green Rot,
 ## 2 T3 Drowned Observatory, 3 T4 Litany, 4 T5 The Black, 5 the entity's presence (T3 look,
-## drain 0 → 1). ui_right / ui_left cycle, ui_focus_next cycles the quality rung, ui_cancel returns
-## to attract. No on-screen text.
+## drain 0 → 1), 6 the M2 slice sector PM-01 (Pale Marches T1 with its Presence and the CH-3
+## lantern-down reveal), 7–11 the Pale Marches damage ladder T1..T5 (G-2, Q-T126: same camera and
+## set pieces, one more kind of damage per tier; data/aether/ladder/).
+## ui_right / ui_left cycle, ui_focus_next cycles the quality rung, ui_focus_prev toggles the stand-in
+## lantern lit / down (CH-3 captures), ui_accept makes the Presence flee, ui_cancel returns to
+## attract. No on-screen text.
 ## The world renders in an HDR SubViewport at native window resolution with its own glow.
 ## Dev user args, read here only (automation ignores unknown args; TECH-001 Q-T47 note):
 ##   --aether-quality=high|medium|low   start on that quality rung (default high)
 ##   --aether-sweep                     per-layer GPU cost sweep: prints AETHER_LAYER_COST lines,
-##                                      then quits (every rung, or only the --aether-quality rung)
-##   --aether-exhibit=N                 start on exhibit N (0–5)
+##                                      then quits (every rung, or only the --aether-quality rung;
+##                                      every exhibit, or only the --aether-exhibit one)
+##   --aether-exhibit=N                 start on exhibit N (0–11)
+##   --aether-lantern-down              start with the stand-in lantern down
+##   --aether-flee-at=S                 the Presence flees S seconds into each exhibit
 ##   --aether-measure                   clean isolated cost: one exhibit (--aether-exhibit) in this
 ##                                      fresh process, MEASURE_WARMUP frames, then AETHER_COST over
 ##                                      MEASURE_FRAMES frames, then quits (entity exhibit holds
@@ -26,10 +33,21 @@ const LOOKS: Array[String] = [
 	"res://data/aether/litany_t4.tres",
 	"res://data/aether/the_black_t5.tres",
 	"res://data/aether/drowned_observatory_t3.tres",
+	"res://data/aether/pm01_pale_marches_t1.tres",
+	"res://data/aether/ladder/pm_t1.tres",
+	"res://data/aether/ladder/pm_t2.tres",
+	"res://data/aether/ladder/pm_t3.tres",
+	"res://data/aether/ladder/pm_t4.tres",
+	"res://data/aether/ladder/pm_t5.tres",
 ]
 const ENTITY_EXHIBIT := 5
+const SLICE_EXHIBIT := 6
+const LADDER_FIRST := 7
 const BEDS: Array[StringName] = [&"aether_bed_t1", &"aether_bed_t2", &"aether_bed_t3", &"aether_bed_t4",
-	&"aether_bed_t5", &"aether_bed_t3"]
+	&"aether_bed_t5", &"aether_bed_t3", &"aether_bed_t1", &"aether_bed_t1", &"aether_bed_t2", &"aether_bed_t3",
+	&"aether_bed_t4", &"aether_bed_t5"]
+const ARG_LANTERN_DOWN := "--aether-lantern-down"
+const ARG_FLEE_AT := "--aether-flee-at="
 const DRAIN_RAMP_S := 12.0     ## ✱ entity exhibit: seconds for drain 0 → 1
 const DRAIN_HOLD_S := 1.0      ## ✱ entity exhibit: seconds before the drain starts
 const FLEE_AT := 0.15          ## ✱ drain at which life starts to drift in (one swell)
@@ -54,6 +72,11 @@ var exhibit := 0
 var exhibit_time := 0.0
 var drain := 0.0
 var quality_level := "high"
+## The stand-in lantern: up (true) or down (CH-3 reveal).
+var lantern_lit := true
+var _flee_at := -1.0
+var _flee_fired := false
+var _sweep_only := -1
 var _frames := 0
 var _gpu_sum := 0.0
 var _cpu_sum := 0.0
@@ -100,6 +123,11 @@ func _ready() -> void:
 			asked = a.trim_prefix(ARG_QUALITY)
 		elif a.begins_with(ARG_EXHIBIT):
 			start = clampi(a.trim_prefix(ARG_EXHIBIT).to_int(), 0, LOOKS.size() - 1)
+			_sweep_only = start
+		elif a.begins_with(ARG_FLEE_AT):
+			_flee_at = a.trim_prefix(ARG_FLEE_AT).to_float()
+	if args.has(ARG_LANTERN_DOWN):
+		lantern_lit = false
 	set_quality(asked if asked in AetherQuality.LEVELS else "high")
 	_measure_on = args.has(ARG_MEASURE)
 	_show(start)
@@ -141,6 +169,13 @@ func _unhandled_input(event: InputEvent) -> void:
 		print("AETHER_QUALITY %s" % quality_level)
 		_show(exhibit)
 		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed(&"ui_focus_prev"):
+		set_lantern_lit(not lantern_lit)
+		print("AETHER_LANTERN lit=%s" % str(lantern_lit))
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed(&"ui_accept"):
+		_backdrop.presence_flee()
+		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed(&"ui_cancel"):
 		get_viewport().set_input_as_handled()
 		SceneRouter.go_to(&"attract")
@@ -148,6 +183,14 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func show_exhibit(index: int) -> void:
 	_show(posmod(index, LOOKS.size()))
+
+
+## The stand-in lantern up or down (CH-3): the backdrop fades its reveal; the marker's lamp goes dark.
+func set_lantern_lit(lit: bool) -> void:
+	lantern_lit = lit
+	_lantern.lit = lit
+	_lantern.apply()
+	_backdrop.set_lantern_lit(lit)
 
 
 ## Switch the backdrop's quality rung by name (high / medium / low).
@@ -172,6 +215,8 @@ func _show(index: int) -> void:
 	drain = look.base_drain
 	_backdrop.set_drain(drain)
 	_lantern.configure(look)
+	set_lantern_lit(lantern_lit)
+	_flee_fired = false
 	var env := _env.environment
 	env.glow_hdr_threshold = look.glow_threshold
 	env.glow_intensity = look.glow_intensity
@@ -194,6 +239,10 @@ func _process(delta: float) -> void:
 	_backdrop.set_camera(cam, 1.0)
 	_backdrop.set_time(exhibit_time)
 	_backdrop.set_lantern(CAMERA_HOME + LANTERN_OFFSET, look.lantern_radius, _lantern.light.color, _lantern.light.energy)
+	if _flee_at >= 0.0 and not _flee_fired and exhibit_time >= _flee_at:
+		_flee_fired = true
+		_backdrop.presence_flee()
+		print("AETHER_PRESENCE_FLEE exhibit=%d t=%.2f" % [exhibit, exhibit_time])
 	if exhibit == ENTITY_EXHIBIT:
 		if _sweep_on or _measure_on:
 			drain = SWEEP_DRAIN
@@ -246,6 +295,8 @@ func _start_sweep(levels: Array[String]) -> void:
 	_sweep_pairs.clear()
 	for lv in levels:
 		for ex in LOOKS.size():
+			if _sweep_only >= 0 and ex != _sweep_only:
+				continue
 			_sweep_pairs.append(Vector2i(AetherQuality.LEVELS.find(lv), ex))
 	print("AETHER_SWEEP_START px=%dx%d levels=%s" % [_world.size.x, _world.size.y, ",".join(PackedStringArray(levels))])
 	_sweep_next_pair()

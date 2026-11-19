@@ -14,6 +14,8 @@ const BOB_S := 6.0
 
 var energy: float = 1.6
 var radius: float = 120.0
+## Dev stand-in for CH-3: false = the lamp is down (no light, the glass dark).
+var lit: bool = true
 var _t := 0.0
 
 @onready var light: PointLight2D = $Light
@@ -40,7 +42,8 @@ func apply() -> void:
 		return
 	light.energy = energy
 	light.texture_scale = radius * 2.0 / float(LIGHT_TEX)
-	light.enabled = visible
+	light.enabled = visible and lit
+	queue_redraw()
 
 
 static func _radial_texture() -> GradientTexture2D:
@@ -74,7 +77,10 @@ func _draw() -> void:
 	outline.append(hull[0])
 	draw_polyline(outline, Pal.BONE_3, 1.0, true)
 	draw_line(o + Vector2(-11, 0), o + Vector2(12, 0), Pal.BONE_2, 1.0, true)
-	# the lamp: GAS glass ring and an over-bright core
+	# the lamp: GAS glass ring and an over-bright core (down: dark glass, no core)
+	if not lit:
+		draw_circle(o + Vector2(2, 0), 4.0, Pal.GAS_0)
+		return
 	draw_circle(o + Vector2(2, 0), 4.0, Pal.GAS_2)
 	draw_circle(o + Vector2(2, 0), 2.6, Pal.GAS_4)
 	var core := Pal.GAS_5 * CORE_HDR
