@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="ComposureStats" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://features/composure/composure_stats.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+ds_namespace = "ds_composure"
+source_section = "SYS-001 §1.5 (start 10: Q-T118)"
+min_value = 0.0
+max_value = 10.0
+start_value = 10.0
+clear_floor = 7.0
+frayed_floor = 4.0
+gaze_cone_per_s = -1.0
+gaze_drain_per_s = -0.5
+gaze_drain_min_tier = 3
+chant_radius_per_s = -0.5
+warp_passive_per_s_per_tier = -0.1
+charge_lost = -0.5
+charge_spent = 0.0
+death = -2.0
+death_recover_s = 60.0
+surgelight_use = -1.0
+surgelight_min_tier = 2
+surgelight_max_per_s = 2.0
+shrine_destroyed = 1.0
+matron_killed = 2.0
+procession_let_pass = 2.0
+darkness_delay_s = 5.0
+darkness_per_s = 0.5
+darkness_cap = 2.0
+clear_eyed = -1.0

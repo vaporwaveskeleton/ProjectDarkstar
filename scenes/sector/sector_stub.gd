@@ -24,6 +24,9 @@ const PAUSE_SCENE := preload("res://scenes/sector/pause_screen.tscn")
 @onready var _launcher: ChargeLauncher = %ChargeLauncher
 @onready var _procession: ProcessionSandbox = %ProcessionSandbox
 @onready var _grubs: GrubProcession = %GrubProcession
+## Sector-scoped for M1 (Q-T118); moves to RunSession when that is built (TECH-001 §2.8).
+@onready var _composure: Composure = %Composure
+@onready var _wick: ComposureWick = %ComposureWick
 
 var vigil: Vigil
 ## The sector's wrap-around space. Features that need positions or distances on this sector take it
@@ -57,6 +60,11 @@ var compass_markers: int:
 var camera_gap: float:
 	get: return torus.distance(_camera.global_position, vigil.global_position) \
 		if torus and _camera and is_instance_valid(vigil) else 0.0
+## Composure 0–10 and its band name (clear / frayed / unmoored / hollowed), SYS-001 §1.5.
+var composure: float:
+	get: return _composure.value if _composure else 0.0
+var composure_band: String:
+	get: return _composure.band_name() if _composure else ""
 
 ## Read-only scalars for the automation id `sector/field` (glass economy). Dev/QA reads.
 var geodes_alive: int:
@@ -122,6 +130,9 @@ func _ready() -> void:
 	_launcher.vigil = vigil
 	_launcher.projectile_parent = _actors
 	_launcher.target = _procession.sepulchre.hurtbox
+	_launcher.composure = _composure
+	vigil.cockpit_flame.composure = _composure
+	_wick.composure = _composure
 	vigil.health.damaged.connect(func(_a, _r): _refresh_hud())
 	vigil.hull_breached.connect(_on_hull_breached)
 	_overlays.emptied.connect(_on_overlays_emptied)

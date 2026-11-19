@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="CockpitFlameStats" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://features/composure/cockpit_flame_stats.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+ds_namespace = "ds_composure.flame"
+source_section = "WARP-001 §4.1 cockpit flame, §4.2 L10 (all ✱, TECH-001 §3.4)"
+base_x_px = -3.0
+half_width_px = 2.0
+steady_length_px = 6.0
+flicker_length_px = 6.0
+gutter_length_px = 3.0
+hollow_length_px = 6.0
+flicker_hz = 2.0
+flicker_swing_px = 1.5
+gutter_hz = 1.0
+gutter_swing_px = 1.0
+max_motion_hz = 3.0

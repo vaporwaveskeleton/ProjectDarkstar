@@ -93,6 +93,29 @@ func test_outcomes_are_counted_and_spent_charges_freed() -> void:
 	assert_bool(flying.is_queued_for_deletion()).is_false()
 
 
+func test_lost_charge_costs_half_composure_once_guttered_costs_nothing() -> void:
+	# SYS-001 §1.5: Charge lost to an interceptor −0.5; a guttered Charge is not a row.
+	var comp := auto_free(Composure.new()) as Composure
+	comp.stats = load("res://data/composure/composure.tres")
+	comp.sfx = Callable()
+	holder.add_child(comp)
+	comp.set_physics_process(false)
+	launcher.composure = comp
+	magazine.try_add(2)
+	var lost := launcher.fire(Vector2.ZERO, Vector2.RIGHT)
+	var gutter := launcher.fire(Vector2.ZERO, Vector2.RIGHT)
+	for c in [lost, gutter]:
+		(c as NullIronCharge).set_physics_process(false)
+	lost.resolve_contact(_choir_hurtbox())
+	for _t in 360:
+		gutter.advance(DT)
+	assert_float(comp.value).is_equal(10.0)   # applied when the launcher counts the outcome
+	launcher.prune()
+	assert_float(comp.value).is_equal(9.5)
+	launcher.prune()
+	assert_float(comp.value).is_equal(9.5)    # once per Charge
+
+
 func test_magazine_try_spend() -> void:
 	assert_bool(magazine.try_spend()).is_false()
 	magazine.try_add(2)
