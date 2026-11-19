@@ -62,6 +62,7 @@ const QA_BANNED = [
   [/^core\/automation\/tests\//, "core/automation/tests/"],
   [/^(core\/[^/]+|features\/[^/]+|scenes)\/tests\//, "a feature/core/scenes tests/ folder"],
   [/^tests\/support\//, "tests/support/"],
+  [/^features\/[^/]+\/automation\/tests\//, "features/*/automation/tests/"],
 ];
 
 /** @param {string[]} files @param {string} profile @returns {{ok: boolean, line: string}[]} */
@@ -80,7 +81,7 @@ function audit(files, profile) {
     const data = files.filter((f) => f.startsWith("data/") && f.endsWith(".tres")).length;
     res.push({ ok: data > 0, line: `loose data/*.tres shipped (${data})` });
   } else {
-    for (const need of ["core/automation/scenario_runner.gd", "core/automation/step_catalog.json", "tests/fixtures/saves/approved.json"]) {
+    for (const need of ["core/automation/scenario_runner.gd", "core/automation/step_catalog.json", "tests/fixtures/saves/approved.json", "features/cabinet/automation/cabinet_probe.gd"]) {
       res.push({ ok: files.includes(need), line: `contains ${need}` });
     }
     res.push({ ok: files.some((f) => /^tests\/scenarios\/[^/]+\.scenario\.json$/.test(f)), line: "contains tests/scenarios/*.scenario.json" });
