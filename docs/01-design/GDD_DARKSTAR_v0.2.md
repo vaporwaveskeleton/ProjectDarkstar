@@ -110,6 +110,48 @@ DARKSTAR **opens as a 1983-style arcade shooter**: black space, one ship, astero
 - **Snap-turn:** the hull sprite rotates toward aim at 720°/s, so the ship never feels like it is steering into its own fire.
 - **Wraparound play-space:** the Pale Marches torus-wraps at the edges (Warp Tier 0 = classic arcade wrap; higher tiers change what wrapping *means*).
 - **Camera:** player-centred, 0.12 s critically-damped follow, 24 px deadzone, 1.5% lookahead toward aim, screen-shake budget 4 px. Zoom 1.0 in Act 0; +6% at Warp 3, then a slow breathing zoom at Warp 5 (the universe expanding/contracting).
+- **Scope (ruled, PM under owner autonomy grant, 2026-11-19; TECH-001 Q-T164):** the numbers above are the **Cabinet profile**. They and their 🔒 stay exactly as they are, for Act 0 only. After THE PRETENCE the Vigil flies the Aether profile (§4.2a).
+
+### 4.2a Aether handling profile (ruled, PM under owner autonomy grant, 2026-11-19)
+
+> **Status: ruled, PM under owner autonomy grant, 2026-11-19** (TECH-001 Q-T164–Q-T172, §11.1a; queued for the owner's later review). The numbers are in SYS-001 §1.1a as ✱ first-pass values, retuned at playtest.
+
+**Intent (owner direction, 2026-11-19).** After THE PRETENCE the Vigil is no longer an arcade blip. It is a lantern skiff in a medium: heavier, slower, with a keel, and the pilot has a few systems to manage. The Lantern Tree shapes what the ship can do (LOOP-001 §3.8). Act 0 keeps §4.2 exactly. The model is *Sunless Skies*-style piloting (momentum, deliberate turns, light as a resource), as inspiration only: no names, art or content are taken.
+
+**Two profiles, one motor.**
+
+| Profile | Where it applies | Numbers |
+|---|---|---|
+| **Cabinet** | Act 0 (A0-1 to A0-5), on the Cabinet screen | §4.2 and SYS-001 §1.1, unchanged 🔒 |
+| **Aether** | all flight after THE PRETENCE: sectors, Seams, the Waking | SYS-001 §1.1a ✱ |
+
+The cinematic and the Ruins have no flight (M2 slice beats 1–11). The Ruins pilot-lamp cursor is not covered by either profile.
+
+**What the pilot feels in the Aether.**
+- **Weight.** The top speed is about two-thirds of the Cabinet's, the ship takes longer to reach it, and it coasts a long way. A full reversal takes about three times as long as in the Cabinet. You plan a line instead of jinking.
+- **A keel.** The hull has a heading. WASD still says where you want to go (D-01 unchanged). The hull swings toward that direction at a limited turn rate, and thrust is strongest along the keel and weaker sideways and backwards. A turn is something you commit to.
+- **The gun stays precise.** The Arc-Lance sits on a turret at the lamp and still tracks the mouse at the §4.2 snap-turn rate. The ship is heavy, but the aim is not, and a hit never depends on the hull's heading.
+- **Space is the anchor.** Braking is the pilot's main skill. It bleeds momentum hard but not instantly, and afterwards the ship has to spin up again.
+
+**Systems the pilot manages.** There is no new resource and no new HUD meter. Each system is built from an existing noun:
+1. **The keel** (heading and momentum). This is not a resource. It is a physical state, shown by the hull itself: its heading, the lantern's swing, and the wake in the fog.
+2. **Lantern state as the drive's flame.** The lamp feeds the drive. Lantern Up gives full thrust. Lantern Down is running dark: weaker thrust and lower drag, so you glide quietly. E becomes a handling decision as well as a light decision, with no new input. It sits on top of the §8.1 trade (mining, detection) and matches the Passing counterplay: lantern down, stop firing, ride the drift.
+3. **Surgelight as the escape valve.** With heavy handling, Surgelight is the one burst that beats momentum. Its stored charges and cooldown (LOOP-001 LANTERN-1, -6, -7, -16) become the system you watch. Its Composure cost at T ≥ 2 is unchanged.
+4. **No change** to Composure, Null-Iron Charges or the Arc-Lance. There is no lance heat, fuel or ballast gauge: LOOP-001 §3.3 ORDNANCE rules out a lance fuel bar or reload meter. Ballast stays what it is, a Run Sigil (SIG-H-02), not a gauge.
+
+**Readability at the slower pace (bullet-hell and *Returnal*-style clarity).**
+- **The hitbox does not grow.** `ds_vigil.move.hitbox_circle_px` 🔒 (TECH-001 Q-T04) stays as it is, even though the Aether hull art is larger (ART-001 §16.7): a big brass ship with a small, honest core.
+- **Threat speed scales with the ship.** In Aether sectors, Choir projectile speeds take a profile multiplier (SYS-001 §1.1a). Telegraph times are never shortened. The multiplier only partly closes the gap in the dodge window. Coasting (you are usually already moving) and Surgelight cover the rest. Playtest decides it (Q-T168).
+- **The race still holds.** The Aether `max_speed` stays above the Grub flee speed (SYS-001 §3), so a Grub can still be run down, but it takes a planned line and often a Surgelight.
+- **Momentum is always drawn.** The lantern swings on its gimbal against acceleration, the wake trails in the fog, and the brake throws HULL-3's chalk ring. The player sees where the ship *will* be, not only where it is.
+- **The camera leads the velocity** as well as the aim, so a fast coast shows what is ahead (SYS-001 §1.1a, ✱).
+
+**The change of feel lands as a beat.** The Cabinet's snap was the lie, and the weight is the truth. The cinematic and the Ruins have no flight, so the first Aether flight is the launch into PM-01 (M2 slice beat 12: the same layout as A0-1, now a place). The Vigil leaves the hangar already coasting, lamp swinging, with input live, and the first key press shows the weight. There is no text and no tutorial. The player's own hands tell them the ship was never a blip: first recognition (*I know this ship*), then difference (*it has weight now*). No engine sound is added (AUDIO-001 §12.4 forbids locomotion cues). The cue is visual (the lamp's swing, the wake), plus light controller rumble on thrust and braking (Q-T172).
+
+**Controls.** No new input action is proposed. The §4.1/§4.3 bindings and `tests/test_input_map.gd` stay unchanged. What changes is what the keys mean. In the Aether, WASD sets the wanted heading and thrust instead of direct 8-way thrust, and the hull no longer "rotates 60% toward aim" (§4.1): it follows the keel, while the lance turret follows the aim. Ruled (Q-T166): the keel model, with this paragraph as the Aether reading of §4.1. Rotate-and-thrust controls (W thrusts, A/D turn) were rejected because they would change §4.1/§4.3 and the spirit of D-01.
+
+**D-08 stays open and switchable.** The profile touches movement only, never `ds_vigil.hull.max_hp`. A heavier ship makes a one-hit death cost more, so the D-08 A/B should also be run on the Aether profile (Q-T171).
+
 
 ### 4.3 Gamepad parity (Steam Input + native)
 - Left stick move, right stick aim (twin-stick), RT lance, LT charge, A surgelight, X lantern, B ward pulse, Y unravel focus, LSB brake.
@@ -209,6 +251,7 @@ Full node list lives in `ROGUELIKE_LOOP_AND_LANTERN_TREE.md` (90 nodes + 24 pact
 - **Lantern state (E):** Up = light radius 260 px, full mining speed, Choir detection range +180%. Down = dark, mining slowed 35% (impossible below Warp 3 without the *Dark Lantern* node), Choir detection −60%. The entity's Sepulchre only lights itself, so a dark player can steal shards from right under a Choir procession — the "hold your breath" moment.
 - **Composure (sanity, 0–10):** see §8.6.
 - Visual language: small brass-lantern skiff, 48×48 core inside 64×64 canvas; 4 module slots visible in art (bow, flanks, stern) so upgrades *appear on the sprite* (modularity spec §6).
+- **Aether handling and look (ruled 2026-11-19, Q-T164–Q-T172):** after THE PRETENCE the Vigil flies the heavier Aether profile (§4.2a). Its art grows into a brass lantern skiff whose modules show Lantern Tree upgrades (ART-001 §16.7, ART-002 §4.1). The hitbox does not grow.
 
 ### 8.2 Arc-Lance (one gun, two jobs)
 - Single weapon (no weapon-swap bloat): 6 shots/s base, 14 px projectile, 1 hit, 0.9 s to shatter a small geode face.
