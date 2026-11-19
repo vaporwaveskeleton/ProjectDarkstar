@@ -70,9 +70,11 @@ func tick(delta: float) -> void:
 				g.think = 0.4
 				_claim(g)
 			g.state = State.SEEK if g.shard != null else State.IDLE
-		elif world.stage.grub_pilfer and g.think <= 0.0:
-			g.think = 0.4
-			_pilfer(g)          # P2: a nearer loose shard beats the one it is heading for
+		else:
+			if world.stage.grub_pilfer and g.think <= 0.0:
+				g.think = 0.4
+				_pilfer(g)          # P2: a nearer loose shard beats the one it is heading for
+			g.state = State.SEEK    # still holds a live claim: back to it once the lamp has passed (was stuck in FLEE)
 		var target := g.pos
 		var speed := SEEK_SPEED
 		match g.state:

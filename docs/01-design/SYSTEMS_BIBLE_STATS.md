@@ -194,16 +194,18 @@ Act 0 is a five-stage shift (~9–11 min skilled; GDD §6.1; TECH-001 §2.10). O
 
 **Pressure switches (P2, built; PM 2026-11-19, TECH-001 §11.1 Q-T105; retune at playtest `⚙`).** Per-stage `CabinetStage` fields; each default reproduces the pre-P2 game, and `a0_1` keeps every default. Vigil rows are untouched. TECH-001 §2.10 holds the behaviour.
 
-| Id | Bell interval (`acolyte_reinforce_s`) | Acolyte cap (`acolyte_cap`) | Geode drift (`geode_drift_s`) | Grubs after wake | Grub pilfer | Acolyte escort | Carry Charges in |
-|---|---|---|---|---|---|---|---|
-| default | 0 (off) | 0 | 0 (off) | no | no | no | no |
-| `a0_1` | default | default | default | no | no | no | no |
-| `a0_2` | 40 s | 2 | 20 s | no (cold) | yes | no | yes |
-| `a0_3` | 25 s | 6 | 20 s | no | yes | yes | yes |
-| `a0_4` | 35 s | 4 | 12 s | yes | yes | no | yes |
-| `a0_5` | 30 s | 5 | default (off) | yes | yes | no | yes |
+| Id | Bell interval (`acolyte_reinforce_s`) | Acolyte cap (`acolyte_cap`) | Bells after wake (`reinforce_after_wake`) | Geode drift (`geode_drift_s`) | Grubs after wake | Grub pilfer | Acolyte escort | Carry Charges in | Backdrop signature (`backdrop`, ✱) |
+|---|---|---|---|---|---|---|---|---|---|
+| default | 0 (off) | 0 | yes | 0 (off) | no | no | no | no | none (plain sky) |
+| `a0_1` | default | default | default | default | no | no | no | no | none |
+| `a0_2` | 40 s | 2 | default | 20 s | no (cold) | yes | no | yes | `currents` |
+| `a0_3` | 40 s | 4 | **no** | 20 s | no | yes | yes | yes | `chains` |
+| `a0_4` | 25 s | 6 | default | 12 s | yes | yes | no | yes | `shoal` |
+| `a0_5` | 0 (off) | 0 | default | 20 s | yes | yes | no | yes | `horizon` |
 
-Meaning: a bell (every interval, while the Vigil is alive and under control) warns, then brings one Acolyte from just off view if fewer than the cap live (guard ring counted). Drift-in adds a geode every `geode_drift_s` while live geodes sit below half the stage count. "Grubs after wake" keeps the Sepulchre birthing replacement Grubs after the entity wakes (§3 Grub respawn). Pilfer: Grubs prefer loose glass the Vigil's magnet is not pulling. Escort: idle non-guard Acolytes trail a laden Grub. Carry: the next stage starts with the Charges held at the last stage's end (cap: magazine 5).
+Stage-curve retune (PM under owner autonomy grant, 2026-11-19, TECH-001 §11.1 Q-T135, §11.2): `a0_4` is the pressure peak, `a0_3` is eased and its bells stop once the Sepulchre wakes, `a0_5` is scarcity, not pressure: bells off, with a trickle of drift-in (20 s, only while live geodes are below half the stage count, 4). Reason: 8 geodes hold at most 8 × `shards_detonated_max` (6) = 48 glass, short of the 60 deposits (20 segments × 3 shards per segment) its wake needs from 0 starting segments, so without drift-in `a0_5` could not be won (2026-11-19). Grub pilfer is unchanged (mild but legible: no number change; the legibility FX is P3 work, Q-T134). Backdrop signatures are dim VOID-register art in `Starfield` (TECH-001 §2.10, Q-T230), not game numbers.
+
+Meaning: a bell (every interval, while the Vigil is alive and under control) warns, then brings one Acolyte from just off view if fewer than the cap live (guard ring counted). With bells after wake = no, the bells stop once the Sepulchre wakes and a pending bell is called off. Drift-in adds a geode every `geode_drift_s` while live geodes sit below half the stage count. "Grubs after wake" keeps the Sepulchre birthing replacement Grubs after the entity wakes (§3 Grub respawn). Pilfer: Grubs prefer loose glass the Vigil's magnet is not pulling. Escort: idle non-guard Acolytes trail a laden Grub. Carry: the next stage starts with the Charges held at the last stage's end (cap: magazine 5).
 
 Engineering rows (✱, `CabinetTuning`, `ds_cabinet.tuning.*`; PM-accepted 2026-11-19 under delegated owner authority, Q-T105; retune at playtest):
 
