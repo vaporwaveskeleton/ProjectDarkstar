@@ -12,8 +12,11 @@ const MAX_SCREENSHOTS := 100       ## ✱
 const SUITE_TIMEOUT_FRAMES := 1200 ## ✱ scenarios run inside GdUnit must fit this
 const MAX_WAIT := 216000           ## ✱ cap for any single frames/within value
 const COMPARATORS: Array[String] = ["eq", "ne", "lt", "lte", "gt", "gte", "in"]
-const TOP_KEYS: Array[String] = ["format", "version", "id", "args", "fixtures", "timeout_frames", "steps", "profile"]
+const TOP_KEYS: Array[String] = ["format", "version", "id", "args", "fixtures", "timeout_frames", "steps", "profile", "fail_on_errors", "allow_errors"]
 const SLOTS: Array[String] = ["profile", "iteration", "run"]
+const MAX_OFFSET := 4000.0          ## ✱ |x|, |y|, |dx|, |dy| limit for cabinet dev steps
+const MAX_STEP_SIM := 3600          ## ✱
+const SPAWN_KINDS: Array[String] = ["acolyte", "geode", "shard"]
 const NAME_RE := "^[a-z0-9_]+$"
 const MOUSE_BUTTONS: Array[String] = ["left", "right", "middle"]
 const TARGETS: Array[String] = ["arcade", "window"]
@@ -82,6 +85,10 @@ static func validate(scenario: Dictionary, for_suite: bool) -> Array[String]:
 		errs.append_array(_check_fixtures(scenario.get("fixtures")))
 	if scenario.has("profile") and (typeof(scenario.get("profile")) != TYPE_STRING or not PROFILES.has(str(scenario.get("profile")))):
 		errs.append("profile must be 'qa' or 'dev'")
+	if scenario.has("fail_on_errors") and typeof(scenario.get("fail_on_errors")) != TYPE_BOOL:
+		errs.append("fail_on_errors must be a bool")
+	if scenario.has("allow_errors") and not _type_ok(scenario.get("allow_errors"), "string_array"):
+		errs.append("allow_errors must be an array of strings")
 	var timeout: Variant = scenario.get("timeout_frames")
 	if not _is_int(timeout) or int(timeout) < 1 or int(timeout) > MAX_TIMEOUT_FRAMES:
 		errs.append("timeout_frames must be an int in 1..%d" % MAX_TIMEOUT_FRAMES)
@@ -177,9 +184,46 @@ static func _check_step(i: int, step: Dictionary, defs: Dictionary) -> Array[Str
 		"set_setting":
 			if str(step.key).is_empty():
 				errs.append("step %d (set_setting): key must not be empty" % i)
+		"snapshot":
+			if not is_name(str(step.name)):
+				errs.append("step %d (snapshot): name must match %s" % [i, NAME_RE])
+		"wait_event":
+			if str(step.event).is_empty():
+				errs.append("step %d (wait_event): event must not be empty" % i)
+			if step.has("count") and (int(step.count) < 1 or int(step.count) > 1000):
+				errs.append("step %d (wait_event): count must be in 1..1000" % i)
+		"set_stage":
+			if int(step.index) < 0 or int(step.index) > 99:
+				errs.append("step %d (set_stage): index must be in 0..99" % i)
+		"set_lives":
+			if int(step.lives) < 0 or int(step.lives) > 9:
+				errs.append("step %d (set_lives): lives must be in 0..9" % i)
+		"teleport":
+			errs.append_array(_offsets(i, name, step, ["x", "y"]))
+		"spawn":
+			if not SPAWN_KINDS.has(str(step.kind)):
+				errs.append("step %d (spawn): kind must be one of %s" % [i, ", ".join(SPAWN_KINDS)])
+			errs.append_array(_offsets(i, name, step, ["dx", "dy"]))
+		"place_entity":
+			errs.append_array(_offsets(i, name, step, ["dx", "dy"]))
+		"shoot_vigil":
+			errs.append_array(_offsets(i, name, step, ["dx", "dy"]))
+			if is_zero_approx(float(step.dx)) and is_zero_approx(float(step.dy)):
+				errs.append("step %d (shoot_vigil): dx and dy cannot both be 0" % i)
+		"step_sim":
+			if int(step.frames) > MAX_STEP_SIM:
+				errs.append("step %d (step_sim): frames must be in 1..%d" % [i, MAX_STEP_SIM])
 	for k in ["frames", "within"]:
 		if step.has(k) and (int(step[k]) < 1 or int(step[k]) > MAX_WAIT):
 			errs.append("step %d (%s): %s must be in 1..%d" % [i, name, k, MAX_WAIT])
+	return errs
+
+
+static func _offsets(i: int, name: String, step: Dictionary, keys: Array) -> Array[String]:
+	var errs: Array[String] = []
+	for k: String in keys:
+		if absf(float(step[k])) > MAX_OFFSET:
+			errs.append("step %d (%s): |%s| must be <= %d" % [i, name, k, int(MAX_OFFSET)])
 	return errs
 
 

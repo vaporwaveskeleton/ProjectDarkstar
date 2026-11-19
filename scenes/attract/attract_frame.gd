@@ -14,3 +14,7 @@ func _ready() -> void:
 		var p := BezelPrint.new()
 		p.column = column
 		add_child(p)
+	# the glass over the whole print, above the columns; the coin slot (the door) draws after it
+	var glass := BezelGlass.new()
+	glass.rig = get_parent() as ScreenRig
+	add_child(glass)

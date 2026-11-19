@@ -5,10 +5,10 @@ extends GdUnitTestSuite
 const PATH := "res://export_presets.cfg"
 const REQUIRED_EXCLUDES: Array[String] = [
 	"core/automation/*", "features/*/automation/*", "tests/*", "core/*/tests/*", "features/*/tests/*",
-	"scenes/tests/*", "scenes/dev/*", "data/routes/dev_*", "addons/gdUnit4/*", "addons/godot_ai/*",
+	"scenes/tests/*", "scenes/*/tests/*", "scenes/dev/*", "data/routes/dev_*", "addons/gdUnit4/*", "addons/godot_ai/*",
 ]
 const QA_REQUIRED_EXCLUDES: Array[String] = [
-	"core/automation/tests/*", "core/*/tests/*", "features/*/tests/*", "scenes/tests/*", "tests/test_*",
+	"core/automation/tests/*", "core/*/tests/*", "features/*/tests/*", "scenes/tests/*", "scenes/*/tests/*", "tests/test_*",
 	"tests/support/*", "addons/gdUnit4/*", "addons/godot_ai/*",
 ]
 const QA_REQUIRED_INCLUDES: Array[String] = ["tests/scenarios/*.json", "tests/fixtures/saves/*.json", "core/automation/step_catalog.json"]

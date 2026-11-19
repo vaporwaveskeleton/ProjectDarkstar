@@ -69,7 +69,7 @@ func test_unknown_ids_fail_plainly() -> void:
 	assert_str(view.read("fake/ui/Nope", "visible").error).contains("no control")
 	assert_str(view.read("other/ui/Go", "visible").error).contains("not on the current route")
 	assert_str(view.read("garbage", "visible").error).contains("unknown id")
-	assert_str(view.read("cabinet/game", "state").error).contains("needs route")
+	assert_str(view.read("cabinet/game", "state").error).contains("unknown id")
 
 
 func test_allow_list_rejects_other_props() -> void:
@@ -79,14 +79,22 @@ func test_allow_list_rejects_other_props() -> void:
 	assert_bool(view.read("fake/ui/Go", "name").ok).is_false()
 
 
-func test_state_ids_read_through_the_enum_map() -> void:
-	SceneRouter.current_route = &"cabinet"
-	for c in host.get_children():
-		host.remove_child(c)
-		c.free()
+func test_state_ids_are_not_a_ui_concern_any_more() -> void:
+	# cabinet/game and friends belong to the route probe (features/cabinet/automation)
+	assert_str(view.read("cabinet/game", "state").error).contains("unknown id")
+
+
+func test_enum_name_of_lowercases_through_the_script_constant_map() -> void:
 	var game := _Game.new()
-	host.add_child(game)
-	assert_str(view.read("cabinet/game", "state").value).is_equal("play")
-	assert_int(view.read("cabinet/game", "stage_index").value).is_equal(2)
-	assert_bool(view.read("cabinet/game", "demo").value).is_false()
-	assert_bool(view.read("cabinet/game", "secret").ok).is_false()
+	auto_free(game)
+	assert_str(UiView.enum_name_of(game, "State", _Game.State.PLAY)).is_equal("play")
+	assert_str(UiView.enum_name_of(game, "State", _Game.State.GAME_OVER)).is_equal("game_over")
+	assert_str(UiView.enum_name_of(game, "Nope", 1)).is_equal("1")
+
+
+func test_list_focusable_names_visible_focusable_controls() -> void:
+	var ids: Array = view.list_focusable().map(func(d: Dictionary) -> String: return str(d.id))
+	assert_array(ids).contains(["fake/ui/Go", "fake/ui/Off", "fake/ui/Deep"])
+	assert_array(ids).not_contains(["fake/ui/Caption"])   # hidden label, and not focusable
+	var off: Dictionary = view.list_focusable().filter(func(d: Dictionary) -> bool: return d.id == "fake/ui/Off")[0]
+	assert_bool(off.enabled).is_false()

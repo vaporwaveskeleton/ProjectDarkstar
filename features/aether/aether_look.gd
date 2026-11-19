@@ -35,6 +35,17 @@ extends TunableResource
 ## Brass ribs of the lamp's interior (T4 only).
 @export var rib_colour: Color = Pal.BONE_1
 @export var rib_accent: Color = Pal.BONE_1   ## GAS-0/1 only at T4 (ART-001 §4 lamp-interior exception)
+## Highlight of the luminous fog band inside the sphere shell (the tier's dominant hue, lit).
+@export var fog_glow: Color = Pal.VOID_5
+## Far-field stars.
+@export var star_colour: Color = Pal.BONE_4
+## Brass of the sphere's meridian bands and the far set pieces (BONE; never GAS off the lamp).
+@export var brass: Color = Pal.BONE_2
+## The Presence: rim where the god-rays catch its back (VOID_5 / BONE_2) and its flank lights (PHOS).
+@export var leviathan_rim: Color = Pal.VOID_5
+@export var leviathan_lights: Color = Pal.PHOS_4
+## The tier's accent hue (one per tier; pass 2 colour law).
+@export var accent: Color = Pal.PHOS_4
 
 @export_group("Rungs")
 @export var lantern_light: bool = true
@@ -54,6 +65,12 @@ extends TunableResource
 @export var orrery: bool = false
 ## A far smudge that does not move with the fog (T1 wrongness).
 @export var still_smudge: bool = false
+## Far set pieces (runtime vector, far band, fogged): brass orrery rings (T1/T4).
+@export var set_orrery_rings: bool = false
+## Gaslit lattice fragments: riveted girders with tiny warm windows (T2/T3).
+@export var set_lattice: bool = false
+## A drowned observatory dome and telescope housing (T3).
+@export var set_dome: bool = false
 ## Holes of true black in the far field (T5).
 @export var black_holes: bool = false
 
@@ -128,6 +145,18 @@ extends TunableResource
 @export var camera_drift_px: float = 18.0
 ## ✱ drain applied from the start (T5 has the world already partly drunk).
 @export var base_drain: float = 0.0
+## ✱ star field strength in the far band (0 = none).
+@export var star_strength: float = 0.8
+## ✱ brightness of the far fog away from the luminous band (value structure: deep far field).
+@export var value_deep: float = 0.35
+## ✱ half-width of the luminous fog band inside the sphere shell, logical px.
+@export var glow_band_px: float = 70.0
+## ✱ inset of the luminous band's peak below the seam, logical px.
+@export var glow_band_inset: float = 55.0
+## ✱ lantern light scattered by the fog (how warm the pool reads).
+@export var lantern_scatter: float = 0.3
+## ✱ vast, far, cropped jelly-lanterns (very dim).
+@export var vast_jelly_count: int = 0
 
 
 func tunable_properties() -> PackedStringArray:
@@ -140,6 +169,7 @@ func tunable_properties() -> PackedStringArray:
 		"mote_count", "jelly_count", "spore_count", "school_count", "life_speed",
 		"glow_threshold", "glow_intensity", "glow_bloom",
 		"leviathan_cross_s", "leviathan_period_s", "leviathan_phase_s", "camera_drift_px", "base_drain",
+		"star_strength", "value_deep", "glow_band_px", "glow_band_inset", "lantern_scatter", "vast_jelly_count",
 	])
 
 
@@ -152,4 +182,5 @@ func band_scroll(i: int) -> float:
 ## Every Color field, by name (tests walk these).
 func colour_fields() -> PackedStringArray:
 	return PackedStringArray(["fog_deep", "fog_mid", "fog_high", "sphere_glass", "life_glow", "life_secondary",
-		"far_silhouette", "far_band_tint", "crack_edge", "behind_a", "behind_b", "shaft_tint", "rib_colour", "rib_accent"])
+		"far_silhouette", "far_band_tint", "crack_edge", "behind_a", "behind_b", "shaft_tint", "rib_colour", "rib_accent",
+		"fog_glow", "star_colour", "brass", "accent", "leviathan_rim", "leviathan_lights"])
