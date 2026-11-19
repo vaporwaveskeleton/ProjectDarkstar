@@ -235,6 +235,36 @@ func test_the_continue_offer_shows_with_the_param() -> void:
 	await runner.simulate_frames(2)
 
 
+func test_a_relaunch_offers_continue_from_the_saved_stage() -> void:
+	var saved := SaveService.backend
+	SaveService.set_backend(MemorySaveBackend.new())
+	SaveService.save_slot(&"profile", {CabinetGame.KEY_STAGE_REACHED: 1}, &"cabinet_tape")
+	var runner := scene_runner(SCENE)
+	await runner.simulate_frames(2)
+	var want := CabinetGame.saved_continue_stage({CabinetGame.KEY_STAGE_REACHED: 1}, CabinetStageRoster.default_size())
+	assert_int(want).is_equal(1)              # the default shift has at least two stages
+	runner.scene().call("on_route_entered", {"power_on": true})
+	assert_int(int(runner.scene().get("continue_stage"))).is_equal(want)
+	assert_int(int(runner.scene().get("shift_total"))).is_equal(-1)
+	# a route param wins over the save; a non-boot route without the param offers nothing
+	runner.scene().call("on_route_entered", {"continue_stage": 0, "power_on": true})
+	assert_int(int(runner.scene().get("continue_stage"))).is_equal(0)
+	runner.scene().call("on_route_entered", {})
+	assert_int(int(runner.scene().get("continue_stage"))).is_equal(-1)
+	SaveService.set_backend(saved)
+
+
+func test_a_relaunch_after_act0_complete_offers_nothing() -> void:
+	var saved := SaveService.backend
+	SaveService.set_backend(MemorySaveBackend.new())
+	SaveService.save_slot(&"profile", {CabinetGame.KEY_STAGE_REACHED: 1, "act0_complete": true}, &"cabinet_tape")
+	var runner := scene_runner(SCENE)
+	await runner.simulate_frames(2)
+	runner.scene().call("on_route_entered", {"power_on": true})
+	assert_int(int(runner.scene().get("continue_stage"))).is_equal(-1)
+	SaveService.set_backend(saved)
+
+
 func test_no_param_means_no_offer_and_a_fresh_start() -> void:
 	var h := _with_param_host()
 	var runner := scene_runner(SCENE)

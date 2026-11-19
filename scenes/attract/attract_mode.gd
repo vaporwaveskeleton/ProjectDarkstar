@@ -59,13 +59,27 @@ func _ready() -> void:
 
 
 ## Boot routes the first attract of a launch with {"power_on": true}.
+## A `continue_stage` param (GAME OVER) wins; on the launch's first attract (`power_on`) without one, the saved
+## stage offers CONTINUE across a relaunch (Arcade layer contract, `CabinetGame.saved_continue_stage`), with no
+## shift total (the cabinet then starts the shift total at 0).
 func on_route_entered(params: Dictionary) -> void:
 	continue_stage = int(params.get("continue_stage", -1))
 	shift_total = int(params["shift_total"]) if params.has("shift_total") else -1
+	if not params.has("continue_stage") and bool(params.get("power_on", false)):
+		continue_stage = CabinetGame.saved_continue_stage(_saved_profile(), CabinetStageRoster.default_size())
+		shift_total = -1
 	if is_node_ready():
 		_pages.continue_stage = continue_stage
 	if bool(params.get("power_on", false)):
 		power_on()
+
+
+## The profile payload: the one `_ready` loaded, or a fresh read when the route arrives first.
+func _saved_profile() -> Dictionary:
+	if is_node_ready():
+		return _profile
+	var profile := SaveService.load_slot(&"profile")
+	return profile.payload if profile.ok else {}
 
 
 func power_on() -> void:
