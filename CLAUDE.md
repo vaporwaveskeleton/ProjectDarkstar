@@ -10,7 +10,7 @@ This file is loaded every turn: keep it short. Detail lives in `docs/`; cite it,
 | Any number (speeds, HP, budgets, timings) | `docs/01-design/SYSTEMS_BIBLE_STATS.md` (SYS-001) | Never invent a game number. Missing → stop and ask. Engineering-only params get `✱` and go in TECH-001 |
 | Scene tree, node ownership, data layout, `ds_` keys, save layout, shaders, budgets, tests | `docs/04-production/TECH_ARCHITECTURE.md` (TECH-001) | The architecture doc. Update it; do not create a competing `ARCHITECTURE.md` |
 | Names of things (code, UI, files) | GDD §19 glossary | Use glossary words exactly: Vigil, Arc-Lance, Surgelight, Composure, Choir… |
-| Locked decisions | GDD §18 (D-01…D-14) | Code may assert, never vary. D-08 (one-hit hull) is **open**: keep it data-switchable |
+| Locked decisions | GDD §18 (D-01…D-15) | Code may assert, never vary. D-08 (one-hit hull) is **open**: keep it data-switchable. D-15 (cosmic horror, CHD-01…17) is a PM ruling, not owner-locked |
 | Warp tiers, HUD lie law, Steady Ledger | `docs/01-design/REALITY_WARP_ESCALATION.md` (WARP-001) §4 | |
 | Run structure, saves classes, Lantern Tree | `docs/01-design/ROGUELIKE_LOOP_AND_LANTERN_TREE.md` (LOOP-001) §2–3 | |
 | Kits, anchors, seam assembly | `docs/01-design/ZONES_AND_ENCOUNTERS.md` (ZONES-001) §1.7 (kit tree + anchor names), §4 | |
