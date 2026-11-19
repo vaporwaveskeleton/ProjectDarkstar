@@ -542,6 +542,22 @@ PM ruling 2026-11-18 (owner grant), Act 1 vertical slice, amended the same day a
 
 **The noun budget for the first visit:** Ember (printed on the tickets), Lantern Tree, Codex, Hourglass. Nothing else is named on screen. Pacts, Entropy, Threads and the word Composure come later; Sable's Pact line moves to the first time a Pact is offered (§7.5).
 
+**The words, as built** (PM under owner autonomy grant, 2026-11-19; LOOP-001 §10.5 owns the onboarding spec, this table owns the words; `locale/en.po`). Four Ruins-register lines are new (marked ✚); they keep Sable's voice (§5.1: second person, present tense, short, never a question, printable on a contract).
+
+| Key | Text | Where it is written | When |
+|---|---|---|---|
+| `NARR_SABLE_FIRST_1` | You're back. Most aren't. | the Chalk Desk slate | first visit, first |
+| `NARR_SABLE_FIRST_2` | What you buy here stays. The rest goes back into the dark. | the slate | first visit, the anchoring rule, once |
+| `NARR_SABLE_TALLY` ✚ | Counted: {n}. | the slate | first visit; {n} = the Act 0 Vigil Index |
+| `NARR_CAB_SCORE_BANKED` | SCORE BANKED | the wall Cabinet's marquee | the payout; then `NARR_CAB_ATTRACT_1` returns |
+| `RUINS_TICKET_PLATE` | {n} EMBER | a brass plate under the Tree | after the tickets hang; {n} = Ember banked |
+| `NARR_SABLE_TREE` | Light one. The dark is long. | the floor under the Tree | first visit, after the tickets land |
+| `RUINS_CODEX_HEADER`, `CX_PLACE_ACT0_3_TITLE`, `CX_PLACE_ACT0_3_BODY` | CODEX · Last Normal Day (cabinet stage) · the §8.4 body | the stamped page, close up | the Codex desk |
+| `NARR_SABLE_GLASS` | The sand starts when you leave. | chalk by the Hourglass | first visit, as the lamp first passes |
+| `NARR_SABLE_RETURN_1` ✚ | You return. What you carried is counted. | the slate | every later visit |
+| `NARR_SABLE_GLASS_RETURN` ✚ | The sand runs while you stand here. | chalk by the Hourglass | every later visit |
+| `NARR_SABLE_DARK_1` ✚ | Some things are written only for the dark. | the hall wall, faint | with the pilot lamp down (the beat 15 pre-echo, LOOP-001 §10.5.2) |
+
 *Resolved 2026-11-18 (TECH-001 §11.1 Q-T102, design calls within the PM ruling):* no hand on the first visit (the chalk writes itself, matching §5.1 and §5.6); the old "first visit" Pact line re-triggered; line 1 in the present tense.
 
 

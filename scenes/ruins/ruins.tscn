@@ -1,6 +1,6 @@
 [gd_scene load_steps=5 format=3]
 
-[ext_resource type="Script" path="res://scenes/ruins/ruins_stub.gd" id="1"]
+[ext_resource type="Script" path="res://scenes/ruins/ruins.gd" id="1"]
 [ext_resource type="Shader" path="res://shaders/aether_fog.gdshader" id="2"]
 [ext_resource type="PackedScene" path="res://features/aether/ruins_look.tscn" id="3"]
 
@@ -10,7 +10,7 @@ shader_parameter/amount = 0.75
 shader_parameter/drain = 0.35
 shader_parameter/time_s = 0.0
 
-[node name="RuinsStub" type="Control"]
+[node name="Ruins" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0

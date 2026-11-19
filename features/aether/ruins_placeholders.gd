@@ -3,7 +3,8 @@ extends Node2D
 ## Optional stand-ins (gallery only; RuinsLook.show_placeholders, default off) for the Ruins
 ## objects M1 owns: the Chalk Desk, the wall Cabinet, the Codex desk, the Hourglass and the Lantern
 ## Tree (a bare brass sapling, one unlit lamp housing per node, NARR-001 §5.7). Lit by the hall like
-## everything else; no text, no gameplay. Never shipped as the real objects.
+## everything else; no text, no gameplay. The Ruins scene shows them as its interim objects until each
+## gets its own art (TECH-001 Q-T193); the Hourglass sand follows RunSession there.
 
 ## ✱ placeholder Tree node offsets from the Tree's base (logical px): where its lamps hang.
 const TREE_NODES: Array[Vector2] = [Vector2(-22, -58), Vector2(19, -66), Vector2(-9, -84), Vector2(28, -40),
@@ -18,6 +19,16 @@ var brass := Pal.BONE_2
 var brass_hi := Pal.BONE_4
 var brass_shadow := Pal.VOID_3
 var wood := Pal.BONE_0
+## The Hourglass's sand above the neck, 0…1 (the Ruins sets it from RunSession; 1 = full).
+var sand := 1.0:
+	set(v):
+		sand = clampf(v, 0.0, 1.0)
+		queue_redraw()
+## Sand is falling (the clock runs): a thin stream through the neck.
+var sand_falling := false:
+	set(v):
+		sand_falling = v
+		queue_redraw()
 
 
 func configure(data: RuinsLookData) -> void:
@@ -119,6 +130,16 @@ func _draw_hourglass() -> void:
 		draw_line(b + Vector2(x, -27), b + Vector2(x, -3), brass, 1.2)
 	draw_colored_polygon(PackedVector2Array([b + Vector2(-5, -27), b + Vector2(5, -27), b + Vector2(0.8, -15),
 		b + Vector2(5, -3), b + Vector2(-5, -3), b + Vector2(-0.8, -15)]), Color(Pal.PHOS_1, 0.35))
-	# full: all the sand above
-	draw_colored_polygon(PackedVector2Array([b + Vector2(-4.5, -26), b + Vector2(4.5, -26), b + Vector2(0.8, -16),
-		b + Vector2(-0.8, -16)]), Pal.BONE_3)
+	# the sand above the neck shrinks toward it as the clock is spent; the rest lies below
+	var top := lerpf(-16.0, -26.0, sand)
+	var w := lerpf(0.8, 4.5, sand)
+	if sand > 0.03:
+		draw_colored_polygon(PackedVector2Array([b + Vector2(-w, top), b + Vector2(w, top), b + Vector2(0.8, -16),
+			b + Vector2(-0.8, -16)]), Pal.BONE_3)
+	var low := 1.0 - sand
+	if low > 0.03:
+		var h := lerpf(0.0, 10.0, low)
+		draw_colored_polygon(PackedVector2Array([b + Vector2(-4.5, -4), b + Vector2(4.5, -4),
+			b + Vector2(lerpf(0.8, 4.0, low), -4.0 - h), b + Vector2(-lerpf(0.8, 4.0, low), -4.0 - h)]), Pal.BONE_3)
+	if sand_falling and sand > 0.0:
+		draw_line(b + Vector2(0, -16), b + Vector2(0, -4), Pal.BONE_3, 0.6)
