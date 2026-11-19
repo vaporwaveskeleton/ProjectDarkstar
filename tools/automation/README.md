@@ -50,8 +50,15 @@ Ids: `<route>/ui/<UniqueName>` for controls, plus `cabinet/game` (`state`, `stag
 `cabinet/score` (`score`, `lives`), `cabinet/record` (`grubs_destroyed`, `glass_mined`,
 `charges_thrown`, `glass_carried`), `sector/vigil` (`vigil_x`, `vigil_y`, `vigil_speed`, `hull_max_hp`,
 `camera_x`, `compass_markers`, `camera_gap`, `facing_deg`, `aim_x`, `aim_y`; scenario `m1_sector_feel`),
-`sector/field` (`geodes_alive`, `geodes_detonated`, `shards_free`, `charges`, `score`; scenarios
-`m1_geode_mine` (feathered fire, calm mining), `m1_magnet_collect` (mine, then fly in and collect
+`sector/field` (`geodes_alive`, `geodes_detonated`, `shards_free`, `charges`, `score`; M1 slice 3
+PR 4 adds `shards_live`, `charges_in_flight`, `charges_lost`, `charges_hit`, `charges_guttered`,
+`dry_fires`), `sector/choir` (PR 4: `grubs_alive`, `grubs_carrying`, `segments`, `deposited_shards`,
+`sepulchre_complete`); scenarios
+`m1_geode_mine` (feathered fire, calm mining; waits on `shards_live`, because Grubs may steal free
+glass), `m1_charge_fire` (dry fire at 0, mine and collect, fly down, fire a Charge: it hits the
+Sepulchre), `m1_charge_intercept` (collect, fire a Charge without flying down first, so
+it is intercepted on the way (Grub or geode contact): `charges_lost` 1, no hit, no gutter), `m1_grub_procession` (mine glass, a Grub steals it and deposits
+it at the Sepulchre; 4 Grubs alive), `m1_magnet_collect` (mine, then fly in and collect
 glass), `m1_overfire` (held fire detonates a 3-face geode; it lines up with `move_up` and aims
 with `mouse_move`), `m1_mouse_aim` (`mouse_move`, then asserts `facing_deg`, `aim_x`, `aim_y`; TECH-001 §9.1 "Mouse aim
 and injected input")). `mouse_move` coordinates are logical 640×360 (the catalog wording "window coordinates" is a known
