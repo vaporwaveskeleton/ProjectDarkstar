@@ -1,6 +1,6 @@
 extends GdUnitTestSuite
 ## The in-game bezel carries the same control panel as the attract bezel, as decoration only (Q-T34 consistency):
-## three unlit buttons, none focusable, none taking the mouse, never over the screen hole.
+## START and SERVICE unlit buttons and the POWER rocker, none focusable, none taking the mouse, never over the screen hole.
 
 const GAME_SCENE := "res://features/cabinet/cabinet_game.tscn"
 const SIZES: Array[Vector2i] = [Vector2i(1920, 1080), Vector2i(2560, 1440), Vector2i(3440, 1440), Vector2i(1280, 800), Vector2i(1366, 768)]
@@ -14,10 +14,10 @@ func _panel_in_game() -> ControlPanel:
 	return scene.find_child("ControlPanel", true, false) as ControlPanel
 
 
-func test_the_game_bezel_has_the_panel_with_three_unlit_buttons() -> void:
+func test_the_game_bezel_has_the_panel_with_two_unlit_buttons_and_a_rocker() -> void:
 	var panel := await _panel_in_game()
 	assert_object(panel).is_not_null()
-	assert_int(panel.buttons().size()).is_equal(3)
+	assert_int(panel.buttons().size()).is_equal(2)
 	assert_int(panel.buttons()[0].kind).is_equal(ArcadeButton.Kind.START)
 	for b in panel.buttons():
 		assert_float(b.lamp_level()).is_equal(0.0)

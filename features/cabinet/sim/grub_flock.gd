@@ -4,6 +4,8 @@ extends ArcadeLayer
 ## Mourning Glass, carry it to the Sepulchre and deposit it — every deposit builds the god.
 ## They flee the Vigil's lamp unless they are carrying (devotion beats fear), mourn a lost
 ## deposit (keening), and the Sepulchre births a replacement for every Grub you kill.
+## P2 stage switches (CabinetStage): grubs_after_wake keeps the births going after the wake;
+## grub_pilfer makes them snatch nearby loose glass.
 
 const RADIUS := 6.0
 const SEEK_SPEED := 160.0     ## ✱ between the carry (130) and flee (190) speeds of SYS-001 §3
@@ -68,6 +70,9 @@ func tick(delta: float) -> void:
 				g.think = 0.4
 				_claim(g)
 			g.state = State.SEEK if g.shard != null else State.IDLE
+		elif world.stage.grub_pilfer and g.think <= 0.0:
+			g.think = 0.4
+			_pilfer(g)          # P2: a nearer loose shard beats the one it is heading for
 		var target := g.pos
 		var speed := SEEK_SPEED
 		match g.state:
@@ -105,11 +110,13 @@ func tick(delta: float) -> void:
 		_respawn_timers[i] -= delta
 		if _respawn_timers[i] <= 0.0:
 			_respawn_timers.remove_at(i)
-			if not world.ritual.awake:
+			if not world.ritual.awake or world.stage.grubs_after_wake:   # P2: some stages keep birthing after the wake
 				_spawn(world.ritual.pos)
 
 
 func _claim(g: Grub) -> void:
+	if world.stage.grub_pilfer and _pilfer(g):
+		return
 	var best: GlassField.Shard = null
 	var best_d := INF
 	for s in world.glass.free_shards():
@@ -120,6 +127,32 @@ func _claim(g: Grub) -> void:
 	if best != null:
 		best.claimed_by = g.id
 		g.shard = best
+
+
+## P2 pilfer (CabinetStage.grub_pilfer): claim the nearest loose shard (unclaimed, not in the Vigil's
+## magnet) within grub_pilfer_radius when it is nearer than the shard this Grub already heads for,
+## releasing that one. Pickup, carry, deposit and the drop on death are the ordinary Grub rules.
+## Returns true when it claimed one.
+func _pilfer(g: Grub) -> bool:
+	var r := world.tuning.grub_pilfer_radius
+	var best_d := r * r
+	if g.shard != null and g.shard.alive and not g.shard.carried:
+		best_d = minf(best_d, world.torus.distance_sq(g.pos, g.shard.pos))
+	var best: GlassField.Shard = null
+	for s in world.glass.shards:
+		if not world.glass.pilferable(s):
+			continue
+		var dd := world.torus.distance_sq(g.pos, s.pos)
+		if dd < best_d:
+			best_d = dd
+			best = s
+	if best == null:
+		return false
+	if g.shard != null and g.shard.claimed_by == g.id:
+		g.shard.claimed_by = 0
+	best.claimed_by = g.id
+	g.shard = best
+	return true
 
 
 func hit_test(p: Vector2, r: float) -> Grub:

@@ -269,4 +269,7 @@ func test_loss_mask_trim_is_conservative() -> void:
 	var ridge := 0.075 * 0.5
 	var offset := Vector2(0.05, -0.03).length()
 	var s_out_min := reach - 1.0 - warp - ridge - offset
-	assert_float(s_out_min).is_greater(0.5 + 0.05 * 0.5)   # the outer (near) step, before aa
+	# pass 6: the outer (near) step's furthest edge, before aa: arms and soft side included
+	var arm := P4._const_float(c, "A_LOSS_ARM")
+	var soft := P4._const_float(c, "A_LOSS_SOFT")
+	assert_float(s_out_min).is_greater(0.5 + arm + soft + 0.05 * 0.5)

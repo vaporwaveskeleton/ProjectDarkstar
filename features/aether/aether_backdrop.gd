@@ -178,6 +178,7 @@ func apply_look(new_look: AetherLook) -> void:
 	_sphere.set_param(&"wrong_strength", look.wrong_seam_strength)
 	_sphere.set_param(&"crack_amount", look.sphere_crack)
 	_sphere.set_param(&"numerals", 1 if look.meridian_numerals else 0)
+	_sphere.set_param(&"missing", look.missing)
 	_cracks.set_param(&"edge_col", look.crack_edge)
 	_cracks.set_param(&"seam_col", Pal.PHOS_5)
 	_cracks.set_param(&"behind_a", look.behind_a)

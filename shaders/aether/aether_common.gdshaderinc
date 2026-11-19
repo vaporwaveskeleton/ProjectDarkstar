@@ -210,10 +210,21 @@ float a_entity_shape(vec2 p, float seed, float t, int oct) {
 // <= the entity's 8-bite one: the loss steps stay at or outside where they were relative to the
 // mass (the crack band stays inside the mid loss step). Beyond A_LOSS_REACH radii every loss step
 // is provably 0 (|w - p| <= 0.099, ridge <= 0.0375: s >= |p| - 1.1365, and s_out >= s - 0.0584, so past
-// A_LOSS_REACH + aa radii s_out > 0.555 + aa > the outer step's 0.525 + aa), so the shape is
-// not evaluated: proximity comes from the round distance instead (a soft cold ring either way).
+// A_LOSS_REACH + aa radii s_out > A_LOSS_REACH - 1.195 + aa > the outer step's furthest edge,
+// 0.5 + A_LOSS_ARM + A_LOSS_SOFT + 0.025 + aa), so the shape is not evaluated: proximity comes from
+// the round distance instead (a soft cold ring either way). Pass 6: 1.75 → 2.02 for the spiral arms.
 // ✱ normalised radius past which the loss steps are skipped.
-const float A_LOSS_REACH = 1.75;
+const float A_LOSS_REACH = 2.02;
+// Pass 6 (B1; PM: no closed circles in ORGANIC or FOG shapes near the play centre — orrery rings and
+// crystal spheres are geometric and exempt). The pass 5 mid step around a T5 hole was a near-perfect
+// circle (an iris round the swirl: it read as an EYE). The near and mid steps now ride TWO SPIRAL
+// ARMS: each reaches out by up to A_LOSS_ARM radii along a sawtooth in the angle that BREAKS every
+// half turn (a radial torn step), so no arc of either boundary turns past half a turn; and on the
+// side facing the frame centre each step's outer edge softens into the fog over A_LOSS_SOFT radii.
+// Both only push the steps OUTWARD: the crack band stays inside the mid step (test_aether_pass4).
+// ✱ outward reach of the arms, and of the soft side, in entity radii.
+const float A_LOSS_ARM = 0.2;
+const float A_LOSS_SOFT = 0.08;
 // ✱ bites carried by the loss mask: every A_LOSS_BITE_STEP-th of the eight.
 const int A_LOSS_BITE_STEP = 2;
 
@@ -246,8 +257,12 @@ vec4 a_loss(vec2 px) {
 		float tear = 0.05 * a_ridge(p * 5.1 + sd * 5.0);
 		// the outer edge offset by (0.05, -0.03) radii (first-order shift: no second shape eval)
 		float s_out = s - dot(p / max(length(p), 0.001), vec2(0.05, -0.03));
-		float near_l = 1.0 - smoothstep(0.5 + tear - aa, 0.5 + tear + aa, s_out);
-		float mid_l = 1.0 - smoothstep(0.4 + tear - aa, 0.4 + tear + aa, s_out);
+		// pass 6: two half-turn spiral arms (atan / π: the sawtooth wraps twice a turn) and a soft side
+		float arm = A_LOSS_ARM * fract(atan(p.y, p.x) * 0.31830989 + sd * 0.37);
+		vec2 to_c = normalize(screen_size * 0.5 - e.xy + vec2(0.001));
+		float soft = A_LOSS_SOFT * smoothstep(0.1, 0.8, dot(p / max(length(p), 0.001), to_c));
+		float near_l = 1.0 - smoothstep(0.5 + arm + tear - aa, 0.5 + arm + tear + aa + soft, s_out);
+		float mid_l = 1.0 - smoothstep(0.4 + arm + tear - aa, 0.4 + arm + tear + aa + soft, s_out);
 		float far_l = 1.0 - smoothstep(0.19 - tear * 0.6 - aa, 0.19 - tear * 0.6 + aa, s);
 		L = max(L, vec4(near_l, mid_l, far_l, prox));
 	}
@@ -282,6 +297,51 @@ float a_drunk(vec2 px) {
 // Signed distance (logical px) from the hero sphere seam; < 0 inside (where we are).
 float a_sphere_d(vec2 spx) {
 	return length(spx - sphere_screen.xy) - sphere_screen.z;
+}
+
+// Pass 6 (G-2 tier sort): ONE monotonic "missing" cue per look (`missing` 0..1, ✱: T1 0 … T5 0.85)
+// drives the backdrop's saturation drain and the VOID SHARE of the frame together. The void share
+// is a slice of the far layer that is simply not there: a flat cold VOID (never black — only the
+// entity is) along a far seam, the engraved parallel A_MISS_SEAM px inside the hero seam. It starts
+// OFF-CENTRE (A_MISS_X, left of the play core) and grows from inside the picture: a hairline at T2,
+// wider and longer each tier; it never reaches the frame edge (NARR N8). Its edges are torn into a
+// stepped staircase along the seam (no smooth lens: a tapered slit read as an eye).
+// ✱ the slice's seam (px inside the hero seam: the engraved parallel), its start (logical px across
+// the 640-wide frame), its half-length and half-width at missing = m:
+//   half-length A_MISS_LEN.x + A_MISS_LEN.y m (px along the seam; the side toward the centre is
+//   A_MISS_INWARD as long), half-width A_MISS_W.x + A_MISS_W.y m² (px).
+const float A_MISS_SEAM = -44.0;
+const float A_MISS_X = 170.0;
+const vec2 A_MISS_LEN = vec2(30.0, 130.0);
+const float A_MISS_INWARD = 0.4;
+const vec2 A_MISS_W = vec2(0.7, 16.0);
+// ✱ the saturation the backdrop loses at missing = 1 (fog and sphere; the lantern pool is spared).
+const float A_MISS_DESAT = 0.9;
+
+float a_missing(vec2 spx, float m) {
+	if (m <= 0.0) {
+		return 0.0;
+	}
+	float hw = A_MISS_W.x + A_MISS_W.y * m * m;
+	float sd = a_sphere_d(spx) - A_MISS_SEAM;
+	if (abs(sd) > hw * 1.5 + 2.0) {
+		return 0.0;
+	}
+	float rr = sphere_screen.z + A_MISS_SEAM;
+	vec2 rel = spx - sphere_screen.xy;
+	float arc = atan(rel.x, -rel.y) * rr;
+	float arc0 = asin(clamp((A_MISS_X - sphere_screen.x) / rr, -1.0, 1.0)) * rr;
+	float u = (arc - arc0) / (A_MISS_LEN.x + A_MISS_LEN.y * m);
+	u = u < 0.0 ? -u : u / A_MISS_INWARD;
+	if (u >= 1.0) {
+		return 0.0;
+	}
+	// torn staircase: the width steps every 9 px along the seam, each step rounded its own way
+	float cellx = floor(arc / 9.0);
+	float taper = pow(1.0 - u * u, 0.7);
+	float w = max(hw * clamp(floor(taper * 3.0 + a_hash(vec2(cellx, 2.0))) / 3.0 + 0.12, 0.0, 1.0), A_MISS_W.x);
+	float tear = hw * 0.35 * (a_hash(vec2(cellx, 5.0)) - 0.5);
+	return 1.0 - smoothstep(w - 0.6, w + 0.6, abs(sd + tear));
 }
 
 float a_seg(vec2 p, vec2 a, vec2 b) {

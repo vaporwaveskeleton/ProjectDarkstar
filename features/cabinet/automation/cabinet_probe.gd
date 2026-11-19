@@ -3,7 +3,7 @@ extends RefCounted
 ## Duck-typed contract with core/automation/scenario_runner.gd (see its header). No class_name.
 ##
 ## Ids (lower-case, never display text) and their allow-listed props; scalars only:
-##   cabinet/game      state (lower-case enum name), stage_index, demo
+##   cabinet/game      state (lower-case enum name), stage_index, stage_id (CabinetStage.id, lower-case string e.g. "a0_1"; never display text), demo
 ##   cabinet/score     score, lives
 ##   cabinet/record    grubs_destroyed, glass_mined, charges_thrown, glass_carried
 ##   cabinet/vigil     alive, shield, pos_x, pos_y, use_scripted, killer_kind ("none"|"entity"|"shot", from the LATEST
@@ -27,7 +27,7 @@ const MAX_OFFSET := 4000.0       ## ✱ |dx|, |dy|, |x|, |y| limit for dev ops
 const MAX_STEPS := 3600          ## ✱ step_sim frames per call
 const SPAWN_KINDS: Array[String] = ["acolyte", "geode", "shard"]
 const SINGLETONS: Dictionary = {
-	"cabinet/game": ["state", "stage_index", "demo"],
+	"cabinet/game": ["state", "stage_index", "stage_id", "demo"],
 	"cabinet/score": ["score", "lives"],
 	"cabinet/record": ["grubs_destroyed", "glass_mined", "charges_thrown", "glass_carried"],
 	"cabinet/vigil": ["alive", "shield", "pos_x", "pos_y", "use_scripted", "killer_kind", "killer_dx", "killer_dy", "killer_on_screen", "death_marks",
@@ -131,7 +131,7 @@ func _props_of(id: String) -> Dictionary:
 	match id:
 		"cabinet/game":
 			return {"state": UiView.enum_name_of(_root, "State", int(_root.get("state"))),
-				"stage_index": int(_root.get("stage_index")), "demo": bool(_root.get("demo"))}
+				"stage_index": int(_root.get("stage_index")), "stage_id": _stage_id(), "demo": bool(_root.get("demo"))}
 		"cabinet/score":
 			var sk: Object = _root.get("score") as Object
 			return {} if sk == null else {"score": int(sk.get("score")), "lives": int(sk.get("lives"))}
@@ -168,6 +168,16 @@ func _props_of(id: String) -> Dictionary:
 			if key >= 0 and key < items.size():
 				return _geode_props(items[key])
 	return {}
+
+
+## The current CabinetStage's id as a lower-case string ("" when out of range).
+func _stage_id() -> String:
+	var stages: Array = _root.get("stages")
+	var i: int = int(_root.get("stage_index"))
+	if i < 0 or i >= stages.size():
+		return ""
+	var st: Object = stages[i] as Object
+	return "" if st == null else String(st.get("id")).to_lower()
 
 
 func _world_props() -> Dictionary:

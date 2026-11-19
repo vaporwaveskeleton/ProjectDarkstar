@@ -55,3 +55,4 @@ rings_stalled = 1
 presence_fled = 0.35
 sky_cracks = true
 crack_amount = 0.12
+missing = 0.4

@@ -570,3 +570,30 @@ func test_the_chalk_draws_on_over_time_and_is_instant_under_reduced_motion() -> 
 	assert_float(_val("cabinet/vigil", "death_arrow")).is_equal(1.0)
 	SettingsService.set_value(&"reduced_motion", prev_rm)
 	SettingsService.persist = prev_persist
+
+
+# --- stage_id and the real roster ----------------------------------------------------------------
+
+func test_stage_id_is_a_lower_case_id_for_every_roster_stage() -> void:
+	assert_array(probe.describe().props["cabinet/game"]).contains(["stage_id"])
+	assert_bool(probe.snapshot().game.has("stage_id")).is_true()
+	var want: Array[String] = ["a0_1", "a0_2", "a0_3", "a0_4", "a0_5"]
+	assert_int(game.stages.size()).is_equal(want.size())
+	for i in want.size():
+		assert_str(probe.dev_op("set_stage", {"index": i})).is_empty()
+		assert_str(_val("cabinet/game", "stage_id")).is_equal(want[i])
+		assert_str(probe.snapshot().game.stage_id).is_equal(want[i])
+		assert_int(_val("cabinet/game", "stage_index")).is_equal(i)
+
+
+func test_set_stage_builds_each_stage_through_the_real_roster() -> void:
+	var geodes: Array[int] = []
+	for i in 5:
+		probe.dev_op("set_stage", {"index": i})
+		var st: CabinetStage = game.stages[i]
+		geodes.append(_val("cabinet/world", "geodes"))
+		assert_int(_val("cabinet/world", "geodes")).is_equal(st.geodes)
+		assert_int(_val("cabinet/world", "grubs")).is_equal(st.grubs)
+		assert_bool(_val("cabinet/world", "entity_awake")).is_false()
+	assert_int(geodes[3]).is_equal(26)
+	assert_int(_val("cabinet/world", "geodes")).is_equal(game.stages[4].geodes)

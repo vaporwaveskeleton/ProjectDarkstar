@@ -56,3 +56,4 @@ rings_broken = 1
 presence_fled = 1.0
 sky_cracks = true
 crack_amount = 0.55
+missing = 0.6
