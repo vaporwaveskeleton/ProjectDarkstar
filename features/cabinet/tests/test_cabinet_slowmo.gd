@@ -87,7 +87,7 @@ func test_not_lethal_with_many_hits_left_and_one_charge() -> void:
 
 func test_lethal_charge_inside_trigger_ramps_down_to_the_scale() -> void:
 	world.ritual.hits_left = 1
-	_charge(78.0)
+	_charge(fx.slowmo_trigger_px - 2.0)
 	_steps(_ramp_steps())
 	assert_float(world.sim_scale).is_equal_approx(fx.slowmo_scale, 0.0001)
 
@@ -101,7 +101,7 @@ func test_lethal_charge_outside_trigger_does_not_slow() -> void:
 
 func test_slowed_world_time_is_scaled_but_the_crt_clock_is_real() -> void:
 	world.ritual.hits_left = 1
-	_charge(78.0)
+	_charge(fx.slowmo_trigger_px - 2.0)
 	_steps(_ramp_steps())
 	var t0 := world.time
 	var s0 := world.shader_time
@@ -113,7 +113,7 @@ func test_slowed_world_time_is_scaled_but_the_crt_clock_is_real() -> void:
 
 func test_the_vigil_keeps_real_speed_while_the_world_slows() -> void:
 	world.ritual.hits_left = 1
-	_charge(78.0)
+	_charge(fx.slowmo_trigger_px - 2.0)
 	_steps(_ramp_steps())
 	assert_float(world.sim_scale).is_less(1.0)
 	var v := world.vigil
@@ -139,7 +139,7 @@ func test_with_two_hits_left_the_farther_of_two_charges_is_lethal() -> void:
 
 func test_two_hits_left_slows_by_the_farther_charges_distance() -> void:
 	world.ritual.hits_left = 2
-	_charge(78.0)
+	_charge(fx.slowmo_trigger_px - 2.0)
 	_charge(60.0)
 	_steps(_ramp_steps())
 	assert_float(world.sim_scale).is_less(1.0)
@@ -147,7 +147,7 @@ func test_two_hits_left_slows_by_the_farther_charges_distance() -> void:
 
 func test_a_lost_charge_ramps_back_to_normal() -> void:
 	world.ritual.hits_left = 1
-	var c := _charge(78.0)
+	var c := _charge(fx.slowmo_trigger_px - 2.0)
 	_steps(_ramp_steps())
 	assert_float(world.sim_scale).is_less(1.0)
 	c.alive = false
@@ -157,7 +157,7 @@ func test_a_lost_charge_ramps_back_to_normal() -> void:
 
 func test_a_heal_ramps_back_to_normal() -> void:
 	world.ritual.hits_left = 1
-	_charge(78.0)
+	_charge(fx.slowmo_trigger_px - 2.0)
 	_steps(_ramp_steps())
 	assert_float(world.sim_scale).is_less(1.0)
 	world.ritual.hits_left = 2        # healed: one Charge no longer suffices
@@ -167,7 +167,7 @@ func test_a_heal_ramps_back_to_normal() -> void:
 
 func test_contact_on_the_entity_snaps_to_one_and_hitstops() -> void:
 	world.ritual.hits_left = 1
-	_charge(78.0)
+	_charge(fx.slowmo_trigger_px - 2.0)
 	_steps(_ramp_steps())
 	assert_float(world.sim_scale).is_less(1.0)
 	var unmade: Array = []
@@ -185,7 +185,7 @@ func test_signal_values_fall_to_the_scale_then_end_exactly_at_one() -> void:
 	var vals: Array = []
 	world.slowmo_changed.connect(func(s: float) -> void: vals.append(s))
 	world.ritual.hits_left = 1
-	var c := _charge(78.0)
+	var c := _charge(fx.slowmo_trigger_px - 2.0)
 	_steps(_ramp_steps())
 	for i in vals.size():
 		assert_float(vals[i]).is_greater_equal(fx.slowmo_scale)
@@ -193,7 +193,7 @@ func test_signal_values_fall_to_the_scale_then_end_exactly_at_one() -> void:
 			assert_float(vals[i]).is_less(vals[i - 1])
 	var held := vals.size()
 	for i in 5:
-		c.pos = world.torus.wrap(world.ritual.entity_pos + Vector2(78.0, 0.0))
+		c.pos = world.torus.wrap(world.ritual.entity_pos + Vector2(fx.slowmo_trigger_px - 2.0, 0.0))
 		world.step(DT)
 	assert_int(vals.size()).is_equal(held)      # nothing changed, nothing emitted
 	c.alive = false
@@ -215,7 +215,7 @@ func test_no_signal_when_nothing_is_slowed() -> void:
 func test_reduced_motion_never_slows() -> void:
 	SettingsService.set_value(&"reduced_motion", true)
 	world.ritual.hits_left = 1
-	_charge(78.0)
+	_charge(fx.slowmo_trigger_px - 2.0)
 	_steps(_ramp_steps() + 5)
 	assert_float(world.sim_scale).is_equal(1.0)
 
@@ -225,27 +225,27 @@ func test_failsafe_ends_an_episode_and_locks_until_the_condition_clears() -> voi
 	dup.slowmo_max_real_s = 0.5
 	world.fx_tuning = dup
 	world.ritual.hits_left = 1
-	var c := _charge(78.0)
+	var c := _charge(fx.slowmo_trigger_px - 2.0)
 	# keep the Charge hovering in range for the whole episode
 	for i in ceili(0.5 / DT) + ceili(dup.slowmo_ramp_out_s / DT) + 6:
-		c.pos = world.torus.wrap(world.ritual.entity_pos + Vector2(78.0, 0.0))
+		c.pos = world.torus.wrap(world.ritual.entity_pos + Vector2(fx.slowmo_trigger_px - 2.0, 0.0))
 		world.step(DT)
 	assert_float(world.sim_scale).is_equal(1.0)
 	for i in 20:
-		c.pos = world.torus.wrap(world.ritual.entity_pos + Vector2(78.0, 0.0))
+		c.pos = world.torus.wrap(world.ritual.entity_pos + Vector2(fx.slowmo_trigger_px - 2.0, 0.0))
 		world.step(DT)
 	assert_float(world.sim_scale).is_equal(1.0)
 	# the condition clears, then returns: slow-mo is available again
 	c.alive = false
 	world.step(DT)
-	_charge(78.0)
+	_charge(fx.slowmo_trigger_px - 2.0)
 	_steps(_ramp_steps())
 	assert_float(world.sim_scale).is_less(1.0)
 
 
 func test_start_resets_the_scale_and_announces_it() -> void:
 	world.ritual.hits_left = 1
-	_charge(78.0)
+	_charge(fx.slowmo_trigger_px - 2.0)
 	_steps(_ramp_steps())
 	assert_float(world.sim_scale).is_less(1.0)
 	var vals: Array = []
