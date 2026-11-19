@@ -123,21 +123,57 @@ func test_the_shared_curve_is_twenty_tapering_deterministic_points() -> void:
 	assert_float(absf(a[3].y + a[16].y)).is_greater(0.002)
 
 
-func test_silhouette_is_a_simple_polygon_with_twenty_bumps_per_edge() -> void:
+## For outline point `p`: [distance to the curve, position along it (segment index + fraction), side (+1/-1)].
+func _locate(curve: PackedVector2Array, p: Vector2) -> Array:
+	var best := INF
+	var par := 0.0
+	var side := 1.0
+	for i in curve.size() - 1:
+		var q := Geometry2D.get_closest_point_to_segment(p, curve[i], curve[i + 1])
+		var d := p.distance_to(q)
+		if d < best:
+			best = d
+			var seg := curve[i + 1] - curve[i]
+			par = i + (q - curve[i]).length() / seg.length()
+			side = 1.0 if seg.cross(p - q) >= 0.0 else -1.0
+	return [best, par, side]
+
+
+func test_silhouette_is_a_beaded_column_with_both_edges_in_phase() -> void:
 	var c := Vector2(100, 80)
 	for d in [Vector2.DOWN, Vector2.UP]:
 		var poly := MawView.spine_silhouette(c, d, _length())
 		var curve := MawView.spine_place(MawView.spine_points(), c, d, _length())
 		assert_bool(Geometry2D.triangulate_polygon(poly).size() > 0).is_true()
 		var n := poly.size()
-		var dist: Array[float] = []
+		var info: Array = []
 		for p in poly:
-			dist.append(_dist_to(curve, p))
-		var maxima := 0
+			info.append(_locate(curve, p))
+		var peaks := {1.0: [], -1.0: []}
+		var pinches := {1.0: [], -1.0: []}
 		for i in n:
-			if dist[i] > 2.0 and dist[i] > dist[(i + n - 1) % n] and dist[i] > dist[(i + 1) % n]:
-				maxima += 1
-		assert_int(maxima).is_equal(MawView.SEGMENTS * 2)      # one rounded lobe per vertebra per edge
+			var cur: Array = info[i]
+			var prv: Array = info[(i + n - 1) % n]
+			var nxt: Array = info[(i + 1) % n]
+			var par: float = cur[1]
+			if cur[0] < 2.0:
+				continue
+			if cur[0] > prv[0] and cur[0] > nxt[0]:
+				peaks[cur[2]].append(par)
+			elif cur[0] < prv[0] and cur[0] < nxt[0] and par > 0.2 and par < 18.8:      # the end caps are not gaps
+				pinches[cur[2]].append(par)
+		for sd in [1.0, -1.0]:
+			assert_int(peaks[sd].size()).is_equal(MawView.SEGMENTS)          # one wide lobe per vertebra on each edge
+			assert_int(pinches[sd].size()).is_equal(MawView.SEGMENTS - 1)    # pinched at every gap between two vertebrae
+		peaks[1.0].sort()
+		peaks[-1.0].sort()
+		pinches[1.0].sort()
+		pinches[-1.0].sort()
+		for i in MawView.SEGMENTS:
+			assert_float(peaks[1.0][i]).is_equal_approx(peaks[-1.0][i], 0.25)     # both edges bulge at the same place along the curve
+			assert_float(peaks[1.0][i]).is_equal_approx(float(i), 0.2)            # ... which is the vertebra
+		for i in MawView.SEGMENTS - 1:
+			assert_float(pinches[1.0][i]).is_equal_approx(pinches[-1.0][i], 0.25)
 		# narrower at the tail than at the head
 		assert_float(MawView.spine_half_width(19)).is_less(MawView.spine_half_width(0) * 0.6)
 

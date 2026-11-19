@@ -12,7 +12,8 @@ const LAYERS := [
 	{"count": 30, "parallax": 0.8, "color": Pal.BONE_2},
 ]
 
-const SPINE_COUNT := 20            ## one star per vertebra (MawView.SEGMENTS)
+const SPINE_COUNT := 20            ## vertebrae (MawView.SEGMENTS)
+const SPINE_STARS := 40            ## two stars per vertebra, straddling the curve (S2 silhouette width)
 const SPINE_PARALLAX := 0.8        ## ✱ the far layer's parallax and look
 const SPINE_X_FRAC := 0.7          ## ✱ column centre, fraction of the star tile width
 const SPINE_TOP_FRAC := 0.15       ## ✱ first star, fraction of the tile height
@@ -43,7 +44,8 @@ func reset() -> void:
 	if spine_stars:
 		var length := world.view_size.y * SPINE_LENGTH_FRAC
 		var head := Vector2(world.view_size.x * SPINE_X_FRAC, world.view_size.y * SPINE_TOP_FRAC)
-		_spine = MawView.spine_place(MawView.spine_points(SPINE_COUNT), head, Vector2.DOWN, length)
+		var width_scale := length / (SepulchreRitual.TRUE_LENGTH_MULT * SepulchreRitual.BODY_DRAWN_RADIUS)   # the S2 silhouette, enlarged to the sky column
+		_spine = MawView.spine_ladder(head, Vector2.DOWN, length, width_scale)
 
 
 ## Where a tile-space star sits on screen for a parallax factor (no pull).
@@ -65,7 +67,7 @@ func spine_travel() -> float:
 
 ## Has the maw shown vertebra `i` yet? Then the star has become it.
 func spine_star_hidden(i: int) -> bool:
-	return maw != null and i < ceili(clampf(maw.reveal, 0.0, 1.0) * MawView.SEGMENTS)
+	return maw != null and (i >> 1) < ceili(clampf(maw.reveal, 0.0, 1.0) * MawView.SEGMENTS)
 
 
 ## Has the star arrived at its slot? From then on MawView draws it (S8 hand-off), not the starfield.
@@ -86,7 +88,7 @@ func spine_star_size() -> Vector2:
 func spine_star_pos(i: int) -> Vector2:
 	var p := _tile_pos(_spine[i], SPINE_PARALLAX)
 	if pull > 0.0 and maw != null:
-		p = p.lerp(maw.vertebra_screen_pos(i), spine_travel())
+		p = p.lerp(maw.vertebra_star_pos(i >> 1, i & 1), spine_travel())
 	return p
 
 

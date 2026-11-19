@@ -59,14 +59,15 @@ func _draw_arrived_spine_stars() -> void:
 		draw_rect(r, Pal.BONE_5)
 
 
-## The 2x2 dots MawView draws for arrived spine stars: one per vertebra not yet revealed, at that
-## vertebra's own slot. Empty until the stars have arrived.
+## The 2x2 dots MawView draws for arrived spine stars: a pair per vertebra not yet revealed, side by side
+## at that vertebra's own slot. Empty until the stars have arrived.
 func spine_star_rects() -> Array[Rect2]:
 	var out: Array[Rect2] = []
 	if stars == null or not stars.spine_star_arrived():
 		return out
 	for i in range(spine_stars_hidden_from(), SEGMENTS):
-		out.append(Rect2(vertebra_screen_pos(i).round(), Vector2(2, 2)))
+		for side in 2:
+			out.append(Rect2(vertebra_star_pos(i, side).round(), Vector2(2, 2)))
 	return out
 
 
@@ -162,14 +163,21 @@ func vertebra_screen_pos(i: int) -> Vector2:
 
 # --- the entity's spine: ONE curve shared by the S2 impact frame and the S8 star constellation ---
 
+## Where star `side` (0 or 1) of pair `i` rests at vertebra i's slot: side by side across the ring tangent.
+func vertebra_star_pos(i: int, side: int) -> Vector2:
+	var tangent := Vector2.from_angle(vertebra_angle(i, _t) + PI * 0.5)
+	return vertebra_screen_pos(i) + tangent * (SPINE_PAIR_GAP if side == 0 else -SPINE_PAIR_GAP)
+
+
 const SPINE_SWAY := 0.075         ## ✱ S-curve amplitude, fraction of the column length
 const SPINE_TAPER := 0.7          ## ✱ vertebra spacing falls toward the tail (head step : tail step is e^0.7, about 2 : 1)
 const SPINE_HEAD_HALF := 11.0     ## px ✱ silhouette half-width at the head (S2)
 const SPINE_TAIL_RATIO := 0.5     ## ✱ half-width at the tail as a fraction of the head's
-const SPINE_NOTCH := 0.5          ## ✱ lobe edge width where two vertebrae meet, fraction of the lobe's peak
-const SPINE_LOBE_REACH := 0.45    ## ✱ a lobe spans this fraction of a step either side of its vertebra (5 points: notch, shoulder, peak, shoulder, notch)
-const SPINE_SHOULDER := 0.88      ## ✱ shoulder width as a fraction of the lobe's peak
-const SPINE_CAP := 0.35           ## ✱ head and tail caps reach this fraction of a step past the end vertebrae
+const SPINE_PINCH := 0.45         ## ✱ width at each gap between two vertebrae, fraction of the local peak width
+const SPINE_BULGE := 0.6          ## ✱ lobe roundness: width follows sin(pi q) to this power (smaller = squarer lobe)
+const SPINE_CAP := 0.15           ## ✱ head and tail caps reach this fraction of a step past the end gaps
+const SPINE_LOBE_Q := [0.15, 0.35, 0.5, 0.65, 0.85]   ## ✱ points along a lobe (0 = gap behind it, 1 = gap ahead)
+const SPINE_PAIR_GAP := 2.0       ## px ✱ S8: the two stars of a pair sit this far either side of the vertebra slot on arrival
 
 
 ## The vertebral column in unit space: `n` points along a gentle asymmetric S, head at (0, 0), running
@@ -200,30 +208,89 @@ static func spine_half_width(i: int, n: int = SEGMENTS) -> float:
 	return SPINE_HEAD_HALF * lerpf(1.0, SPINE_TAIL_RATIO, float(i) / float(maxi(1, n - 1)))
 
 
+## The frame of the column at each vertebra: the gap positions b[0..n] (midpoints between vertebrae,
+## extrapolated half a step at the ends) and the unit normals at the vertebrae and at the gaps.
+static func _spine_frame(c: PackedVector2Array) -> Dictionary:
+	var n := c.size()
+	var b := PackedVector2Array()
+	b.append(c[0] - (c[1] - c[0]) * 0.5)
+	for i in range(1, n):
+		b.append((c[i - 1] + c[i]) * 0.5)
+	b.append(c[n - 1] + (c[n - 1] - c[n - 2]) * 0.5)
+	var tan_c := PackedVector2Array()
+	for i in n:
+		tan_c.append((b[i + 1] - b[i]).normalized())
+	var nor_c := PackedVector2Array()
+	for i in n:
+		nor_c.append(tan_c[i].orthogonal())
+	var nor_b := PackedVector2Array()
+	for j in n + 1:
+		var t0 := tan_c[maxi(j - 1, 0)]
+		var t1 := tan_c[mini(j, n - 1)]
+		nor_b.append((t0 + t1).normalized().orthogonal())
+	return {"b": b, "tan_c": tan_c, "nor_c": nor_c, "nor_b": nor_b}
+
+
+## Peak half-width at gap j of n (between vertebra j-1 and j): the pinch.
+static func spine_pinch_width(j: int, n: int = SEGMENTS) -> float:
+	var lo := spine_half_width(clampi(j - 1, 0, n - 1), n)
+	var hi := spine_half_width(clampi(j, 0, n - 1), n)
+	return SPINE_PINCH * minf(lo, hi)
+
+
 ## S2: the entity's true body as one closed, simple polygon (no interior detail: GDD §20 silhouette only,
-## NARR-001 §3.4 no face): the vertebral column along the shared curve, one rounded lobe per vertebra on
-## each edge, a body that narrows toward the tail. Head at `origin`, column along `dir` (unit), `length` px.
+## NARR-001 §3.4 no face): a beaded column along the shared curve. Each vertebra is one wide lobe on BOTH
+## edges, at the same points along the curve (edges in phase), pinched at every gap between vertebrae;
+## the body narrows toward the tail. Head at `origin`, column along `dir` (unit), `length` px.
 static func spine_silhouette(origin: Vector2, dir: Vector2, length: float) -> PackedVector2Array:
 	var c := spine_place(spine_points(), origin, dir, length)
 	var n := c.size()
+	var f := _spine_frame(c)
+	var b: PackedVector2Array = f.b
+	var nor_b: PackedVector2Array = f.nor_b
+	var nor_c: PackedVector2Array = f.nor_c
 	var side_a := PackedVector2Array()
 	var side_b := PackedVector2Array()
 	for i in n:
-		var w := spine_half_width(i, n)
-		var to_head := (c[i] - c[i + 1]) if i == 0 else (c[i - 1] - c[i])
-		var to_tail := (c[i] - c[i - 1]) if i == n - 1 else (c[i + 1] - c[i])
-		var nor := (to_tail.normalized() + (-to_head).normalized()).normalized().orthogonal()
-		var offs := [-SPINE_LOBE_REACH, -SPINE_LOBE_REACH * 0.66, 0.0, SPINE_LOBE_REACH * 0.66, SPINE_LOBE_REACH]
-		for f: float in offs:
-			var reach := 0.0 if (i == 0 and f < 0.0) or (i == n - 1 and f > 0.0) else absf(f)    # the end vertebrae are capped, not extended
-			var at := c[i] + (to_tail if f > 0.0 else to_head) * reach
-			var wf := w * (1.0 if f == 0.0 else (SPINE_SHOULDER if absf(f) < SPINE_LOBE_REACH - 0.001 else SPINE_NOTCH))
-			side_a.append(at + nor * wf)
-			side_b.append(at - nor * wf)
+		var w_peak := spine_half_width(i, n)
+		var w0 := spine_pinch_width(i, n)
+		var w1 := spine_pinch_width(i + 1, n)
+		var q_all: Array = [0.0]
+		q_all.append_array(SPINE_LOBE_Q)
+		for q: float in q_all:
+			var pos: Vector2
+			var nor: Vector2
+			if q < 0.5:
+				pos = b[i].lerp(c[i], q * 2.0)
+				nor = nor_b[i].lerp(nor_c[i], q * 2.0).normalized()
+			else:
+				pos = c[i].lerp(b[i + 1], (q - 0.5) * 2.0)
+				nor = nor_c[i].lerp(nor_b[i + 1], (q - 0.5) * 2.0).normalized()
+			var base := lerpf(w0, w1, q)
+			var w := base + (w_peak - base) * pow(sin(PI * q), SPINE_BULGE)
+			side_a.append(pos + nor * w)
+			side_b.append(pos - nor * w)
+	var w_end := spine_pinch_width(n, n)
+	side_a.append(b[n] + nor_b[n] * w_end)
+	side_b.append(b[n] - nor_b[n] * w_end)
 	var out := PackedVector2Array()
 	out.append_array(side_a)
-	out.append(c[n - 1] + (c[n - 1] - c[n - 2]) * SPINE_CAP)
+	out.append(b[n] + (b[n] - b[n - 1]) * SPINE_CAP)
 	side_b.reverse()
 	out.append_array(side_b)
-	out.append(c[0] + (c[0] - c[1]) * SPINE_CAP)
+	out.append(b[0] - (b[1] - b[0]) * SPINE_CAP)
+	return out
+
+
+## S8: the silhouette's outline as stars: two per vertebra, side by side across the curve at that
+## vertebra's half-width (the S2 width function) times `width_scale`. Index 2*i is one side, 2*i+1 the other.
+static func spine_ladder(origin: Vector2, dir: Vector2, length: float, width_scale: float) -> PackedVector2Array:
+	var c := spine_place(spine_points(), origin, dir, length)
+	var f := _spine_frame(c)
+	var nor_c: PackedVector2Array = f.nor_c
+	var out := PackedVector2Array()
+	for i in c.size():
+		var w := spine_half_width(i, c.size()) * width_scale
+		out.append(c[i] + nor_c[i] * w)
+		out.append(c[i] - nor_c[i] * w)
 	return out
