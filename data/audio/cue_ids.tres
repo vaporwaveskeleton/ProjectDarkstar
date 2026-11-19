@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="CueIds" load_steps=34 format=3]
+[gd_resource type="Resource" script_class="CueIds" load_steps=39 format=3]
 
 [ext_resource type="Script" path="res://core/audio/cue_ids.gd" id="1"]
 [ext_resource type="Script" path="res://core/audio/cue_id_entry.gd" id="2"]
@@ -282,6 +282,51 @@ has_synth_fallback = false
 is_loop = false
 note = "render only"
 
+[sub_resource type="Resource" id="e31"]
+script = ExtResource("2")
+id = &"aether_bed_t1"
+doc_id = "AMB-01"
+act0_only = false
+has_synth_fallback = false
+is_loop = true
+note = "render only, Aether ambience bed (AUDIO-001 12.12)"
+
+[sub_resource type="Resource" id="e32"]
+script = ExtResource("2")
+id = &"aether_bed_t2"
+doc_id = "AMB-02"
+act0_only = false
+has_synth_fallback = false
+is_loop = true
+note = "render only, Aether ambience bed (AUDIO-001 12.12)"
+
+[sub_resource type="Resource" id="e33"]
+script = ExtResource("2")
+id = &"aether_bed_t3"
+doc_id = "AMB-03"
+act0_only = false
+has_synth_fallback = false
+is_loop = true
+note = "render only, Aether ambience bed (AUDIO-001 12.12)"
+
+[sub_resource type="Resource" id="e34"]
+script = ExtResource("2")
+id = &"aether_swell"
+doc_id = "AMB-04"
+act0_only = false
+has_synth_fallback = false
+is_loop = false
+note = "render only, Aether ambience one-shot (AUDIO-001 12.12)"
+
+[sub_resource type="Resource" id="e35"]
+script = ExtResource("2")
+id = &"aether_wrong"
+doc_id = "AMB-05"
+act0_only = false
+has_synth_fallback = false
+is_loop = false
+note = "render only, Aether ambience one-shot (AUDIO-001 12.12)"
+
 [resource]
 script = ExtResource("1")
-entries = [SubResource("e0"), SubResource("e1"), SubResource("e2"), SubResource("e3"), SubResource("e4"), SubResource("e5"), SubResource("e6"), SubResource("e7"), SubResource("e8"), SubResource("e9"), SubResource("e10"), SubResource("e11"), SubResource("e12"), SubResource("e13"), SubResource("e14"), SubResource("e15"), SubResource("e16"), SubResource("e17"), SubResource("e18"), SubResource("e19"), SubResource("e20"), SubResource("e21"), SubResource("e22"), SubResource("e23"), SubResource("e24"), SubResource("e25"), SubResource("e26"), SubResource("e27"), SubResource("e28"), SubResource("e29"), SubResource("e30")]
+entries = [SubResource("e0"), SubResource("e1"), SubResource("e2"), SubResource("e3"), SubResource("e4"), SubResource("e5"), SubResource("e6"), SubResource("e7"), SubResource("e8"), SubResource("e9"), SubResource("e10"), SubResource("e11"), SubResource("e12"), SubResource("e13"), SubResource("e14"), SubResource("e15"), SubResource("e16"), SubResource("e17"), SubResource("e18"), SubResource("e19"), SubResource("e20"), SubResource("e21"), SubResource("e22"), SubResource("e23"), SubResource("e24"), SubResource("e25"), SubResource("e26"), SubResource("e27"), SubResource("e28"), SubResource("e29"), SubResource("e30"), SubResource("e31"), SubResource("e32"), SubResource("e33"), SubResource("e34"), SubResource("e35")]

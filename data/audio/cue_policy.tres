@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="CuePolicy" load_steps=28 format=3]
+[gd_resource type="Resource" script_class="CuePolicy" load_steps=30 format=3]
 
 ; AUDIO-001 12.6 first-pass voice policy. EVERY number here is an engineering value (tune in the slice).
 ; priority is the 7.2 level (lower = more important; P0 and P1 are never stolen). Buses: default_bus_layout.tres.
@@ -231,8 +231,26 @@ max_concurrent = 1
 min_retrigger_ms = 60
 pitch_jitter_cents = 0.0
 
+[sub_resource type="Resource" id="p25"]
+script = ExtResource("2")
+id = &"aether_swell"
+bus = &"BUS-AMB"
+priority = 5
+max_concurrent = 1
+min_retrigger_ms = 2000
+pitch_jitter_cents = 0.0
+
+[sub_resource type="Resource" id="p26"]
+script = ExtResource("2")
+id = &"aether_wrong"
+bus = &"BUS-AMB"
+priority = 5
+max_concurrent = 1
+min_retrigger_ms = 2000
+pitch_jitter_cents = 0.0
+
 [resource]
 script = ExtResource("1")
 ds_namespace = "ds_audio"
 source_section = "AUDIO-001 12.6 (engineering values, not SYS-001)"
-entries = [SubResource("p0"), SubResource("p1"), SubResource("p2"), SubResource("p3"), SubResource("p4"), SubResource("p5"), SubResource("p6"), SubResource("p7"), SubResource("p8"), SubResource("p9"), SubResource("p10"), SubResource("p11"), SubResource("p12"), SubResource("p13"), SubResource("p14"), SubResource("p15"), SubResource("p16"), SubResource("p17"), SubResource("p18"), SubResource("p19"), SubResource("p20"), SubResource("p21"), SubResource("p22"), SubResource("p23"), SubResource("p24")]
+entries = [SubResource("p0"), SubResource("p1"), SubResource("p2"), SubResource("p3"), SubResource("p4"), SubResource("p5"), SubResource("p6"), SubResource("p7"), SubResource("p8"), SubResource("p9"), SubResource("p10"), SubResource("p11"), SubResource("p12"), SubResource("p13"), SubResource("p14"), SubResource("p15"), SubResource("p16"), SubResource("p17"), SubResource("p18"), SubResource("p19"), SubResource("p20"), SubResource("p21"), SubResource("p22"), SubResource("p23"), SubResource("p24"), SubResource("p25"), SubResource("p26")]

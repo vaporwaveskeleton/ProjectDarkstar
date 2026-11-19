@@ -11,6 +11,8 @@ extends Node
 
 const VOICES := 24                     ## ✱ one-shot voice pool
 const CHANT_MAX_DB := -14.0            ## ✱ chant bed level at full build
+const AMBIENCE_FADE_S := 2.0           ## ✱ ambience crossfade / fade-in time; must stay >= 0.6 s (AUDIO-001 §1.4 bed-return rule)
+const AMBIENCE_MAX_DB := -12.0         ## ✱ ambience bed level at level 1.0
 const CHIRP_DIR := "res://assets/audio/generated/sfx"   ## chirp build output (AUDIO-001 §11.7)
 const SYNTH_TRIM_DB := -6.0            ## ✱ runtime-synth cues run hotter than the chirp renders
 const BED_PITCH_FALL_S := 0.15         ## ✱ full-range glide time going down (slow-mo in)
@@ -39,6 +41,13 @@ var _last_start_ms: Dictionary = {}    # StringName -> int
 var _jitter_rng := RandomNumberGenerator.new()   # cosmetic only; never the seeded run RNG
 var _chant: AudioStreamPlayer
 var _chant_level := 0.0
+var _beds: Dictionary = {}             # StringName -> AudioStream (loop cues except the chant; ambience slot only)
+var _amb: Array[AudioStreamPlayer] = []   # A/B crossfade pair on BUS-AMB
+var _amb_fade: Array[float] = [0.0, 0.0]  # per-player fade position 0..1 (equal-power gain = sin(f * PI/2))
+var _amb_active := 0
+var _amb_id: StringName = &""
+var _amb_level := 1.0
+var _amb_level_cur := 1.0
 var _silence := 0.0
 var _bed_pitch_target := 1.0
 var muted_for_tests := false
@@ -71,6 +80,12 @@ func _ready() -> void:
 	_chant.stream = chant if chant != null else SfxSynth.build_chant_loop()
 	_chant.volume_db = -80.0
 	add_child(_chant)
+	for i in 2:
+		var a := AudioStreamPlayer.new()
+		a.bus = &"BUS-AMB"
+		a.volume_db = -80.0
+		add_child(a)
+		_amb.append(a)
 
 
 ## Renders first; the SfxSynth set is built once, and only when a fallback cue lacks its render.
@@ -78,6 +93,12 @@ func _load_cues() -> void:
 	var missing: Array[StringName] = []
 	for e in cue_ids.entries:
 		if e.is_loop:
+			# loops never enter the one-shot table, so play() cannot start them; the chant has its
+			# own player, every other loop is an ambience bed for set_ambience()
+			if e.id != &"chant":
+				var bed := chirp_stream(e.id)
+				if bed != null:
+					_beds[e.id] = bed
 			continue
 		var rendered := chirp_stream(e.id)
 		if rendered != null:
@@ -199,9 +220,67 @@ func set_chant(level: float) -> void:
 
 
 ## Total silence for `seconds`: every voice and the chant stop (the scare chord, GDD §12).
+## The ambience stops hard too and returns with a fade-in once the silence ends (AUDIO-001 §1.4).
 func silence(seconds: float) -> void:
 	_silence = seconds
 	_stop_voices()
+	_stop_ambience_players()
+
+
+## Ambience slot (AUDIO-001 §12.12): crossfades to the loop cue `id` over AMBIENCE_FADE_S on BUS-AMB.
+## `level` 0..1 maps to -40..AMBIENCE_MAX_DB dB. &"" fades out. The current id only changes level.
+## An unknown or non-loop id is a silent no-op (the gallery may call before cues land).
+func set_ambience(id: StringName, level: float = 1.0) -> void:
+	_amb_level = clampf(level, 0.0, 1.0)
+	if id == _amb_id:
+		return
+	if id != &"" and not _beds.has(id):
+		return
+	var old := _amb_active
+	if id != &"":
+		_amb_active = 1 - _amb_active
+		var p := _amb[_amb_active]
+		if p.stream != _beds[id]:
+			p.stop()
+			p.stream = _beds[id]
+			_amb_fade[_amb_active] = 0.0
+		_amb_level_cur = _amb_level
+	_amb_id = id
+	if id == &"":
+		_amb_active = old
+
+
+## The id the ambience slot is heading for (&"" = none).
+func ambience_id() -> StringName:
+	return _amb_id
+
+
+func _stop_ambience_players() -> void:
+	for i in 2:
+		_amb[i].stop()
+		_amb_fade[i] = 0.0
+		_amb[i].volume_db = -80.0
+
+
+func _step_ambience(delta: float) -> void:
+	_amb_level_cur = lerpf(_amb_level_cur, _amb_level, clampf(delta * 4.0, 0.0, 1.0))
+	for i in 2:
+		var p := _amb[i]
+		var wanted := i == _amb_active and _amb_id != &""
+		if muted_for_tests or _silence > 0.0:
+			if p.playing:
+				p.stop()
+			_amb_fade[i] = 0.0
+			continue
+		if wanted and not p.playing and p.stream != null:
+			_amb_fade[i] = 0.0   # fresh start or return from silence: fade in
+			p.volume_db = -80.0
+			p.play()
+		_amb_fade[i] = move_toward(_amb_fade[i], 1.0 if wanted else 0.0, delta / AMBIENCE_FADE_S)
+		var gain := sin(_amb_fade[i] * PI * 0.5)
+		p.volume_db = lerpf(-40.0, AMBIENCE_MAX_DB, _amb_level_cur) + linear_to_db(maxf(gain, 0.0001))
+		if not wanted and _amb_fade[i] <= 0.0 and p.playing:
+			p.stop()
 
 
 func _stop_voices() -> void:
@@ -218,10 +297,15 @@ func _exit_tree() -> void:
 	if _chant != null:
 		_chant.stop()
 		_chant.stream = null
+	for a in _amb:
+		a.stop()
+		a.stream = null
 
 
 func stop_all() -> void:
 	_stop_voices()
+	_stop_ambience_players()
+	_amb_id = &""
 	_chant_level = 0.0
 	_chant.stop()
 	_bed_pitch_target = 1.0
@@ -253,6 +337,7 @@ func _step_bed_pitch(delta: float) -> void:
 func _process(delta: float) -> void:
 	_step_bed_pitch(delta)
 	_silence = maxf(0.0, _silence - delta)
+	_step_ambience(delta)
 	var target := -80.0
 	if _chant_level > 0.0 and _silence <= 0.0:
 		target = lerpf(-40.0, CHANT_MAX_DB, _chant_level)

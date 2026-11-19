@@ -1,6 +1,7 @@
 # DARKSTAR — Audio Design
 
 **Doc ID:** AUDIO-001 · **Version:** 1.1 · **Date:** 2026-11-18 · **Owner:** Audio / Design · **Status:** authored, pending review
+**Rev 1.5 (2026-11-18): §12.12 added (Aether sound direction, PM-requested; owner review pending): five unauditioned cues (`aether_bed_t1`..`t3`, `aether_swell`, `aether_wrong`), `AudioService.set_ambience`, `BUS-AMB` now used; §12.1 counts, format and bus rows updated; no design change to §1–§11.**
 **Rev 1.4 (2026-11-18): §12.11 added (Sizzle sounds, owner-approved): two new cues (`lance_dull`, `tally_blip`), chant-bed pitch for slow-mo, hit-stop rule; cue counts 29 to 31, policy entries 23 to 25; old §12.11–§12.9 are now §12.9–§12.11; not auditioned by ear; no design change to §1–§11.**
 **Rev 1.3 (2026-11-18): §12 change set C1–C7 implemented on owner approval (lazy fallback, voice policy and priority stealing, mono renders, five new M1 cues, cue id table, tests, report tool); §12.1–§12.8 updated; P5 (ducking, options) still open; no design change to §1–§11.**
 **Rev 1.2 (2026-11-18): §12 added: delivery audit (what is built, what is missing, proposed change set); no design change to §1–§11.**
@@ -1129,13 +1130,13 @@ Level targets: SFX peaks −6 to −14 dBFS; only the entity's set pieces (`wake
 | Engine, targets | Godot 4.7.2; Windows x86-64 + Steam is the only 1.0 target | TECH-001 §1.1, §1.4 |
 | Service | One autoload, `AudioService`: a pool of 24 one-shot `AudioStreamPlayer`s (`VOICES`). **Now (C2):** priority stealing and per-cue policy (§12.6); was blind round-robin. One looping chant player, `silence(seconds)`, `set_chant(level)`, `stop_all()`, `muted_for_tests`; new public helpers `active_count(id)`, `has_cue(id)` | `autoload/audio_service.gd` |
 | Cue source | **Now (C1):** `AudioService` loads the render `res://assets/audio/generated/sfx/<id>.wav` for every id in `data/audio/cue_ids.tres` and builds `SfxSynth` (22.05 kHz mono 16-bit, GDScript) only if a fallback cue lacks a render; with all renders present it builds zero synth cues. Was: the whole synth set built every boot | `audio_service.gd`, `core/audio/sfx_synth.gd`, `core/audio/cue_ids.gd` |
-| Sources | `audio/src/cabinet.cx.js`: 30 cues + the chant bed (31 files; the 5 M1 cues of C4 and the 2 Sizzle cues of §12.11 were added), rendered to `assets/audio/generated/sfx/` | §11.7 |
+| Sources | **Now (§12.12): 2 sources, 36 cue ids (31 + 5).** `audio/src/cabinet.cx.js`: 30 cues + the chant bed (31 files; the 5 M1 cues of C4 and the 2 Sizzle cues of §12.11 were added); `audio/src/aether_beds.cx.js`: 5 Aether renders (§12.12). Rendered to `assets/audio/generated/sfx/`. The 36 total is 31 + 5 by count; re-check against `data/audio/cue_ids.tres` after the code lands | §11.7 |
 | Loading | Synchronous `load()` of every listed cue in `_ready()` at boot. No streaming, no preload list, no loading screen (TECH-001 §2.1). Boot time **not measured** after C1 | `audio_service.gd` |
 | Buses | `Master` (= BUS-MST), `BUS-MUS`, `BUS-CHO`, `BUS-ENT`, `BUS-UI`, `BUS-FLY`, `BUS-AMB`, all to Master. No effects, no ducking, no sidechain | `data/audio/default_bus_layout.tres` |
-| Bus use | **Now (C2):** per-cue bus from `cue_policy.tres`: `wake_hit` and `entity_unmade` on `BUS-ENT`; menu, H and I cues on `BUS-UI`; `grub_keen` on `BUS-CHO`; the rest on `BUS-FLY`; the chant on `BUS-CHO`. All buses are at 0 dB. `BUS-AMB` and `BUS-MUS` are used by no code. Was: every voice on `BUS-FLY` | `audio_service.gd`, `data/audio/cue_policy.tres` |
+| Bus use | **Now (C2):** per-cue bus from `cue_policy.tres`: `wake_hit` and `entity_unmade` on `BUS-ENT`; menu, H and I cues on `BUS-UI`; `grub_keen` on `BUS-CHO`; the rest on `BUS-FLY`; the chant on `BUS-CHO`. All buses are at 0 dB. `BUS-MUS` is used by no code. **`BUS-AMB` is now used by the ambience slot and the two Aether one-shots (§12.12).** Was: every voice on `BUS-FLY` | `audio_service.gd`, `data/audio/cue_policy.tres` |
 | Callers | The Cabinet sim goes through `ArcadeWorld.sfx(id, volume_db)`; attract, coin slot and the Pretence reveal call `AudioService.play` directly | `features/cabinet/**`, `scenes/attract/**` |
 | Positional audio | None. Every cue is 2D and centred; the chant level is computed by the caller and passed to `set_chant` | `sepulchre_ritual.gd` |
-| Format and import | Renders are 16-bit 44.1 kHz WAV in Git LFS: **now mono (C3) except `chant`, `charge_hit`, `entity_unmade`, `wake_hit`, which stay stereo**; was all stereo. Import params are the defaults: `compress/mode=2`, `force/mono=false`, loop mode "Detect from WAV" (the chant carries a `smpl` loop) | `*.wav.import` |
+| Format and import | Renders are 16-bit 44.1 kHz WAV in Git LFS: **now mono (C3) except `chant`, `charge_hit`, `entity_unmade`, `wake_hit`, which stay stereo, and now also the 5 Aether renders (§12.12), stereo 16-bit 44.1 kHz**; was all stereo. Import params are the defaults: `compress/mode=2`, `force/mono=false`, loop mode "Detect from WAV" (the chant carries a `smpl` loop) | `*.wav.import` |
 | Video | None. The generated-assets test forbids image and audio files outside the generated folders | `tests/test_generated_assets_only.gd` |
 | Tests | The generated-assets test checks that every Cabinet cue has a render and that the fallback synth still builds. **Now (C5):** `core/audio/tests/test_audio_service.gd`, 23 cases (pool, stealing, caps, routing, silence, chant); TECH-001 §9 has the row | `core/audio/tests/`, `tests/`, TECH-001 §9 |
 | Profiling | None. TECH-001 §8.1 has no audio row and §8.5 says no measurement has been taken | TECH-001 §8 |
@@ -1241,7 +1242,7 @@ Stems must be bar-exact so `AudioStreamSynchronized` (Godot 4.3+) can hold them 
 
 **Voice limits and pooling (engineering ✱; built 2026-11-18 as C2; mirrored in TECH-001 §2.7).**
 - 24 total voices (§7.5); blind round-robin is replaced. **Stealing rule as built:** take a voice that has finished; else steal the lowest-priority stealable voice; else the oldest voice of the *same cue id*. P0 and P1 voices are never stolen; a new cue never steals a more important voice; a P0 or P1 cue that is at its own cap is dropped. "Finished" is judged from the stream length and pitch against an injectable clock. So a lance volley cannot cut `wake_hit` (tested with the injected clock; not measured in play).
-- Per-cue policy in data: `data/audio/cue_policy.tres` (25 entries, all ✱; 23 before the Sizzle cues of §12.11), class `CuePolicy` (`core/audio/cue_policy.gd`, a `TunableResource`, `ds_namespace` `ds_audio`, an `entries` table of `CuePolicyEntry`, no individual `ds_` keys yet), holding `bus`, `priority` (the §7.2 level), `max_concurrent`, `min_retrigger_ms` and `pitch_jitter_cents`. Gameplay still calls only `AudioService.play(id)`. Routing today: `wake_hit` and `entity_unmade` to `BUS-ENT`; menu, H and I cues to `BUS-UI`; `grub_keen` to `BUS-CHO`; all buses at 0 dB.
+- Per-cue policy in data: `data/audio/cue_policy.tres` (27 entries, all ✱; 23 before the Sizzle cues of §12.11, 25 before the Aether cues of §12.12), class `CuePolicy` (`core/audio/cue_policy.gd`, a `TunableResource`, `ds_namespace` `ds_audio`, an `entries` table of `CuePolicyEntry`, no individual `ds_` keys yet), holding `bus`, `priority` (the §7.2 level), `max_concurrent`, `min_retrigger_ms` and `pitch_jitter_cents`. Gameplay still calls only `AudioService.play(id)`. Routing today: `wake_hit` and `entity_unmade` to `BUS-ENT`; menu, H and I cues to `BUS-UI`; `grub_keen` to `BUS-CHO`; all buses at 0 dB.
 - First-pass numbers from this audit (all ✱, tune in the slice): lance 4 concurrent, no retrigger gate (the fire rate is the gate); `geode_hit` 3 concurrent with a 40 ms gate; `grub_die` and `acolyte_die` 4 concurrent each; menu cues 1 each; set pieces 1 each.
 - Picks made while building, beyond the numbers above (✱ proposals, not owner-reviewed, tune in the M1 slice): `vigil_die` P2; `grub_keen` P2 with 3 voices; `acolyte_fire` P3; `charge_fire` and `charge_hit` P4 with 2 voices each; `segment_deposit` P4 with 3; `segment_knocked` P4 with 2; `geode_break` P5 with 2; `shard_chime` P5 with 3; `extra_life` and `quota` P4 with 1 each; `coin` P5 with 2. The authoritative table is `data/audio/cue_policy.tres`. SYS-001 §9 caps the sim (≤ 32 Choir units, ≤ 24 hostile contacts, ≤ 180 shots), so sound must be bounded by cue policy, not by hoping the sim stays small.
 - Distance culling and virtualization: the chant only (§5.3: ≤ 10 voices, then a bed). Every other Act 0 cue is non-positional.
@@ -1321,3 +1322,55 @@ Both new cues are chirp renders (mono, from `audio/src/cabinet.cx.js`, `assets/a
 | `tally_blip` | 0.07 s | −16.19 dBFS | −23.2 dBFS |
 
 **Neither new cue has been auditioned by ear.** Loudness (LUFS) was not measured. With these two, the cue id table has 31 rows and the policy table 25 entries (§12.1, §12.4, §12.6).
+
+### 12.12 Aether sound direction (post-Pretence)
+
+**Status: direction, PM-requested 2026-11-18 under owner-delegated authority; owner review pending.** Summarised from the game audio chat's direction note. Inspirations are for feeling only (Sunless Sea's dread of the unknown, Returnal's alien intensity); nothing is copied. Everything here sits inside §1.1 (no stings, braams or rise-and-slam; menace from layers, tuning and register, never level; never resolve; no tempo as dread), §1.3 (L3: audio never removes information; L4: no startle), §1.4 (beds have no impulsive transient above −30 LUFS-S; protected silence at most twice per run 🔒; a bed returns after silence with a fade of at least 0.6 s), §4.3 (entity voice dry, flat, unprocessed) and §7.1 (`BUS-AMB` −36 LUFS-S floor; information cues at least 18 dB above the bed). Where this section seems to disagree with those, they win. No gameplay number is invented; numbers marked ✱ are engineering params (TECH-001 §2.7).
+
+**The one idea.** The Aether is a medium you can hear, and the entity is where the medium stops. The Cabinet (T0) is dry, square and quantised. After the Pretence everything is wet: long tails, slow onsets, air in every layer. The entity is the audio twin of ART-001 §16's "only true black": the only dry thing in the cosmos. Horror is subtraction (ART-001 §16.1), never addition.
+
+**The five strata** (all on `BUS-AMB`, below every information cue):
+
+| Stratum | What it is | Built from (code only, D-14) | Information? |
+|---|---|---|---|
+| Medium | the fog: slow tidal air, never still | pink and brown noise through slowly sweeping band-passes, slow tremolo "tide" | none |
+| Glass | crystal spheres turning: bowed, inharmonic, very slow | FM (inharmonic ratios) and sine partials, attacks at least 1 s; never near 1.2 kHz, so never confusable with the B06 glass chime (§6.4) | none |
+| Life | motes and jellies: sparse soft ticks, bubbles, glints | short filtered blips, low level, irregular spacing | yes: its absence is a tell (ART-001 §16.2); always has a visual twin (L3) |
+| Deep | sub-bass swells, 30 to 60 Hz, long breathing period | sine pairs with a 2nd and 3rd harmonic above 300 Hz so laptops still hear the shape (§7.1) | none; felt, never a tell |
+| Wrong | tuning drift, beating, early endings, tails before notes | detuned unisons (§3 `detune_cents`), reverse-envelope swells, one voice at +11 cents | flavour only; never carries a fact alone (L3) |
+
+**By Warp tier** (WARP-001 §2 names; detune is §3's existing per-tier values ✱: 0, 6, 9, 14, 19, 22 cents for T0 to T5). A tier adds or changes layers, never level; the bed's loudness stays at the `BUS-AMB` target at every tier.
+
+| Tier | Strata | Detune ✱ | Feel |
+|---|---|---|---|
+| T1 Frayed | Medium + Glass + Life | 6 | wonder with a hairline crack |
+| T2 Bleeding | + wet-cloth layer in the Medium (Shroud, W2-02); thicker Life | 9 | heavy and close; Life swarms, which is also a warning |
+| T3 Unbound | + Deep swells; + Wrong pre-echo | 14 | vast and vertical; something large passes in the far fog, heard as displacement, never a voice |
+| T4 Inverted | Life plays backwards; Glass moves low while Deep moves up (register swap) | 19 | everything familiar faces the wrong way |
+| T5 Unmaking | layers removed one by one (W5-07 strips stems); Medium thins | 22 | not louder, only emptier; the approach to the dry black |
+
+**W0-08 (the Costume Removal)** is a transformation, not a cut: the bit-crush lifts (bits 9 to 10 up to clean), square upper harmonics smear into slow bowed-glass partials, the dry room grows into the medium, and one buried square pulse survives as a ghost of the cabinet (the same pulse The Black keeps, §3), gone by T5. It is a mix job between two renders and needs the two-slot bed player below. The crossfade itself is deferred.
+
+**Entity presence = subtraction gradient.** The entity voice keeps §4.3 exactly (dry, flat, unprocessed, head-centred on `BUS-ENT`, never ducked); this section changes nothing about it. Its presence is not a voice: as it nears, Life stops first, then Glass loses its top end, then the reverb shortens toward dry, and last a Deep swell crests with no transient (onset at least 2 s, crest at or below the bed: `aether_swell`). At full presence the world is dry and nearly silent, so the voice needs no processing to be terrifying.
+
+**Wrongness cues** (no sting): pre-echo (a reverse-reverb swell into a note that never arrives: `aether_wrong`); the early end (a glass tone stops a beat early); the near-unison (two voices a few cents apart, beating slower, then one goes still); the pitch that settles low (each loop slightly lower, never read as tempo); displacement (the medium bending, never a creature sound). Each has an onset ramp of at least 0.35 s and peaks under the §1.4 bed limit.
+
+**Silence within the budget.** True silence is the protected beat, at most twice per run 🔒 (§1.4); the Aether may not spend it (WARP-001 line 194). Below that budget use near-silence by subtraction: drop to the Medium alone for a bar (§12.5's "one stem for a bar on every fourth pass" ✱). After any silence the bed returns with a fade of at least 0.6 s ✱, never a hard cut.
+
+**Built status (first build; every cue UNAUDITIONED: no one has listened).** Levels from `chirp info`, dBFS only; LUFS was **not measured**. Format: stereo 16-bit 44.1 kHz WAV in Git LFS, rendered from `audio/src/aether_beds.cx.js` to `assets/audio/generated/sfx/`.
+
+| Id | Kind | Length | Peak | RMS | Size (bytes) | Use | Status |
+|---|---|---|---|---|---|---|---|
+| `aether_bed_t1` | stereo loop | 16 s | −22.57 dBFS | −36.6 dBFS | 2,822,512 | T1 Frayed: Medium, Glass, Life | UNAUDITIONED |
+| `aether_bed_t2` | stereo loop | 16 s | −23.87 dBFS | −37.66 dBFS | 2,822,512 | T2 Bleeding: + wet cloth, denser Life | UNAUDITIONED |
+| `aether_bed_t3` | stereo loop | 16 s | −18.34 dBFS | −33.77 dBFS | 2,822,512 | T3 Unbound: + Deep swell, pre-echo, wider detune | UNAUDITIONED |
+| `aether_swell` | one-shot | 9.0 s | −22.06 dBFS | −33.37 dBFS | 1,589,116 | entity presence: Deep swell crests as the black arrives; no transient (5 s attack) | UNAUDITIONED |
+| `aether_wrong` | one-shot | 5.0 s | −24.77 dBFS | −37.51 dBFS | 883,808 | pre-echo into a note that never lands (2.1 s reverse swell) | UNAUDITIONED |
+
+"Stingers" were requested; §1.1 forbids stings, so the two one-shots are slow swells. Whether these levels meet the §7.1 `BUS-AMB` floor in LUFS-S is not known.
+
+**Engineering.** `AudioService.set_ambience(id, level)`: one ambience slot, two players on `BUS-AMB`, crossfade `AMBIENCE_FADE_S` 2.0 s ✱, cap `AMBIENCE_MAX_DB` −12 ✱. `silence()` stops the slot and it returns with the fade (at least 0.6 s, §1.4). `aether_swell` and `aether_wrong`: `BUS-AMB`, P5, 1 voice, 2000 ms retrigger gate ✱ (two policy entries in `cue_policy.tres`; no individual `ds_` keys yet). **Hook:** the Aether art chat's `aether_gallery` scene calls `set_ambience` per exhibit (T1, T2, T3; T4 and T5 reuse T3) and plays `aether_swell` for the entity-presence exhibit. Cue table ids `AMB-01`..`AMB-05` (beds t1..t3, swell, wrong) are local ids for this section, not §6.2 ids.
+
+**Deferred:** T4 and T5 beds; a sphere-glint cue (soft, low, inharmonic, must never resemble B06); the W0-08 crossfade; `BUS-AMB` sidechain ducking (§7.2 not built); positional audio.
+
+**Owner items** (TECH-001 Q-T51 to Q-T53; Q-T51 decided: beds to Ogg, blocked until ffmpeg is installed; Q-T52 decided: T4/T5 beds in a follow-up PR; Q-T53 open): bed format and size (three stereo WAV beds are about 8.5 MB, against Ogg, see Q-T43); T4 and T5 beds now or with Act 3 and 4 content; GDD §19 glossary lacks "Aether" and "Pretence".
