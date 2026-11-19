@@ -14,7 +14,7 @@ const STATE_IDS := {
 	"cabinet/score": {"route": "cabinet", "member": "score", "props": ["score", "lives"]},
 	"cabinet/record": {"route": "cabinet", "member": "record", "props": ["grubs_destroyed", "glass_mined", "charges_thrown", "glass_carried"]},
 	"sector/vigil": {"route": "sector", "member": "", "props": ["vigil_x", "vigil_y", "vigil_speed", "hull_max_hp", "camera_x", "compass_markers", "camera_gap", "facing_deg", "aim_x", "aim_y"]},
-	"sector/field": {"route": "sector", "member": "", "props": ["geodes_alive", "geodes_detonated", "shards_free", "charges", "score", "charges_in_flight", "charges_lost", "charges_hit", "charges_guttered", "dry_fires"]},
+	"sector/field": {"route": "sector", "member": "", "props": ["geodes_alive", "geodes_detonated", "shards_free", "shards_live", "charges", "score", "charges_in_flight", "charges_lost", "charges_hit", "charges_guttered", "dry_fires"]},
 	"sector/choir": {"route": "sector", "member": "", "props": ["grubs_alive", "grubs_carrying", "segments", "deposited_shards", "sepulchre_complete"]},
 }
 

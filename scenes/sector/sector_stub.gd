@@ -65,6 +65,9 @@ var geodes_detonated: int:
 	get: return _geodes.detonated_count() if _geodes else 0
 var shards_free: int:
 	get: return _shards.free_count() if _shards else 0
+## Shards lying in the world, claimed by a Grub or not (`shards_free` counts unclaimed ones only).
+var shards_live: int:
+	get: return _shards.live_count() if _shards else 0
 var charges: int:
 	get: return _magazine.count if _magazine else 0
 ## Shards + Grubs killed + Sepulchre segments knocked off (SYS-001 §7.1).
