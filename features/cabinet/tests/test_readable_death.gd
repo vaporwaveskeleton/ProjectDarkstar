@@ -357,3 +357,32 @@ func test_reduced_motion_keeps_the_delay_then_shows_everything_at_once() -> void
 	m.age = world.fx.death_chalk_delay() + 0.001
 	assert_float(world.fx.death_outline_frac(m)).is_equal(1.0)
 	assert_float(world.fx.death_arrow_frac(m)).is_equal(1.0)
+
+
+func test_real_entity_death_in_the_real_stage_draws_the_outline_and_arrow() -> void:
+	var st := (game.stages[1] as CabinetStage).duplicate() as CabinetStage
+	st.sepulchre_start_segments = 20
+	world.start(st)
+	world.vigil.shield = 0.0
+	world.vigil.use_scripted = true
+	for i in 3000:
+		world.step(DT)
+		if not world.vigil.alive:
+			break
+	assert_bool(world.vigil.alive).is_false()
+	for i in 75:
+		world.step(DT)
+	var m: FxLayer.DeathMark = world.fx.death_marks[0]
+	var o := world.fx.death_outline_frac(m)
+	assert_float(o).is_equal(1.0)
+	assert_float(world.fx.death_arrow_frac(m)).is_equal(1.0)
+	assert_bool(world.fx.visible_at(m.vigil_pos, fx.death_arrow_px + 12.0)).is_true()
+	var segs := world.fx.death_outline_segments(m, o)
+	assert_int(segs.size()).is_greater(0)
+	# A 1 px quad through integer corners covers no pixel centre on a 45 degree run and vanishes in
+	# the real render (headless has no pixels to read): every chalk line must be pixel-centred.
+	for seg in segs:
+		var e := world.fx.chalk_line_ends(seg[0], seg[1])
+		for pt in e:
+			assert_float(pt.x - floorf(pt.x)).is_equal(0.5)
+			assert_float(pt.y - floorf(pt.y)).is_equal(0.5)

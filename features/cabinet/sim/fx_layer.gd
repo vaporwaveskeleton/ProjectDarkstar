@@ -374,6 +374,18 @@ func death_outline_segments(m: DeathMark, frac: float) -> Array[PackedVector2Arr
 ## S6: the coroner's chalk, 1 px BONE_4, no alpha. Order: the Vigil's outline draws on, then the
 ## arrow (and tracking leader), then it all holds until respawn. A small killer (a shot) also
 ## gets a ring round its silhouette, drawn on with the outline.
+## A 1 px chalk line between two integer screen points, centred on pixel centres (+0.5). A width-1
+## quad through integer corners covers no pixel centre on a 45 degree run and vanishes: the solid
+## outline and the barbs were invisible in real runs until they were drawn pixel-centred.
+func chalk_line_ends(a: Vector2, b: Vector2) -> PackedVector2Array:
+	return PackedVector2Array([a + Vector2(0.5, 0.5), b + Vector2(0.5, 0.5)])
+
+
+func _chalk_line(a: Vector2, b: Vector2, col: Color) -> void:
+	var e := chalk_line_ends(a, b)
+	draw_line(e[0], e[1], col, 1.0)
+
+
 func _draw_death_marks() -> void:
 	var col := Look.c(Pal.BONE_4)
 	var ft := world.fx_tuning
@@ -382,13 +394,13 @@ func _draw_death_marks() -> void:
 		var a := death_arrow_frac(m)
 		if visible_at(m.vigil_pos, ft.death_arrow_px + 12.0):
 			for seg in death_outline_segments(m, o):
-				draw_line(seg[0], seg[1], col, 1.0)
+				_chalk_line(seg[0], seg[1], col)
 			if a > 0.0:
 				var arrow := death_arrow(m)
 				for seg in dash_path(PackedVector2Array([arrow[0], arrow[1]]), a):
-					draw_line(seg[0], seg[1], col, 1.0)
-				draw_line(arrow[1], arrow[2], col, 1.0)
-				draw_line(arrow[1], arrow[3], col, 1.0)
+					_chalk_line(seg[0], seg[1], col)
+				_chalk_line(arrow[1], arrow[2], col)
+				_chalk_line(arrow[1], arrow[3], col)
 		if not death_is_big(m):
 			var rr := death_ring_radius(m)
 			if visible_at(m.killer_pos, rr) and o > 0.0:
@@ -400,7 +412,7 @@ func _draw_death_marks() -> void:
 			var lead := death_leader(m)
 			if lead.size() == 2:
 				for seg in dash_path(lead, 1.0):
-					draw_line(seg[0], seg[1], col, 1.0)
+					_chalk_line(seg[0], seg[1], col)
 			var tick := death_edge_tick(m)
 			if tick.size() == 2:
-				draw_line(tick[0], tick[1], col, 1.0)
+				_chalk_line(tick[0], tick[1], col)
