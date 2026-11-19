@@ -59,17 +59,41 @@ func test_torus_takes_the_short_way_round() -> void:
 
 # --- Score and lives (SYS-001 §7.1, GDD §9.4) ----------------------------------------------
 
-func test_extra_vigil_at_10000_then_every_20000_capped() -> void:
-	var sk := ScoreKeeper.new(t)
+## PM Q-T107 (2026-11-19): 10,000, 30,000, then every +40,000 (70k, 110k …), cap 5.
+func test_the_extra_life_schedule_defaults() -> void:
+	assert_int(t.extra_life_first).is_equal(10000)
+	assert_int(t.extra_life_second).is_equal(30000)
+	assert_int(t.extra_life_every).is_equal(40000)
+	assert_int(t.lives_start).is_equal(3)
+	assert_int(t.lives_cap).is_equal(5)
+
+
+func test_extra_vigils_at_10k_30k_70k_110k() -> void:
+	var tt := t.duplicate() as CabinetTuning
+	tt.lives_cap = 99                      # watch the thresholds, not the cap
+	var sk := ScoreKeeper.new(tt)
 	var start := sk.lives
-	sk.add(t.extra_life_first - 1)
-	assert_int(sk.lives).is_equal(start)
-	sk.add(1)
-	assert_int(sk.lives).is_equal(start + 1)
-	sk.add(t.extra_life_every)
-	assert_int(sk.lives).is_equal(mini(t.lives_cap, start + 2))
-	sk.add(t.extra_life_every * 20)
+	var expected: Array[int] = [10000, 30000, 70000, 110000, 150000]
+	for k in expected.size():
+		assert_int(sk.next_extra_at()).is_equal(expected[k])
+		sk.add(expected[k] - 1 - sk.score)
+		assert_int(sk.lives).override_failure_message("before %d" % expected[k]).is_equal(start + k)
+		sk.add(1)
+		assert_int(sk.lives).override_failure_message("at %d" % expected[k]).is_equal(start + k + 1)
+
+
+func test_extra_vigils_respect_the_cap_and_reset() -> void:
+	var sk := ScoreKeeper.new(t)
+	var awarded := [0]
+	sk.extra_life_awarded.connect(func() -> void: awarded[0] += 1)
+	sk.add(110000)                         # four thresholds at once: 3 + 4 capped at 5
 	assert_int(sk.lives).is_equal(t.lives_cap)
+	assert_int(awarded[0]).is_equal(t.lives_cap - t.lives_start)
+	assert_int(sk.next_extra_at()).is_equal(150000)
+	sk.reset()
+	assert_int(sk.next_extra_at()).is_equal(t.extra_life_first)
+	sk.add(t.extra_life_first)
+	assert_int(sk.next_extra_at()).is_equal(t.extra_life_second)
 
 
 # --- Geodes (SYS-001 §1.3) ---------------------------------------------------------------
