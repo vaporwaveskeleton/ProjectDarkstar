@@ -6,6 +6,9 @@ extends Area2D
 signal hit_received(hit: HitInfo, accepted: bool)
 
 @export var health: HealthComponent
+## False when the Arc-Lance cannot hurt this hurtbox (Sepulchre, entity): the lance applies no
+## damage and leaves a chalk tick instead of flecks. Other hitters ignore it (PM ruling A2, 2026-11-18).
+@export var bites: bool = true
 
 
 func _ready() -> void:
