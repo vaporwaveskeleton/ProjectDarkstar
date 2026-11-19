@@ -266,6 +266,7 @@ Not covered yet: Composure, the full Ledger Compass and the Litany Ring are not 
 | Eat tranche H2, H4, H14 with PACT-01/PACT-04 | WARP-001 §6.1 D-10 | M2 |
 | Entity voice (formant synthesiser, AUDIO-001 §11.3) | GDD-001 §17 | M2 |
 | The first ten minutes after THE PRETENCE, polished (research/act1_vertical_slice.md) | GDD-001 §17; PM ruling 2026-11-18 | M2 |
+| The Decay: the wordless reveal that replaces the "THAT WAS A PRETENCE." title card (PROPOSED; checklist §4.2) | GDD-001 §6.1; owner direction 2026-11-19; TECH-001 Q-T180–Q-T185 | M2 |
 | The in-engine first Unmaking (≤ 90 s from the tear to black, agency 0 first time except a look-only Aether reveal; the erasure spreads from an **off-centre** point inside the frame, never from the edges and never a centred iris). **Afterglow:** through the 10 s of black that end it, one phosphor ember of the last lamp fades across the full 10 s, so the screen is never dead; everything else is the entity's black | GDD-001 §6.1 A0-3; NARR-001 §3.4 N8; WARP-001 §4.5; research/act1_vertical_slice.md §2 beats 2–6; TECH-001 §11.2 (2026-11-18) | M2 |
 | The first Ruins visit as a diegetic tutorial (no tooltips). **The gate is physical:** the hangar mouth is dark, lit only by the Lantern Tree's lamps, so the Vigil cannot launch until one node is bought and its lamp lights the way; the brass tickets have EMBER printed on them | GDD-001 §6.2; NARR-001 §5.7; research/act1_vertical_slice.md §2 beats 7–11 | M2 |
 | Run 1 Seam 1 in PM-01 with a fixed seed | ZONES-001 §3 PM-01; research/act1_vertical_slice.md §2 beats 12–16; TECH-001 §11.2 (2026-11-18) | M2 |
@@ -300,6 +301,25 @@ Scored by The Reviewer from captured evidence only; anything without a capture i
 | 17 | The 15-second clip (P6) | beats 4–6 cut to 15 s read with no context | the 15 s clip; cold-viewer notes |
 | 18 | Photosensitivity-safe erasure (goal X-3) | the erasure passes the WARP-001 §4.5 photosensitivity rules: a spreading front, no full-field luminance step | motion captures of beats 5–6 with photosensitivity mode on and off |
 | 19 | Skippable after the first watch | on a later watch the cinematic can be skipped, and skipping lands on the first Ruins frame with the save intact | capture of a skip on a second watch; save contents before and after |
+
+### 4.2 The Decay: Act 0 reveal redesign (owner direction 2026-11-19; lands in M2)
+
+The "THAT WAS A PRETENCE." title card is replaced by a wordless Decay of the arcade skin (GDD-001 §6.1; TECH-001 §2.10 note, §11.2). It lands in **M2**, inside the slice front (the tear and the first ten minutes), before the announcement trailer is cut (MARKET-001 §4.7) and before the TATE and browser-Cabinet sizzle items (`research/sizzle_proposal.md` §9). **Design is PROPOSED; nothing is built until the owner rules TECH-001 Q-T180–Q-T185.** Implementation checklist, after approval:
+
+1. Rule Q-T180–Q-T185; move the SYS-001 `ds_cabinet.decay.*` (and, with Q-T180 B, `ds_cabinet.wear.*`) rows from PROPOSED to approved.
+2. `CabinetDecayTuning` (`TunableResource`, `ds_cabinet.decay`) and `data/cabinet/decay.tres` with the SYS-001 values; TECH-001 §3.4 rows.
+3. CRT shader: persistence, bloom bleed, raster sag and collapse-to-dot uniforms, with reduced-motion (fade) and photosensitivity (no flicker) paths.
+4. `VideoRegisters` drift: timed one-step writes on registers 1–6 only; guard test that 0 and 7–15 never change.
+5. The attract honour roll drawn inside the cabinet (`CabinetMessages`), glyph loss as a subtract-only mask; test that no new text is written from D1 to the hand-off.
+6. Bezel wear: bleach, tape lift, bulbs and the Aether behind worn print (`BezelArt`, `BezelInks`; the PR D hand-off, Q-T161).
+7. Audio: runtime `SfxSynth` voices `attract_shell` and `cabinet_hum`; one-shots `decay_bulb_tick`, `decay_crt_off`; AUDIO-001 §6.2 rows and policy entries.
+8. `PretenceReveal`: steps 1–2 replaced by the Decay; `REVEAL_ONE_SKY_LESS` removed per Q-T182; the maw per Q-T183; `UnmakingTimeline` re-anchored to the tear; one skip covers the Decay and the cinematic.
+9. Ending 5: Theodora's screens and the held line before D1 (`REVEAL_PRETENCE` kept for this path only); the maker's plate line in the Ruins art (ART-001 §13); the Ruins-replay ending per Q-T185.
+10. (Q-T180 B only) W0-11 Wear at the a0_3–a0_5 stage starts.
+11. Automation: `a1_golden_path` updated; capture checkpoints `decay_phosphor`, `decay_skin`, `decay_dot`, `tear_first_light` (photosensitivity on and off); ART-004 §7.1 scoring from those captures.
+12. Locale: `REVEAL_PRETENCE` comment re-pointed to ending 5; achievement `ach_pretence` trigger moved to the tear (LOOP-001 §11.9).
+13. Marketing captures: G8 "The skin", the trailer's 0:32–0:44 (MARKET-001 §4.6–§4.7), the TATE cut and the browser Cabinet's new end.
+14. Suite and smoke green; docs updated (the DoD in CLAUDE.md §6).
 
 ---
 
