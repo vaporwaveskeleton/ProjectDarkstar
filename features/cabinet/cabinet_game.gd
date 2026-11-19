@@ -121,7 +121,7 @@ func _process(delta: float) -> void:
 	RenderingServer.set_default_clear_color(Look.c(Pal.VOID_0))   # arcade black at T0 (the vacuum is the lie, ART-001 §16)
 	var mat := screen.crt_material()
 	if mat:
-		mat.set_shader_parameter(&"time_s", world.time)
+		mat.set_shader_parameter(&"time_s", world.shader_time)
 	if demo:
 		_demo_t -= delta
 		if _demo_t <= 0.0 or state == State.GAME_OVER:

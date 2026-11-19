@@ -17,9 +17,11 @@ signal entity_line(key: String)
 signal entity_unmade
 signal sepulchre_cleared
 signal caption(key: String)
+signal hitstop_started(beat: StringName)   ## a hit-stop freeze began or was extended (beat id of the cause)
 
 @export var screen_spec: CabinetScreenSpec   ## the arcade grid and HUD strip (data/cabinet/cabinet_screen.tres)
 @export var tuning: CabinetTuning
+@export var fx_tuning: CabinetFxTuning     ## presentation numbers (data/cabinet/cabinet_fx_tuning.tres)
 @export var move_stats: VigilMoveStats
 
 var stage: CabinetStage
@@ -31,6 +33,9 @@ var view_size := Vector2.ZERO         ## its size: what the player sees of the f
 var screen_centre := Vector2.ZERO     ## where the Vigil is drawn: the centre of the play view
 var paused_sim := false
 var time := 0.0
+var shader_time := 0.0                ## like `time` but keeps running through hit-stop (CRT shader clock)
+
+var hitstop_left := 0                 ## sim frames still frozen (hit-stop; see hitstop())
 
 var _shake := 0.0
 var _shake_amp := 0.0
@@ -61,6 +66,8 @@ func start(p_stage: CabinetStage) -> void:
 	torus = Torus.new(stage.field_size)
 	rng.seed = stage.seed
 	time = 0.0
+	shader_time = 0.0
+	hitstop_left = 0
 	layers = [stars, geodes, glass, ritual, grubs, acolytes, shots, vigil, fx]
 	for l in layers:
 		l.world = self
@@ -77,6 +84,13 @@ func _physics_process(delta: float) -> void:
 
 ## One simulation tick. Public so tests can drive it without a frame loop.
 func step(delta: float) -> void:
+	shader_time += delta
+	if hitstop_left > 0:
+		# Hit-stop: the sim hangs (sparks, shake, timers inside layers) but the view still redraws.
+		hitstop_left -= 1
+		for l in layers:
+			l.queue_redraw()
+		return
 	time += delta
 	for l in layers:
 		l.tick(delta)
@@ -104,6 +118,22 @@ func shake(amp: float, dur: float) -> void:
 		return
 	_shake_amp = minf(4.0, maxf(_shake_amp if _shake > 0.0 else 0.0, amp))
 	_shake = minf(0.25, maxf(_shake, dur))
+
+
+## Freeze the sim for `frames` physics ticks (hit-stop, ✱ PROPOSED values in CabinetFxTuning).
+## Reduced Motion scales it; stacking keeps the longer one; capped at hitstop_max_frames.
+## Never touches Engine.time_scale or the tree pause: audio, CRT, input and state timers run on.
+func hitstop(frames: int, beat: StringName = &"") -> void:
+	if frames <= 0 or fx_tuning == null:
+		return
+	if SettingsService.get_value(&"reduced_motion"):
+		frames = roundi(frames * fx_tuning.hitstop_reduced_motion_scale)
+		if frames <= 0:
+			return
+	var new_left := mini(maxi(hitstop_left, frames), fx_tuning.hitstop_max_frames)
+	if new_left > hitstop_left:
+		hitstop_left = new_left
+		hitstop_started.emit(beat)
 
 
 func shake_offset() -> Vector2:

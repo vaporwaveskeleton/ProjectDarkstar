@@ -98,10 +98,11 @@ func kill() -> void:
 		return
 	alive = false
 	world.sfx(&"vigil_die")
-	world.fx.burst(pos, Look.c(Pal.GAS_4), 40, 160.0)
-	world.fx.burst(pos, Look.c(Pal.GAS_2), 20, 90.0)
-	world.fx.ring(pos, Look.c(Pal.GAS_3), 60.0)
-	world.shake(4.0, 0.25)
+	world.fx.burst(pos, Look.c(Pal.GAS_4), world.fx_tuning.vigil_death_burst_a_count, world.fx_tuning.vigil_death_burst_a_speed)
+	world.fx.burst(pos, Look.c(Pal.GAS_2), world.fx_tuning.vigil_death_burst_b_count, world.fx_tuning.vigil_death_burst_b_speed)
+	world.fx.ring(pos, Look.c(Pal.GAS_3), world.fx_tuning.vigil_death_ring_radius)
+	world.shake(world.fx_tuning.vigil_death_shake_amp, world.fx_tuning.vigil_death_shake_dur)
+	world.hitstop(world.fx_tuning.hitstop_vigil_death_frames, &"vigil_death")
 	world.vigil_destroyed.emit()
 
 

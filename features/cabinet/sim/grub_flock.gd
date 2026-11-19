@@ -153,7 +153,7 @@ func kill(g: Grub, by_player: bool) -> void:
 	if by_player:
 		world.award(world.tuning.score_grub, g.pos)
 		world.sfx(&"grub_die", -4.0)
-		world.fx.burst(g.pos, Look.c(Pal.CHOIR_4), 12, 70.0)
+		world.fx.burst(g.pos, Look.c(Pal.CHOIR_4), world.fx_tuning.grub_death_burst_count, world.fx_tuning.grub_death_burst_speed)
 	_respawn_timers.append(world.tuning.grub_respawn)
 
 
