@@ -4,7 +4,8 @@ extends GPUParticles2D
 ## shader (shared current, school formation, flee); drawing is aether_life_draw from a generated
 ## white GradientTexture2D (no image files, D-13). Colours are Pal entries from the look.
 
-enum Kind { MOTE, JELLY, SPORE, SCHOOL, VAST_JELLY }
+## FAR_LIGHT: small far jelly-lights in the far band that the lantern's glare hides (CH-3 reveal).
+enum Kind { MOTE, JELLY, SPORE, SCHOOL, VAST_JELLY, FAR_LIGHT }
 
 @export var kind: Kind = Kind.MOTE
 ## ✱ half-size of the field the particles wrap within, logical px.
@@ -103,6 +104,17 @@ func configure(look: AetherLook, count: int, quality_scale: float = 1.0) -> void
 			motion_mat.set_shader_parameter(&"drift", Vector2(0.6, -0.8))
 			motion_mat.set_shader_parameter(&"swirl", 0.6)
 			motion_mat.set_shader_parameter(&"current_strength", 1.0)
+		Kind.FAR_LIGHT:
+			# far and small: dim jelly-lights deep in the far band, slow, swallowed by the fog
+			shape = 1
+			size_px = Vector2(9.0, 22.0)
+			colour = look.life_glow
+			glow = 0.9
+			alpha = 0.9
+			motion_mat.set_shader_parameter(&"align", 0.0)
+			motion_mat.set_shader_parameter(&"drift", Vector2(1.2, -0.6))
+			motion_mat.set_shader_parameter(&"swirl", 1.5)
+			motion_mat.set_shader_parameter(&"current_strength", 2.0)
 		Kind.SCHOOL:
 			shape = 3
 			size_px = Vector2(5.0, 7.0)
@@ -120,7 +132,7 @@ func configure(look: AetherLook, count: int, quality_scale: float = 1.0) -> void
 	draw_mat.set_shader_parameter(&"glow", glow)
 	# depth: a particle at the middle of the size range is "mid"; the vast ones count as far
 	var mid := (size_px.x + size_px.y) * 0.5 / float(TEX_PX)
-	draw_mat.set_shader_parameter(&"size_mid", mid * (4.0 if kind == Kind.VAST_JELLY else 1.0))
+	draw_mat.set_shader_parameter(&"size_mid", mid * (4.0 if kind == Kind.VAST_JELLY else (1.5 if kind == Kind.FAR_LIGHT else 1.0)))
 	draw_mat.set_shader_parameter(&"fog_col", look.fog_mid)
 	restart()
 
