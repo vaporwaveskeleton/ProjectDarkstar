@@ -1,0 +1,31 @@
+{
+	"format": "darkstar.scenario",
+	"version": 1,
+	"id": "aether_gallery_entity",
+	"profile": "qa",
+	"args": [],
+	"fixtures": {},
+	"timeout_frames": 1200,
+	"steps": [
+		{"do": "wait_route", "route": "attract", "within": 240},
+		{"do": "goto", "route": "aether_gallery"},
+		{"do": "wait_route", "route": "aether_gallery", "within": 240},
+		{"do": "hold", "action": "ui_right", "frames": 2},
+		{"do": "wait_frames", "frames": 2},
+		{"do": "hold", "action": "ui_right", "frames": 2},
+		{"do": "wait_frames", "frames": 2},
+		{"do": "hold", "action": "ui_right", "frames": 2},
+		{"do": "wait_frames", "frames": 2},
+		{"do": "hold", "action": "ui_right", "frames": 2},
+		{"do": "wait_frames", "frames": 2},
+		{"do": "hold", "action": "ui_right", "frames": 2},
+		{"do": "wait_frames", "frames": 2},
+		{"do": "wait_frames", "frames": 110},
+		{"do": "screenshot", "name": "aether_5_entity_start", "target": "window"},
+		{"do": "wait_frames", "frames": 330},
+		{"do": "screenshot", "name": "aether_5_entity_mid", "target": "window"},
+		{"do": "wait_frames", "frames": 400},
+		{"do": "screenshot", "name": "aether_5_entity_end", "target": "window"},
+		{"do": "quit"}
+	]
+}

@@ -1,0 +1,29 @@
+{
+	"format": "darkstar.scenario",
+	"version": 1,
+	"id": "aether_gallery_tiers",
+	"profile": "qa",
+	"args": [],
+	"fixtures": {},
+	"timeout_frames": 1200,
+	"steps": [
+		{"do": "wait_route", "route": "attract", "within": 240},
+		{"do": "goto", "route": "aether_gallery"},
+		{"do": "wait_route", "route": "aether_gallery", "within": 240},
+		{"do": "wait_frames", "frames": 170},
+		{"do": "screenshot", "name": "aether_0_pale_marches", "target": "window"},
+		{"do": "hold", "action": "ui_right", "frames": 2},
+		{"do": "wait_frames", "frames": 170},
+		{"do": "screenshot", "name": "aether_1_green_rot", "target": "window"},
+		{"do": "hold", "action": "ui_right", "frames": 2},
+		{"do": "wait_frames", "frames": 170},
+		{"do": "screenshot", "name": "aether_2_drowned_observatory", "target": "window"},
+		{"do": "hold", "action": "ui_right", "frames": 2},
+		{"do": "wait_frames", "frames": 170},
+		{"do": "screenshot", "name": "aether_3_litany", "target": "window"},
+		{"do": "hold", "action": "ui_right", "frames": 2},
+		{"do": "wait_frames", "frames": 170},
+		{"do": "screenshot", "name": "aether_4_the_black", "target": "window"},
+		{"do": "quit"}
+	]
+}

@@ -12,6 +12,9 @@ const SMOKE_FRAMES := 30    ## ✱ frames to run the cabinet before declaring th
 @onready var _curtain: ColorRect = %Curtain
 
 const AUTOMATION_GATE := "res://core/automation/automation_gate.gd"
+## Dev-only routes (e.g. the Aether gallery). Release builds exclude this file and scenes/dev/.
+const DEV_ROUTE_TABLE := "res://data/routes/dev_route_table.tres"
+const DEV_FEATURES: Array[String] = ["editor", "automation_dev", "automation_qa"]
 
 ## GdUnit injects a prepared scenario runner before add_child (dev/QA only).
 var automation_runner: Node = null
@@ -23,6 +26,7 @@ func _ready() -> void:
 	_curtain.color.a = 1.0
 	SceneRouter.register_host(self)
 	SceneRouter.route_changed.connect(_on_route_changed)
+	_merge_dev_routes()
 	var runner: Node = automation_runner if automation_runner != null else _make_automation_runner()
 	if runner != null:
 		add_child(runner)
@@ -46,12 +50,32 @@ func _has_scenario_arg() -> bool:
 func _make_automation_runner() -> Node:
 	if not _has_scenario_arg():
 		return null
-	if not (OS.has_feature("editor") or OS.has_feature("automation_dev") or OS.has_feature("automation_qa")):
+	if not _is_dev_build():
 		print("automation: not available in this build")
 		return null
 	if not ResourceLoader.exists(AUTOMATION_GATE):
 		return null
 	return (load(AUTOMATION_GATE) as GDScript).call("create_node", OS.get_cmdline_user_args()) as Node
+
+
+## Editor, dev or QA build. `has_feature` is injectable so tests can fake a release build.
+static func _is_dev_build(has_feature: Callable = OS.has_feature) -> bool:
+	for tag in DEV_FEATURES:
+		if bool(has_feature.call(tag)):
+			return true
+	return false
+
+
+## Dev builds only: add the dev routes before the first go_to. The build check comes first, then
+## the existence check, so a release build (which excludes the file) never tries to load it.
+func _merge_dev_routes() -> void:
+	if not _is_dev_build():
+		return
+	if not ResourceLoader.exists(DEV_ROUTE_TABLE):
+		return
+	var extra := load(DEV_ROUTE_TABLE) as RouteTable
+	if extra != null:
+		SceneRouter.merge_routes(extra)
 
 
 func _exit_tree() -> void:

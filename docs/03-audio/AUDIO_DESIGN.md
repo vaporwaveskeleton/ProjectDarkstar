@@ -875,6 +875,8 @@ LOOP-001 §3.4: the first purchase of a capstone opens a Codex entry and the ent
 
 ## 7. Mixing rules
 
+> **Cross-reference (2026-11-18): Aether gallery ambience calls.** The dev-only Aether gallery (`scenes/dev/aether_gallery/`, ART-001 §16.6, TECH-001 §2.9) drives `AudioService.set_ambience` per exhibit: T1 to T5 exhibits play `aether_bed_t1`..`aether_bed_t5`; the entity exhibit plays `aether_swell` when the drain reaches 0.15 ✱ and calls `set_ambience("")` at 0.5 ✱; the leviathan plays a swell on `leviathan_entered` and `aether_wrong` on `leviathan_closest` (signals in EVT-001); leaving the gallery sets `""`. Dev scene only, not shipped; the §12.12 direction and §7.1 levels govern. Thresholds are engineering ✱, not design numbers.
+
 ### 7.1 Loudness targets ✱
 
 | Target | Value |

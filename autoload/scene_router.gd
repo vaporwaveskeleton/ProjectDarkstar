@@ -24,6 +24,31 @@ func _ready() -> void:
 		push_error("SceneRouter: route table missing at %s" % TABLE_PATH)
 
 
+## Add the routes of `extra` that are not in the table yet; returns how many were added.
+## Never overwrites: an id that already points at a different scene is refused (warning, skipped);
+## an id already present with the same path is skipped silently (a second Boot merging again).
+## The loaded route_table.tres is copied before the first change, so the shipped resource in the
+## cache is never mutated. Knows nothing about dev builds; Boot decides whether to call it.
+func merge_routes(extra: RouteTable) -> int:
+	if extra == null or table == null:
+		return 0
+	var added: Dictionary = {}
+	for id: Variant in extra.routes.keys():
+		var key := StringName(str(id))
+		var path := extra.path_for(key)
+		if table.has_route(key):
+			if table.path_for(key) != path:
+				push_warning("SceneRouter: merge refused to overwrite route %s" % key)
+			continue
+		added[key] = path
+	if added.is_empty():
+		return 0
+	table = table.duplicate(true) as RouteTable
+	for key: Variant in added.keys():
+		table.routes[key] = added[key]
+	return added.size()
+
+
 func register_host(host: Node) -> void:
 	_host = host
 
