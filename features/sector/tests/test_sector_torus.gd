@@ -1,11 +1,12 @@
 extends GdUnitTestSuite
 ## M1 sandbox torus (Q-T58): one arena size source (the Cabinet's field), Vigil wrap after its
 ## physics step with velocity kept, camera continuity through the seam, shortest-delta follow,
-## shots kept on the Vigil's image, floor coverage with no clear colour, seamless floor period.
+## shots kept on the Vigil's image, near depth (no grid, Q-T163) continuous across the seam.
 
 const SCENE := "res://scenes/sector/sector_stub.tscn"
 const CAM_STATS := preload("res://data/sector/sector_camera.tres")
-const FLOOR_STYLE := preload("res://data/sector/sector_floor.tres")
+const DEPTH_BACK := preload("res://data/sector/sector_depth_back.tres")
+const DEPTH_FRONT := preload("res://data/sector/sector_depth_front.tres")
 const STAGES := ["res://data/cabinet/stage_first_vigil.tres", "res://data/cabinet/stage_last_normal_day.tres"]
 
 
@@ -200,36 +201,50 @@ func test_rebase_shifts_focus_and_position_but_not_velocity() -> void:
 	assert_vector(cam.rebase_to(Vector2(3, 5))).is_equal(Vector2.ZERO)
 
 
-# --- floor ---------------------------------------------------------------------------------------
+# --- near depth (Q-T163: no grid in the Aether) ---------------------------------------------------
 
-func test_floor_style_is_palette_and_tiles_the_torus() -> void:
-	assert_float(FLOOR_STYLE.cell_px).is_greater(0.0)
-	assert_bool(FLOOR_STYLE.tiles(Vector2(1920, 720))).is_true()
-	assert_bool(FLOOR_STYLE.tiles(Vector2(1900, 720))).is_false()
-	for c: Color in [FLOOR_STYLE.base_colour, FLOOR_STYLE.minor_colour, FLOOR_STYLE.major_colour]:
-		assert_bool(Pal.ALL.values().any(func(p: Color) -> bool: return p.is_equal_approx(c))).is_true()
+func test_depth_styles_are_palette_and_well_formed() -> void:
+	for st: SectorDepthStyle in [DEPTH_BACK, DEPTH_FRONT]:
+		assert_int(st.layer_count()).is_greater(0)
+		for i in st.layer_count():
+			assert_float(st.cell_px[i]).is_greater(0.0)
+			var c := st.colour[i]
+			var known: Array = Pal.ALL.values() + Pal.AETHER.values()   # AETHER: post-Pretence ramp
+			assert_bool(known.any(func(p: Color) -> bool: return p.is_equal_approx(c))).is_true()
+	# behind the play layer the far motes move slower than the world; in front, faster
+	for p in DEPTH_BACK.parallax:
+		assert_float(p).is_less(1.0)
+	for p in DEPTH_FRONT.parallax:
+		assert_float(p).is_greater(1.0)
 
 
-func test_covered_rect_contains_the_view() -> void:
-	for view: Rect2 in [Rect2(-320, -180, 640, 360), Rect2(1600, 540, 640, 360), Rect2(-7.5, 3.25, 640, 360)]:
-		var cov := SectorFloor.covered_rect(view, 80.0)
-		assert_bool(cov.encloses(view.grow(4.0))).is_true()   # shake (≤ 4 px) stays covered
-		assert_float(fposmod(cov.position.x, 80.0)).is_equal_approx(0.0, 1e-4)
-
-
-func test_floor_covers_the_camera_view_at_the_seam() -> void:
+func test_sector_has_no_grid_and_depth_follows_the_continuous_centre() -> void:
 	var runner := scene_runner(SCENE)
 	await runner.simulate_frames(1)
+	var sector: Node = runner.scene()
+	assert_object(sector.find_child("Floor")).is_null()
+	var back: SectorDepth = runner.find_child("DepthBack")
+	var front: SectorDepth = runner.find_child("DepthFront")
+	assert_int((back.get_parent() as CanvasLayer).layer).is_less(0)
+	assert_int((front.get_parent() as CanvasLayer).layer).is_greater(0)
 	var v := _vigil(runner)
 	var t: Torus = runner.get_property("torus")
 	var cam: SectorCamera = runner.find_child("SectorCamera")
-	var floor_node: SectorFloor = runner.find_child("Floor")
-	for at: Vector2 in [Vector2(2, 2), Vector2(t.size.x - 2.0, t.size.y - 2.0), Vector2(960, 360)]:
-		v.global_position = at
-		cam.snap_to_target()
-		await get_tree().process_frame
-		var view := floor_node.visible_world_rect()
-		assert_vector(view.size).is_equal_approx(cam.visible_size(), Vector2(0.5, 0.5))
-		var centre := cam.get_screen_center_position()
-		assert_bool(view.has_point(centre)).is_true()
-		assert_bool(SectorFloor.covered_rect(view, FLOOR_STYLE.cell_px).encloses(view)).is_true()
+	# cross the seam: the depth centre is the far layer's continuous one, so it never jumps a field
+	var before: Vector2 = back.camera_centre
+	v.global_position = Vector2(t.size.x - 2.0, 180.0)
+	cam.snap_to_target()
+	await runner.simulate_frames(2)
+	v.global_position = Vector2(t.size.x + 6.0, 180.0)
+	await runner.simulate_frames(2)
+	assert_vector(back.camera_centre).is_equal(sector.far_centre)
+	assert_vector(front.camera_centre).is_equal(sector.far_centre)
+	assert_bool(back.draw_count > 0).is_true()
+	assert_float(absf(back.camera_centre.x - before.x)).is_less(t.size.x * 0.5)
+
+
+func test_depth_layer_offset_and_hash_are_deterministic() -> void:
+	assert_vector(SectorDepth.layer_offset(Vector2(100, 50), 0.5, Vector2.ZERO)).is_equal(Vector2(-50, -25))
+	assert_float(SectorDepth.cell_hash(3, -4, 1, 2)).is_equal(SectorDepth.cell_hash(3, -4, 1, 2))
+	var h := SectorDepth.cell_hash(-7, 9, 0, 1)
+	assert_bool(h >= 0.0 and h < 1.0).is_true()

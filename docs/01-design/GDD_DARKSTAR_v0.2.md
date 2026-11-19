@@ -110,6 +110,48 @@ DARKSTAR **opens as a 1983-style arcade shooter**: black space, one ship, astero
 - **Snap-turn:** the hull sprite rotates toward aim at 720°/s, so the ship never feels like it is steering into its own fire.
 - **Wraparound play-space:** the Pale Marches torus-wraps at the edges (Warp Tier 0 = classic arcade wrap; higher tiers change what wrapping *means*).
 - **Camera:** player-centred, 0.12 s critically-damped follow, 24 px deadzone, 1.5% lookahead toward aim, screen-shake budget 4 px. Zoom 1.0 in Act 0; +6% at Warp 3, then a slow breathing zoom at Warp 5 (the universe expanding/contracting).
+- **Scope (ruled, PM under owner autonomy grant, 2026-11-19; TECH-001 Q-T164):** the numbers above are the **Cabinet profile**. They and their 🔒 stay exactly as they are, for Act 0 only. After THE PRETENCE the Vigil flies the Aether profile (§4.2a).
+
+### 4.2a Aether handling profile (ruled, PM under owner autonomy grant, 2026-11-19)
+
+> **Status: ruled, PM under owner autonomy grant, 2026-11-19** (TECH-001 Q-T164–Q-T172, §11.1a; queued for the owner's later review). The numbers are in SYS-001 §1.1a as ✱ first-pass values, retuned at playtest.
+
+**Intent (owner direction, 2026-11-19).** After THE PRETENCE the Vigil is no longer an arcade blip. It is a lantern skiff in a medium: heavier, slower, with a keel, and the pilot has a few systems to manage. The Lantern Tree shapes what the ship can do (LOOP-001 §3.8). Act 0 keeps §4.2 exactly. The model is *Sunless Skies*-style piloting (momentum, deliberate turns, light as a resource), as inspiration only: no names, art or content are taken.
+
+**Two profiles, one motor.**
+
+| Profile | Where it applies | Numbers |
+|---|---|---|
+| **Cabinet** | Act 0 (A0-1 to A0-5), on the Cabinet screen | §4.2 and SYS-001 §1.1, unchanged 🔒 |
+| **Aether** | all flight after THE PRETENCE: sectors, Seams, the Waking | SYS-001 §1.1a ✱ |
+
+The cinematic and the Ruins have no flight (M2 slice beats 1–11). The Ruins pilot-lamp cursor is not covered by either profile.
+
+**What the pilot feels in the Aether.**
+- **Weight.** The top speed is about two-thirds of the Cabinet's, the ship takes longer to reach it, and it coasts a long way. A full reversal takes about three times as long as in the Cabinet. You plan a line instead of jinking.
+- **A keel.** The hull has a heading. WASD still says where you want to go (D-01 unchanged). The hull swings toward that direction at a limited turn rate, and thrust is strongest along the keel and weaker sideways and backwards. A turn is something you commit to.
+- **The gun stays precise.** The Arc-Lance sits on a turret at the lamp and still tracks the mouse at the §4.2 snap-turn rate. The ship is heavy, but the aim is not, and a hit never depends on the hull's heading.
+- **Space is the anchor.** Braking is the pilot's main skill. It bleeds momentum hard but not instantly, and afterwards the ship has to spin up again.
+
+**Systems the pilot manages.** There is no new resource and no new HUD meter. Each system is built from an existing noun:
+1. **The keel** (heading and momentum). This is not a resource. It is a physical state, shown by the hull itself: its heading, the lantern's swing, and the wake in the fog.
+2. **Lantern state as the drive's flame.** The lamp feeds the drive. Lantern Up gives full thrust. Lantern Down is running dark: weaker thrust and lower drag, so you glide quietly. E becomes a handling decision as well as a light decision, with no new input. It sits on top of the §8.1 trade (mining, detection) and matches the Passing counterplay: lantern down, stop firing, ride the drift.
+3. **Surgelight as the escape valve.** With heavy handling, Surgelight is the one burst that beats momentum. Its stored charges and cooldown (LOOP-001 LANTERN-1, -6, -7, -16) become the system you watch. Its Composure cost at T ≥ 2 is unchanged.
+4. **No change** to Composure, Null-Iron Charges or the Arc-Lance. There is no lance heat, fuel or ballast gauge: LOOP-001 §3.3 ORDNANCE rules out a lance fuel bar or reload meter. Ballast stays what it is, a Run Sigil (SIG-H-02), not a gauge.
+
+**Readability at the slower pace (bullet-hell and *Returnal*-style clarity).**
+- **The hitbox does not grow.** `ds_vigil.move.hitbox_circle_px` 🔒 (TECH-001 Q-T04) stays as it is, even though the Aether hull art is larger (ART-001 §16.7): a big brass ship with a small, honest core.
+- **Threat speed scales with the ship.** In Aether sectors, Choir projectile speeds take a profile multiplier (SYS-001 §1.1a). Telegraph times are never shortened. The multiplier only partly closes the gap in the dodge window. Coasting (you are usually already moving) and Surgelight cover the rest. Playtest decides it (Q-T168).
+- **The race still holds.** The Aether `max_speed` stays above the Grub flee speed (SYS-001 §3), so a Grub can still be run down, but it takes a planned line and often a Surgelight.
+- **Momentum is always drawn.** The lantern swings on its gimbal against acceleration, the wake trails in the fog, and the brake throws HULL-3's chalk ring. The player sees where the ship *will* be, not only where it is.
+- **The camera leads the velocity** as well as the aim, so a fast coast shows what is ahead (SYS-001 §1.1a, ✱).
+
+**The change of feel lands as a beat.** The Cabinet's snap was the lie, and the weight is the truth. The cinematic and the Ruins have no flight, so the first Aether flight is the launch into PM-01 (M2 slice beat 12: the same layout as A0-1, now a place). The Vigil leaves the hangar already coasting, lamp swinging, with input live, and the first key press shows the weight. There is no text and no tutorial. The player's own hands tell them the ship was never a blip: first recognition (*I know this ship*), then difference (*it has weight now*). No engine sound is added (AUDIO-001 §12.4 forbids locomotion cues). The cue is visual (the lamp's swing, the wake), plus light controller rumble on thrust and braking (Q-T172).
+
+**Controls.** No new input action is proposed. The §4.1/§4.3 bindings and `tests/test_input_map.gd` stay unchanged. What changes is what the keys mean. In the Aether, WASD sets the wanted heading and thrust instead of direct 8-way thrust, and the hull no longer "rotates 60% toward aim" (§4.1): it follows the keel, while the lance turret follows the aim. Ruled (Q-T166): the keel model, with this paragraph as the Aether reading of §4.1. Rotate-and-thrust controls (W thrusts, A/D turn) were rejected because they would change §4.1/§4.3 and the spirit of D-01.
+
+**D-08 stays open and switchable.** The profile touches movement only, never `ds_vigil.hull.max_hp`. A heavier ship makes a one-hit death cost more, so the D-08 A/B should also be run on the Aether profile (Q-T171).
+
 
 ### 4.3 Gamepad parity (Steam Input + native)
 - Left stick move, right stick aim (twin-stick), RT lance, LT charge, A surgelight, X lantern, B ward pulse, Y unravel focus, LSB brake.
@@ -143,7 +185,7 @@ Five hand-built levels in a fake cabinet frame (scanlines, "INSERT CREDIT" attra
 | **A0-2 Second Vigil** (the Drift) | Acolytes/turrets, charge interception, Guard phase, mini-map (Ledger Compass); a Grub-heavy stage | Grubs start stealing your shards; the first chant line is heard under the music; still cold. Pressure: slow Acolyte reinforcements, geodes drifting in, Grubs that snatch loose glass. Look: dim dashed current lines drift across the sky |
 | **A0-3 Third Vigil** (Censer Watch) | An Acolyte-heavy stage; the first full Waking (the entity wakes and must be unmade) | The Sepulchre is no longer cold. Pressure: slow Acolyte reinforcements (the censer bells stop once the Sepulchre wakes), and Acolytes escort laden Grubs. Look: censer chains hang from the top of the view |
 | **A0-4 Fourth Vigil** (the Shoal) | A geode-rich stage; the Waking again, with more glass to mine | The cabinet is not getting easier. Pressure: the peak of the shift: geodes drift in fast, Acolyte bells ring often, Grubs keep coming after the wake. Look: schools of glass motes swim behind the stars |
-| **A0-5 Last Normal Day** (Stillwater) | Warp to new zone, full Waking lifecycle, run the entity, kill a complete entity | Pressure: scarcity, not pressure: no bells ring and geodes only trickle in (slowly, and only while fewer than half remain), and Grubs keep stealing glass after the wake (SYS-001 §1.6 has the numbers). Look: a still horizon line with faint ripples below. You kill it… and the credits roll (the first anyone sees), then: **"THAT WAS A PRETENCE."** The entity arrives permanently — Act 0's "boss" was its *shadow*; the real Dark Star was already awake. **The universe is eaten: first Unmaking cinematic (in-engine, ≤ 90 s from the tear to black, agency 0 except look-only during the Aether reveal — the mouse tilts the parallax slightly, with no gameplay effect — unskippable once, skippable after).** (PM ruling 2026-11-18 (owner grant), Act 1 vertical slice, amended after The Reviewer's notes: in-engine, agency 0, look-only reveal. Look-only is not gameplay agency; WARP-001 W0-07 is unchanged.) |
+| **A0-5 Last Normal Day** (Stillwater) | Warp to new zone, full Waking lifecycle, run the entity, kill a complete entity | Pressure: scarcity, not pressure: no bells ring and geodes only trickle in (slowly, and only while fewer than half remain), and Grubs keep stealing glass after the wake (SYS-001 §1.6 has the numbers). Look: a still horizon line with faint ripples below. You kill it… and the credits roll (the first anyone sees). Then, with no words, **the skin decays** (*the Decay*; owner direction 2026-11-19, design PROPOSED until TECH-001 Q-T180–Q-T185 are ruled): the machine tries to go back to attract, but its phosphor tires, its colours drift, its music sags flat and its hum fails; its bezel bleaches and peels and its bulbs die, and where the print wears through there is light behind it, not wood; the picture collapses to a dot, and the tear opens from it (WARP-001 W0-07; ART-001 §12.7b; AUDIO-001 §12.18; SYS-001 §9 `ds_cabinet.decay.*`). **There is no title card.** The words *THAT WAS A PRETENCE.* are the last screen in the Cabinet's ROM; only ending 5 shows them (§9.3; NARR-001 §9.5). The entity arrives permanently — Act 0's "boss" was its *shadow*; the real Dark Star was already awake. **The universe is eaten: first Unmaking cinematic (in-engine, ≤ 90 s from the tear to black, agency 0 except look-only during the Aether reveal — the mouse tilts the parallax slightly, with no gameplay effect — unskippable once, skippable after).** (PM ruling 2026-11-18 (owner grant), Act 1 vertical slice, amended after The Reviewer's notes: in-engine, agency 0, look-only reveal. Look-only is not gameplay agency; WARP-001 W0-07 is unchanged.) |
 
 **Purpose:** pure nostalgia bait, complete mastery of the base verbs, and then the emotional floor drops out. This is the hook that makes the Steam clip: "I beat the arcade game and then it ate the universe."
 
@@ -209,6 +251,7 @@ Full node list lives in `ROGUELIKE_LOOP_AND_LANTERN_TREE.md` (90 nodes + 24 pact
 - **Lantern state (E):** Up = light radius 260 px, full mining speed, Choir detection range +180%. Down = dark, mining slowed 35% (impossible below Warp 3 without the *Dark Lantern* node), Choir detection −60%. The entity's Sepulchre only lights itself, so a dark player can steal shards from right under a Choir procession — the "hold your breath" moment.
 - **Composure (sanity, 0–10):** see §8.6.
 - Visual language: small brass-lantern skiff, 48×48 core inside 64×64 canvas; 4 module slots visible in art (bow, flanks, stern) so upgrades *appear on the sprite* (modularity spec §6).
+- **Aether handling and look (ruled 2026-11-19, Q-T164–Q-T172):** after THE PRETENCE the Vigil flies the heavier Aether profile (§4.2a). Its art grows into a brass lantern skiff whose modules show Lantern Tree upgrades (ART-001 §16.7, ART-002 §4.1). The hitbox does not grow.
 
 ### 8.2 Arc-Lance (one gun, two jobs)
 - Single weapon (no weapon-swap bloat): 6 shots/s base, 14 px projectile, 1 hit, 0.9 s to shatter a small geode face.
@@ -304,7 +347,7 @@ Six tiers, driven by (a) iteration count, (b) sector consumed, (c) player's Comp
 | Act | Frame | Length | Warp | Player power | The reveal |
 |---|---|---|---|---|---|
 | **0 — Last Normal Day** | fake cabinet, 3 authored levels | 25 min | T0 | base | The boss you killed was a shadow; the real one wakes; universe is eaten |
-| **1 — First Loops** | Ruins tutorial + 5-Seam runs, generous | 3–6 h | T1 | Tier 1–2 tree | The loop is real; the entity remembers you; the HUD starts lying at night |
+| **1 — First Loops** | Ruins tutorial (diegetic, no pop-ups: LOOP-001 §10.5) + 5-Seam runs, generous | 3–6 h | T1 | Tier 1–2 tree | The loop is real; the entity remembers you; the HUD starts lying at night |
 | **2 — The Nine Skies** | full biome rotation, Matrons, Entropy unlocks | 6–14 h | T2–T3 | Tier 2–4 + Pacts | You can *lean into* warp; the Choir's religion becomes sympathetic; the hub changes shape |
 | **3 — Revelations** | entity now patrols the macro map, shown on the Ledger Compass as a *gap* where sectors should be, never an icon; a sector it crossed loads partly subtracted (fewer geodes, more dark); rule-eating begins | 14–22 h | T3–T4 | Tier 4–5 + MADNESS | The game's own rules are the boss's body; the retro shell is revealed as one of nine skins |
 | **4 — Unraveling** | inside the entity's memory; T5 | 2–4 h | T5 | full tree + 5 Threads | Final choice; the player decides what to do with an unwritten universe |
@@ -327,7 +370,7 @@ Each Seam-3 gate is a **Choir Rite** mini-boss built from the same modular kit (
 2. **The Lantern Extinguished:** you stop fighting; the game quietly becomes an idle-observatory eulogy for 3 minutes. (Met, divisive, memorable — clip bait.)
 3. **The Choir Crowned:** accept a Pact of Ascension; you become the next Waking Dark. Unlocks NG+ "Choir mode" (play as a Grub procession; post-launch if scoped).
 4. **The Unraveling (true):** pull the 5 Threads; the entity is unmade at the rule level; the credits sequence is the retro arcade shell being peeled away to reveal the last, clean sky.
-5. **The Pretence Kept (secret):** complete Act 0 without ever using the Surgelight or Ward and you find the "cabinet's" creator's message — a meta-commentary that reframes the whole game and grants the *Archivist* ending variant.
+5. **The Pretence Kept (secret):** complete Act 0 without ever using the Surgelight or Ward and you find the "cabinet's" creator's message — a meta-commentary that reframes the whole game and grants the *Archivist* ending variant. It is the only way to see the Cabinet's last screen, *THAT WAS A PRETENCE.*; every other clear goes straight to the wordless Decay (§6.1; NARR-001 §9.5; PROPOSED, TECH-001 Q-T181).
 
 The Wrong Ruins (Act 3, §9.1) answer to the endings: the missing Ruins room returns only after Ending 4. Until then, Ending 3 keeps it gone; Ending 4 always restores it, even if Ending 3 was seen first, because Ending 4 unwrites the loss (LOOP-001 §10.4).
 
@@ -436,7 +479,7 @@ Godot 4.7.2, GDScript-first, data-driven (JSON/Resource definitions for all stat
 
 **Retired from player use (D-15, 2026-11-18):** **Relic** (now rare Run Sigils; the keys 1 / 2 / 3 are the rare Sigil quick-slots, ruled 2026-11-18 by the PM under the owner's grant (Q-B), §4.1; the action ids stay `relic_1`–`relic_3` for now, and renaming them is a logged follow-up in TECH-001 §11.1) · **Unwritten Ink** (rule nodes are gated by Codex entries, §7.1). Use neither word in UI or new docs. **Noun count (P-5):** the distinction is not hidden. Rare Sigils from Relics with an active use are pressed on keys 1 / 2 / 3; every other Sigil is passive. So **"rare Sigil (active, keys 1–3)" counts as a player-facing noun** in the P-5 noun test, alongside Run Sigil.
 
-**Doc terms** (canonical names for docs and code; never shown on screen unless noted): **the Passing** (a front of absence that subtracts what is lit; WARP-001 W2-11/W3-11; may appear in Codex text) · **Glimpse** (a soft, silent rim-light along part of the entity's edge, caused by the player's own light, §8.4) · **Presence** (the one vast, slow, glowing silhouette of a biome, never a hitbox, which flees the entity; The Black has none; ZONES-001 §2) · **Procession** (the Act 2 Choir funeral-column encounter, ZONES-001, the Procession (CHD-10); not the Waking's phase 1 *Procession* in §8.4) · **rumour** (a Codex entry in its title-only state, chalked up by Sable Vane at the Chalk Desk; the body is written on finding; NARR-001 §8) · **kit memory** (a kit's per-Chronicle visit stage: **Known / Worn / Remembered**; never shown on screen; ZONES-001, kit memory (CHD-11)).
+**Doc terms** (canonical names for docs and code; never shown on screen unless noted): **the Decay** (the wordless wearing-out of the Cabinet's arcade skin after A0-5's credits, ending in the tear; replaces the old "THAT WAS A PRETENCE." title card; §6.1, WARP-001 W0-07; never shown on screen) · **the Passing** (a front of absence that subtracts what is lit; WARP-001 W2-11/W3-11; may appear in Codex text) · **Glimpse** (a soft, silent rim-light along part of the entity's edge, caused by the player's own light, §8.4) · **Presence** (the one vast, slow, glowing silhouette of a biome, never a hitbox, which flees the entity; The Black has none; ZONES-001 §2) · **Procession** (the Act 2 Choir funeral-column encounter, ZONES-001, the Procession (CHD-10); not the Waking's phase 1 *Procession* in §8.4) · **rumour** (a Codex entry in its title-only state, chalked up by Sable Vane at the Chalk Desk; the body is written on finding; NARR-001 §8) · **kit memory** (a kit's per-Chronicle visit stage: **Known / Worn / Remembered**; never shown on screen; ZONES-001, kit memory (CHD-11)).
 
 ## 20. Open questions
 

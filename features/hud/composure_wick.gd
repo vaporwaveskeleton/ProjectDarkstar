@@ -60,6 +60,10 @@ func _draw() -> void:
 	if stats == null:
 		return
 	var cx := floorf(size.x * 0.5)
+	# Brass wall bracket the lamp stands on (Aether-tier HUD 2026-11-19): a riveted arm across the box.
+	draw_rect(Rect2(cx - 24.0, BASE_TOP + 1.0, 48.0, 2.0), Pal.GAS_1)
+	Brass.rivet(self, Vector2(cx - 22.0, BASE_TOP + 2.0))
+	Brass.rivet(self, Vector2(cx + 22.0, BASE_TOP + 2.0))
 	draw_rect(Rect2(cx - 10.0, BASE_TOP, 21.0, size.y - BASE_TOP), BRASS)
 	draw_rect(Rect2(cx, WICK_TOP, 1.0, BASE_TOP - WICK_TOP), WICK)
 	var b := current_band()
