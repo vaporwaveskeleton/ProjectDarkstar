@@ -36,9 +36,9 @@ addons/  autoload/  core/  features/<feature>/  scenes/  shaders/  data/  genera
 assets/  docs/           (docs/, tools/, research/ carry a .gdignore)
 ```
 - `features/<feature>/` holds that feature's scenes, scripts, resource classes and `tests/`. Feature names come from the glossary (`vigil`, `arc_lance`, `charges`, `choir`, `sepulchre`, `composure`, `warp`, `sector`, `lantern_tree`, `run`, `hud`, `codex`, `entity_voice`, `interactions`); map in TECH-001 §2.9.
-- `core/` = feature-agnostic code (`audio`, `components`, `data`, `i18n`, `math`, `physics`, `rng`, `routing`, `save`, `ui`). `scenes/` = boot, attract, settings, sector stub, shared overlays.
+- `core/` = feature-agnostic code (`audio`, `components`, `data`, `i18n`, `math`, `physics`, `rng`, `routing`, `save`, `ui`, `automation` dev/QA only). `scenes/` = boot, attract, settings, sector stub, shared overlays.
 - `data/<feature>/*.tres` = loose tunables (TECH-001 §3). `generated/` = build output (`sprite_table.gd`); never hand-edit.
-- Tests sit next to code in `tests/` subfolders (`core/**/tests`, `features/<f>/tests`, `scenes/tests`); cross-cutting suites and helpers in root `tests/`.
+- Tests sit next to code in `tests/` subfolders (`core/**/tests`, `features/<f>/tests`, `scenes/tests`); cross-cutting suites and helpers in root `tests/`; automation scenarios in `tests/scenarios/`.
 - No `networking/` folder (D-09, TECH-001 §1.1).
 
 ## 3. Code rules
@@ -52,6 +52,7 @@ assets/  docs/           (docs/, tools/, research/ carry a .gdignore)
 - Saves: `SaveService.save_slot(slot, payload, reason)` with an allowed reason; never mid-run; payloads hold ids and numbers only (TECH-001 §7).
 - Warnings are errors here: give a variable an explicit type when its value comes from a `Dictionary`/`Array`/`Variant`.
 - **Generated assets only (D-13, D-14, both amended):** never add hand-made or recorded files. Visuals = runtime vector/shader with `Pal` colours (ART-001 §14), or pxl renders: `art/src/*.px.js` (start with a palette include, no `image()`) built into `assets/art/generated/` (ART-001 §14.8) — anything that must morph continuously stays runtime. **Fidelity ladder (ART-001 §15):** Act 0 is minimal neon on black (cabinet colours go through `Look.c()`); after the Pretence space is the **Aether** — retro-future Victorian, full of fog, colour, life and crystal spheres, never a black vacuum; the only true black is the entity (ART-001 §16); lighting, fog, bloom and complex particles grow with the tier; role laws (faction hues, phosphor = truth, SIGNAL ≤ 3) hold at every tier; text = `PixelText` (post-Act 0 scaling open: TECH-001 Q-T23); sound = code: chirp sources `audio/src/*.cx.js` rendered to `assets/audio/generated/` (never hand-edit renders; never `sample()`), or runtime `SfxSynth` (AUDIO-001 §11, §11.7). PNGs under `assets/sprites/` are local-only reference: not in git, Godot-ignored, never shipped — never re-add them. `tests/test_generated_assets_only.gd` enforces this.
+- Automation hooks (`core/automation`, dev/QA only): no `class_name`, no autoload, never referenced from game code except Boot's guarded loader; ids, not display text (TECH-001 §9.1).
 - Gameplay collision is separate from sprites and animation; animation fires events, it never owns hit truth.
 - Every player-visible string goes through `tr()` with a stable key. No raw errors, IDs, enum names or paths on screen. (Diegetic HUD "lies" are authored content per WARP-001 §4.2, not debug output; Steady Ledger must always be honest.)
 
@@ -65,6 +66,11 @@ node .claude/skills/chirp-game-audio/bin/chirp.js build audio/src/cabinet.cx.js 
 node .claude/skills/pxl/bin/pxl.js build art/src/<file>.px.js --out assets/art/generated   # rebuild art after editing a .px.js (pxl lint first), then --import
 %GODOT% --headless --path . --quit-after 600 -- --smoke     # boot smoke: must print "BOOT_SMOKE: reached route 'cabinet'", exit 0, no ERROR lines
 ```
+```
+node tools/automation/darkstar_auto.js validate             # check all scenarios
+node tools/automation/darkstar_auto.js run a0_first_contact # headless; add --windowed for screenshots
+```
+Scenarios live in `tests/scenarios/`; `tests/test_scenarios.gd` runs them in the suite (TECH-001 §9.1).
 Expected `ERROR`/`WARNING` lines in the test log come only from negative-path tests (corrupt save, unknown route); the smoke log must have none.
 Act 0 (the Cabinet, TECH-001 §2.10) takes capture switches after `--`: `--autopilot --stage=N --segments=N --hits=N --smoke-frames=N --no-save`. Always pass `--no-save` when capturing, so the player's saves are never written.
 Prefer the `godot-ai` MCP (`test_run`, `logs_read`, `project_run`, `scene_*`) when the editor is open (addon vendored in `addons/godot_ai`, v4.4.1; never press its dock's Configure; update only via the dock, keeping the server at the same version). Fall back to the console exe.

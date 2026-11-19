@@ -88,11 +88,11 @@ Theme variations: `HeaderLabel`, `HintLabel`, `ErrorLabel`, `TruthLabel`, `DimPa
 Everything on screen comes from a `tr()` key in `locale/en.po` (L10N-001). Failure codes go through `PlayerMessages`, which maps them to a sentence saying what happened, whether progress is safe, and what to do next. Raw codes, paths, enum names and exceptions go to `push_warning`/`push_error` only. Authored HUD lies (WARP-001 §4.2) are content, not bugs. A raw key, debug value or error string on screen is a bug.
 
 ## 7. Tests
-`scenes/tests/test_attract_mode.gd`, `scenes/tests/test_attract_coin_slot.gd` (tape peel by hold/drag/pad A, coin → credit → New Vigil, power-on skip, page cycle, binding labels) and `scenes/tests/test_sector_and_pause.gd` cover focus on open, focus loops, modal stacking up to three deep, focus restoration, `ui_cancel` and the `pause` action, repeated input, safe area at 200 % text, and no raw keys on screen. `tests/test_boot_flow.gd` covers input-mode switching. Window-size variation is **not** automated yet.
+`scenes/tests/test_attract_mode.gd`, `scenes/tests/test_attract_coin_slot.gd` (tape peel by hold/drag/pad A, coin → credit → New Vigil, power-on skip, page cycle, binding labels) and `scenes/tests/test_sector_and_pause.gd` cover focus on open, focus loops, modal stacking up to three deep, focus restoration, `ui_cancel` and the `pause` action, repeated input, safe area at 200 % text, and no raw keys on screen. `tests/test_boot_flow.gd` covers input-mode switching. Window-size variation is **not** automated yet. Automation scenarios (TECH-001 §9.1) find controls by id: every focusable Control on a Screen needs a scene-unique `%Name`, and that name is its automation id `<route>/ui/<Name>`.
 
 ## 8. Adding a screen
 1. Create `scenes/<area>/<name>_screen.tscn` with a `Control` root using a script that `extends Screen`. Wrap the rows in `FitScrollContainer`.
-2. Set `default_focus` and the focus neighbours of every control.
+2. Set `default_focus` and the focus neighbours of every control. Give every focusable Control a scene-unique `%Name`; it is its automation id `<route>/ui/<Name>` (TECH-001 §9.1).
 3. Use Theme variations only; no inline colours outside the palette.
 4. Put every string in `locale/en.po` with a context note.
 5. Open it with `stack.push(scene.instantiate())` from the owning scene.

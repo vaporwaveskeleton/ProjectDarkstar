@@ -1,0 +1,376 @@
+extends Node
+## In-process scenario interpreter (dev/QA builds only; D-09: no sockets, no HTTP).
+## Child of Boot. Plays tests/scenarios/<id>.scenario.json with real input, frame-counted waits and
+## assertions, then writes result.json (+ screenshots) and quits with an exit code:
+##   0 pass, 1 fail/timeout, 2 invalid, 3 refused.
+## All waiting is physics frames; there is no wall-clock time anywhere in here.
+## No class_name: release builds may exclude core/automation.
+
+signal scenario_finished(outcome: StringName)
+
+const Schema := preload("res://core/automation/scenario_schema.gd")
+const InputDriver := preload("res://core/automation/input_driver.gd")
+const UiView := preload("res://core/automation/ui_view.gd")
+const Capture := preload("res://core/automation/capture.gd")
+
+const FIXTURE_DIR := "res://tests/fixtures/saves/"
+const MAX_DETAIL := 300        ## ✱ characters kept per step detail
+const COIN_PEEL_FRAMES := 300  ## ✱ give up peeling the tape after this many frames
+const COIN_STEP_FRAMES := 240  ## ✱ per phase of the coin sequence
+const FEATURE_TAGS: Array[String] = ["editor", "automation_dev", "automation_qa"]
+
+var done := false
+var result: Dictionary = {}
+var frames := 0
+var input := InputDriver.new()
+
+var _scenario: Dictionary = {}
+var _opts: Dictionary = {}
+var _view: UiView
+var _step_log: Array = []
+var _checkpoints: Array = []
+var _shots: Array = []
+var _preset: Dictionary = {}   ## a failure decided before _ready (by the gate)
+var _timed_out := false
+var _detail := ""
+
+
+func setup(scenario: Dictionary, opts: Dictionary) -> void:
+	_scenario = scenario
+	_opts = opts
+
+
+## The gate uses this for a scenario it cannot even hand over (bad id, missing file, refused path).
+func preset_failure(outcome: StringName, code: int, detail: String, opts: Dictionary) -> void:
+	_opts = opts
+	_preset = {"outcome": outcome, "code": code, "detail": detail}
+
+
+func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	_view = UiView.new(get_parent().get_node_or_null("%RouteHost") if get_parent() != null else null)
+	SceneRouter.route_changed.connect(_on_route_changed)
+	if not _preset.is_empty():
+		_finish(int(_preset.code), StringName(_preset.outcome), str(_preset.detail))
+		return
+	var errs := Schema.validate(_scenario, str(_opts.get("source", "")) == "suite")
+	if not errs.is_empty():
+		_finish(2, &"invalid", "; ".join(errs))
+		return
+	if not SaveService.backend is MemorySaveBackend:
+		_finish(3, &"refused", "SaveService is not using an in-memory backend (pass --no-save)")
+		return
+	SettingsService.persist = false
+	SettingsService.reset_to_defaults()
+	var fx := _write_fixtures()
+	if fx != "":
+		_finish(2, &"invalid", fx)
+		return
+	_run.call_deferred()
+
+
+func _exit_tree() -> void:
+	input.release_all()
+	if SceneRouter.route_changed.is_connected(_on_route_changed):
+		SceneRouter.route_changed.disconnect(_on_route_changed)
+	done = true
+
+
+func _on_route_changed(_route: StringName) -> void:
+	input.release_all()
+
+
+func _write_fixtures() -> String:
+	var fixtures: Dictionary = _scenario.get("fixtures", {})
+	for slot: Variant in fixtures.keys():
+		var path := FIXTURE_DIR + str(fixtures[slot]) + ".json"
+		if not SaveService.is_known_slot(StringName(str(slot))) or not FileAccess.file_exists(path):
+			return "fixture '%s' for slot '%s' not found" % [fixtures[slot], slot]
+		var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
+		if typeof(parsed) != TYPE_DICTIONARY:
+			return "fixture '%s' is not a JSON object" % fixtures[slot]
+		var env := SaveEnvelope.create(str(slot), parsed as Dictionary)
+		SaveService.backend.write_text(str(slot), env.to_json())
+	return ""
+
+
+func _run() -> void:
+	var steps: Array = _scenario.steps
+	for i in steps.size():
+		var step: Dictionary = steps[i]
+		var rec := {"i": i, "do": step.do, "outcome": "pass", "frame_start": frames, "frame_end": frames, "detail": ""}
+		_detail = ""
+		var failed: bool = not await _exec(step)
+		if done:
+			return
+		rec.frame_end = frames
+		if failed:
+			rec.outcome = "fail"
+			rec.detail = _detail.substr(0, MAX_DETAIL)
+			_step_log.append(rec)
+			_finish(1, &"timeout" if _timed_out else &"fail", "")
+			return
+		_step_log.append(rec)
+		if step.do == "quit":
+			break
+	_finish(0, &"pass", "")
+
+
+## One physics frame. False means stop the step: the run ended, or the global frame budget ran out.
+func _tick() -> bool:
+	await get_tree().physics_frame
+	if done:
+		return false
+	frames += 1
+	if frames > int(_scenario.timeout_frames):
+		_timed_out = true
+		_detail = "global timeout_frames (%d) exceeded" % int(_scenario.timeout_frames)
+		return false
+	return true
+
+
+func _wait(n: int) -> bool:
+	for _i in n:
+		if not await _tick():
+			return false
+	return true
+
+
+func _fail(msg: String) -> bool:
+	_detail = msg
+	return false
+
+
+## Polls `probe` (returns {ok, text}) every frame for up to `within` frames.
+func _wait_for(probe: Callable, within: int) -> bool:
+	var last := ""
+	for _i in within + 1:
+		var r: Dictionary = probe.call()
+		last = str(r.text)
+		if r.ok:
+			return true
+		if _i == within or not await _tick():
+			break
+	if not _timed_out and not done:
+		_detail = "not met within %d frames; last value: %s" % [within, last]
+	return false
+
+
+func _exec(step: Dictionary) -> bool:
+	match str(step.do):
+		"wait_frames":
+			return await _wait(int(step.frames))
+		"wait_route":
+			var want := StringName(str(step.route))
+			return await _wait_for(func() -> Dictionary:
+				return {"ok": SceneRouter.current_route == want and not SceneRouter.is_busy,
+					"text": "route=%s busy=%s" % [SceneRouter.current_route, SceneRouter.is_busy]}, int(step.within))
+		"wait_until":
+			return await _wait_for(func() -> Dictionary: return _probe(step), int(step.within))
+		"assert":
+			if step.has("exists"):
+				var found: bool = _view.resolve(str(step.id)).ok
+				return true if found == bool(step.exists) else _fail("'%s' exists=%s, expected %s" % [step.id, found, step.exists])
+			var p := _probe(step)
+			return true if p.ok else _fail("assert failed; last value: %s" % p.text)
+		"checkpoint":
+			_checkpoints.append({"name": step.name, "frame": frames})
+			return true
+		"quit":
+			return true
+		"screenshot":
+			return await _screenshot(step)
+		"coin":
+			return await _coin()
+		"activate":
+			return await _activate(str(step.id))
+		"focus":
+			var c := _control(str(step.id))
+			if c == null:
+				return false
+			c.grab_focus()
+			return true if c.has_focus() else _fail("'%s' did not take focus" % step.id)
+		"cancel":
+			return await _tap(&"ui_cancel")
+		"goto":
+			return true if SceneRouter.go_to(StringName(str(step.route))) else _fail("go_to('%s') was refused" % step.route)
+		"autopilot":
+			return _autopilot(bool(step.on))
+		"press":
+			input.press(StringName(str(step.action)))
+			return true
+		"release":
+			input.release(StringName(str(step.action)))
+			return true
+		"hold":
+			return await _tap(StringName(str(step.action)), int(step.frames))
+		"key":
+			var code: int = OS.find_keycode_from_string(str(step.keycode))
+			input.key_press(code)
+			var ok := await _wait(InputDriver.clamp_frames(int(step.frames)))
+			input.key_release(code)
+			return ok
+		"mouse_move":
+			input.mouse_move(Vector2(float(step.x), float(step.y)))
+			return true
+		"mouse_button":
+			input.mouse_button({"left": MOUSE_BUTTON_LEFT, "right": MOUSE_BUTTON_RIGHT, "middle": MOUSE_BUTTON_MIDDLE}[str(step.button)], bool(step.pressed))
+			return true
+	return _fail("step '%s' is not implemented" % step.do)
+
+
+## Evaluate a wait_until / assert comparator against the current value.
+func _probe(step: Dictionary) -> Dictionary:
+	var r := _view.read(str(step.id), str(step.prop))
+	if not r.ok:
+		return {"ok": false, "text": str(r.error)}
+	for op: String in Schema.COMPARATORS:
+		if step.has(op):
+			return {"ok": _compare(op, r.value, step[op]), "text": "%s.%s = %s (wanted %s %s)" % [step.id, step.prop, r.value, op, step[op]]}
+	return {"ok": false, "text": "no comparator"}
+
+
+static func _compare(op: String, a: Variant, b: Variant) -> bool:
+	if op == "in":
+		return (b as Array).any(func(e: Variant) -> bool: return _compare("eq", a, e))
+	var numeric := typeof(a) in [TYPE_INT, TYPE_FLOAT] and typeof(b) in [TYPE_INT, TYPE_FLOAT]
+	match op:
+		"eq":
+			return is_equal_approx(float(a), float(b)) if numeric else a == b
+		"ne":
+			return not _compare("eq", a, b)
+	if not numeric:
+		return false
+	var x := float(a)
+	var y := float(b)
+	match op:
+		"lt":
+			return x < y
+		"lte":
+			return x <= y
+		"gt":
+			return x > y
+	return x >= y
+
+
+func _control(id: String) -> Control:
+	var r := _view.resolve(id)
+	if not r.ok:
+		_detail = str(r.error)
+		return null
+	if not r.node is Control:
+		_detail = "'%s' is not a Control" % id
+		return null
+	return r.node as Control
+
+
+## Press then release an action for `n` frames (at least 2).
+func _tap(action: StringName, n: int = 2) -> bool:
+	input.press(action)
+	var ok := await _wait(InputDriver.clamp_frames(n))
+	input.release(action)
+	return ok
+
+
+func _activate(id: String) -> bool:
+	var c := _control(id)
+	if c == null:
+		return false
+	if not c.is_visible_in_tree():
+		return _fail("'%s' is not visible" % id)
+	if c is BaseButton and (c as BaseButton).disabled:
+		return _fail("'%s' is disabled" % id)
+	if c.focus_mode == Control.FOCUS_NONE:
+		return _fail("'%s' cannot take focus" % id)
+	c.grab_focus()
+	if not await _tick():
+		return false
+	if not await _tap(&"ui_accept"):
+		return false
+	return await _tick()
+
+
+func _autopilot(on: bool) -> bool:
+	var root := _view.route_root()
+	var ap: Node = root.get_node_or_null("%Autopilot") if root != null else null
+	if SceneRouter.current_route != &"cabinet" or ap == null or not "enabled" in ap:
+		return _fail("autopilot needs the cabinet route (current: '%s')" % SceneRouter.current_route)
+	ap.set("enabled", on)
+	return true
+
+
+## Peel the tape and drop a coin using only real input (accept held, then tapped).
+func _coin() -> bool:
+	var root := _view.route_root()
+	var slot: Control = root.get_node_or_null("%CoinSlot") as Control if root != null else null
+	if SceneRouter.current_route != &"attract" or slot == null:
+		return _fail("coin needs the attract route (current: '%s')" % SceneRouter.current_route)
+	slot.grab_focus()
+	var phase := func() -> String: return UiView.enum_name_of(slot, "Phase", int(slot.get("phase")))
+	if phase.call() == "credited":
+		return true
+	if phase.call() == "taped":
+		input.press(&"ui_accept")
+		if not await _wait_for(func() -> Dictionary: return {"ok": phase.call() != "taped", "text": "phase=%s" % phase.call()}, COIN_PEEL_FRAMES):
+			input.release(&"ui_accept")
+			return false
+		input.release(&"ui_accept")
+		if not await _wait(2):
+			return false
+	if not await _wait_for(func() -> Dictionary: return {"ok": phase.call() == "open", "text": "phase=%s" % phase.call()}, COIN_STEP_FRAMES):
+		return false
+	slot.grab_focus()
+	if not await _tap(&"ui_accept"):
+		return false
+	return await _wait_for(func() -> Dictionary: return {"ok": bool(slot.call("has_credit")), "text": "phase=%s" % phase.call()}, COIN_STEP_FRAMES)
+
+
+func _screenshot(step: Dictionary) -> bool:
+	if DisplayServer.get_name() != "headless":
+		await RenderingServer.frame_post_draw
+	if done:
+		return false
+	var r := Capture.take(get_tree(), _view.route_root(), str(step.name), str(step.target), str(_opts.get("out_dir", "")))
+	_shots.append(r.record)
+	if not r.ok:
+		return _fail(str(r.detail))
+	return true
+
+
+func _finish(code: int, outcome: StringName, detail: String) -> void:
+	if done:
+		return
+	input.release_all()
+	if detail != "" and _detail == "":
+		_detail = detail
+	var steps_out := _step_log.duplicate()
+	if detail != "":
+		steps_out.append({"i": -1, "do": "preflight", "outcome": "fail", "frame_start": 0, "frame_end": 0, "detail": detail.substr(0, MAX_DETAIL * 3)})
+	var tags: Array = []
+	for t in FEATURE_TAGS:
+		if OS.has_feature(t):
+			tags.append(t)
+	result = {
+		"format": "darkstar.result", "version": 1,
+		"scenario": str(_scenario.get("id", "")),
+		"source": str(_opts.get("source", "")),
+		"build": {
+			"godot": Engine.get_version_info().string,
+			"game_version": str(ProjectSettings.get_setting("application/config/version", "")),
+			"features": tags,
+			"headless": DisplayServer.get_name() == "headless",
+		},
+		"outcome": str(outcome), "exit_code": code, "frames": frames,
+		"steps": steps_out, "checkpoints": _checkpoints, "screenshots": _shots,
+	}
+	var dir := str(_opts.get("out_dir", ""))
+	if dir != "":
+		DirAccess.make_dir_recursive_absolute(dir)
+		var f := FileAccess.open(dir.path_join("result.json"), FileAccess.WRITE)
+		if f != null:
+			f.store_string(JSON.stringify(result, "\t"))
+			f.close()
+	done = true
+	scenario_finished.emit(outcome)
+	if bool(_opts.get("quit_on_finish", false)) and is_inside_tree():
+		get_tree().quit(code)

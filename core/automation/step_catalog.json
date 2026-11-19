@@ -1,0 +1,25 @@
+{
+	"version": 1,
+	"comment": "Single source of step names and argument shapes for the scenario validator (scenario_schema.gd) and the Node CLI (tools/automation/darkstar_auto.js). Types: string, int, number, bool, string_array, scalar (string/number/bool), array (of scalars). Comparator rule (coded in both validators): wait_until takes EXACTLY ONE of eq ne lt lte gt gte in; assert takes either exists:bool alone (with id) or id+prop+exactly one comparator.",
+	"steps": {
+		"wait_frames": {"args": {"frames": "int"}, "comment": "Wait N physics frames."},
+		"wait_route": {"args": {"route": "string", "within": "int"}, "comment": "Pass when SceneRouter is on route and idle."},
+		"wait_until": {"args": {"id": "string", "prop": "string", "within": "int"}, "optional": {"eq": "scalar", "ne": "scalar", "lt": "scalar", "lte": "scalar", "gt": "scalar", "gte": "scalar", "in": "array"}, "comment": "Poll an allow-listed property each frame until the single comparator holds."},
+		"assert": {"args": {"id": "string"}, "optional": {"prop": "string", "exists": "bool", "eq": "scalar", "ne": "scalar", "lt": "scalar", "lte": "scalar", "gt": "scalar", "gte": "scalar", "in": "array"}, "comment": "Check once. Either exists:bool, or prop plus one comparator."},
+		"checkpoint": {"args": {"name": "string"}, "comment": "Record the frame in result.json."},
+		"quit": {"args": {}, "comment": "Finish the scenario as a pass."},
+		"screenshot": {"args": {"name": "string", "target": "string"}, "comment": "target is arcade or window. Skipped (pass) when headless."},
+		"coin": {"args": {}, "comment": "Attract only: peel the tape and insert a coin through real input."},
+		"activate": {"args": {"id": "string"}, "comment": "Focus a control and press ui_accept."},
+		"focus": {"args": {"id": "string"}, "comment": "Grab focus on a control."},
+		"cancel": {"args": {}, "comment": "Press ui_cancel."},
+		"goto": {"args": {"route": "string"}, "comment": "SceneRouter.go_to(route)."},
+		"autopilot": {"args": {"on": "bool"}, "comment": "Cabinet only: set the autopilot flag."},
+		"press": {"args": {"action": "string"}, "comment": "Press an InputMap action (held until release or run end)."},
+		"release": {"args": {"action": "string"}, "comment": "Release an InputMap action."},
+		"hold": {"args": {"action": "string", "frames": "int"}, "comment": "Press, wait frames (min 2), release."},
+		"key": {"args": {"keycode": "string", "frames": "int"}, "comment": "Hold a keyboard key for frames (min 2)."},
+		"mouse_move": {"args": {"x": "number", "y": "number"}, "comment": "Move the mouse to window coordinates."},
+		"mouse_button": {"args": {"button": "string", "pressed": "bool"}, "comment": "button: left, right or middle."}
+	}
+}
