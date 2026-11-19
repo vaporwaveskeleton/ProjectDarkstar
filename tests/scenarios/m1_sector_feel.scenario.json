@@ -1,0 +1,33 @@
+{
+	"format": "darkstar.scenario",
+	"version": 1,
+	"id": "m1_sector_feel",
+	"profile": "qa",
+	"args": [],
+	"fixtures": {},
+	"timeout_frames": 1200,
+	"steps": [
+		{"do": "wait_route", "route": "attract", "within": 120},
+		{"do": "goto", "route": "sector"},
+		{"do": "wait_route", "route": "sector", "within": 240},
+		{"do": "assert", "id": "sector/vigil", "prop": "hull_max_hp", "in": [1, 2]},
+		{"do": "mouse_move", "x": 600, "y": 180},
+		{"do": "press", "action": "fire_lance"},
+		{"do": "hold", "action": "move_right", "frames": 40},
+		{"do": "assert", "id": "sector/vigil", "prop": "vigil_speed", "gt": 0},
+		{"do": "assert", "id": "sector/vigil", "prop": "vigil_x", "gt": 330},
+		{"do": "hold", "action": "move_down", "frames": 20},
+		{"do": "release", "action": "fire_lance"},
+		{"do": "wait_frames", "frames": 30},
+		{"do": "assert", "id": "sector/vigil", "prop": "camera_x", "gt": 320},
+		{"do": "assert", "id": "sector/vigil", "prop": "compass_markers", "gte": 1},
+		{"do": "checkpoint", "name": "sector_moving"},
+		{"do": "hold", "action": "move_up", "frames": 90},
+		{"do": "assert", "id": "sector/vigil", "prop": "vigil_y", "gt": 360},
+		{"do": "assert", "id": "sector/vigil", "prop": "vigil_y", "lt": 720},
+		{"do": "assert", "id": "sector/vigil", "prop": "camera_gap", "lt": 120},
+		{"do": "checkpoint", "name": "sector_wrapped"},
+		{"do": "screenshot", "name": "sector", "target": "window"},
+		{"do": "quit"}
+	]
+}

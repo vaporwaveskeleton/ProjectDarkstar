@@ -44,6 +44,11 @@ func get_hull_max_hp() -> int:
 	return health.max_hp
 
 
+## Unit vector the Vigil is facing (its aim). Read by the sector camera for lookahead.
+func get_aim_dir() -> Vector2:
+	return Vector2.from_angle(motor.facing_node.rotation) if motor.facing_node else Vector2.RIGHT
+
+
 func _on_health_depleted() -> void:
 	motor.enabled = false
 	velocity = Vector2.ZERO

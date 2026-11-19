@@ -205,7 +205,7 @@ Full node list lives in `ROGUELIKE_LOOP_AND_LANTERN_TREE.md` (90 nodes + 24 pact
 
 ### 8.2 Arc-Lance (one gun, two jobs)
 - Single weapon (no weapon-swap bloat): 6 shots/s base, 14 px projectile, 1 hit, 0.9 s to shatter a small geode face.
-- Mining: geodes take damage; **over-firing detonates** them (Sinistar's rule) releasing 3–5 shards at once but scattering them (risk: Grubs get more of them). This is a *skill expression*: calm fire = controlled shard drop; panic fire = confetti for the Choir.
+- Mining: geodes take damage; **over-firing detonates** them (Sinistar's rule) releasing 4–6 shards at once (SYS-001 §1.3; Q-T29, PM 2026-11-18) but scattering them (risk: Grubs get more of them). This is a *skill expression*: calm fire = controlled shard drop; panic fire = confetti for the Choir.
 - Lance modes come from upgrades/pacts (ion beam, chalk-shot, glass shard shotgun), never from picking up guns.
 
 ### 8.3 Mourning Glass and Null-Iron Charges

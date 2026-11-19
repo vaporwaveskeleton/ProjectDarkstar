@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## Vigil in the physics world: walls stop it (no tunnelling, even far above max speed), overlap
+## Vigil in the physics world: walls (built by the test; the sandbox itself wraps) stop it (no tunnelling, even far above max speed), overlap
 ## recovery, hurtbox overlap with a live hitbox lands exactly one hit per window, hull breach.
 
 const SCENE := "res://scenes/sector/sector_stub.tscn"
@@ -19,6 +19,23 @@ func _radius(v: Vigil) -> float:
 	return v.motor.stats.hitbox_circle_px * 0.5
 
 
+## The sandbox is a wrapping torus with no boundary walls (Q-T58), so wall tests build the old
+## 640×360 frame of WORLD-layer walls themselves (the same shapes the stub used to carry).
+func _add_frame_walls(runner: GdUnitSceneRunner) -> void:
+	var walls := StaticBody2D.new()
+	walls.collision_layer = PhysicsLayers.bit(PhysicsLayers.WORLD)
+	walls.collision_mask = 0
+	for spec: Array in [[Vector2(320, -16), Vector2(704, 32)], [Vector2(320, 376), Vector2(704, 32)],
+			[Vector2(-16, 180), Vector2(32, 424)], [Vector2(656, 180), Vector2(32, 424)]]:
+		var cs := CollisionShape2D.new()
+		var rect := RectangleShape2D.new()
+		rect.size = spec[1]
+		cs.shape = rect
+		cs.position = spec[0]
+		walls.add_child(cs)
+	runner.scene().add_child(walls)
+
+
 func test_collision_radius_comes_from_data() -> void:
 	var runner := scene_runner(SCENE)
 	await runner.simulate_frames(1)
@@ -30,6 +47,8 @@ func test_collision_radius_comes_from_data() -> void:
 func test_wall_stops_vigil_at_max_speed() -> void:
 	var runner := scene_runner(SCENE)
 	await runner.simulate_frames(1)
+	_add_frame_walls(runner)
+	await get_tree().physics_frame
 	var v := _vigil(runner)
 	v.input.move_dir = Vector2.RIGHT
 	for i in 120:
@@ -41,6 +60,8 @@ func test_wall_stops_vigil_at_max_speed() -> void:
 func test_no_tunnelling_far_above_max_speed() -> void:
 	var runner := scene_runner(SCENE)
 	await runner.simulate_frames(1)
+	_add_frame_walls(runner)
+	await get_tree().physics_frame
 	var v := _vigil(runner)
 	var fast: VigilMoveStats = v.motor.stats.duplicate()
 	fast.max_speed = 6000.0   # 100 px per tick vs a 32 px wall
@@ -55,6 +76,8 @@ func test_no_tunnelling_far_above_max_speed() -> void:
 func test_overlap_with_wall_recovers() -> void:
 	var runner := scene_runner(SCENE)
 	await runner.simulate_frames(1)
+	_add_frame_walls(runner)
+	await get_tree().physics_frame
 	var v := _vigil(runner)
 	v.global_position = Vector2(638, 180)   # embedded in the right wall
 	v.input.move_dir = Vector2.LEFT
