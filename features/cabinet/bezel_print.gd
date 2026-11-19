@@ -31,6 +31,9 @@ var peel := 0.0:
 		peel = v
 		_apply_peel()
 
+var _surface: CabinetSurface
+var _mat: ShaderMaterial
+var _hardware: Array[Control] = []
 var _pieces: Array[BezelPiece] = []
 var _dots: Dictionary = {}        ## piece id -> PackedVector2Array of halftone dot origins
 
@@ -39,8 +42,26 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	show_behind_parent = true
 	size = Vector2(CabinetBezel.SIDE, 360.0)
+	_surface = CabinetSurface.default() as CabinetSurface
+	_mat = CabinetLighting.print_material(_surface, Vector2.ZERO, false)
+	material = _mat
 	pieces_rebuild()
+	_build_hardware()
 	_apply_peel()
+
+
+## The perforated speaker grilles at the top and bottom of the column (and under the coin door on the
+## right) and, on the right, the vinyl sticker: real parts over the print, not printed art.
+func _build_hardware() -> void:
+	var x0 := 0.0 if column == &"left" else 2.0
+	var vents: Array[Rect2] = [Rect2(x0, 0, 78, 10), Rect2(x0, 350, 78, 10)]
+	if column == &"right":
+		vents.append(Rect2(6, 338, 68, 10))
+		_hardware.append(BezelSticker.make(CabinetBezel.RIGHT_STICKER))
+	for r in vents:
+		_hardware.append(BezelVent.make(r))
+	for h in _hardware:
+		add_child(h)
 
 
 func pieces() -> Array[BezelPiece]:
@@ -56,6 +77,11 @@ func pieces_rebuild() -> void:
 func _apply_peel() -> void:
 	position.x = _base_x() + (-1.0 if column == &"left" else 1.0) * peel * PEEL_TRAVEL
 	visible = peel < 1.0
+	if _mat != null:
+		_mat.set_shader_parameter(&"origin", position)
+	for h in _hardware:
+		if h is BezelVent:
+			(h as BezelVent).refresh()
 
 
 func _base_x() -> float:
@@ -69,8 +95,23 @@ func _draw() -> void:
 		_draw_crack()
 
 
+## The colour plates were never printed in perfect register: each ink is nudged by its own small offset
+## (the key-black plate is the reference). Deterministic, from the ink's name.
+func plate_offset(ink: StringName) -> Vector2:
+	if ink == &"key_black" or _surface == null:
+		return Vector2.ZERO
+	var h := BezelArt.hash_int(String(ink).hash())
+	return Vector2(float(h % 2001) / 1000.0 - 1.0, float((h / 2001) % 2001) / 1000.0 - 1.0) * _surface.print_misregister
+
+
 func _draw_piece(p: BezelPiece) -> void:
 	var col := inks.ink(p.ink)
+	draw_set_transform(plate_offset(p.ink))
+	_draw_piece_shape(p, col)
+	draw_set_transform(Vector2.ZERO)
+
+
+func _draw_piece_shape(p: BezelPiece, col: Color) -> void:
 	match p.kind:
 		BezelPiece.Kind.FILL:
 			draw_colored_polygon(p.points, col)

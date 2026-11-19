@@ -34,6 +34,7 @@ var _grab := Vector2.ZERO
 var _anim := 0.0
 var _await_release := false
 var _t := 0.0
+var _face: CoinDoorFace
 
 
 func _ready() -> void:
@@ -42,12 +43,20 @@ func _ready() -> void:
 	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	position = CabinetBezel.coin_plate().position
 	size = CabinetBezel.coin_plate().size
+	_face = CoinDoorFace.new()
+	add_child(_face)
+	_face.fit_to(Rect2(Vector2.ZERO, size))
 
 
 ## The tape came off on an earlier visit (profile `cabinet_tape_peeled`).
 func set_peeled() -> void:
 	peel = 1.0
 	phase = Phase.OPEN
+
+
+## The drawn door (a child behind this control's own drawing), for tests and captures.
+func door_face() -> CoinDoorFace:
+	return _face
 
 
 func has_credit() -> bool:
@@ -165,7 +174,8 @@ func _draw() -> void:
 		ready_glow = 0.5 + 0.5 * sin(_t * 5.0)
 	elif phase == Phase.CREDITED:
 		ready_glow = 1.0
-	CabinetBezel.draw_coin_plate(self, plate, ready_glow, tr("CAB_COIN_PRICE"))
+	_face.glow = ready_glow
+	CabinetBezel.draw_price(self, plate, tr("CAB_COIN_PRICE"))
 	if phase == Phase.DROPPING:
 		_draw_coin(clampf(_anim / tuning.coin_drop_seconds, 0.0, 1.0))
 	match phase:
