@@ -8,6 +8,7 @@ const SCENES := [
 	"res://scenes/boot/boot.tscn",
 	"res://scenes/attract/attract_mode.tscn",
 	"res://scenes/sector/sector_stub.tscn",
+	"res://data/sector/sector_floor.tres",
 	"res://features/vigil/vigil.tscn",
 ]
 

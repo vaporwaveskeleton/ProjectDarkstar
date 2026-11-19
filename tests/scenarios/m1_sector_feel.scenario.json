@@ -22,6 +22,11 @@
 		{"do": "assert", "id": "sector/vigil", "prop": "camera_x", "gt": 320},
 		{"do": "assert", "id": "sector/vigil", "prop": "compass_markers", "gte": 1},
 		{"do": "checkpoint", "name": "sector_moving"},
+		{"do": "hold", "action": "move_up", "frames": 90},
+		{"do": "assert", "id": "sector/vigil", "prop": "vigil_y", "gt": 360},
+		{"do": "assert", "id": "sector/vigil", "prop": "vigil_y", "lt": 720},
+		{"do": "assert", "id": "sector/vigil", "prop": "camera_gap", "lt": 120},
+		{"do": "checkpoint", "name": "sector_wrapped"},
 		{"do": "screenshot", "name": "sector", "target": "window"},
 		{"do": "quit"}
 	]

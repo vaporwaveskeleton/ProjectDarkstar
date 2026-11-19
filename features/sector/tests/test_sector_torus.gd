@@ -1,0 +1,235 @@
+extends GdUnitTestSuite
+## M1 sandbox torus (Q-T58): one arena size source (the Cabinet's field), Vigil wrap after its
+## physics step with velocity kept, camera continuity through the seam, shortest-delta follow,
+## shots kept on the Vigil's image, floor coverage with no clear colour, seamless floor period.
+
+const SCENE := "res://scenes/sector/sector_stub.tscn"
+const CAM_STATS := preload("res://data/sector/sector_camera.tres")
+const FLOOR_STYLE := preload("res://data/sector/sector_floor.tres")
+const STAGES := ["res://data/cabinet/stage_first_vigil.tres", "res://data/cabinet/stage_last_normal_day.tres"]
+
+
+func after_test() -> void:
+	get_tree().paused = false
+
+
+func _vigil(runner: GdUnitSceneRunner) -> Vigil:
+	var v: Vigil = runner.get_property("vigil")
+	v.input.read_devices = false
+	return v
+
+
+# --- one source ----------------------------------------------------------------------------------
+
+func test_arena_is_the_cabinet_field_size() -> void:
+	var runner := scene_runner(SCENE)
+	await runner.simulate_frames(1)
+	var t: Torus = runner.get_property("torus")
+	assert_object(t).is_not_null()
+	for path: String in STAGES:
+		assert_vector(t.size).is_equal((load(path) as CabinetStage).field_size)
+	assert_vector(t.size).is_equal(CabinetStage.new().field_size)
+	assert_vector(t.size).is_equal(Vector2(1920, 720))   # SYS-001 §9 sandbox row (✱)
+	var compass: LedgerCompass = runner.find_child("LedgerCompass")
+	assert_object(compass.world_rect).is_equal(Rect2(Vector2.ZERO, t.size))
+
+
+func test_torus_is_injected_everywhere() -> void:
+	var runner := scene_runner(SCENE)
+	await runner.simulate_frames(1)
+	var t: Torus = runner.get_property("torus")
+	var cam: SectorCamera = runner.find_child("SectorCamera")
+	var wrap: SectorWrap = runner.find_child("SectorWrap")
+	assert_object(cam.torus).is_same(t)
+	assert_object(wrap.torus).is_same(t)
+	assert_object(wrap.anchor).is_same(runner.get_property("vigil"))
+	assert_object(runner.find_child("Walls")).is_null()
+
+
+# --- wrap ----------------------------------------------------------------------------------------
+
+func test_vigil_wraps_after_its_physics_step_and_keeps_velocity() -> void:
+	var runner := scene_runner(SCENE)
+	await runner.simulate_frames(1)
+	var v := _vigil(runner)
+	var t: Torus = runner.get_property("torus")
+	v.global_position = Vector2(t.size.x - 2.0, 100.0)
+	v.velocity = Vector2(v.motor.stats.max_speed, 0.0)
+	v.input.move_dir = Vector2.RIGHT
+	(runner.find_child("SectorCamera") as SectorCamera).snap_to_target()
+	var crossed := false
+	for i in 10:
+		await get_tree().physics_frame
+		assert_float(v.global_position.x).is_between(0.0, t.size.x)
+		if v.global_position.x < 100.0:
+			crossed = true
+	assert_bool(crossed).is_true()
+	assert_float(v.velocity.x).is_greater(v.motor.stats.max_speed * 0.9)
+	assert_float(v.velocity.y).is_equal_approx(0.0, 0.01)
+
+
+func test_vertical_wrap_from_the_top() -> void:
+	var runner := scene_runner(SCENE)
+	await runner.simulate_frames(1)
+	var v := _vigil(runner)
+	var t: Torus = runner.get_property("torus")
+	v.global_position = Vector2(300.0, 1.0)
+	v.velocity = Vector2(0.0, -v.motor.stats.max_speed)
+	v.input.move_dir = Vector2.UP
+	for i in 4:
+		await get_tree().physics_frame
+	assert_float(v.global_position.y).is_greater(t.size.y - 40.0)
+	assert_float(v.global_position.y).is_less(t.size.y)
+	assert_float(v.velocity.y).is_less(0.0)
+
+
+func test_nearest_image_and_wrap_actors() -> void:
+	var t := Torus.new(Vector2(1920, 720))
+	assert_vector(SectorWrap.nearest_image(t, Vector2(1915, 10), Vector2(5, 10))).is_equal(Vector2(-5, 10))
+	assert_vector(SectorWrap.nearest_image(t, Vector2(5, 700), Vector2(5, 10))).is_equal(Vector2(5, -20))
+	var actors: Node2D = auto_free(Node2D.new())
+	add_child(actors)
+	var anchor := Node2D.new()
+	var shot := Node2D.new()
+	actors.add_child(anchor)
+	actors.add_child(shot)
+	anchor.global_position = Vector2(1925, 10)    # just crossed the seam
+	shot.global_position = Vector2(1935, 10)      # flying ahead of it
+	var w: SectorWrap = auto_free(SectorWrap.new())
+	w.actors = actors
+	w.torus = t
+	w.anchor = anchor
+	w.wrap_actors()
+	assert_vector(anchor.global_position).is_equal(Vector2(5, 10))
+	assert_vector(shot.global_position).is_equal(Vector2(15, 10))   # still 10 px ahead, on screen
+
+
+func test_lance_shot_crosses_the_seam_and_still_expires() -> void:
+	var runner := scene_runner(SCENE)
+	await runner.simulate_frames(1)
+	var v := _vigil(runner)
+	var t: Torus = runner.get_property("torus")
+	v.global_position = Vector2(t.size.x - 20.0, 200.0)
+	v.velocity = Vector2.ZERO
+	v.emitter.enabled = false   # fire exactly one shot by hand
+	v.emitter.facing_node.global_rotation = 0.0
+	var shot := v.emitter.advance(1.0, true)
+	assert_object(shot).is_not_null()
+	var start_gap := t.delta(v.global_position, shot.global_position).x
+	var frames := ceili(shot.stats.lifetime_s * Engine.physics_ticks_per_second) + 3
+	var seen_gap: Array[float] = []
+	for i in frames:
+		await get_tree().physics_frame
+		if is_instance_valid(shot):
+			var d := shot.global_position - v.global_position   # plain difference: same image
+			assert_float(absf(d.y)).is_less(1.0)
+			seen_gap.append(d.x)
+	assert_bool(seen_gap.size() > 10).is_true()
+	assert_float(seen_gap[0]).is_greater(start_gap - 1.0)
+	for i in range(1, seen_gap.size()):
+		assert_float(seen_gap[i]).is_greater(seen_gap[i - 1])   # monotonic: no jump at the seam
+	assert_bool(is_instance_valid(shot)).is_false()
+
+
+# --- camera --------------------------------------------------------------------------------------
+
+func test_camera_view_is_continuous_through_the_seam() -> void:
+	var runner := scene_runner(SCENE)
+	await runner.simulate_frames(1)
+	var v := _vigil(runner)
+	var t: Torus = runner.get_property("torus")
+	var cam: SectorCamera = runner.find_child("SectorCamera")
+	v.global_position = Vector2(t.size.x - 150.0, t.size.y - 100.0)
+	cam.snap_to_target()
+	v.input.move_dir = Vector2(1, 1).normalized()
+	var prev_screen := v.global_position - cam.global_position
+	var max_step := 0.0
+	var wrapped_x := false
+	var wrapped_y := false
+	for i in 90:
+		await get_tree().physics_frame
+		var screen := v.global_position - cam.global_position   # where the Vigil sits on screen
+		max_step = maxf(max_step, (screen - prev_screen).length())
+		prev_screen = screen
+		wrapped_x = wrapped_x or v.global_position.x < 200.0
+		wrapped_y = wrapped_y or v.global_position.y < 200.0
+		assert_float(screen.length()).is_less(100.0)
+	assert_bool(wrapped_x and wrapped_y).is_true()
+	# 340 px/s is under 6 px a tick; a seam jump would be hundreds of px.
+	assert_float(max_step).is_less(12.0)
+
+
+func test_deadzone_and_follow_use_the_shortest_delta() -> void:
+	var t := Torus.new(Vector2(1920, 720))
+	var target: Node2D = auto_free(Node2D.new())
+	add_child(target)
+	target.global_position = Vector2(1910, 360)
+	var cam: SectorCamera = auto_free(SectorCamera.new())
+	cam.stats = CAM_STATS
+	cam.target = target
+	cam.torus = t
+	add_child(cam)
+	cam.set_physics_process(false)
+	cam.snap_to_target()
+	target.global_position = Vector2(40, 360)   # wrapped: 50 px to the right across the seam
+	cam.step(1.0 / 60.0)
+	# Focus was rebased to the target's image, then dragged by the deadzone only (not 1870 px).
+	assert_float(t.distance(cam.focus, target.global_position)).is_equal_approx(CAM_STATS.deadzone_px, 0.01)
+	assert_float(cam.focus.x).is_between(0.0, 40.0)
+	assert_float(target.global_position.x - cam.global_position.x).is_between(0.0, 60.0)
+	for i in 120:
+		cam.step(1.0 / 60.0)
+	assert_float(cam.global_position.x).is_equal_approx(40.0 - CAM_STATS.deadzone_px, 0.1)
+
+
+func test_rebase_shifts_focus_and_position_but_not_velocity() -> void:
+	var t := Torus.new(Vector2(1920, 720))
+	var cam: SectorCamera = auto_free(SectorCamera.new())
+	cam.stats = CAM_STATS
+	cam.torus = t
+	add_child(cam)
+	cam.set_physics_process(false)
+	cam.focus = Vector2(1915, 700)
+	cam.global_position = Vector2(1918, 702)
+	cam.follow_velocity = Vector2(300, 100)
+	var shift := cam.rebase_to(Vector2(3, 5))
+	assert_vector(shift).is_equal(Vector2(-1920, -720))
+	assert_vector(cam.focus).is_equal(Vector2(-5, -20))
+	assert_vector(cam.global_position).is_equal(Vector2(-2, -18))
+	assert_vector(cam.follow_velocity).is_equal(Vector2(300, 100))
+	assert_vector(cam.rebase_to(Vector2(3, 5))).is_equal(Vector2.ZERO)
+
+
+# --- floor ---------------------------------------------------------------------------------------
+
+func test_floor_style_is_palette_and_tiles_the_torus() -> void:
+	assert_float(FLOOR_STYLE.cell_px).is_greater(0.0)
+	assert_bool(FLOOR_STYLE.tiles(Vector2(1920, 720))).is_true()
+	assert_bool(FLOOR_STYLE.tiles(Vector2(1900, 720))).is_false()
+	for c: Color in [FLOOR_STYLE.base_colour, FLOOR_STYLE.minor_colour, FLOOR_STYLE.major_colour]:
+		assert_bool(Pal.ALL.values().any(func(p: Color) -> bool: return p.is_equal_approx(c))).is_true()
+
+
+func test_covered_rect_contains_the_view() -> void:
+	for view: Rect2 in [Rect2(-320, -180, 640, 360), Rect2(1600, 540, 640, 360), Rect2(-7.5, 3.25, 640, 360)]:
+		var cov := SectorFloor.covered_rect(view, 80.0)
+		assert_bool(cov.encloses(view.grow(4.0))).is_true()   # shake (≤ 4 px) stays covered
+		assert_float(fposmod(cov.position.x, 80.0)).is_equal_approx(0.0, 1e-4)
+
+
+func test_floor_covers_the_camera_view_at_the_seam() -> void:
+	var runner := scene_runner(SCENE)
+	await runner.simulate_frames(1)
+	var v := _vigil(runner)
+	var t: Torus = runner.get_property("torus")
+	var cam: SectorCamera = runner.find_child("SectorCamera")
+	var floor_node: SectorFloor = runner.find_child("Floor")
+	for at: Vector2 in [Vector2(2, 2), Vector2(t.size.x - 2.0, t.size.y - 2.0), Vector2(960, 360)]:
+		v.global_position = at
+		cam.snap_to_target()
+		await get_tree().process_frame
+		var view := floor_node.visible_world_rect()
+		assert_vector(view.size).is_equal_approx(cam.visible_size(), Vector2(0.5, 0.5))
+		var centre := cam.get_screen_center_position()
+		assert_bool(view.has_point(centre)).is_true()
+		assert_bool(SectorFloor.covered_rect(view, FLOOR_STYLE.cell_px).encloses(view)).is_true()

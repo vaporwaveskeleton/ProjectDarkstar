@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ArcLanceFxStats" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://features/arc_lance/arc_lance_fx_stats.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+ds_namespace = "ds_arc_lance.fx"
+source_section = "SYS-001 §9 Lance bite (owner-approved 2026-11-18, TECH-001 Q-T50); same values as ds_cabinet.fx"
+muzzle_star_px = 3
+muzzle_star_frames = 1
+recoil_px = 1
+recoil_frames = 2
+fleck_speed_px_s = 60.0
+fleck_life_s = 0.12
+tick_len_px = 3
+tick_life_s = 0.15
+lance_dull_db = 0.0

@@ -5,6 +5,7 @@ extends RefCounted
 
 const Runner := preload("res://core/automation/scenario_runner.gd")
 const Schema := preload("res://core/automation/scenario_schema.gd")
+const Recorder := preload("res://core/automation/recorder.gd")
 const SCENARIO_DIR := "res://tests/scenarios/"
 const DEFAULT_OUT := "user://automation/"
 const REPORTS_DIR := "res://reports"
@@ -21,6 +22,15 @@ static func arg_value(args: PackedStringArray, key: String) -> String:
 
 static func has_scenario_arg(args: PackedStringArray) -> bool:
 	return not arg_value(args, "scenario").is_empty()
+
+
+static func has_record_arg(args: PackedStringArray) -> bool:
+	return not arg_value(args, "record").is_empty()
+
+
+## Boot's single entry: the recorder for `--record=<id>`, else the scenario runner.
+static func create_node(args: PackedStringArray) -> Node:
+	return create_recorder(args) if has_record_arg(args) else create_runner(args)
 
 
 ## Returns the normalised, allowed output directory, or "" when `path` is not allowed.
@@ -65,3 +75,19 @@ static func create_runner(args: PackedStringArray) -> Node:
 		return runner
 	runner.setup(scenario, opts)
 	return runner
+
+
+## `--record=<id>`: dev profile only (the recorder itself refuses otherwise). Output is confined like the runner's.
+static func create_recorder(args: PackedStringArray) -> Node:
+	var rec: Node = Recorder.new()
+	var id := arg_value(args, "record")
+	if not Schema.is_name(id):
+		rec.setup(id, "", args, "invalid recording id '%s'" % id)
+		return rec
+	var out := arg_value(args, "out")
+	out = DEFAULT_OUT + id if out == "" else confine_out(out)
+	if out == "":
+		rec.setup(id, "", args, "--out must be under user:// or the project reports/ folder")
+		return rec
+	rec.setup(id, out, args, "")
+	return rec
