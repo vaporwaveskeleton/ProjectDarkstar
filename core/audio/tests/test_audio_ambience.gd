@@ -3,7 +3,7 @@ extends GdUnitTestSuite
 ## Each test builds a fresh service with its own _process switched off and drives `_process(delta)` by hand.
 
 const AudioServiceScript := preload("res://autoload/audio_service.gd")
-const BEDS: Array[StringName] = [&"aether_bed_t1", &"aether_bed_t2", &"aether_bed_t3"]
+const BEDS: Array[StringName] = [&"aether_bed_t1", &"aether_bed_t2", &"aether_bed_t3", &"aether_bed_t4", &"aether_bed_t5"]
 const ONE_SHOTS: Array[StringName] = [&"aether_swell", &"aether_wrong"]
 const DT := 1.0 / 60.0
 
