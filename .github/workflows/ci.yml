@@ -93,6 +93,9 @@ jobs:
             exit 1
           fi
 
+      - name: Automation CLI tests
+        run: node --test tools/automation
+
       - name: Automation scenarios (headless)
         run: |
           ok=0

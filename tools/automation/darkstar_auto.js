@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 // DARKSTAR scenario CLI (in-process scenario runner, D-09: no sockets). No dependencies.
 //   node tools/automation/darkstar_auto.js validate <file|id>
-//   node tools/automation/darkstar_auto.js run <id> [--windowed] [--keep] [--godot=<exe>] [--timeout=<s>] [--out=<dir>]
+//   node tools/automation/darkstar_auto.js run <id> [--windowed] [--keep] [--godot=<exe>] [--timeout=<s>] [--out=<dir>] [-- <game args>]
+//     Anything after a bare "--" is passed to the game after the scenario's own args (dev builds read e.g.
+//     --aether-cine-scale=8). Only --name / --name=value tokens; the runner's own (--scenario, --out, --no-save...) are refused.
 //   node tools/automation/darkstar_auto.js run|run-all --exe=<exported game exe> [--windowed] [--timeout=<s>]
 //     Runs an EXPORTED build directly (no --path). Output goes to <exe dir>/reports/automation/<id>-<stamp>
 //     (the game confines --out to user:// or reports/). Against a QA build, a scenario that uses dev-only
@@ -114,9 +116,36 @@ function loadScenario(arg) {
   return { file, scenario: JSON.parse(fs.readFileSync(file, "utf8")) };
 }
 
-/** @param {string[]} argv */
+/** Game args the CLI owns; a pass-through arg may not override them. */
+const RESERVED_GAME_ARGS = ["--scenario", "--record", "--automation-caps", "--out", "--no-save", "--path", "--headless", "--fixed-fps"];
+
+/**
+ * Extra args for the game: everything after a bare `--` on the CLI. Each must be a `--name` or
+ * `--name=value` token and may not be one the runner sets itself.
+ * @param {string[]} extra
+ * @returns {{args: string[], error: string}}
+ */
+function checkExtraArgs(extra) {
+  for (const a of extra) {
+    if (!/^--[A-Za-z0-9][A-Za-z0-9_-]*(=.*)?$/.test(a)) return { args: [], error: `extra game arg '${a}' must look like --name or --name=value` };
+    if (RESERVED_GAME_ARGS.includes(a.split("=")[0])) return { args: [], error: `extra game arg '${a}' is set by the runner and cannot be passed` };
+  }
+  return { args: extra, error: "" };
+}
+
+/**
+ * The command-line tail handed to the game, after the engine's `--`.
+ * @param {string} scenarioId @param {string} out @param {string[]} scenarioArgs @param {string[]} extra
+ */
+function gameArgs(scenarioId, out, scenarioArgs, extra) {
+  return ["--fixed-fps", "60", "--", `--scenario=${scenarioId}`, "--no-save", `--out=${out}`, ...scenarioArgs, ...extra];
+}
+
+/** @param {string[]} argv @returns {any} `_` = positionals, `extra` = tokens after a bare `--` */
 function parseFlags(argv) {
-  const flags = { _: [] };
+  const flags = { _: [], extra: [] };
+  const cut = argv.indexOf("--");
+  if (cut >= 0) { flags.extra = argv.slice(cut + 1); argv = argv.slice(0, cut); }
   for (const a of argv) {
     const m = /^--([a-z]+)(?:=(.*))?$/.exec(a);
     if (m) flags[m[1]] = m[2] === undefined ? true : m[2];
@@ -159,7 +188,7 @@ function summarise(out, result, code) {
 /** @param {any} flags */
 async function run(flags) {
   const id = flags._[1];
-  if (!id) { console.error("usage: run <id> [--windowed] [--keep] [--godot=<exe>] [--timeout=<s>] [--out=<dir>]"); return 2; }
+  if (!id) { console.error("usage: run <id> [--windowed] [--keep] [--godot=<exe>] [--timeout=<s>] [--out=<dir>] [-- <game args>]"); return 2; }
   return (await runScenario(id, flags, false)).code;
 }
 
@@ -185,7 +214,9 @@ async function runScenario(id, flags, quiet) {
     if (rel.startsWith("..") || path.isAbsolute(rel)) { console.error(`--out must be under ${path.join(path.dirname(exe), "reports")} for an exported exe`); return { code: 2, frames: 0, outcome: "invalid" }; }
     gameOut = `res://reports/${rel}`;
   }
-  const game = ["--fixed-fps", "60", "--", `--scenario=${scenario.id}`, "--no-save", `--out=${gameOut}`, ...(scenario.args || [])];
+  const extra = checkExtraArgs(flags.extra || []);
+  if (extra.error) { console.error(extra.error); return { code: 2, frames: 0, outcome: "invalid" }; }
+  const game = gameArgs(scenario.id, gameOut, scenario.args || [], extra.args);
   const args = exe ? [...(flags.windowed ? [] : ["--headless"]), ...game]
     : ["--path", root, ...(flags.windowed ? [] : ["--headless"]), ...game];
   const log = fs.createWriteStream(path.join(out, "console.log"));
@@ -287,8 +318,9 @@ async function main() {
     console.error(String(e.message || e));
     return 2;
   }
-  console.error("commands: validate <file|id> | caps [--windowed] | run-all [--only=<substr>] [--exe=<exported exe>] | run <id> [--windowed] [--keep] [--godot=<exe>] [--timeout=<s>] [--out=<dir>] [--exe=<exported exe>]");
+  console.error("commands: validate <file|id> | caps [--windowed] | run-all [--only=<substr>] [--exe=<exported exe>] | run <id> [--windowed] [--keep] [--godot=<exe>] [--timeout=<s>] [--out=<dir>] [--exe=<exported exe>] [-- <game args>]");
   return 2;
 }
 
-main().then((code) => process.exit(code));
+if (require.main === module) main().then((code) => process.exit(code));
+module.exports = { parseFlags, checkExtraArgs, gameArgs, validate };
