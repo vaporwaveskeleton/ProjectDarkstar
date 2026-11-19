@@ -997,6 +997,8 @@ Ducking is a sidechain on the bus, not per-voice, with a 60 ms ✱ attack and a 
 | Frame cost | audio mixing must not touch the SYS-001 §9 frame budget; no per-frame param computation in GDScript — parameters are pushed on state change only | TECH-001 §6 |
 | Streaming | biome beds streamed per Seam, Ruins bed resident | GDD-001 §13 |
 
+Cross-reference (2026-11-19): the first Unmaking cinematic (`AetherArrival`, TECH-001 §2.9) makes guarded calls to `AudioService` (a missing method or cue is a no-op): `set_ambience(aether_bed_t1)` on entry, the `presence_flee` cue at beat 5, `set_subtraction(0.85 ✱, 40 s)` at the front's start, `set_ambience("")` at lamp-out. It resets `set_subtraction(0, 0)` on finish, skip and `_exit_tree`; Audio Design may own that reset instead.
+
 ---
 
 ## 8. Accessibility, and the safety of audio-linked effects

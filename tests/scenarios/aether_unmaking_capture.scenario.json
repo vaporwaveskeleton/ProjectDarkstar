@@ -1,0 +1,25 @@
+{
+	"format": "darkstar.scenario",
+	"version": 1,
+	"id": "aether_unmaking_capture",
+	"profile": "qa",
+	"args": [],
+	"fixtures": {},
+	"timeout_frames": 1200,
+	"steps": [
+		{"do": "wait_route", "route": "attract", "within": 240},
+		{"do": "goto", "route": "aether"},
+		{"do": "wait_route", "route": "aether", "within": 240},
+		{"do": "wait_frames", "frames": 60},
+		{"do": "screenshot", "name": "aether_first", "target": "window"},
+		{"do": "wait_frames", "frames": 96},
+		{"do": "screenshot", "name": "presence_flee", "target": "window"},
+		{"do": "wait_frames", "frames": 219},
+		{"do": "screenshot", "name": "entity_black", "target": "window"},
+		{"do": "wait_frames", "frames": 135},
+		{"do": "screenshot", "name": "last_light", "target": "window"},
+		{"do": "wait_frames", "frames": 60},
+		{"do": "screenshot", "name": "ember", "target": "window"},
+		{"do": "quit"}
+	]
+}
