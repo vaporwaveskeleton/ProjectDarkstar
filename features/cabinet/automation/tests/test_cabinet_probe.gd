@@ -419,3 +419,65 @@ func test_snapshot_vigil_and_world_carry_the_new_props() -> void:
 	assert_array(s.vigil.keys()).contains(["killer_kind", "killer_dx", "killer_dy", "killer_on_screen", "death_marks"])
 	assert_array(s.world.keys()).contains(["death_marks", "entity_awake", "entity_dx", "entity_dy"])
 	assert_array(probe.describe().dev_ops).contains(["wake_entity", "place_entity"])
+
+
+# --- death mark lifecycle and Reduced Motion (real behaviour, read from CabinetGame / FxLayer) -------
+
+func _kill_by_shot_in_play() -> void:
+	game.state = game.State.PLAY
+	world.vigil.shield = 0.0
+	probe.dev_op("shoot_vigil", {"dx": 0, "dy": -90})
+	for i in 40:
+		world.step(DT)
+	assert_int(game.state).is_equal(game.State.DEAD)
+
+
+func test_death_marks_hold_through_the_dead_state_and_clear_on_respawn() -> void:
+	_kill_by_shot_in_play()
+	for i in 90:   # the mark is held (not aged out) for the whole respawn wait
+		world.step(DT)
+	assert_int(_val("cabinet/vigil", "death_marks")).is_equal(1)
+	assert_str(_val("cabinet/vigil", "killer_kind")).is_equal("shot")
+	game._on_timer()   # what CabinetGame does when the respawn delay runs out (lives left: a new one)
+	assert_int(game.state).is_equal(game.State.PLAY)
+	assert_bool(_val("cabinet/vigil", "alive")).is_true()
+	assert_int(_val("cabinet/vigil", "death_marks")).is_equal(0)
+	assert_str(_val("cabinet/vigil", "killer_kind")).is_equal("none")
+	assert_float(_val("cabinet/vigil", "death_outline")).is_equal(0.0)
+
+
+func test_death_marks_stay_on_game_over() -> void:
+	game.score.lives = 1
+	_kill_by_shot_in_play()
+	game._on_timer()   # no lives left: game over, nothing clears the mark
+	assert_int(game.state).is_equal(game.State.GAME_OVER)
+	assert_int(_val("cabinet/vigil", "death_marks")).is_equal(1)
+	assert_str(_val("cabinet/vigil", "killer_kind")).is_equal("shot")
+
+
+func test_death_marks_clear_when_the_stage_restarts() -> void:
+	_kill_by_shot_in_play()
+	world.start(_stage())   # FxLayer.reset()
+	assert_int(_val("cabinet/vigil", "death_marks")).is_equal(0)
+
+
+func test_the_chalk_draws_on_over_time_and_is_instant_under_reduced_motion() -> void:
+	var prev_persist: bool = SettingsService.persist
+	var prev_rm: Variant = SettingsService.get_value(&"reduced_motion")
+	SettingsService.persist = false
+	SettingsService.set_value(&"reduced_motion", false)
+	_kill_by_shot_in_play()
+	# Before the delay (0.5 s) nothing is drawn, either way.
+	assert_float(_val("cabinet/vigil", "death_outline")).is_equal(0.0)
+	var delay := world.fx.death_chalk_delay()
+	var draw_s := world.fx_tuning.death_outline_draw_s
+	while world.fx.death_marks[0].age < delay + draw_s * 0.5:
+		world.step(DT)
+	var mid: float = _val("cabinet/vigil", "death_outline")
+	assert_float(mid).is_greater(0.0)
+	assert_float(mid).is_less(1.0)
+	SettingsService.set_value(&"reduced_motion", true)
+	assert_float(_val("cabinet/vigil", "death_outline")).is_equal(1.0)
+	assert_float(_val("cabinet/vigil", "death_arrow")).is_equal(1.0)
+	SettingsService.set_value(&"reduced_motion", prev_rm)
+	SettingsService.persist = prev_persist

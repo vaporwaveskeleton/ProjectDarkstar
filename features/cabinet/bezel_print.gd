@@ -1,13 +1,15 @@
 class_name BezelPrint
 extends Control
-## One printed bezel column (80 × 360, flush against the screen hole) drawn from its BezelPiece list (BezelArt). The art is drawn
-## once and redrawn only when the crack or the inks change: there is no per-frame redraw. The
-## costume's peel slides the whole column sideways by its position (left slides left, right slides
-## right), it never redraws. A Control drawn behind its parent (the HUD / attract frame), so the
-## lit readouts the parent draws sit on top of the print.
+## One printed bezel column (80 × 360, flush against the screen hole) drawn from its BezelPiece list (BezelArt).
+## The two columns are the side-panel halves of ONE printed sheet (with BezelField round the opening): the art
+## bleeds off the column's outer, top and bottom edges (the control clips to its 80 × 360 box), and
+## the inner 2 px is the key-black lip against the opening. The art is drawn once and redrawn only when
+## the crack or the inks change: there is no per-frame redraw. The costume's peel slides the whole column
+## sideways by its position (left slides left, right slides right), it never redraws. A Control drawn
+## behind its parent (the HUD / attract frame), so the lit readouts the parent draws sit on top of the print.
+## Screened tones are polygons whose alpha is the tone (bezel_print.gdshader turns them into round dots on
+## each ink's own rotated grid); all lettering is VectorText (BezelText), never PixelText.
 
-const HALFTONE_GRID := 3          ## px between halftone dots
-const DOT := 1.0                  ## dot size in logical units; round dots once D-A moves to native res
 const PEEL_TRAVEL := CabinetBezel.SIDE + 20.0
 
 @export var column: StringName = &"left"
@@ -35,12 +37,13 @@ var _surface: CabinetSurface
 var _mat: ShaderMaterial
 var _hardware: Array[Control] = []
 var _pieces: Array[BezelPiece] = []
-var _dots: Dictionary = {}        ## piece id -> PackedVector2Array of halftone dot origins
+var _text_cache: Dictionary = {}
 
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	show_behind_parent = true
+	clip_contents = true
 	size = Vector2(CabinetBezel.SIDE, 360.0)
 	_surface = CabinetSurface.default() as CabinetSurface
 	_mat = CabinetLighting.print_material(_surface, Vector2.ZERO, false)
@@ -51,7 +54,7 @@ func _ready() -> void:
 
 
 ## The perforated speaker grilles at the top and bottom of the column (and under the coin door on the
-## right) and, on the right, the vinyl sticker: real parts over the print, not printed art.
+## right) and, on the right, the die-cut vinyl sticker: real parts over the print, not printed art.
 func _build_hardware() -> void:
 	var x0 := 0.0 if column == &"left" else 2.0
 	var vents: Array[Rect2] = [Rect2(x0, 0, 78, 10), Rect2(x0, 350, 78, 10)]
@@ -70,7 +73,7 @@ func pieces() -> Array[BezelPiece]:
 
 func pieces_rebuild() -> void:
 	_pieces = BezelArt.build_left() if column == &"left" else BezelArt.build_right()
-	_dots.clear()
+	_text_cache.clear()
 	queue_redraw()
 
 
@@ -122,18 +125,31 @@ func _draw_piece_shape(p: BezelPiece, col: Color) -> void:
 		BezelPiece.Kind.STROKE:
 			draw_polyline(_half_px(p.points), col, p.width)
 		BezelPiece.Kind.HALFTONE:
-			for d in _dots_of(p):
-				draw_rect(Rect2(d, Vector2(DOT, DOT)), col)
+			_draw_tone(p, col)
 		BezelPiece.Kind.PIXELS:
 			for d in p.points:
 				draw_rect(Rect2(d, Vector2(p.width, p.width)), col)
 		BezelPiece.Kind.TEXT:
-			var s := tr(p.text_key)
-			var at := p.points[0]
-			if p.centered:
-				PixelText.draw_centered(self, at.x, at.y, s, col)
-			else:
-				PixelText.draw(self, at, s, col)
+			BezelText.draw(self, _text_cache, BezelArt.text_of(p, tr(p.text_key)), p.points[0], p.centered, p.width, p.stroke_w, p.tracking, col, p.rot)
+
+
+## A screened tone: the polygon carries its tone per vertex in the alpha; bezel_print.gdshader turns it
+## into round dots with dot gain.
+func _draw_tone(p: BezelPiece, col: Color) -> void:
+	if p.tone_mode == BezelPiece.TONE_RADIAL and p.tone_b.x <= 0.0:
+		# a glow round a centre: a triangle fan, so the tone is graded all the way in
+		var c := Color(col.r, col.g, col.b, clampf(p.tone_at(p.tone_a), 0.0, 0.998))
+		for i in p.points.size():
+			var q0 := p.points[i]
+			var q1 := p.points[(i + 1) % p.points.size()]
+			draw_primitive(PackedVector2Array([p.tone_a, q0, q1]), PackedColorArray([c,
+				Color(col.r, col.g, col.b, clampf(p.tone_at(q0), 0.0, 0.998)),
+				Color(col.r, col.g, col.b, clampf(p.tone_at(q1), 0.0, 0.998))]), PackedVector2Array())
+		return
+	var cols := PackedColorArray()
+	for q in p.points:
+		cols.append(Color(col.r, col.g, col.b, clampf(p.tone_at(q), 0.0, 0.998)))
+	draw_polygon(p.points, cols)
 
 
 ## Lines aimed at pixel centres so 1 px strokes land on whole pixels.
@@ -141,30 +157,6 @@ static func _half_px(pts: PackedVector2Array) -> PackedVector2Array:
 	var out := PackedVector2Array()
 	for q in pts:
 		out.append(q + Vector2(0.5, 0.5))
-	return out
-
-
-## Halftone dots: the 3 px grid cells whose centre lies inside the piece's region (cached).
-func _dots_of(p: BezelPiece) -> PackedVector2Array:
-	if _dots.has(p.id):
-		return _dots[p.id]
-	var out := PackedVector2Array()
-	var lo := Vector2(INF, INF)
-	var hi := Vector2(-INF, -INF)
-	for q in p.points:
-		lo = lo.min(q)
-		hi = hi.max(q)
-	var gy0 := int(floorf(lo.y / HALFTONE_GRID))
-	var gy1 := int(ceilf(hi.y / HALFTONE_GRID))
-	var gx0 := int(floorf(lo.x / HALFTONE_GRID)) - 1
-	var gx1 := int(ceilf(hi.x / HALFTONE_GRID))
-	for gy in range(gy0, gy1 + 1):
-		for gx in range(gx0, gx1 + 1):
-			# alternate rows shift by one px so the dots read as a screen, not a grid
-			var at := Vector2(gx * HALFTONE_GRID + (gy % 2) * 1, gy * HALFTONE_GRID)
-			if Geometry2D.is_point_in_polygon(at + Vector2(0.5, 0.5), p.points):
-				out.append(at)
-	_dots[p.id] = out
 	return out
 
 

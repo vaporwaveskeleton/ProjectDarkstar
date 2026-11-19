@@ -2,6 +2,10 @@
 // DARKSTAR scenario CLI (in-process scenario runner, D-09: no sockets). No dependencies.
 //   node tools/automation/darkstar_auto.js validate <file|id>
 //   node tools/automation/darkstar_auto.js run <id> [--windowed] [--keep] [--godot=<exe>] [--timeout=<s>] [--out=<dir>]
+//   node tools/automation/darkstar_auto.js run|run-all --exe=<exported game exe> [--windowed] [--timeout=<s>]
+//     Runs an EXPORTED build directly (no --path). Output goes to <exe dir>/reports/automation/<id>-<stamp>
+//     (the game confines --out to user:// or reports/). Against a QA build, a scenario that uses dev-only
+//     steps must come back refused (exit 3): reported as "refused (QA profile)", which run-all does not count as a failure.
 // Steps marked "dev": true in the catalog are valid here; the game refuses them in the QA profile.
 // Step names and argument shapes come from core/automation/step_catalog.json (shared with the
 // GDScript validator). Exit codes: game's own (0 pass, 1 fail/timeout, 2 invalid, 3 refused),
@@ -95,6 +99,12 @@ function validate(sc) {
   return errs;
 }
 
+/** Names of the dev-only catalog steps a scenario uses (the QA profile refuses these). */
+function devStepsUsed(sc) {
+  const steps = loadCatalog().steps;
+  return [...new Set((sc.steps || []).map((s) => s.do).filter((n) => steps[n] && steps[n].dev))];
+}
+
 /**
  * @param {string} arg file path or scenario id
  * @returns {{file: string, scenario: any}}
@@ -161,13 +171,25 @@ async function runScenario(id, flags, quiet) {
   const { scenario } = loadScenario(id);
   const errs = validate(scenario);
   if (errs.length) { console.error(errs.join("\n")); return { code: 2, frames: 0, outcome: "invalid" }; }
-  const godot = findGodot(flags);
-  const out = path.resolve(typeof flags.out === "string" ? flags.out : path.join(root, "reports", "automation", `${scenario.id}-${stamp()}`)).replace(/\\/g, "/");
+  const exe = typeof flags.exe === "string" ? path.resolve(flags.exe) : "";
+  if (flags.exe && !exe) { console.error("--exe needs a path"); return { code: 2, frames: 0, outcome: "invalid" }; }
+  if (exe && !fs.existsSync(exe)) { console.error(`exported exe not found: ${exe}`); return { code: 2, frames: 0, outcome: "invalid" }; }
+  const godot = exe || findGodot(flags);
+  const outBase = exe ? path.join(path.dirname(exe), "reports", "automation") : path.join(root, "reports", "automation");
+  const out = path.resolve(typeof flags.out === "string" ? flags.out : path.join(outBase, `${scenario.id}-${stamp()}`)).replace(/\\/g, "/");
   fs.mkdirSync(out, { recursive: true });
-  const args = ["--path", root, ...(flags.windowed ? [] : ["--headless"]), "--fixed-fps", "60", "--",
-    `--scenario=${scenario.id}`, "--no-save", `--out=${out}`, ...(scenario.args || [])];
+  // An exported build resolves res://reports to <exe dir>/reports (verified); an absolute --out is refused there.
+  let gameOut = out;
+  if (exe) {
+    const rel = path.relative(path.join(path.dirname(exe), "reports"), out).split(path.sep).join("/");
+    if (rel.startsWith("..") || path.isAbsolute(rel)) { console.error(`--out must be under ${path.join(path.dirname(exe), "reports")} for an exported exe`); return { code: 2, frames: 0, outcome: "invalid" }; }
+    gameOut = `res://reports/${rel}`;
+  }
+  const game = ["--fixed-fps", "60", "--", `--scenario=${scenario.id}`, "--no-save", `--out=${gameOut}`, ...(scenario.args || [])];
+  const args = exe ? [...(flags.windowed ? [] : ["--headless"]), ...game]
+    : ["--path", root, ...(flags.windowed ? [] : ["--headless"]), ...game];
   const log = fs.createWriteStream(path.join(out, "console.log"));
-  const child = spawn(godot, args, { cwd: root, stdio: ["ignore", "pipe", "pipe"] });
+  const child = spawn(godot, args, { cwd: exe ? path.dirname(exe) : root, stdio: ["ignore", "pipe", "pipe"] });
   child.stdout.pipe(log, { end: false });
   child.stderr.pipe(log, { end: false });
   const limit = (Number(flags.timeout) || 120) * 1000;
@@ -180,6 +202,15 @@ async function runScenario(id, flags, quiet) {
   const resultPath = path.join(out, "result.json");
   if (!fs.existsSync(resultPath)) { console.error(`no result.json produced (exit ${code}); see ${path.join(out, "console.log")}`); return { code: 5, frames: 0, outcome: "crash" }; }
   const result = JSON.parse(fs.readFileSync(resultPath, "utf8"));
+  // A QA build must refuse a scenario that uses dev steps: that is the expected outcome, not a failure.
+  const dev = devStepsUsed(scenario);
+  const expectedRefusal = Boolean(exe) && code === 3 && result.outcome === "refused" && result.profile === "qa"
+    && (result.build || {}).profile === "qa" && dev.length > 0;
+  if (expectedRefusal) {
+    console.log(`  refused (QA profile): dev steps ${dev.join(", ")} (expected; exit 3)`);
+    fs.rmSync(out, { recursive: true, force: true });
+    return { code, frames: result.frames, outcome: "refused", expectedRefusal: true };
+  }
   if (!quiet || code !== 0) console.log(summarise(out, result, code));
   const shots = (result.screenshots || []).some((x) => x.path);
   if (code === 0 && !flags.keep && !shots && typeof flags.out !== "string") {
@@ -203,9 +234,12 @@ async function runAll(flags) {
   }
   const w = Math.max(...rows.map((r) => r.id.length));
   console.log("\n" + "scenario".padEnd(w + 1) + " outcome   exit  frames");
-  for (const r of rows) console.log(`${r.id.padEnd(w + 1)} ${String(r.outcome).padEnd(9)} ${String(r.code).padEnd(5)} ${r.frames}`);
-  const bad = rows.filter((r) => r.code !== 0).length;
-  console.log(bad ? `${bad} of ${rows.length} FAILED` : `all ${rows.length} passed`);
+  for (const r of rows) console.log(`${r.id.padEnd(w + 1)} ${String(r.outcome).padEnd(9)} ${String(r.code).padEnd(5)} ${r.frames}${r.expectedRefusal ? "  (expected: QA profile)" : ""}`);
+  const refused = rows.filter((r) => r.expectedRefusal).length;
+  const bad = rows.filter((r) => r.code !== 0 && !r.expectedRefusal).length;
+  const passed = rows.filter((r) => r.code === 0).length;
+  const tail = refused ? ` (${passed} passed, ${refused} refused by the QA profile as expected)` : "";
+  console.log(bad ? `${bad} of ${rows.length} FAILED${tail}` : (refused ? `no failures${tail}` : `all ${rows.length} passed`));
   return bad ? 1 : 0;
 }
 
@@ -253,7 +287,7 @@ async function main() {
     console.error(String(e.message || e));
     return 2;
   }
-  console.error("commands: validate <file|id> | caps [--windowed] | run-all [--only=<substr>] | run <id> [--windowed] [--keep] [--godot=<exe>] [--timeout=<s>] [--out=<dir>]");
+  console.error("commands: validate <file|id> | caps [--windowed] | run-all [--only=<substr>] [--exe=<exported exe>] | run <id> [--windowed] [--keep] [--godot=<exe>] [--timeout=<s>] [--out=<dir>] [--exe=<exported exe>]");
   return 2;
 }
 

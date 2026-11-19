@@ -46,10 +46,10 @@ const vec2 LOCK_C = vec2(45.0, 15.0);           // offset toward a corner
 const vec2 STK_C = vec2(11.5, 64.0);            // sticker remnant
 const vec2 STK_H = vec2(4.6, 6.2);
 const float RELIEF = 1.7;
-// deliberate chips (x, y, size): the rim's top and left, and the LOWER edge and corners (kicks, keys)
-const vec3 CHIPS[12] = vec3[12](vec3(12.0, 1.6, 1.1), vec3(38.0, 1.7, 1.3), vec3(1.6, 18.0, 1.0), vec3(1.7, 52.0, 1.3),
-		vec3(4.0, 78.4, 2.0), vec3(13.0, 78.8, 1.2), vec3(24.0, 78.5, 1.0), vec3(35.0, 78.9, 1.8),
-		vec3(45.0, 78.5, 1.1), vec3(53.0, 78.3, 2.0), vec3(54.4, 62.0, 1.1), vec3(1.5, 66.0, 1.0));
+// deliberate chips (x, y, size): few, unevenly spaced, none repeating: clusters at the LOWER corners (kicks), one
+// on the top-left, a couple of strays; irregular so no row of them reads as stitching
+const vec3 CHIPS[6] = vec3[6](vec3(2.3, 77.4, 2.4), vec3(7.4, 78.8, 0.95), vec3(52.6, 77.8, 2.7), vec3(55.0, 70.2, 1.2),
+		vec3(3.1, 2.4, 1.5), vec3(29.7, 78.8, 0.7));
 
 vec2 screw_c(vec2 p) {
 	return vec2(p.x < 28.0 ? 6.0 : 50.0, p.y < 40.0 ? 6.0 : 74.0);
@@ -202,32 +202,47 @@ void fragment() {
 		col *= 1.0 - 0.5 * grease * m_ent * (1.0 - bare_halo * 0.5);
 		rough = mix(rough, 0.34, grease * 0.7);
 
-		// ---- sticker remnant: a pale paper scrap with a gummy, dirty edge; the top-right corner torn off
-		vec2 sl = rot2(p - STK_C, 0.2);
-		float sjit = (fbm(p + 3.0, 3.4, px) - 0.5) * 1.5;
-		float ds_ = rbox(sl, vec2(0.0), STK_H, 0.5) + sjit;
-		float tear = dot(sl, vec2(0.7071, -0.7071)) - 3.6 + (fbm(p + 8.0, 4.0, px) - 0.5) * 2.0;
-		ds_ = max(ds_, tear);
-		float m_stk = cov(ds_, px) * (1.0 - 0.45 * smoothstep(0.55, 0.8, fbm(p + 14.0, 2.5, px)));
-		float glue = cov(ds_ - 1.5 - (nz2 - 0.5) * 1.2, px) * (1.0 - m_stk);
+		// ---- label remnant: the bottom of a paper label torn off the door. A long ragged tear along the top, a
+		// fibrous pale tear edge, a gummy dirty edge, the printing's last stripe, and a strip of yellowed
+		// tape still holding the left corner down (translucent amber, its ends cut ragged).
+		vec2 sl = rot2(p - STK_C, 0.14);
+		float tear_line = sl.y + 2.6 - 2.6 * sl.x / STK_H.x * 0.5 + (fbm(p + 3.0, 3.6, px) - 0.5) * 3.4 + 1.2 * sin(sl.x * 1.9) * (vnoise(p * 1.5) - 0.3);
+		float ds_ = max(rbox(sl, vec2(0.0), STK_H, 0.4), -tear_line);       // keep the part below the tear
+		ds_ += (fbm(p + 14.0, 5.0, px) - 0.5) * 0.35;
+		float m_stk = cov(ds_, px) * (1.0 - 0.35 * smoothstep(0.6, 0.85, fbm(p + 22.0, 2.7, px)));
+		float fibre = smoothstep(0.9, 0.0, abs(tear_line)) * m_stk;
+		float glue = cov(ds_ - 1.4 - (nz2 - 0.5) * 1.2, px) * (1.0 - m_stk);
 		glue *= 1.0 - dark;
-		col = mix(col, vec3(0.13, 0.105, 0.065), glue * 0.6);
+		col = mix(col, vec3(0.045, 0.043, 0.04), glue * 0.55);
 		rough = mix(rough, 0.35, glue * 0.5);
-		vec3 paper = sticker_color.rgb * (0.78 + 0.3 * nz1);
-		paper = mix(paper, vec3(0.2, 0.16, 0.09), smoothstep(1.4, 0.0, -ds_) * 0.75);
-		paper = mix(paper, vec3(0.55, 0.12, 0.08), cov(abs(sl.y + 1.0) - 0.9, px) * 0.4 * (1.0 - smoothstep(-2.0, 1.0, -ds_)));
+		vec3 paper = sticker_color.rgb * (0.62 + 0.25 * nz1);
+		paper = mix(paper, vec3(0.2, 0.17, 0.11), smoothstep(1.2, 0.0, -ds_) * 0.55);
+		paper = mix(paper, vec3(0.68, 0.64, 0.55), fibre * 0.8);
+		paper = mix(paper, vec3(0.5, 0.12, 0.09), cov(abs(sl.y - 3.6) - 0.8, px) * 0.45);
+		// the yellowed tape strip across the left corner
+		vec2 tp = rot2(p - (STK_C + vec2(-1.8, -3.0)), -0.55);
+		float tape_end = (vnoise(vec2(tp.y * 2.2, 5.0)) - 0.5) * 1.1;
+		float tape_d = max(abs(tp.y) - 1.9, abs(tp.x + tape_end) - 5.2);
+		float m_tape = cov(tape_d, px) * (1.0 - dark);
+		vec3 tape_c = vec3(0.62, 0.45, 0.14);
+		paper = mix(paper, paper * tape_c * 1.5 + vec3(0.03, 0.02, 0.0), m_tape * 0.8);
+		float tape_over = max(m_tape - m_stk, 0.0);
+		col = mix(col, vec3(0.1, 0.075, 0.03), tape_over * 0.55);   // the tape's tail on bare paint: dark, sticky
 		col = mix(col, paper, m_stk * (1.0 - dark));
-		metal = mix(metal, 0.0, m_stk + glue);
+		col = mix(col, tape_c * 0.55, m_tape * 0.35 * m_stk);
+		metal = mix(metal, 0.0, max(m_stk, m_tape) + glue);
 		rough = mix(rough, 0.82, m_stk);
 
 		// ---- chips: sharp-edged bare steel on the rim's top and left, the lower edge and the corners
 		float chip = 0.0;
 		float chip_edge = 0.0;
 		float wsize = 0.8 + 1.3 * wear;
-		for (int i = 0; i < 12; i++) {
+		for (int i = 0; i < 6; i++) {
 			vec3 cd = CHIPS[i];
 			float cn = vnoise(p * 3.1 + float(i) * 5.0) - 0.5;
-			float cdist = (length((p - cd.xy) * vec2(1.0, 1.35)) + cn * 0.9 * cd.z - cd.z * wsize);
+			float asp = 0.6 + 1.3 * hash21(vec2(float(i), 3.7));
+			vec2 cq = rot2(p - cd.xy, hash21(vec2(float(i), 9.1)) * 3.14159) * vec2(1.0, asp);
+			float cdist = length(cq) + cn * 1.9 * cd.z - cd.z * wsize * 0.8;
 			chip = max(chip, cov(cdist, px));
 			chip_edge = max(chip_edge, cov(cdist - 0.22, px));
 		}
@@ -256,14 +271,14 @@ void fragment() {
 		float slot_ao = smoothstep(1.6, 0.0, dsl) * (1.0 - m_slot);
 		float corner = smoothstep(0.0, 1.0, cav);
 		float g = clamp(grime * (corner * 1.7 + 0.45 * smoothstep(0.5, 0.15, abs(dd + 4.2)) + corner_ao * 0.9 + screw_ao * 0.9 + slot_ao * 0.9) * (0.55 + 0.9 * nz1), 0.0, 1.0);
-		col = mix(col, vec3(0.05, 0.04, 0.025), g * (1.0 - m_lens * 0.7));
+		col = mix(col, vec3(0.03, 0.03, 0.032), g * (1.0 - m_lens * 0.7));
 		rough = mix(rough, 0.85, g);
 		float seam = (1.0 - smoothstep(0.0, 0.8, abs(dd + 2.6))) * grime * (0.6 + 0.6 * nz1) * (0.7 + 0.5 * p.y / plate_size.y);
 		seam = clamp(seam * 1.3, 0.0, 0.95) * paint_only;
 		col = mix(col, vec3(0.012, 0.01, 0.008), seam);
 		rough = mix(rough, 0.95, seam);
 		float film = grime * 0.2 * smoothstep(0.3, 0.8, nz1);
-		col = mix(col, col * vec3(0.78, 0.66, 0.42) + vec3(0.025, 0.018, 0.005), film * (1.0 - m_lens));
+		col = mix(col, col * 0.8 + vec3(0.006), film * (1.0 - m_lens));
 
 		// ---- hands: greasy fingerprints, smudged, round the slot and the lit plate, palm smears where hands rub
 		vec2 pc = plate_c;
@@ -305,7 +320,8 @@ void fragment() {
 		vec3 Hh = normalize(L + V);
 		float ndl = max(dot(n, L), 0.0);
 		vec3 keyc = cab_key(rp);
-		vec3 lightc = cab_amb(rp) + keyc * ndl;
+		vec3 keyd = mix(vec3(dot(keyc, vec3(0.333))), keyc, 0.18);   // the satin paint stays black: warmth lives in the highlights
+		vec3 lightc = cab_amb(rp) + keyd * ndl;
 		float shin = max(2.0 / (rough * rough + 0.001) - 2.0, 1.0);
 		float spec = pow(max(dot(n, Hh), 0.0), shin) * (1.0 - 0.55 * rough);
 		vec3 diffuse = col * lightc;

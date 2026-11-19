@@ -35,6 +35,7 @@ var _anim := 0.0
 var _await_release := false
 var _t := 0.0
 var _face: CoinDoorFace
+var _text_cache: Dictionary = {}
 
 
 func _ready() -> void:
@@ -175,7 +176,7 @@ func _draw() -> void:
 	elif phase == Phase.CREDITED:
 		ready_glow = 1.0
 	_face.glow = ready_glow
-	CabinetBezel.draw_price(self, plate, tr("CAB_COIN_PRICE"))
+	CabinetBezel.draw_price(self, _text_cache, plate, tr("CAB_COIN_PRICE"))
 	if phase == Phase.DROPPING:
 		_draw_coin(clampf(_anim / tuning.coin_drop_seconds, 0.0, 1.0))
 	match phase:
@@ -258,11 +259,13 @@ func _draw_hint() -> void:
 		return
 	var blink: bool = int(_t * 1.5) % 2 == 0 or bool(SettingsService.get_value(&"photosensitivity"))
 	var col := Look.c(Pal.GAS_4) if blink else Look.c(Pal.GAS_2)
-	var lines := PixelText.wrap(text, 1, HINT_W)
-	var y := size.y * 0.5 - lines.size() * 5.0
-	for i in lines.size():
-		PixelText.draw(self, Vector2(HINT_X, y + i * 10.0), lines[i], col)
-	var tail := Vector2(HINT_X - 4.0, y + lines.size() * 5.0)
+	var sf := CabinetSurface.default() as CabinetSurface
+	var cap := sf.price_cap * 1.1
+	var n := BezelText.line_count(text, cap, sf.price_stroke, sf.price_tracking, HINT_W)
+	var pitch := cap * 1.7
+	var y := size.y * 0.5 - n * pitch * 0.5
+	BezelText.draw(self, _text_cache, text, Vector2(HINT_X, y), false, cap, sf.price_stroke, sf.price_tracking, col, 0.0, HINT_W)
+	var tail := Vector2(HINT_X - 4.0, size.y * 0.5)
 	var tip := Vector2(size.x + 14.0, tail.y)
 	draw_line(tail, tip, col, 1.0)
 	draw_line(tip, tip + Vector2(4, -4), col, 1.0)
