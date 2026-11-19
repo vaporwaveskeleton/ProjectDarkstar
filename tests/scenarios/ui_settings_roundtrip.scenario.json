@@ -1,0 +1,19 @@
+{
+	"format": "darkstar.scenario",
+	"version": 1,
+	"id": "ui_settings_roundtrip",
+	"profile": "qa",
+	"args": [],
+	"fixtures": {},
+	"timeout_frames": 900,
+	"steps": [
+		{"do": "wait_route", "route": "attract", "within": 120},
+		{"do": "coin"},
+		{"do": "activate", "id": "attract/ui/Settings"},
+		{"do": "wait_until", "id": "attract/ui/Back", "prop": "visible", "eq": true, "within": 120},
+		{"do": "assert", "id": "attract/ui/Back", "prop": "visible", "eq": true},
+		{"do": "cancel"},
+		{"do": "wait_until", "id": "attract/ui/Settings", "prop": "focused", "eq": true, "within": 120},
+		{"do": "quit"}
+	]
+}

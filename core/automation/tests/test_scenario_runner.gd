@@ -182,3 +182,68 @@ func test_bad_fixture_names_are_invalid() -> void:
 	var r2 := await _start(_scenario([{"do": "quit"}], 200, {"fixtures": {"profile": "no_such_fixture"}}))
 	assert_str(r2.result.outcome).is_equal("invalid")
 	assert_int(r2.result.exit_code).is_equal(2)
+
+
+func _start_with(sc: Dictionary, profile: String) -> Node:
+	var r: Node = Runner.new()
+	r.setup(sc, {"out_dir": OUT + "t_run", "quit_on_finish": false, "source": "cli", "profile": profile})
+	_boot.add_child(r)
+	await _until_done(r)
+	return r
+
+
+func test_qa_profile_refuses_dev_steps_before_frame_zero() -> void:
+	var r := await _start_with(_scenario([{"do": "set_setting", "key": "reduced_motion", "value": true}, {"do": "quit"}]), "qa")
+	assert_str(r.result.outcome).is_equal("refused")
+	assert_int(r.result.exit_code).is_equal(3)
+	assert_int(r.frames).is_equal(0)
+	assert_str(r.result.steps[0].detail).contains("set_setting")
+	assert_bool(bool(SettingsService.get_value(&"reduced_motion"))).is_false()
+
+
+func test_dev_profile_allows_set_setting_and_unknown_keys_fail() -> void:
+	var r := await _start_with(_scenario([{"do": "set_setting", "key": "reduced_motion", "value": true}, {"do": "quit"}]), "dev")
+	assert_str(r.result.outcome).is_equal("pass")
+	assert_str(r.result.profile).is_equal("dev")
+	assert_bool(bool(SettingsService.get_value(&"reduced_motion"))).is_true()
+	assert_bool(SettingsService.persist).is_false()
+	var r2 := await _start_with(_scenario([{"do": "set_setting", "key": "volume", "value": 1}]), "dev")
+	assert_str(r2.result.outcome).is_equal("fail")
+	assert_str(r2.result.steps[0].detail).contains("unknown setting")
+	SettingsService.reset_to_defaults()
+
+
+func test_qa_scenario_on_dev_build_is_held_to_qa() -> void:
+	var r := await _start_with(_scenario([{"do": "set_setting", "key": "reduced_motion", "value": true}], 200, {"profile": "qa"}), "dev")
+	assert_str(r.result.outcome).is_equal("refused")
+	assert_str(r.result.build.profile).is_equal("dev")
+
+
+func test_dev_scenario_on_qa_build_is_refused() -> void:
+	var r := await _start_with(_scenario([{"do": "quit"}], 200, {"profile": "dev"}), "qa")
+	assert_str(r.result.outcome).is_equal("refused")
+	assert_int(r.result.exit_code).is_equal(3)
+
+
+func test_qa_refuses_unapproved_fixture_and_accepts_approved() -> void:
+	var ok := await _start_with(_scenario([{"do": "quit"}], 200, {"fixtures": {"profile": "profile_fresh"}}), "qa")
+	assert_str(ok.result.outcome).is_equal("pass")
+	assert_str(ok.result.profile).is_equal("qa")
+	var bad := await _start_with(_scenario([{"do": "quit"}], 200, {"fixtures": {"profile": "no_such_fixture"}}), "qa")
+	assert_str(bad.result.outcome).is_equal("refused")
+	assert_int(bad.result.exit_code).is_equal(3)
+	assert_str(bad.result.steps[0].detail).contains("not approved")
+	var dev := await _start_with(_scenario([{"do": "quit"}], 200, {"fixtures": {"profile": "no_such_fixture"}}), "dev")
+	assert_str(dev.result.outcome).is_equal("invalid")
+
+
+func test_reset_clears_memory_saves_and_settings() -> void:
+	SaveService.save_slot(&"profile", {"cabinet_hi_score": 5}, &"cabinet_score")
+	assert_bool(SaveService.has_slot(&"profile")).is_true()
+	SettingsService.persist = false
+	SettingsService.set_value(&"reduced_motion", true)
+	# No route table host here, so the wait for attract fails; clearing has already happened.
+	var r := await _start_with(_scenario([{"do": "reset"}], 400), "dev")
+	assert_bool(SaveService.has_slot(&"profile")).is_false()
+	assert_bool(bool(SettingsService.get_value(&"reduced_motion"))).is_false()
+	assert_bool(r.input.is_idle()).is_true()

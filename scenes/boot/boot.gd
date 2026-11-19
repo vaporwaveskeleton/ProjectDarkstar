@@ -32,12 +32,12 @@ func _ready() -> void:
 
 func _has_scenario_arg() -> bool:
 	for a in OS.get_cmdline_user_args():
-		if a.begins_with("--scenario="):
+		if a.begins_with("--scenario=") or a.begins_with("--record="):
 			return true
 	return false
 
 
-## `-- --scenario=<id>`: dev/QA builds only (D-09: in-process, no sockets). Null otherwise.
+## `-- --scenario=<id>` (or `--record=<id>`): dev/QA builds only (D-09: in-process, no sockets). Null otherwise.
 func _make_automation_runner() -> Node:
 	if not _has_scenario_arg():
 		return null
@@ -46,7 +46,7 @@ func _make_automation_runner() -> Node:
 		return null
 	if not ResourceLoader.exists(AUTOMATION_GATE):
 		return null
-	return (load(AUTOMATION_GATE) as GDScript).call("create_runner", OS.get_cmdline_user_args()) as Node
+	return (load(AUTOMATION_GATE) as GDScript).call("create_node", OS.get_cmdline_user_args()) as Node
 
 
 func _exit_tree() -> void:

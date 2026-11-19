@@ -7,8 +7,8 @@
 /build/
 /export/
 *.pck
-# Keep export_presets.cfg out until we confirm it carries no credentials (Steam/signing).
-export_presets.cfg
+# export_presets.cfg IS tracked: it must stay credential-free (no signing, no Steam fields).
+# Signing/Steam values live in a local override, never committed (guarded by test_export_presets.gd).
 
 # --- Test output (GdUnit4) ---------------------------------------------------
 /reports/

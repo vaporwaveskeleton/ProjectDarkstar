@@ -23,6 +23,8 @@ const MINIMAL := {
 	"key": {"keycode": "SHIFT", "frames": 2},
 	"mouse_move": {"x": 1.5, "y": 2},
 	"mouse_button": {"button": "left", "pressed": true},
+	"reset": {},
+	"set_setting": {"key": "reduced_motion", "value": true},
 }
 
 
@@ -136,3 +138,22 @@ func test_no_class_name_under_core_automation() -> void:
 			var text := FileAccess.get_file_as_string("res://core/automation/" + f)
 			assert_bool(RegEx.create_from_string("(?m)^\\s*class_name\\s").search(text) == null) \
 				.override_failure_message(f + " declares class_name").is_true()
+
+
+func test_dev_marker_comes_from_the_catalog() -> void:
+	assert_bool(Schema.is_dev_step("set_setting")).is_true()
+	assert_bool(Schema.is_dev_step("reset")).is_false()
+	assert_bool(Schema.is_dev_step("quit")).is_false()
+	assert_array(Schema.dev_steps_used(_sc([_step("set_setting"), _step("reset"), _step("set_setting")]))).contains_exactly(["set_setting"])
+	assert_array(Schema.validate(_sc([_step("set_setting"), _step("reset")]), true)).is_empty()
+	_expect(_sc([_step("set_setting", {"value": [1]})]), "must be scalar")
+
+
+func test_profile_field_values() -> void:
+	for p in ["qa", "dev"]:
+		var a := _sc()
+		a["profile"] = p
+		assert_array(Schema.validate(a, false)).is_empty()
+	var b := _sc()
+	b["profile"] = "prod"
+	_expect(b, "profile must be")
