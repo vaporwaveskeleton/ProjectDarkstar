@@ -92,6 +92,14 @@ extends TunableResource
 @export var death_edge_tick_px: float = 5.0               ## px ✱ PROPOSED: chalk tick on the view edge pointing at an off-view killer
 @export_group("")
 
+@export_group("surge afterimage ✱ PROPOSED (owner approval pending; not SYS-001 yet)")
+@export var ghost_count: int = 3                          ## ✱ PROPOSED: hull outlines trailing a Surgelight burst
+@export var ghost_spacing_ticks: int = 3                  ## sim ticks ✱ PROPOSED: ticks back between successive ghosts
+@export var ghost_hold_s: float = 0.1                     ## s sim ✱ PROPOSED: ghosts linger this long after the surge ends
+@export var wake_dots: int = 6                            ## ✱ PROPOSED: 1x1 dots trailing a thrusting Vigil
+@export var wake_spacing_ticks: int = 2                   ## sim ticks ✱ PROPOSED: ticks back between wake dots
+@export_group("")
+
 # --- Hit-stop ⚙ (owner-approved 2026-11-18, SYS-001 §9) ---
 # Sim frames (physics ticks at 60 Hz). Freezes the sim only: audio, CRT, state timers and input keep running.
 @export var hitstop_charge_hits_entity_frames: int = 3    ## frames ⚙ owner-approved 2026-11-18, SYS-001 §9 (_hit_entity)
