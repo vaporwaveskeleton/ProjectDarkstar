@@ -58,6 +58,9 @@ const float A_FOG_STREAK = 3.2;
 // fraction of the screen height from the screen centre.
 const float A_PLAY_CORE = 0.22;
 const float A_PLAY_RING = 0.5;
+// ✱ pass 5 (Q-T94): play-core weight at which the translucent bands are the strip field outright
+// (the free fog is not computed there).
+const float A_STRIP_FULL = 0.8;
 
 vec2 a_strip_coords(vec2 p, vec2 dir, float sd) {
 	vec2 fd = normalize(dir);
@@ -81,8 +84,41 @@ float a_chalk_strand(float wx, float sd) {
 	return smoothstep(0.42, 0.62, a_fbm(vec2(wx * 4.2, sd * 7.0 + 2.0), 3));
 }
 
+// Pass 5 (satin fix): the play-core strands are cut along their length into SHORT RAGGED STREAKS.
+// A function of ph = w.y * A_FOG_DASH + h(w.x) only: every level set of it is a graph over the
+// across-flow axis (it crosses the whole frame), so min()-ing it into the strip field keeps the
+// no-enclosed-hole property (mirrored + flood-filled in test_aether_pass5.gd). h(w.x) staggers the
+// cuts strand by strand and frays their ends.
+// ✱ dash frequency along the strand (per strip unit; about 50–100 px streaks at fog_scale 150).
+const float A_FOG_DASH = 9.0;
+
+float a_dash_phase(vec2 w, float sd) {
+	return w.y * A_FOG_DASH + 1.8 * a_noise(vec2(w.x * 7.0, sd * 2.0 + 5.0)) + 0.5 * a_noise(vec2(w.x * 23.0, sd * 2.0 + 8.0));
+}
+
+float a_fog_dash(float ph, float sd) {
+	return smoothstep(0.28, 0.6, a_noise(vec2(ph, sd * 4.0 + 11.0)));
+}
+
+// Streak SHADE: flat, varied only ALONG the strand (the dash phase), never across it — a gradient
+// across the strand's width is what read as satin sheets / bedding (pass 4 critique).
+float a_streak_shade(float ph, float sd) {
+	return 0.4 + 0.12 * a_noise(vec2(ph * 0.37, sd * 4.0 + 29.0));
+}
+
+// Pass 5, law 4 (nothing outshines the lantern; ART-001 §16.3): over the play core every fog band's
+// own light (before the lantern's in-scatter) is capped at this luminance, faded out across the play
+// ring. test_aether_pass5.gd bounds the result against the lantern pool for every look.
+// ✱ fog luminance cap over the play core.
+const float A_PLAY_FOG_LUMA = 0.14;
+
 float a_luma(vec3 c) {
 	return dot(c, vec3(0.299, 0.587, 0.114));
+}
+
+vec3 a_cap_luma(vec3 c, float cap, float w) {
+	float l = dot(c, vec3(0.299, 0.587, 0.114));
+	return l > cap ? mix(c, c * (cap / l), w) : c;
 }
 
 // Ridged noise in -0.5..0.5: sharp creases (V's), never smooth swells.
@@ -120,7 +156,7 @@ float a_bite(vec2 p, float ang, float depth, float open, float lean) {
 // corners, no smooth concave / convex alternation. One ruled cut, TERRACED into straight steps,
 // and one impossible sharp inner corner: geometry that should not exist in fog. Pass 4: no right
 // angles anywhere on the coastline (bites acute or obtuse, slanted terrace risers, a 62° notch).
-float a_entity_shape(vec2 p, float seed, float t, int oct) {
+float a_entity_shape_b(vec2 p, float seed, float t, int oct, int bite_step) {
 	vec2 w = p + 0.14 * vec2(a_noise(p * 0.8 + vec2(seed, t * 0.03)) - 0.5,
 		a_noise(p * 0.8 + vec2(seed + 4.1, -t * 0.025)) - 0.5);
 	float d = length(w * vec2(1.0, 1.12)) - 1.0;
@@ -135,6 +171,9 @@ float a_entity_shape(vec2 p, float seed, float t, int oct) {
 	// angular eaten bites (pass 4): acute and obtuse wedges alternate by hash, each leaned its own
 	// way, so the coastline never makes a square notch
 	for (int i = 0; i < 8; i++) {
+		if (i % bite_step != 0) {
+			continue;   // pass 5 (Q-T94): the loss mask carries every other bite only
+		}
 		float h1 = a_hash(vec2(seed, float(i) * 1.7 + 0.2));
 		float h2 = a_hash(vec2(float(i) + 5.3, seed * 0.7));
 		float h3 = a_hash(vec2(float(i) * 3.1 + seed, 4.4));
@@ -162,6 +201,22 @@ float a_entity_shape(vec2 p, float seed, float t, int oct) {
 	return d;
 }
 
+// The entity's own outline (all eight bites).
+float a_entity_shape(vec2 p, float seed, float t, int oct) {
+	return a_entity_shape_b(p, seed, t, oct, 1);
+}
+
+// Pass 5 (Q-T94 cost): the loss mask is cheap. Bites only ever ADD to d, so the 4-bite outline is
+// <= the entity's 8-bite one: the loss steps stay at or outside where they were relative to the
+// mass (the crack band stays inside the mid loss step). Beyond A_LOSS_REACH radii every loss step
+// is provably 0 (|w - p| <= 0.099, ridge <= 0.0375: s >= |p| - 1.1365, and s_out >= s - 0.0584, so past
+// A_LOSS_REACH + aa radii s_out > 0.555 + aa > the outer step's 0.525 + aa), so the shape is
+// not evaluated: proximity comes from the round distance instead (a soft cold ring either way).
+// ✱ normalised radius past which the loss steps are skipped.
+const float A_LOSS_REACH = 1.75;
+// ✱ bites carried by the loss mask: every A_LOSS_BITE_STEP-th of the eight.
+const int A_LOSS_BITE_STEP = 2;
+
 // Layer loss around every entity: the STEPPED subtraction boundary (pass 3), three crisp nested
 // edges, each slightly offset from the next so they read as eating, not as a glow:
 //   outer  — x = near fog gone, y = mid fog / leviathan / rays / seam gone (fog scatter stops);
@@ -177,11 +232,15 @@ vec4 a_loss(vec2 px) {
 			continue;
 		}
 		vec2 p = (px - e.xy) / e.z;
-		if (dot(p, p) > 6.0) {
+		float pl = length(p * vec2(1.0, 1.12));
+		// proximity from the round distance everywhere (continuous across the early-out)
+		float prox = clamp(1.0 - (pl - 1.0) / 1.3, 0.0, 1.0);
+		if (length(p) > A_LOSS_REACH + 1.2 / e.z) {
+			L.w = max(L.w, prox);
 			continue;
 		}
 		float sd = entity_seeds[i];
-		float s = a_entity_shape(p, sd, entity_time, 2);
+		float s = a_entity_shape_b(p, sd, entity_time, 2, A_LOSS_BITE_STEP);
 		float aa = 1.2 / e.z;
 		// each edge its own crisp tear and a small offset (nested, never concentric copies)
 		float tear = 0.05 * a_ridge(p * 5.1 + sd * 5.0);
@@ -190,7 +249,6 @@ vec4 a_loss(vec2 px) {
 		float near_l = 1.0 - smoothstep(0.5 + tear - aa, 0.5 + tear + aa, s_out);
 		float mid_l = 1.0 - smoothstep(0.4 + tear - aa, 0.4 + tear + aa, s_out);
 		float far_l = 1.0 - smoothstep(0.19 - tear * 0.6 - aa, 0.19 - tear * 0.6 + aa, s);
-		float prox = clamp(1.0 - s / 1.3, 0.0, 1.0);
 		L = max(L, vec4(near_l, mid_l, far_l, prox));
 	}
 	return L;
