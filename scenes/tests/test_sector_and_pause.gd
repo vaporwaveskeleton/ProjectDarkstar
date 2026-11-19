@@ -42,9 +42,27 @@ func test_camera_and_compass_are_wired_to_the_vigil() -> void:
 	assert_bool(cam.is_current()).is_true()
 	assert_vector(cam.zoom).is_equal(Vector2.ONE)
 	compass.refresh()
-	assert_int(compass.marker_points.size()).is_equal(1)
+	# the Vigil first, then the sandbox geodes, capped at max_markers (8 ✱)
+	assert_int(compass.marker_points.size()).is_equal(compass.stats.max_markers)
 	assert_str(str(compass.marker_kinds[0])).is_equal("vigil")
+	assert_str(str(compass.marker_kinds[1])).is_equal("geode")
 	assert_object(vigil.emitter.projectile_parent).is_same(runner.find_child("Actors"))
+
+
+func test_glass_economy_is_wired_on_the_sector_torus() -> void:
+	var runner := scene_runner(SCENE)
+	await runner.simulate_frames(2)
+	var vigil: Vigil = runner.get_property("vigil")
+	var shards: ShardField = runner.find_child("ShardField")
+	var sandbox: GeodeSandbox = runner.find_child("GeodeSandbox")
+	assert_int(runner.get_property("geodes_alive")).is_equal(10)
+	assert_int(runner.get_property("shards_free")).is_equal(0)
+	assert_int(runner.get_property("charges")).is_equal(0)
+	assert_int(runner.get_property("score")).is_equal(0)
+	assert_object(shards.collector).is_same(vigil)
+	assert_object(shards.torus).is_same(sandbox.torus)
+	assert_object(shards.magazine).is_same(runner.find_child("ChargeMagazine"))
+	assert_int(shards.pool_size()).is_equal(144)
 
 
 func test_pause_action_opens_pause_and_pauses_tree() -> void:

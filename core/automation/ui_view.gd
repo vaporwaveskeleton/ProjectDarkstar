@@ -1,7 +1,8 @@
 extends RefCounted
-## Resolves automation ids to nodes and reads allow-listed properties only.
+## Resolves UI automation ids to nodes and reads allow-listed properties only.
 ##   UI controls:   <route>/ui/<UniqueName>   props: visible, enabled, focused, focusable
-##   state ids:     the rows of STATE_IDS below
+## Game-state ids of routes that have a probe (cabinet/...) belong to that probe (see scenario_runner.gd).
+##   state ids:     the rows of STATE_IDS below (routes without a probe yet, e.g. sector)
 ## Values returned are scalars or strings, never nodes or paths.
 ## No class_name: release builds may exclude core/automation.
 
@@ -10,10 +11,8 @@ const UI_PROPS: Array[String] = ["visible", "enabled", "focused", "focusable"]
 ## id -> {route, member, props}. `member` is "" for the route root, else a property of it that holds
 ## the object to read; `props` are the only readable names.
 const STATE_IDS := {
-	"cabinet/game": {"route": "cabinet", "member": "", "props": ["state", "stage_index", "demo"]},
-	"cabinet/score": {"route": "cabinet", "member": "score", "props": ["score", "lives"]},
-	"cabinet/record": {"route": "cabinet", "member": "record", "props": ["grubs_destroyed", "glass_mined", "charges_thrown", "glass_carried"]},
-	"sector/vigil": {"route": "sector", "member": "", "props": ["vigil_x", "vigil_y", "vigil_speed", "hull_max_hp", "camera_x", "compass_markers", "camera_gap"]},
+	"sector/vigil": {"route": "sector", "member": "", "props": ["vigil_x", "vigil_y", "vigil_speed", "hull_max_hp", "camera_x", "compass_markers", "camera_gap", "facing_deg", "aim_x", "aim_y"]},
+	"sector/field": {"route": "sector", "member": "", "props": ["geodes_alive", "geodes_detonated", "shards_free", "charges", "score"]},
 }
 
 var _route_host: Node
@@ -30,12 +29,11 @@ func route_root() -> Node:
 	return _route_host.get_child(0)
 
 
-## Returns {"ok": bool, "node": Node, "error": String}. For state ids `node` is the object to read.
+## Returns {"ok": bool, "node": Node, "error": String}.
 func resolve(id: String) -> Dictionary:
 	var root := route_root()
 	if root == null:
 		return _err("no route is mounted")
-	var parts := id.split("/")
 	if STATE_IDS.has(id):
 		var row: Dictionary = STATE_IDS[id]
 		if str(SceneRouter.current_route) != str(row.route):
@@ -46,6 +44,7 @@ func resolve(id: String) -> Dictionary:
 		if obj is Object:
 			return {"ok": true, "node": obj as Object, "error": ""}
 		return _err("'%s' is not available on this route" % id)
+	var parts := id.split("/")
 	if parts.size() != 3 or parts[1] != "ui":
 		return _err("unknown id '%s'" % id)
 	if parts[0] != str(SceneRouter.current_route):
@@ -71,8 +70,6 @@ func read(id: String, prop: String) -> Dictionary:
 	if STATE_IDS.has(id):
 		if not (STATE_IDS[id].props as Array).has(prop):
 			return _err("property '%s' is not readable on '%s'" % [prop, id])
-		if id == "cabinet/game" and prop == "state":
-			return {"ok": true, "value": enum_name_of(node, "State", int(node.get("state"))), "error": ""}
 		return {"ok": true, "value": node.get(prop), "error": ""}
 	if not UI_PROPS.has(prop):
 		return _err("property '%s' is not readable on UI ids (allowed: %s)" % [prop, ", ".join(UI_PROPS)])
@@ -87,6 +84,31 @@ func read(id: String, prop: String) -> Dictionary:
 		"focused":
 			return {"ok": true, "value": c.has_focus(), "error": ""}
 	return {"ok": true, "value": c.focus_mode != Control.FOCUS_NONE, "error": ""}
+
+
+## Visible, focusable Controls with a scene-unique name under the route root (overlay screens
+## included): [{id, enabled, focused}], in tree order, without duplicates.
+func list_focusable() -> Array:
+	var out: Array = []
+	var root := route_root()
+	if root == null:
+		return out
+	var route := str(SceneRouter.current_route)
+	var seen := {}
+	var stack: Array[Node] = [root]
+	while not stack.is_empty():
+		var n: Node = stack.pop_back()
+		var kids := n.get_children()
+		kids.reverse()
+		for k in kids:
+			stack.append(k)
+		if n is Control and n.unique_name_in_owner:
+			var c := n as Control
+			var id := "%s/ui/%s" % [route, c.name]
+			if not seen.has(id) and c.is_visible_in_tree() and c.focus_mode != Control.FOCUS_NONE:
+				seen[id] = true
+				out.append({"id": id, "enabled": (not (c as BaseButton).disabled) if c is BaseButton else true, "focused": c.has_focus()})
+	return out
 
 
 ## Lower-case name of an enum member, found through the node's script constants.

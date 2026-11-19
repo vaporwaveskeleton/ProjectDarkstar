@@ -20,9 +20,11 @@ class Acolyte:
 	var mine_timer: float = 0.0
 	var alive: bool = true
 	var slot: float = 0.0                 ## orbit angle around the Sepulchre
+	var id: int = 0                       ## stable id, never reused (automation addresses Acolytes by it)
 
 var items: Array[Acolyte] = []
 var _guard_spawned := false
+var _next_id: int = 1                     ## NOT reset in reset(), like GrubFlock's ids
 
 
 func reset() -> void:
@@ -38,6 +40,8 @@ func spawn(at: Vector2) -> Acolyte:
 	a.hp = world.tuning.acolyte_hp
 	a.cycle = world.tuning.acolyte_cycle * world.rng.randf_range(0.5, 1.0)
 	a.slot = world.rng.randf() * TAU
+	a.id = _next_id
+	_next_id += 1
 	items.append(a)
 	return a
 

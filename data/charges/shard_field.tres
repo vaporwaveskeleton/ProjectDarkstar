@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ShardFieldStats" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://features/charges/shard_field_stats.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+ds_namespace = "ds_charges.shards"
+source_section = "SYS-001 §1.4 (magnet radius, pull, drag, score); TECH-001 §4.3 (grid, Grub query ✱); Q-T59 pool 144; Cabinet literals ✱ (steer, shard radius, margin)"
+pool_size = 144
+grid_cell_px = 64.0
+magnet_radius_px = 96.0
+magnet_pull_px_s = 170.0
+magnet_steer_per_s = 6.0
+drag_per_s = 1.2
+shard_radius_px = 4.0
+collect_margin_px = 2.0
+magnet_inverted = false
+grub_query_interval_ticks = 6
+score_per_shard = 200

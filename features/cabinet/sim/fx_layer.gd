@@ -180,6 +180,12 @@ func float_text(at: Vector2, text: String) -> void:
 	texts.append(t)
 
 
+## Move the float text just created (S2: keeps a hit's score popup clear of the true-body silhouette).
+func place_last_text(at: Vector2) -> void:
+	if not texts.is_empty():
+		texts[texts.size() - 1].pos = at
+
+
 func tick(delta: float) -> void:
 	for s in sparks:
 		s.life -= delta

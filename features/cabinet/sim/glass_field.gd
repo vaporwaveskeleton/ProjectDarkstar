@@ -65,15 +65,19 @@ func tick(delta: float) -> void:
 		if not s.alive or s.carried:
 			continue
 		s.spin += delta * 3.0
-		s.vel *= exp(-SHARD_DRAG * delta)
+		var pulled := false
 		if v.alive and charges < t.magazine:
 			var d := world.torus.delta(s.pos, v.pos)
 			var dist := d.length()
 			if dist < t.magnet_radius:
+				# no drag inside the magnet: the pull settles at exactly MAGNET_PULL (PM 2026-11-18)
 				s.vel = s.vel.lerp(d.normalized() * MAGNET_PULL, clampf(delta * 6.0, 0.0, 1.0))
+				pulled = true
 			if dist < v.radius + SHARD_RADIUS + 2.0:
 				_collect(s)
 				continue
+		if not pulled:
+			s.vel *= exp(-SHARD_DRAG * delta)
 		s.pos = world.torus.wrap(s.pos + s.vel * delta)
 	shards.assign(shards.filter(func(s: Shard) -> bool: return s.alive))
 	_tick_charges(delta)

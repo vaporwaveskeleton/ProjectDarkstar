@@ -41,7 +41,7 @@ func _ready() -> void:
 
 func _has_scenario_arg() -> bool:
 	for a in OS.get_cmdline_user_args():
-		if a.begins_with("--scenario=") or a.begins_with("--record="):
+		if a.begins_with("--scenario=") or a.begins_with("--record=") or a == "--automation-caps":
 			return true
 	return false
 
