@@ -18,7 +18,9 @@ const SMALL := preload("res://data/hud/brass_face_small.tres")
 ## ✱ Plate geometry (logical px, 640×360 frame), not tunables.
 const MARGIN := 4.0
 const INDEX_SIZE := Vector2(92.0, 22.0)
-const LEDGER_SIZE := Vector2(64.0, 22.0)
+const LEDGER_SIZE := Vector2(80.0, 22.0)
+## ✱ Sand-glass size inside the top-left plate (logical px).
+const GLASS_SIZE := Vector2(8.0, 14.0)
 const STRIP_H := 18.0
 const LAMP_R := 3.0
 const LAMP_STEP := 10.0
@@ -35,6 +37,11 @@ var hull_max: int = 0
 var hull_breached := false
 ## True when the Steady Ledger panel is drawn (read from Settings at each refresh).
 var ledger_on := true
+## The Hourglass (Q-T210, WARP-001 §4.1 home anchor top-left): the share of the Iteration budget left
+## (0–1) and whether it shows. It shows always under Steady Ledger (§4.4 honest read) and otherwise
+## only when RunSessionCore.hourglass_visible() (SYS-001 §6 show threshold). Never lies (L6).
+var hourglass_frac := 1.0
+var hourglass_shown := false
 ## `_draw` passes (tests read it).
 var draw_count := 0
 
@@ -109,6 +116,23 @@ func index_rect() -> Rect2:
 	return Rect2(Vector2(size.x - MARGIN - INDEX_SIZE.x, MARGIN), INDEX_SIZE)
 
 
+## Sets the Hourglass read; redraws only on a visible change. Returns true on a change.
+func set_hourglass(frac: float, threshold_reached: bool) -> bool:
+	var f := snappedf(clampf(frac, 0.0, 1.0), 0.01)
+	var shown := threshold_reached or HudModel.steady_ledger_on()
+	if is_equal_approx(f, hourglass_frac) and shown == hourglass_shown:
+		return false
+	hourglass_frac = f
+	hourglass_shown = shown
+	queue_redraw()
+	return true
+
+
+## The top-left plate shows when it has something: the Steady Ledger tier or the Hourglass.
+func top_left_shown() -> bool:
+	return ledger_on or hourglass_shown
+
+
 func ledger_rect() -> Rect2:
 	return Rect2(Vector2(MARGIN, MARGIN), LEDGER_SIZE)
 
@@ -132,8 +156,8 @@ func _layout() -> void:
 	_index_value.position = ir.position + Vector2(30.0, 6.0)
 	_index_value.size = Vector2(ir.size.x - 37.0, 10.0)
 	var lr := ledger_rect()
-	_ledger_label.position = lr.position + Vector2(7.0, 8.0)
-	_ledger_label.size = lr.size - Vector2(14.0, 10.0)
+	_ledger_label.position = lr.position + Vector2(20.0, 8.0)
+	_ledger_label.size = lr.size - Vector2(27.0, 10.0)
 	var sr := strip_rect()
 	_charges_label.position = sr.position + Vector2(7.0, 6.0)
 	_charges_label.size = Vector2(40.0, 8.0)
@@ -148,8 +172,11 @@ func _layout() -> void:
 func _draw() -> void:
 	draw_count += 1
 	Brass.plate(self, index_rect(), Pal.VOID_1)
-	if ledger_on:
-		Brass.plate(self, ledger_rect(), Pal.PHOS_0)
+	if top_left_shown():
+		var lr := ledger_rect()
+		Brass.plate(self, lr, Pal.PHOS_0 if ledger_on else Pal.VOID_1)
+		if hourglass_shown:
+			_draw_sand_glass(Rect2(lr.position + Vector2(7.0, (lr.size.y - GLASS_SIZE.y) * 0.5), GLASS_SIZE))
 	var sr := strip_rect()
 	Brass.plate(self, sr, Pal.VOID_1)
 	for i in charge_capacity:
@@ -166,3 +193,29 @@ func _draw() -> void:
 			draw_circle(c, 2.0, Pal.GAS_2)   # passed: brass, spent
 		else:
 			draw_arc(c, 2.0, 0.0, TAU, 12, Pal.BONE_3, 1.0)   # to come: a chalk ring
+
+
+## A brass-capped sand-glass: sand in the upper bulb = the budget left, the rest heaped below.
+## Sand is GAS (brass light), glass is pearl; no phosphor (it is a clock, not a hull read).
+func _draw_sand_glass(r: Rect2) -> void:
+	var cx := r.position.x + r.size.x * 0.5
+	var mid := r.position.y + r.size.y * 0.5
+	var top := r.position.y + 1.5
+	var bot := r.end.y - 1.5
+	var hw := r.size.x * 0.5 - 0.5
+	var upper := PackedVector2Array([Vector2(cx - hw, top), Vector2(cx + hw, top), Vector2(cx + 0.5, mid), Vector2(cx - 0.5, mid)])
+	var lower := PackedVector2Array([Vector2(cx - 0.5, mid), Vector2(cx + 0.5, mid), Vector2(cx + hw, bot), Vector2(cx - hw, bot)])
+	draw_colored_polygon(upper, Color(Pal.AETHER_4, 0.18))
+	draw_colored_polygon(lower, Color(Pal.AETHER_4, 0.18))
+	# upper sand: a triangle whose height is the fraction left, sitting on the neck
+	var hu := (mid - top) * hourglass_frac
+	if hu > 0.3:
+		var w := hw * hourglass_frac
+		draw_colored_polygon(PackedVector2Array([Vector2(cx - w, mid - hu), Vector2(cx + w, mid - hu), Vector2(cx, mid)]), Pal.GAS_4)
+	# lower heap: the spent share
+	var hl := (bot - mid) * (1.0 - hourglass_frac)
+	if hl > 0.3:
+		draw_colored_polygon(PackedVector2Array([Vector2(cx - hw, bot), Vector2(cx + hw, bot), Vector2(cx, bot - hl)]), Pal.GAS_3)
+	draw_polyline(PackedVector2Array([upper[0], upper[3], lower[3], lower[2], lower[1], upper[2], upper[1], upper[0]]), Pal.AETHER_3, 1.0)
+	draw_rect(Rect2(r.position.x - 1.0, r.position.y - 0.5, r.size.x + 2.0, 1.5), Pal.GAS_3)
+	draw_rect(Rect2(r.position.x - 1.0, r.end.y - 1.0, r.size.x + 2.0, 1.5), Pal.GAS_2)
