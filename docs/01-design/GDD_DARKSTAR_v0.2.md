@@ -409,7 +409,7 @@ Godot 4.7.2, GDScript-first, data-driven (JSON/Resource definitions for all stat
 
 ## 17. Prototype definition and exit criteria (what we build first)
 
-**Vertical slice (see `PRODUCTION_PLAN_MILESTONES.md`):** Act 0's A0-1+A0-2+A0-3 + first Unmaking cinematic + a 5-Seam Act 1 run with 2 biomes, Grubs/Acolytes/Deceiver, 1 Matron gate, the full Waking lifecycle at T1–T2 warp, a 30-node Lantern Tree stub in the Ruins, 12 Run Sigils, 6 warp effects, the entity voice (synthesised, D-14), 60 s polished.
+**Vertical slice (see `PRODUCTION_PLAN_MILESTONES.md`):** Act 0's A0-1+A0-2+A0-3 + first Unmaking cinematic + a 5-Seam Act 1 run with 2 biomes, Grubs/Acolytes/Deceiver, 1 Matron gate, the full Waking lifecycle at T1–T2 warp, a 30-node Lantern Tree stub in the Ruins, 12 Run Sigils, the T1 warp set (standing W1-01, W1-02, W1-03, W1-05, W1-08; transient W1-07, W1-09, W1-10; W1-06 only on dropping to Frayed; amended from "6 warp effects", PM ruling 2026-11-19, TECH-001 Q-T100), the entity voice (synthesised, D-14), 60 s polished.
 **Exit criteria (all measurable):** (1) 10/10 testers understand "the boss is being built from the same ore I need" unprompted; (2) median tester dies ≥ 2 times to the awakening and *retries immediately*; (3) 0 input-latency complaints in mouse aim; (4) the twist is named unprompted by 6/10; (5) 60 FPS at internal 640×360 on minimum spec with T2 shaders; (6) clip test: a 15-second clip gets a "what is this?" from 5/10 non-players.
 
 ## 18. Decision log (locked)
