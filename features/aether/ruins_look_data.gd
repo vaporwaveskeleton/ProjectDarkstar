@@ -56,11 +56,26 @@ extends TunableResource
 @export var spill_strength: float = 0.05
 
 @export_group("Openings ✱")
-## ✱ veil alpha over the hangar mouth: dark (no lamp) → lit (every lamp).
-@export_range(0.0, 1.0) var mouth_veil_dark: float = 0.88
+## ✱ veil alpha over the hangar mouth before any Tree lamp: near-black (NARR-001 §5.7 "dark"; Q-T156).
+## The veil's own colour is `veil` (VOID-1), so the mouth is never pure black.
+@export_range(0.0, 1.0) var mouth_veil_dark: float = 1.0
+## ✱ veil alpha once the first lamp has caught (the dim Aether glimpse), and the most that
+## `mouth_aether_hint` lets through before any lamp.
+@export_range(0.0, 1.0) var mouth_veil_glimpse: float = 0.88
+## ✱ veil alpha with every lamp lit.
 @export_range(0.0, 1.0) var mouth_veil_lit: float = 0.3
+## ✱ before any lamp: 0 = the mouth is dark; 1 = the dim Aether glimpse (`mouth_veil_glimpse`)
+## shows through it. An owner look switch (Q-T156); lamp-lit behaviour does not change.
+@export_range(0.0, 1.0) var mouth_aether_hint: float = 0.0
 ## ✱ veil alpha over the torn vault.
 @export_range(0.0, 1.0) var hole_veil: float = 0.38
+
+@export_group("Props ✱")
+## Tint of a focused prop's lift (a chalk rim of light, never a flash; Q-T158).
+@export var prop_focus_tint: Color = Pal.BONE_4
+## ✱ a focused prop's brightness lift (fraction over its own look), and a used prop's dimming.
+@export_range(0.0, 0.5) var prop_focus_lift: float = 0.18
+@export_range(0.0, 0.8) var prop_used_dim: float = 0.25
 
 @export_group("Timing ✱")
 ## ✱ first visit: delay before the hall lantern catches, and how long the catch takes (s).
@@ -83,10 +98,11 @@ func tunable_properties() -> PackedStringArray:
 	return PackedStringArray(["lantern_energy", "lantern_radius", "lantern_core_hdr", "floor_pool_share",
 		"floor_pool_radius", "floor_pool_squash", "lamp_energy", "lamp_radius",
 		"lamp_core_hdr", "mouth_energy", "mouth_radius", "mouth_share", "hourglass_energy", "cabinet_energy", "haze",
-		"spill_strength", "mouth_veil_dark", "mouth_veil_lit", "hole_veil", "entry_delay_s", "entry_catch_s",
+		"spill_strength", "mouth_veil_dark", "mouth_veil_glimpse", "mouth_veil_lit", "mouth_aether_hint",
+		"hole_veil", "prop_focus_lift", "prop_used_dim", "entry_delay_s", "entry_catch_s",
 		"lamp_catch_s", "breath_hz", "breath_depth", "max_step_per_frame"])
 
 
 func colour_fields() -> PackedStringArray:
 	return PackedStringArray(["ambient", "lantern_colour", "lamp_colour", "stone_a", "stone_b", "mortar", "floor_a",
-		"floor_b", "brass", "brass_hi", "brass_shadow", "chalk", "veil", "spill"])
+		"floor_b", "brass", "brass_hi", "brass_shadow", "chalk", "veil", "spill", "prop_focus_tint"])

@@ -12,8 +12,10 @@ const LAMPS: Array[Vector2] = [Vector2(370, 242), Vector2(411, 234), Vector2(383
 var _look: RuinsLook
 
 
-func _make(first_visit: bool) -> RuinsLook:
+func _make(first_visit: bool, data: RuinsLookData = null) -> RuinsLook:
 	_look = (load(SCENE) as PackedScene).instantiate() as RuinsLook
+	if data != null:
+		_look.data = data
 	_look.set_first_visit(first_visit)
 	add_child(_look)
 	_look.set_process(false)
@@ -197,6 +199,158 @@ func test_catch_curve_is_monotonic() -> void:
 		prev = v
 	assert_float(RuinsLamp.catch_curve(0.0)).is_equal(0.0)
 	assert_float(RuinsLamp.catch_curve(1.0)).is_equal(1.0)
+
+
+func _hall_veil(look: RuinsLook) -> float:
+	var s := (look.get_node("%Surface") as ColorRect).material as ShaderMaterial
+	return float(s.get_shader_parameter(&"mouth_veil"))
+
+
+func test_pre_lamp_mouth_is_near_black() -> void:
+	var look := _make(false)
+	await get_tree().process_frame
+	var d := look.data
+	assert_float(d.mouth_aether_hint).is_equal(0.0)
+	# darker than the old dim glimpse, and what the hall shader gets
+	assert_float(d.mouth_veil_dark).is_greater(d.mouth_veil_glimpse)
+	assert_float(look.mouth_veil()).is_greater_equal(d.mouth_veil_dark - 1e-6)
+	assert_float(_hall_veil(look)).is_equal_approx(look.mouth_veil(), 1e-5)
+	# the veil's own colour is never black: the mouth floors at the VOID ramp, not 0,0,0
+	assert_bool(U.is_black(d.veil)).is_false()
+	assert_float(d.veil.get_luminance()).is_greater_equal(Pal.VOID_0.get_luminance() - 1e-4)
+	# lamps clear it monotonically; once the first lamp has caught it is the lit curve as before
+	var prev := look.mouth_veil()
+	for p in LAMPS:
+		look.light_lamp(p)
+		for _f in int(ceilf((d.lamp_catch_s + 0.3) / DT)):
+			look.step(DT)
+			var v := look.mouth_veil()
+			assert_float(v).override_failure_message("mouth veil rose: %f → %f" % [prev, v]).is_less_equal(prev + 1e-6)
+			assert_float(absf(v - prev)).override_failure_message("veil step %f" % absf(v - prev)).is_less_equal(d.max_step_per_frame)
+			prev = v
+		var m := look.mouth_light()
+		assert_float(look.mouth_veil()).is_equal_approx(lerpf(d.mouth_veil_glimpse, d.mouth_veil_lit, m), 1e-5)
+
+
+func test_mouth_aether_hint_raises_the_glimpse_monotonically() -> void:
+	var d := (load("res://data/aether/ruins/ruins_look.tres") as RuinsLookData).duplicate() as RuinsLookData
+	var look := _make(false, d)
+	await get_tree().process_frame
+	var prev := 2.0
+	for i in 5:
+		d.mouth_aether_hint = i / 4.0
+		look.step(DT)
+		var v := _hall_veil(look)
+		assert_float(v).override_failure_message("hint %f did not lift the glimpse" % d.mouth_aether_hint).is_less(prev)
+		prev = v
+	# full hint = the dim glimpse, never more
+	assert_float(prev).is_equal_approx(d.mouth_veil_glimpse, 1e-5)
+	assert_float(look.mouth_light()).is_equal(0.0)
+
+
+func _prop(colour: Color = Color.WHITE) -> Node2D:
+	var n := Node2D.new()
+	n.modulate = colour
+	return n
+
+
+func test_add_prop_parents_under_stage_at_pos() -> void:
+	var look := _make(false)
+	await get_tree().process_frame
+	var a := _prop()
+	var holder := Node.new()
+	holder.add_child(a)   # M1's node may come from elsewhere: it is reparented
+	look.add_prop(&"desk", a, Vector2(204, 288))
+	assert_object(a.get_parent()).is_same(look.stage)
+	assert_vector(a.position).is_equal(Vector2(204, 288))
+	assert_bool(look.has_prop(&"desk")).is_true()
+	assert_object(look.prop_node(&"desk")).is_same(a)
+	assert_str(str(look.prop_state(&"desk"))).is_equal("idle")
+	# the same node again only moves it
+	look.add_prop(&"desk", a, Vector2(210, 288))
+	assert_bool(is_instance_valid(a) and not a.is_queued_for_deletion()).is_true()
+	assert_vector(a.position).is_equal(Vector2(210, 288))
+	look.remove_prop(&"desk")
+	assert_bool(look.has_prop(&"desk")).is_false()
+	assert_str(str(look.prop_state(&"desk"))).is_equal("")
+	holder.free()
+	await get_tree().process_frame
+	assert_bool(is_instance_valid(a)).is_false()
+
+
+func test_props_added_before_ready_attach_on_ready() -> void:
+	_look = (load(SCENE) as PackedScene).instantiate() as RuinsLook
+	var a := _prop()
+	_look.add_prop(&"hourglass", a, Vector2(438, 290))
+	add_child(_look)
+	_look.set_process(false)
+	await get_tree().process_frame
+	assert_object(a.get_parent()).is_same(_look.stage)
+	assert_vector(a.position).is_equal(Vector2(438, 290))
+
+
+func test_replacing_a_prop_frees_the_old() -> void:
+	var look := _make(false)
+	await get_tree().process_frame
+	var a := _prop()
+	var b := _prop()
+	look.add_prop(&"codex", a, Vector2(300, 288))
+	look.add_prop(&"codex", b, Vector2(302, 288))
+	assert_bool(not is_instance_valid(a) or a.is_queued_for_deletion()).is_true()
+	assert_object(look.prop_node(&"codex")).is_same(b)
+	assert_object(b.get_parent()).is_same(look.stage)
+	await get_tree().process_frame
+	assert_bool(is_instance_valid(a)).is_false()
+	var count := 0
+	for c in look.stage.get_children():
+		if c == b:
+			count += 1
+	assert_int(count).is_equal(1)
+
+
+func test_prop_states_change_the_look_within_the_step_bound() -> void:
+	var look := _make(false)
+	await get_tree().process_frame
+	var base := Pal.BONE_2
+	var a := _prop(base)
+	look.add_prop(&"desk", a, Vector2(204, 288))
+	var bound := look.data.max_step_per_frame
+	var idle_lum := a.modulate.get_luminance()
+	var lums: Dictionary = {}
+	for state: StringName in [&"focused", &"used", &"idle"]:
+		look.set_prop_state(&"desk", state)
+		assert_str(str(look.prop_state(&"desk"))).is_equal(str(state))
+		var prev := a.modulate.get_luminance()
+		for _f in 90:
+			look.step(DT)
+			var l := a.modulate.get_luminance()
+			assert_float(absf(l - prev)).override_failure_message("%s: luminance step %f over %f" % [state, absf(l - prev), bound]).is_less_equal(bound + 1e-6)
+			assert_bool(U.is_black(a.modulate)).is_false()
+			prev = l
+		lums[state] = a.modulate.get_luminance()
+		assert_float(a.modulate.a).is_equal_approx(base.a, 1e-6)
+	assert_float(float(lums[&"focused"])).is_greater(idle_lum + 0.01)
+	assert_float(float(lums[&"used"])).is_less(idle_lum - 0.01)
+	assert_float(float(lums[&"idle"])).is_equal_approx(idle_lum, 1e-4)
+	# focused leans toward chalk (BONE-4), it does not just get brighter
+	look.set_prop_state(&"desk", &"focused")
+	_steps(look, 1.5)
+	var want := look.prop_target_tint(&"focused")
+	assert_float(a.modulate.r).is_equal_approx(base.r * want.r, 1e-4)
+	assert_float(a.modulate.b).is_equal_approx(base.b * want.b, 1e-4)
+
+
+func test_unknown_prop_state_is_ignored() -> void:
+	var look := _make(false)
+	await get_tree().process_frame
+	var a := _prop()
+	look.add_prop(&"desk", a, Vector2(204, 288))
+	look.set_prop_state(&"desk", &"focused")
+	look.set_prop_state(&"desk", &"glowing")
+	assert_str(str(look.prop_state(&"desk"))).is_equal("focused")
+	# an unknown id is ignored too (no prop is made)
+	look.set_prop_state(&"nothing", &"used")
+	assert_bool(look.has_prop(&"nothing")).is_false()
 
 
 func test_set_first_visit() -> void:

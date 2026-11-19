@@ -21,6 +21,16 @@ extends Node
 ##   hangar_mouth_rect, hall_lantern_pos, chalk_desk_pos, cabinet_pos, codex_desk_pos,
 ##   hourglass_pos, floor_y            exported layout markers (logical px, 640×360 frame).
 ##   mouth_light()                     0 (dark) … 1: how much lamp light reaches the hangar mouth.
+##                                     Before any lamp the mouth is near-black (veil `mouth_veil_dark`
+##                                     ✱ over VOID-1); `mouth_aether_hint` ✱ lets a dim Aether glimpse
+##                                     back in (Q-T156).
+## Visual-only prop mirrors (Q-T158, agreed with M1): M1 keeps its Area2D/focus logic in its own
+## nodes and puts a lit visual copy of each prop here. No input reaches these.
+##   add_prop(id, node, pos)           put `node` under `stage` at `pos` (same space as light_lamp);
+##                                     an existing prop with that id is freed first.
+##   set_prop_state(id, state)         &"idle", &"focused" (a gentle chalk lift), &"used" (dimmed);
+##                                     eases at most max_step_per_frame ✱ per 60 Hz frame, no motion.
+##   has_prop(id), prop_state(id), prop_node(id), remove_prop(id)
 
 ## ✱ at most this many lamps feed the haze (every lamp still lights the hall).
 const MAX_HAZE_LAMPS := 8
@@ -33,6 +43,11 @@ const HOLE_R := Vector2(122.0, 70.0)
 const OUTSIDE_CAMERA := Vector2(320.0, 180.0)
 ## ✱ the Aether's lantern parked far off-frame (the lantern is indoors).
 const OUTSIDE_NO_LANTERN := Vector2(320.0, 2000.0)
+## The states a prop mirror shows.
+const PROP_IDLE := &"idle"
+const PROP_FOCUSED := &"focused"
+const PROP_USED := &"used"
+const PROP_STATES: Array[StringName] = [PROP_IDLE, PROP_FOCUSED, PROP_USED]
 
 @export var data: RuinsLookData = preload("res://data/aether/ruins/ruins_look.tres")
 ## Gallery-only stand-ins for the objects M1 owns (desk, Cabinet, Codex desk, Hourglass, Tree).
@@ -79,6 +94,18 @@ var first_visit: bool = false
 var time_s: float = 0.0
 var _entry_wait: float = 0.0
 var _lamps: Array[RuinsLamp] = []
+## id → RuinsLook.Prop (the mirrors in `stage`).
+var _props: Dictionary = {}
+## Props added before the look was ready: [id, node, pos], attached in _ready.
+var _pending_props: Array = []
+
+
+## One visual prop mirror: its node, its own modulate, its state and its eased tint.
+class Prop:
+	var node: Node2D
+	var base: Color
+	var state: StringName = &"idle"
+	var tint: Color = Color.WHITE
 
 @onready var view: AetherView = %View
 @onready var backdrop: AetherBackdrop = %Backdrop
@@ -119,6 +146,9 @@ func _ready() -> void:
 		backdrop.apply_look(data.outside_look)
 	_layout()
 	set_first_visit(first_visit)
+	for p: Array in _pending_props:
+		add_prop(p[0] as StringName, p[1] as Node2D, p[2] as Vector2)
+	_pending_props.clear()
 	_sync()
 
 
@@ -172,6 +202,113 @@ func mouth_light() -> float:
 	return 1.0 - dark
 
 
+## The hangar mouth's veil alpha now: near-black before any lamp (lifted only by
+## `mouth_aether_hint` ✱), the dim glimpse once the first lamp has caught, then clearing toward
+## `mouth_veil_lit` as more lamps catch. Only ever falls as lamps catch.
+func mouth_veil() -> float:
+	var m := mouth_light()
+	var pre := lerpf(data.mouth_veil_dark, data.mouth_veil_glimpse, clampf(data.mouth_aether_hint, 0.0, 1.0))
+	var first := clampf(m / maxf(data.mouth_share, 0.001), 0.0, 1.0)
+	return lerpf(lerpf(pre, data.mouth_veil_glimpse, first), data.mouth_veil_lit, m)
+
+
+## Put the visual prop `node` under the lit `stage` at `pos` (RuinsLook-local logical px). A prop
+## already under `id` is freed first. Visual only: input never reaches `stage`.
+func add_prop(id: StringName, node: Node2D, pos: Vector2) -> void:
+	if node == null:
+		push_warning("RuinsLook.add_prop: no node for prop '%s'" % id)
+		return
+	if not is_node_ready():
+		_pending_props.append([id, node, pos])
+		return
+	var old: Prop = _props.get(id) as Prop
+	if old != null and old.node != node:
+		remove_prop(id)
+	var p := Prop.new()
+	if old != null and old.node == node:
+		p = old
+	else:
+		p.node = node
+		p.base = node.modulate
+	if node.get_parent() != stage:
+		if node.get_parent() != null:
+			node.get_parent().remove_child(node)
+		stage.add_child(node)
+	node.position = pos
+	_props[id] = p
+	_apply_prop(p)
+
+
+## Show prop `id` as &"idle", &"focused" or &"used"; an unknown state or id is ignored (warning).
+func set_prop_state(id: StringName, state: StringName) -> void:
+	if state not in PROP_STATES:
+		push_warning("RuinsLook.set_prop_state: unknown state '%s'" % state)
+		return
+	var p: Prop = _props.get(id) as Prop
+	if p == null:
+		push_warning("RuinsLook.set_prop_state: no prop '%s'" % id)
+		return
+	p.state = state
+
+
+func has_prop(id: StringName) -> bool:
+	return _props.has(id)
+
+
+## The prop's state, or &"" when there is no prop `id`.
+func prop_state(id: StringName) -> StringName:
+	var p: Prop = _props.get(id) as Prop
+	return p.state if p != null else &""
+
+
+func prop_node(id: StringName) -> Node2D:
+	var p: Prop = _props.get(id) as Prop
+	return p.node if p != null else null
+
+
+## Take prop `id` out of `stage` and free it.
+func remove_prop(id: StringName) -> void:
+	var p: Prop = _props.get(id) as Prop
+	if p == null:
+		return
+	_props.erase(id)
+	if is_instance_valid(p.node):
+		if p.node.get_parent() != null:
+			p.node.get_parent().remove_child(p.node)
+		p.node.queue_free()
+
+
+## The tint a prop eases toward in its state: focused lifts toward chalk, used dims.
+func prop_target_tint(state: StringName) -> Color:
+	match state:
+		PROP_FOCUSED:
+			var t := Color.WHITE.lerp(data.prop_focus_tint, 0.5) * (1.0 + data.prop_focus_lift)
+			t.a = 1.0
+			return t
+		PROP_USED:
+			var d := 1.0 - data.prop_used_dim
+			return Color(d, d, d, 1.0)
+	return Color.WHITE
+
+
+func _step_props(delta: float) -> void:
+	# never a flash: each channel moves at most max_step_per_frame per 60 Hz frame
+	var most := data.max_step_per_frame * delta * 60.0
+	for k: Variant in _props.keys():
+		var p: Prop = _props[k] as Prop
+		if not is_instance_valid(p.node):
+			_props.erase(k)
+			continue
+		var want := prop_target_tint(p.state)
+		p.tint = Color(move_toward(p.tint.r, want.r, most), move_toward(p.tint.g, want.g, most),
+			move_toward(p.tint.b, want.b, most), 1.0)
+		_apply_prop(p)
+
+
+func _apply_prop(p: Prop) -> void:
+	p.node.modulate = Color(p.base.r * p.tint.r, p.base.g * p.tint.g, p.base.b * p.tint.b, p.base.a)
+
+
 ## Where the placeholder Tree hangs its lamps (gallery use).
 func placeholder_lamp_positions() -> PackedVector2Array:
 	return _placeholders.lamp_positions()
@@ -197,6 +334,7 @@ func step(delta: float) -> void:
 	hall_lantern.step(delta)
 	for l in _lamps:
 		l.step(delta)
+	_step_props(delta)
 	_sync()
 
 
@@ -266,7 +404,7 @@ func _sync() -> void:
 	var m := mouth_light()
 	var s := _surface.material as ShaderMaterial
 	s.set_shader_parameter(&"size_px", size)
-	s.set_shader_parameter(&"mouth_veil", lerpf(data.mouth_veil_dark, data.mouth_veil_lit, m))
+	s.set_shader_parameter(&"mouth_veil", mouth_veil())
 	_mouth_light.energy = data.mouth_energy * m
 	_mouth_light.color = data.lamp_colour
 	_mouth_light.texture_scale = data.mouth_radius * 2.0 / float(RuinsLamp.LIGHT_TEX)

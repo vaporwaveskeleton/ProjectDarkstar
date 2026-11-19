@@ -748,7 +748,7 @@ The look of the Ruins of the Ninth Sky on the first visit (NARR-001 §5.7, GDD �
 - The wall is a regular brick/ashlar pattern and reads more dungeon than cathedral; the cathedral read relies on the arches, pilasters and ribs.
 - No occlusion shadows (`shadow_enabled` is false on every light).
 - The torn vault shows mostly the navy far band of the Aether.
-- Before any Tree lamp the hangar mouth still shows a dim Aether; NARR-001 §5.7 says "dark" (TECH-001 Q-T156).
+- Before any Tree lamp the hangar mouth is near-black by default (`mouth_veil_dark` 1.0 ✱, NARR-001 §5.7 "dark"); `mouth_aether_hint` (0..1, default 0 ✱) lets the owner bring back a faint glimpse of the Aether without code (TECH-001 Q-T156, agreed with M1, pending the owner).
 - The left side is cluttered: the telescope crosses the chalk star chart.
 - The orrery can read as an atom symbol.
 - The flash and lantern-law tests are structural, not pixel-measured (TECH-001 §9.1, Q-T64).
