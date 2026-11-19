@@ -5,6 +5,9 @@
 //     Anything after a bare "--" is passed to the game after the scenario's own args (dev builds read e.g.
 //     --aether-cine-scale=8). Only --name / --name=value tokens; the runner's own (--scenario, --out, --no-save...) are refused.
 //   node tools/automation/darkstar_auto.js run|run-all --exe=<exported game exe> [--windowed] [--timeout=<s>]
+//   node tools/automation/darkstar_auto.js run-all [--only=<substr>[,<substr>...]] [--windowed] --report=<dir>
+//     Also writes <dir>/automation_report-<stamp>.md and <dir>/latest.md: one Markdown summary (outcomes,
+//     frame-time windows p50/p95/p99 against their budget, flash-rule windows, screenshots).
 //     Runs an EXPORTED build directly (no --path). Output goes to <exe dir>/reports/automation/<id>-<stamp>
 //     (the game confines --out to user:// or reports/). Against a QA build, a scenario that uses dev-only
 //     steps must come back refused (exit 3): reported as "refused (QA profile)", which run-all does not count as a failure.
@@ -16,6 +19,7 @@
 const fs = require("fs");
 const path = require("path");
 const { spawn } = require("child_process");
+const os = require("os");
 
 const root = path.resolve(__dirname, "..", "..");
 const catalogPath = path.join(root, "core", "automation", "step_catalog.json");
@@ -185,6 +189,95 @@ function summarise(out, result, code) {
   return lines.join("\n");
 }
 
+/** ERROR / WARNING line counts in <out>/console.log (null when there is no log). */
+function logCounts(out) {
+  try {
+    const log = fs.readFileSync(path.join(out, "console.log"), "utf8").split(/\r?\n/);
+    return { errors: log.filter((l) => /^(SCRIPT )?ERROR/.test(l)).length, warnings: log.filter((l) => /^(SCRIPT )?WARNING/.test(l)).length };
+  } catch (_) { return null; }
+}
+
+/** Markdown-safe table cell. */
+function cell(v) {
+  return String(v === undefined || v === null ? "" : v).replace(/\|/g, "\\|").replace(/\r?\n/g, " ");
+}
+
+/** First failing step's detail, shortened. */
+function failDetail(result) {
+  const f = ((result && result.steps) || []).find((s) => s.outcome !== "pass");
+  return f ? `step ${f.i} (${f.do}): ${String(f.detail).slice(0, 160)}` : "";
+}
+
+/**
+ * One Markdown report for a run-all (pure: rows in, text out).
+ * @param {{id: string, code: number, outcome: string, frames: number, result?: any, out?: string, wall_s?: number, counts?: any, expectedRefusal?: boolean}[]} rows
+ * @param {{generated: string, mode: string, machine: string, godot?: string, commit?: string}} meta
+ * @returns {string}
+ */
+function buildReport(rows, meta) {
+  const L = [];
+  const pass = rows.filter((r) => r.code === 0).length;
+  const refused = rows.filter((r) => r.expectedRefusal).length;
+  const bad = rows.length - pass - refused;
+  L.push("# DARKSTAR automation report", "");
+  L.push(`Generated ${meta.generated} · ${meta.mode} · machine: ${meta.machine}${meta.godot ? ` · Godot ${meta.godot}` : ""}${meta.commit ? ` · commit ${meta.commit}` : ""}`, "");
+  L.push(`**${bad ? `${bad} of ${rows.length} FAILED` : `all ${rows.length - refused} ran clean`}** (${pass} passed${refused ? `, ${refused} refused by the QA profile as expected` : ""}). Frame times are wall clock on this machine, not minimum spec (TECH-001 §8.1). Headless runs have no screenshots, no flash-rule data and CPU-only frame times.`, "");
+  L.push("## Scenarios", "", "| scenario | outcome | exit | frames | wall s | ERROR / WARNING lines | screenshots | first failure |", "|---|---|---|---|---|---|---|---|");
+  for (const r of rows) {
+    const res = r.result || {};
+    const shots = (res.screenshots || []).filter((x) => x.path).length;
+    const c = r.counts ? `${r.counts.errors} / ${r.counts.warnings}` : "";
+    L.push(`| ${cell(r.id)} | ${cell(r.expectedRefusal ? "refused (QA, expected)" : r.outcome)} | ${r.code} | ${cell(r.frames)} | ${r.wall_s !== undefined ? r.wall_s.toFixed(1) : ""} | ${c} | ${shots} | ${cell(failDetail(res))} |`);
+  }
+  const perf = rows.flatMap((r) => ((r.result || {}).perf_windows || []).map((w) => ({ id: r.id, w })));
+  L.push("", "## Frame time (perf windows)", "");
+  if (!perf.length) L.push("No scenario in this run opened a perf window.");
+  else {
+    L.push("| scenario | window | frames | p50 ms | p95 ms | p99 ms | max ms | budget (p50) | mode |", "|---|---|---|---|---|---|---|---|---|");
+    for (const { id, w } of perf) {
+      const budget = w.budget_ms ? `${w.budget_ms} ms: ${w.p50_within_budget ? "within" : "**OVER**"}` : "";
+      const mode = [w.headless ? "headless (CPU only)" : "windowed", w.luma_active ? "luma readback active" : "", w.open_at_finish ? "closed at finish" : ""].filter(Boolean).join(", ");
+      L.push(`| ${cell(id)} | ${cell(w.name)} | ${w.frames} | ${w.p50_ms} | ${w.p95_ms} | ${w.p99_ms} | ${w.max_ms} | ${budget} | ${mode} |`);
+    }
+  }
+  const luma = rows.flatMap((r) => ((r.result || {}).luma_windows || []).map((w) => ({ id: r.id, w })));
+  L.push("", "## Flash rule (luma windows)", "");
+  if (!luma.length) L.push("No scenario in this run opened a luma window.");
+  else {
+    L.push("Rule: WARP-001 L-11 (no flicker above 3 cycles/s, no full-field luminance step) and ART-001 §7 (nothing flashes more than 3 times in a second); method in core/automation/luma_watch.gd.", "");
+    L.push("| scenario | window | frames | result | violations | max full-field step | max cycles/s | steps ≥ 0.02 | first violation |", "|---|---|---|---|---|---|---|---|---|");
+    for (const { id, w } of luma) {
+      if (w.skipped) { L.push(`| ${cell(id)} | ${cell(w.name)} | 0 | skipped (${cell(w.skipped)}) | | | | | |`); continue; }
+      const first = (w.violations || [])[0];
+      const fv = first ? `frame ${first.frame}: ${first.kind}${first.cell !== undefined ? ` cell ${first.cell}` : ""} = ${first.value}` : "";
+      L.push(`| ${cell(id)} | ${cell(w.name)} | ${w.frames} | ${w.ok ? "ok" : (w.report_only ? "**FLAGGED** (report only)" : "**FAIL**")} | ${w.violation_count} | ${w.max_full_step} (frame ${w.max_full_step_frame}) | ${w.max_cycles_per_s} | ${w.soft_steps} | ${cell(fv)} |`);
+    }
+  }
+  const withShots = rows.filter((r) => ((r.result || {}).screenshots || []).some((x) => x.path));
+  L.push("", "## Screenshots", "");
+  if (!withShots.length) L.push("None in this run (headless runs skip screenshots; use --windowed).");
+  for (const r of withShots) {
+    L.push(`- **${cell(r.id)}** (${cell(r.out)}): ${r.result.screenshots.filter((x) => x.path).map((x) => x.name).join(", ")}`);
+  }
+  L.push("");
+  return L.join("\n");
+}
+
+/** Writes the run-all report to <dir>/automation_report-<stamp>.md and <dir>/latest.md. */
+function writeReport(rows, flags) {
+  const dir = path.resolve(String(flags.report));
+  fs.mkdirSync(dir, { recursive: true });
+  let commit = "";
+  try { commit = require("child_process").execSync("git rev-parse --short HEAD", { cwd: root, stdio: ["ignore", "pipe", "ignore"] }).toString().trim(); } catch (_) { /* not a checkout */ }
+  const godot = (rows.find((r) => r.result && r.result.build) || { result: { build: {} } }).result.build.godot || "";
+  const cpu = (os.cpus()[0] || { model: "unknown CPU" }).model.trim();
+  const text = buildReport(rows, { generated: new Date().toISOString().replace(/\.\d+Z$/, "Z"), mode: flags.windowed ? "windowed" : "headless", machine: `${cpu}, ${os.platform()}`, godot, commit });
+  const file = path.join(dir, `automation_report-${stamp()}.md`);
+  fs.writeFileSync(file, text);
+  fs.writeFileSync(path.join(dir, "latest.md"), text);
+  console.log(`report: ${file}`);
+}
+
 /** @param {any} flags */
 async function run(flags) {
   const id = flags._[1];
@@ -223,6 +316,7 @@ async function runScenario(id, flags, quiet) {
   const child = spawn(godot, args, { cwd: exe ? path.dirname(exe) : root, stdio: ["ignore", "pipe", "pipe"] });
   child.stdout.pipe(log, { end: false });
   child.stderr.pipe(log, { end: false });
+  const t0 = Date.now();
   const limit = (Number(flags.timeout) || 120) * 1000;
   let watchdog = false;
   const timer = setTimeout(() => { watchdog = true; child.kill(); }, limit);
@@ -233,6 +327,7 @@ async function runScenario(id, flags, quiet) {
   const resultPath = path.join(out, "result.json");
   if (!fs.existsSync(resultPath)) { console.error(`no result.json produced (exit ${code}); see ${path.join(out, "console.log")}`); return { code: 5, frames: 0, outcome: "crash" }; }
   const result = JSON.parse(fs.readFileSync(resultPath, "utf8"));
+  const wall_s = (Date.now() - t0) / 1000;
   // A QA build must refuse a scenario that uses dev steps: that is the expected outcome, not a failure.
   const dev = devStepsUsed(scenario);
   const expectedRefusal = Boolean(exe) && code === 3 && result.outcome === "refused" && result.profile === "qa"
@@ -244,19 +339,22 @@ async function runScenario(id, flags, quiet) {
   }
   if (!quiet || code !== 0) console.log(summarise(out, result, code));
   const shots = (result.screenshots || []).some((x) => x.path);
+  const counts = logCounts(out);
+  let kept = out;
   if (code === 0 && !flags.keep && !shots && typeof flags.out !== "string") {
     fs.rmSync(out, { recursive: true, force: true });
+    kept = "";
     if (!quiet) console.log("  output: removed (clean pass, no screenshots; use --keep to retain)");
   } else if (!quiet || code !== 0) {
     console.log(`  output: ${out}`);
   }
-  return { code, frames: result.frames, outcome: result.outcome };
+  return { code, frames: result.frames, outcome: result.outcome, result, out: kept, wall_s, counts };
 }
 
 /** @param {any} flags */
 async function runAll(flags) {
   const ids = fs.readdirSync(scenarioDir).filter((f) => f.endsWith(".scenario.json")).map((f) => f.replace(".scenario.json", "")).sort()
-    .filter((id) => typeof flags.only !== "string" || id.includes(flags.only));
+    .filter((id) => typeof flags.only !== "string" || flags.only.split(",").some((o) => o && id.includes(o)));
   if (!ids.length) { console.error("no scenarios match"); return 2; }
   const rows = [];
   for (const id of ids) {
@@ -271,6 +369,7 @@ async function runAll(flags) {
   const passed = rows.filter((r) => r.code === 0).length;
   const tail = refused ? ` (${passed} passed, ${refused} refused by the QA profile as expected)` : "";
   console.log(bad ? `${bad} of ${rows.length} FAILED${tail}` : (refused ? `no failures${tail}` : `all ${rows.length} passed`));
+  if (typeof flags.report === "string") writeReport(rows, flags);
   return bad ? 1 : 0;
 }
 
@@ -318,9 +417,9 @@ async function main() {
     console.error(String(e.message || e));
     return 2;
   }
-  console.error("commands: validate <file|id> | caps [--windowed] | run-all [--only=<substr>] [--exe=<exported exe>] | run <id> [--windowed] [--keep] [--godot=<exe>] [--timeout=<s>] [--out=<dir>] [--exe=<exported exe>] [-- <game args>]");
+  console.error("commands: validate <file|id> | caps [--windowed] | run-all [--only=<substr>] [--exe=<exported exe>] [--windowed] [--report=<dir>] | run <id> [--windowed] [--keep] [--godot=<exe>] [--timeout=<s>] [--out=<dir>] [--exe=<exported exe>] [-- <game args>]");
   return 2;
 }
 
 if (require.main === module) main().then((code) => process.exit(code));
-module.exports = { parseFlags, checkExtraArgs, gameArgs, validate };
+module.exports = { parseFlags, checkExtraArgs, gameArgs, validate, buildReport };
