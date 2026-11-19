@@ -19,6 +19,30 @@ const SPINE_X_FRAC := 0.7          ## ✱ column centre, fraction of the star ti
 const SPINE_TOP_FRAC := 0.15       ## ✱ first star, fraction of the tile height
 const SPINE_LENGTH_FRAC := 0.7     ## ✱ column length, fraction of the tile height
 
+## Stage signatures (CabinetStage.backdrop; PM under owner autonomy grant, 2026-11-19): a dim VOID
+## motif behind the stars so a still says which stage it is. VOID registers only (never a faction
+## hue, so it never reads as a hazard), formula-placed (no RNG), clipped to the playfield.
+const BACKDROPS := [&"", &"currents", &"chains", &"shoal", &"horizon"]
+const CURRENT_LINES := 7           ## ✱ Drift: horizontal current lines across the view
+const CURRENT_DASH := 10.0         ## ✱ px dash, then CURRENT_GAP px gap
+const CURRENT_GAP := 14.0          ## ✱
+const CURRENT_PARALLAX := 0.35     ## ✱
+const CURRENT_FLOW := 6.0          ## ✱ px/s the currents flow along x (sim time)
+const CHAINS := 6                  ## ✱ Censer Watch: chains hanging from the top of the view
+const CHAIN_LINK := 4.0            ## ✱ px between links
+const CHAIN_PARALLAX := 0.3        ## ✱ x parallax (they hang from the view's top edge)
+const CHAIN_SWING := 3.0           ## ✱ px the censer swings at the chain's end
+const SCHOOLS := 5                 ## ✱ Shoal: schools of glass motes
+const SCHOOL_MOTES := 30           ## ✱ motes per school (2×1 px flecks)
+const SCHOOL_RADIUS := Vector2(24, 9)    ## ✱ px school half-size
+const SCHOOL_PARALLAX := 0.6       ## ✱
+const SCHOOL_SWIM := 4.0           ## ✱ px/s
+const HORIZON_FRAC := 0.68         ## ✱ Stillwater: the horizon line, fraction of the view height
+const HORIZON_PARALLAX := 0.25     ## ✱ x parallax of the ripples
+const HORIZON_RIPPLES := [[4.0, 9], [9.0, 6], [15.0, 4], [22.0, 2]]   ## ✱ [px below the line, dashes]
+
+var backdrop: StringName = &""      ## set from the stage in reset()
+
 var _stars: Array[PackedVector2Array] = []
 var _spine: PackedVector2Array = PackedVector2Array()   ## tile-space spine star positions (formula, no RNG)
 var pull := 0.0                      ## 0..1, set by the reveal
@@ -34,6 +58,7 @@ func reset() -> void:
 	_spine = PackedVector2Array()
 	pull_target = world.screen_centre
 	spine_stars = world.stage != null and world.stage.spine_stars
+	backdrop = world.stage.backdrop if world.stage != null and BACKDROPS.has(world.stage.backdrop) else &""
 	var r := RandomNumberGenerator.new()
 	r.seed = 77
 	for layer in LAYERS:
@@ -107,6 +132,10 @@ func _draw() -> void:
 		return
 	var tile := world.view_size
 	var origin := world.view_rect.position
+	if pull <= 0.0:                     # the sky drains in the reveal: the signature goes first
+		var bcol := backdrop_color()
+		for m: Rect2 in backdrop_marks():
+			draw_rect(m, bcol)
 	for li in LAYERS.size():
 		var layer: Dictionary = LAYERS[li]
 		var par: float = layer.parallax
@@ -143,3 +172,108 @@ func _draw_seams() -> void:
 		if y >= view.position.y and y <= view.end.y:
 			for x in range(int(view.position.x), int(view.end.x), 8):
 				draw_line(Vector2(x, y), Vector2(x + 3, y), Look.c(Pal.BONE_0))
+
+
+# --- Stage signatures (CabinetStage.backdrop) -------------------------------------------------------
+
+## The signature's colour: a VOID register (Drift and Censer Watch the darkest; Shoal the brightest), greyed by the
+## T0→T1 costume removal like the stars.
+func backdrop_color() -> Color:
+	var col := Look.c(Pal.VOID_3)
+	if backdrop == &"shoal":
+		col = Look.c(Pal.VOID_5)            # the glass motes: the brightest VOID, still never a faction hue
+	elif backdrop == &"horizon":
+		col = Look.c(Pal.VOID_4)
+	if desaturate > 0.0:
+		col = col.lerp(Look.c(Pal.BONE_1), desaturate * 0.6)
+	return col
+
+
+## Every mark of this stage's signature this frame, in screen (grid) pixels, inside the playfield
+## (never over the HUD strip or the footer). Empty for the plain sky (a0_1).
+func backdrop_marks() -> Array[Rect2]:
+	var out: Array[Rect2] = []
+	if world == null or world.torus == null:
+		return out
+	match backdrop:
+		&"currents":
+			_currents(out)
+		&"chains":
+			_chains(out)
+		&"shoal":
+			_shoal(out)
+		&"horizon":
+			_horizon(out)
+	var field := world.playfield_rect
+	var kept: Array[Rect2] = []
+	for m in out:
+		var c := m.intersection(field)
+		if c.has_area():
+			kept.append(Rect2(c.position.round(), c.size.round().max(Vector2.ONE)))
+	return kept
+
+
+func _par_off(par: float) -> Vector2:
+	return -world.view_centre * par
+
+
+func _currents(out: Array[Rect2]) -> void:
+	var tile := world.view_size
+	var o := world.view_rect.position
+	var off := _par_off(CURRENT_PARALLAX)
+	var period := CURRENT_DASH + CURRENT_GAP
+	for k in CURRENT_LINES:
+		var y := o.y + fposmod((float(k) + 0.5) / CURRENT_LINES * tile.y + off.y, tile.y)
+		var shift := fposmod(off.x + world.time * CURRENT_FLOW * (1.0 + 0.25 * (k % 3)) + k * 9.0, period)
+		var x := o.x - period + shift
+		while x < o.x + tile.x:
+			out.append(Rect2(x, y, CURRENT_DASH, 1.0))
+			x += period
+
+
+func _chains(out: Array[Rect2]) -> void:
+	var tile := world.view_size
+	var o := world.view_rect.position
+	var off := _par_off(CHAIN_PARALLAX)
+	for k in CHAINS:
+		var x0 := o.x + fposmod((float(k) + 0.5) / CHAINS * tile.x + off.x, tile.x)
+		var length := tile.y * (0.22 + 0.09 * float((k * 3) % 4))
+		var swing := sin(world.time * 1.1 + float(k) * 1.7) * CHAIN_SWING
+		var y := 0.0
+		while y < length:
+			out.append(Rect2(x0 + swing * (y / length), o.y + y, 1.0, 1.0))
+			y += CHAIN_LINK
+		var c := Vector2(x0 + swing, o.y + length + 2.0)   # the censer: a hollow 5×5 box
+		out.append(Rect2(c.x - 2.0, c.y - 2.0, 5.0, 1.0))
+		out.append(Rect2(c.x - 2.0, c.y + 2.0, 5.0, 1.0))
+		out.append(Rect2(c.x - 2.0, c.y - 1.0, 1.0, 3.0))
+		out.append(Rect2(c.x + 2.0, c.y - 1.0, 1.0, 3.0))
+
+
+func _shoal(out: Array[Rect2]) -> void:
+	var tile := world.view_size
+	var o := world.view_rect.position
+	var off := _par_off(SCHOOL_PARALLAX)
+	for k in SCHOOLS:
+		var home := Vector2(fposmod(float(k) * 0.37 + 0.11, 1.0) * tile.x, (float(k) + 0.5) / SCHOOLS * tile.y)
+		home.x += world.time * SCHOOL_SWIM * (1.0 if k % 2 == 0 else -1.0)
+		for m in SCHOOL_MOTES:
+			var a := float(m) * 2.39996           # golden angle: an even school with no RNG
+			var r := sqrt((float(m) + 0.5) / SCHOOL_MOTES)
+			var p := home + Vector2(cos(a) * SCHOOL_RADIUS.x, sin(a) * SCHOOL_RADIUS.y) * r + off
+			out.append(Rect2(o.x + fposmod(p.x, tile.x), o.y + fposmod(p.y, tile.y), 2.0, 1.0))
+
+
+func _horizon(out: Array[Rect2]) -> void:
+	var tile := world.view_size
+	var o := world.view_rect.position
+	var y := o.y + tile.y * HORIZON_FRAC
+	out.append(Rect2(o.x, y, tile.x, 1.0))
+	var off := _par_off(HORIZON_PARALLAX)
+	for row: Array in HORIZON_RIPPLES:
+		var dy: float = row[0]
+		var n: int = row[1]
+		var w := 12.0 - dy * 0.35
+		for i in n:
+			var x := o.x + fposmod((float(i) + 0.5) / n * tile.x + off.x * (1.0 + dy / 30.0), tile.x)
+			out.append(Rect2(x - w * 0.5, y + dy, w, 1.0))

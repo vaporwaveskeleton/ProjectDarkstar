@@ -230,10 +230,9 @@ func test_the_last_line_is_in_view_when_the_roll_ends() -> void:
 	var last := messages.credits.size() - 1
 	var top := messages.credit_entry_top(last, end_t)
 	var h := PixelText.wrap(messages.credits[last], 2, messages.size.x - 2.0 * CabinetMessages.MARGIN).size() * 18.0
-	print("S7 measured: last line top y=%.1f, bottom y=%.1f, view height=%.1f at t=%.1f s" % [top, top + h, messages.size.y, end_t])
-	assert_float(top).is_less(messages.size.y)
-	assert_float(top + h).override_failure_message("the last line must be fully inside the view at the end of the roll").is_less(messages.size.y)
-	assert_float(top).is_greater_equal(0.0)
+	print("S7 measured: last line top y=%.1f, bottom y=%.1f, credits window %.1f..%.1f at t=%.1f s" % [top, top + h, messages.credits_top(), messages.credits_bottom(), end_t])
+	assert_float(top + h).override_failure_message("the last line must be fully inside the credits window at the end of the roll").is_less_equal(messages.credits_bottom())
+	assert_float(top).is_greater_equal(messages.credits_top())
 
 
 func test_stat_lines_announce_once_each_in_order() -> void:
@@ -253,7 +252,7 @@ func test_no_stat_line_is_announced_before_it_is_in_view() -> void:
 	messages.credits_t = 0.0
 	_roll_to(0.5)
 	assert_array(seen).is_empty()
-	assert_float(messages.credit_entry_top(3, 0.5)).is_greater_equal(messages.size.y)
+	assert_float(messages.credit_entry_top(3, 0.5) + CabinetMessages.CREDIT_LINE_H).is_greater(messages.credits_bottom())
 
 
 func test_roll_credits_and_clear_reset_the_announcements() -> void:
@@ -279,3 +278,22 @@ func test_drawing_does_not_emit() -> void:
 	await get_tree().process_frame     # a real draw pass
 	await get_tree().process_frame
 	assert_array(seen).is_empty()
+
+
+## The roll keeps clear of the HUD rule, the Vigil and the footer (Reviewer v2 §I; PM under owner
+## autonomy grant, 2026-11-19): every line drawn at any moment of the roll sits inside the window above
+## the Vigil, which ends READY_CLEAR above the play-view centre where the Vigil is drawn.
+func test_the_credits_never_cross_the_hud_rule_the_vigil_or_the_footer() -> void:
+	_unmake_for_real()
+	var vigil_top := messages.size.y * 0.5 - CabinetMessages.READY_CLEAR
+	var footer_top := world.playfield_rect.end.y - world.view_rect.position.y
+	var shown := 0
+	var at := 0.0
+	while at <= world.fx_tuning.credits_full_seconds:
+		for r: Rect2 in messages.visible_credit_rects(at):
+			shown += 1
+			assert_float(r.position.y).override_failure_message("t=%.2f line under the HUD rule: %s" % [at, r]).is_greater_equal(CabinetMessages.MARGIN)
+			assert_float(r.end.y).override_failure_message("t=%.2f line over the Vigil: %s" % [at, r]).is_less_equal(vigil_top)
+			assert_float(r.end.y).override_failure_message("t=%.2f line over the footer: %s" % [at, r]).is_less_equal(footer_top)
+		at += 0.05
+	assert_int(shown).override_failure_message("the roll must show lines").is_greater(0)
