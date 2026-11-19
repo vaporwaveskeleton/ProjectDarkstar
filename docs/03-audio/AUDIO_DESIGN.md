@@ -1565,11 +1565,11 @@ The reinforcement timings behind `censer_bell` are the Arcade layer's PROPOSED n
 
 | Cue | E-id | Length | Peak / RMS dBFS | Bus, priority, voices, gate, jitter |
 |---|---|---|---|---|
-| `wick_frayed` | E01 | 1.87 s | −23.32 / −34.5 | `BUS-FLY`, P2, 1 voice, 500 ms gate, 0 jitter |
-| `wick_unmoored` | E02 | 1.86 s | −21.08 / −33.8 | same |
-| `wick_hollowed` | E03 | 0.61 s | −21.24 / −33.12 | same |
-| `wick_recovery` | E04 | 2.37 s | −22.05 / −35.58 | same |
+| `wick_frayed` | E01 | 3.29 s | −23.58 / −37.26 | `BUS-FLY`, P2, 1 voice, 500 ms gate, 0 jitter |
+| `wick_unmoored` | E02 | 4.45 s | −20.3 / −34.52 | same |
+| `wick_hollowed` | E03 | 1.53 s | −21.75 / −34.64 | same |
+| `wick_recovery` | E04 | 4.23 s | −23.32 / −36.78 | same |
 
-`wick_hollowed` is the hiss swelling, then stopping dead: the field goes dry (a build state, not a punishment, §1.1). Caller: M1's Composure (PR #60), once per band change.
+**Voice (PM direction 2026-11-19): the Aether, not the Cabinet.** This is the post-Pretence Vigil, so the cues are wet (reverb, slow chorus), with slow onsets and no transient (§1.4). The band-down cues grow more unsettling by tuning and register, never by level: in Frayed a glass partial beats slowly (1.5 Hz) against a sine; in Unmoored the beat speeds up (5 Hz) and a fifth soured by +11 cents joins. In Hollowed the beating swells, then everything cuts at once and only a dry low breath remains: the field goes dry and wide (a build state, not a punishment, §1.1). The recovery is a soft relief: the hiss thins upward over 2 s ✱ while the beating pair settles onto a clean unison and a warm fifth opens above it. Lengths include the reverb tails. Caller: M1's Composure (PR #60), once per band change.
 
 **Counts (counted in the data files):** cue ids 74 + 4 = 78 and policy entries 68 + 4 = 72.
