@@ -28,6 +28,8 @@ const MINIMAL := {
 	"snapshot": {"name": "snap_one"},
 	"wait_event": {"event": "vigil_destroyed", "within": 5},
 	"perf_sample": {},
+	"perf_begin": {"name": "w_one"}, "perf_end": {"name": "w_one"},
+	"luma_begin": {"name": "l_one"}, "luma_end": {"name": "l_one"},
 	"set_stage": {"index": 1},
 	"set_lives": {"lives": 3},
 	"teleport": {"x": 10.5, "y": -20},
@@ -138,8 +140,9 @@ func test_catalog_and_validator_agree() -> void:
 ## Long end-to-end scenarios run only from the CLI (tests/test_scenarios.gd skips them): they must
 ## still be valid scenarios, just not suite-eligible. Each entry is named here on purpose.
 ## a1_golden_path: coin → Act 0 → reveal → the 94 s Unmaking → Ruins → PM-01 (~20600 frames, Act 0
-## capture switches as args; TECH-001 §9.1).
-const LONG_SCENARIOS: Array[String] = ["a1_golden_path.scenario.json"]
+## capture switches as args; TECH-001 §9.1). perf_golden_path and a11y_flash_pass: the same path with
+## frame-time windows / flash-rule windows (TECH-001 §8.5, §9.1).
+const LONG_SCENARIOS: Array[String] = ["a1_golden_path.scenario.json", "ruins_onboarding_first_visit.scenario.json", "perf_golden_path.scenario.json", "a11y_flash_pass.scenario.json"]
 
 
 func test_shipped_scenarios_are_valid_for_the_suite() -> void:

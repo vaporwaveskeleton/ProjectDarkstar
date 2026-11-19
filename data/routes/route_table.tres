@@ -8,7 +8,7 @@ routes = {
 &"aether": "res://features/aether/aether_arrival.tscn",
 &"attract": "res://scenes/attract/attract_mode.tscn",
 &"cabinet": "res://features/cabinet/cabinet_game.tscn",
-&"ruins": "res://scenes/ruins/ruins_stub.tscn",
+&"ruins": "res://scenes/ruins/ruins.tscn",
 &"sector": "res://scenes/sector/sector_stub.tscn"
 }
 initial_route = &"attract"

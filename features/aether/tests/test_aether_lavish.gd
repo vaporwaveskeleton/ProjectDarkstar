@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## Aether pass 7 (ART-001 §16.6h, PM rulings under the owner autonomy grant, TECH-001 §11.2): the Q-T129
+## Aether pass 7 (ART-001 §16.6i, PM rulings under the owner autonomy grant, TECH-001 §11.2): the Q-T129
 ## reveal trace of where the Aether is already gone (T3+, lantern down only, phosphor), the sister
 ## spheres the entity eats one per tier (never black, never in the play core, Pal roles only), the
 ## Presence more present at T2, and the richer Pale Marches life.

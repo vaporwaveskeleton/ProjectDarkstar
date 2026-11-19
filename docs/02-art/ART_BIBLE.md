@@ -41,7 +41,7 @@ Mood keywords: *aether, crystal spheres, orrery, gaslight, brass, glass, fog, no
 
 | Role | Shape language | Signature tell |
 |---|---|---|
-| **Vigil** (player) | Wedge + lantern globe. Small, round-topped, brass. Symmetric, honest, *simple*. | The lamp globe is the brightest pixel in the frame and pulses with the Lantern state |
+| **Vigil** (player) | Wedge + lantern globe. Small, round-topped, brass. Symmetric, honest, *simple*. | The lamp globe is the brightest pixel in the frame and pulses with the Lantern state. Aether tier: a longer brass skiff with a keel and visible modules (§16.7) |
 | **Oubliette Grub** (worker) | Teardrop + 4 tiny limbs + a carried shard held overhead. Cute, pitiful. | Bows when it deposits a shard (a genuflection) |
 | **Acolyte** (warrior) | Tall bell/vestment shape + a **censer turret** hanging/rotating off one shoulder | Turret swings 0.25 s behind the body — a visible tell |
 | **Deacon of Lies** | Flat, 2D-paper-thin shape that is somehow *larger* than its outline | Its own shadow does not match its shape |
@@ -405,6 +405,27 @@ Code: `features/cabinet/bezel_art.gd`, `bezel_piece.gd`, `bezel_print.gd`, `cabi
 
 **Approved re-composition (owner, 2026-11-18; PR C; built in part by pass 2, above, and pass 2b, above): Sinistar-style portrait cabinet.** The screen is a **256×304 portrait** tube (PR B, built; TECH-001 §1.3) with 28 units of thick black tube mask above and below and 192-unit side panels on the 640×360 reference; the bezel fills the whole window at any aspect (no bars). Composition: a **large emblem illustration in each side panel**, an **instruction card beside the screen**, a **thin backlit marquee** in the top 28 reference units above the screen (lettering ink height about 21 units including stroke, centred above the screen; the big logo lives in the side-panel art; it must read as a real backlit translucent sign: uneven backlight, a dead tube band, dust on the top edge; ruled 2026-11-18, TECH-001 Q-T32; built in pass 2), a **thick tube mask**, **restrained inks** (a smaller share of the ink set than the interim bezel), and a **control panel** carrying `CoinSlot` plus the NEW VIGIL / SETTINGS / QUIT buttons (one focus domain with the coin slot). **All live readouts (score, Vigils, HI, magazine, Sepulchre progress, credits) move onto the screen**, in an on-screen HUD strip; the bezel carries printed art and the coin door only. Bezel text is `VectorText` (code-generated stroke alphabet, tessellated to polygons; no font files; D-13), drawn natively, sharp at any scale, with MSAA for edges. This borrows Sinistar's layout, not its face: the §12.7a motif rule (no mouth, no two eyes, no skull) stands. The HUD strip is 40 px (Q-T31, resolved); the marquee height is resolved (Q-T32, above). **Until PR C, the printed bezel described above is the interim design.**
 
+### 12.7b The Decay: the skin wears out (owner direction 2026-11-19; PROPOSED until TECH-001 Q-T180–Q-T185 are ruled)
+Replaces the "THAT WAS A PRETENCE." title card (GDD-001 §6.1 A0-5; WARP-001 W0-07). After A0-5's credits the costume fails with no words, then the tear opens and §12.7's zoom and §15.1's morph run as built. Numbers: SYS-001 §9 `ds_cabinet.decay.*` and `ds_cabinet.wear.*` (all PROPOSED). Sound: AUDIO-001 §12.18. Concept, not built.
+
+**Rules.**
+- **Subtract, never write.** Every step removes or ages something the player has already seen: saturation, glyphs, bulbs, tuning, picture height. No new shape, word, symbol or face appears before the tear (NARR-001 §4.5 *The Decay*). Lost glyphs never leave a word behind.
+- **The costume only.** The HUD strip's readouts stay honest and at home until the tear (WARP-001 §4.2). On the screen only registers 1–6 (VOID, BONE) drift; register 0 and the role registers 7–15 (CHOIR, PHOS, GAS, SIGNAL; §15.2a) never do, so faction hues, phosphor = truth and SIGNAL ≤ 3 hold to the last frame. The register limits are kept: drift is register writes (§15).
+- **The light is behind it.** Where the bezel print wears through there is pearl Aether fog light (the Aether layer drawn behind the bezel, TECH-001 §11.2 PR D hand-off), never wood, wall or black. It is the first small read that space was never empty (§16.1) and it leads the eye before the break-through (ART-004 §7.1 rule 3).
+- **Readable as a muted 15 s clip at phone size.** One change per area at a time; big shapes first (bulbs, print, picture height), small ones after (glyphs, registers). The player's own initials on the honour roll are the last glyphs to go.
+- **No flash, no flicker, no startle** (WARP-001 §4.5; GDD-001 §18 D-15). Bulbs dim out, the collapse shrinks rather than strobes. Photosensitivity: INSERT CREDIT is steady and glyphs drop on a clock. Reduced Motion: the raster sag and collapse become a fade to a dot of the same size and timing. Steady Ledger does not change the Decay (it is costume, not interface; WARP-001 §4.4).
+
+| Beat (SYS-001) | Screen (layer one: CRT pass, registers) | Bezel (native-res print: `BezelArt`, `BezelInks`) |
+|---|---|---|
+| **D1 Back to attract** | the attract honour roll, clean; INSERT CREDIT blinks at its normal 1 s | as it was (worn per W0-11 if approved) |
+| **D2 Tired phosphor** | persistence ghosts on anything that moves; registers 1–6 drift one RGB332 step each, round-robin; the blink slows and loses a glyph per blink | the smoked-glass ink thickens at the edges (glass smear) |
+| **D3 The skin fails** | CRT bloom bleed; the raster sags and loses height; the honour roll loses glyphs, the player's initials last | the print bleaches from the edges in; the tape corner lifts and peels; bulbs die one by one, the coin-door lamp last; worn spots show the Aether's pearl light |
+| **D4 Collapse** | the picture collapses to a line, then a dot; the dot holds in silence; the tear opens from the dot | the worn spots are the brightest thing in frame besides the dot |
+
+**Wear before the reveal (W0-11, only if the owner picks Q-T180 option B).** At a stage start only (the READY card), a0_3 → a0_5 add one wear level each: one more dead bulb, a little more edge bleach, the tape corner lifting. Nothing on the HUD strip, nothing in the play view, nothing mid-play. The player should be able to say "this machine is old", never "the game is warning me".
+
+**Captures for ART-004.** New checkpoints `decay_phosphor` (D2 end), `decay_skin` (D3 end), `decay_dot` (D4) and `tear_first_light` (2 s after the tear), each with photosensitivity on and off (PROD-001 §4.2).
+
 ### 12.8 Steady Ledger, visually (WARP-001 §4.4)
 - While Steady Ledger is on, a 8 × 8 **open-eye-over-a-rule** icon (BONE-3) sits at the inner corner of the HUD's top strip. The player can always see that the honest HUD is active (WARP-001 §4.7: accessibility state never lies).
 - The numeric run-clock that replaces the Hourglass vignette is Ledger tabular digits in **PHOS-4**.
@@ -439,7 +460,7 @@ Story facts that only work if the art carries them. Each is a single frame or pr
 |---|---|---|
 | Sable's ring | Sable Vane's ring (a Lampkeeper's lantern band, R-06 salvaged-lantern family) is visible in exactly one frame of the Unmaking Rehearsal's beat 2 (WARP-001 §6.2), never framed as a reveal | NARR-001 §5, §14 Q-07 |
 | Sable's chalk in Act 4 | the Chalk Desk's chalk is drawn in the Vigil's GASLIGHT ramp (GAS-2…GAS-4, never GAS-5) from Act 4 on — the contract-writer and the Lampkeeper write in the same colour | NARR-001 §5 |
-| The maker's plate | Theodora Lune's maker's plate is visible on the Cabinet's back panel from Hard Unmaking beat 5 (Lattice); legible in the Cabinet face (§11), one line, no explanation | NARR-001 §5, §9 |
+| The maker's plate | Theodora Lune's maker's plate is visible on the Cabinet's back panel from Hard Unmaking beat 5 (Lattice); legible in the Cabinet face (§11), one line, no explanation. The line is *THAT WAS A PRETENCE. — T. LUNE*: the only place the Cabinet's last screen survives outside ending 5 (PROPOSED 2026-11-19, TECH-001 Q-T181) | NARR-001 §5.4, §9.5 |
 | The honour roll | the Act 0 high-score screen uses the Cabinet face; from Hard Unmaking 3 it lists `T.L. — 0 WARD 0 SURGE` beside the top score | LOOP-001 §11.6, UI-001 §1 |
 | Sable's hand | Sable's whole hand is shown once, at Hard Unmaking beat 5 (Lattice) — still never the face | NARR-001 §5.6 |
 | Stained-glass deaths | at beat 4 (The Cathedral Learns Your Name) the Ruins' windows show the player's own recorded deaths as stained glass, built from the death telemetry (SYS-001 §8 keys), one pane per death type | NARR-001 §5.6, §14 Q-04 |
@@ -525,7 +546,7 @@ First asset (2026-11-18): `ds_ui_paletteSwatch` (`art/src/reference.px.js`), the
 | Stage | Palette | What rendering may do | What it may not do |
 |---|---|---|---|
 | **T0 — Act 0 (the Cabinet)** | **Neon Cabinet palette** (§15.2), flat | vector lines and fills, the glow under-stroke, CRT scanlines and curvature, screen shake | lighting, fog, gradients, soft particles, bloom. Every pixel of the **screen** is a Neon Cabinet entry (the CRT pass aside). The screen is a low-res pixel-perfect grid in its own SubViewport (**256×304 portrait, 4 bpp**, owner 2026-11-18, PR B, TECH-001 §1.3; video limits below); the bezel is native-res vector print art outside this palette (§12.7; Sinistar-style re-composition approved, PR C, not built) |
-| **THE PRETENCE (T0 → T1)** | the neon **morphs entry by entry** into the base palette (§4) | the morph, the tear, the maw | — |
+| **THE PRETENCE (T0 → T1)** | the neon **morphs entry by entry** into the base palette (§4) | first the Decay (§12.7b: persistence, CRT bleed, raster sag, drift of registers 1–6 only; PROPOSED 2026-11-19), then the tear, the morph, the maw | a title card or any new text (NARR-001 §4.5) |
 | **T1 Frayed** | base palette as **base colours** | the lantern becomes a real light (soft falloff, shadows from occluders), light fog, first soft particles (dust, chalk flecks, glass motes) | — |
 | **T2 Bleeding** | base + derived | bioluminescent emitters (Shroud, glass, veins) light the field; bloom; Shroud as an animated shader field; denser particle systems | — |
 | **T3 Unbound** | base + derived | volumetric fog and god-rays from the lantern, distortion and lensing shaders, normal-mapped shading on bodies | — |
@@ -741,11 +762,11 @@ Supersede the matching pass 4 lines where they differ.
 ### 16.6e Pass 6 rules (2026-11-19)
 Supersede the matching pass 5 lines where they differ. Tests: `features/aether/tests/test_aether_pass6.gd`. Evidence status: the model-viewer pilot (below) and the cost sweep are the only measurements; no human has sorted the tiers yet.
 
-**Tier sort (G-2).** A model-viewer pilot (5 fresh AI agents, not humans; write-up in the shared notes `aether_sort_pilot_proxy.md`) gave 0 of 5 exact orders on pass 5; T5 was placed last 5 of 5; T1 was misread because of a dark orrery disc. Model-viewer pilots are evidence for direction only; the human cold-viewer sort is scheduled with the owner's M2 test round (PROD-001 §4.1, TECH-001 §11.2). The pass 6 re-run gave 0 of 5 valid exact orders, with 2 of 5 viewers invalid (label mix-ups): a smoke test only. Open (TECH-001 Q-T126): the five exhibits are five biomes, so viewers sort places by mood, not tiers by damage; proposed G-2 wording is one biome at every tier, and the principle that each tier is the previous tier plus one more kind of damage to the same elements. Ruled 2026-11-19 (PM under the owner autonomy grant): adopted (§16.6h, TECH-001 §11.2).
+**Tier sort (G-2).** A model-viewer pilot (5 fresh AI agents, not humans; write-up in the shared notes `aether_sort_pilot_proxy.md`) gave 0 of 5 exact orders on pass 5; T5 was placed last 5 of 5; T1 was misread because of a dark orrery disc. Model-viewer pilots are evidence for direction only; the human cold-viewer sort is scheduled with the owner's M2 test round (PROD-001 §4.1, TECH-001 §11.2). The pass 6 re-run gave 0 of 5 valid exact orders, with 2 of 5 viewers invalid (label mix-ups): a smoke test only. Open (TECH-001 Q-T126): the five exhibits are five biomes, so viewers sort places by mood, not tiers by damage; proposed G-2 wording is one biome at every tier, and the principle that each tier is the previous tier plus one more kind of damage to the same elements. Ruled 2026-11-19 (PM under the owner autonomy grant): adopted (§16.6i, TECH-001 §11.2).
 
 **Monotonic "missing" cue (§15.4).** `AetherLook.missing` ✱ (0 / 0.2 / 0.4 / 0.6 / 0.85 for T1 to T5, dev placeholders) drives: saturation drain (`A_MISS_DESAT` 0.9 ✱, luminance kept); star dropout along the same curve; and a flat VOID slice (`a_missing()` in `aether_common.gdshaderinc`) with `A_MISS_SEAM` -44, `A_MISS_X` 170, `A_MISS_LEN` (30, 130), `A_MISS_INWARD` 0.4, `A_MISS_W` (0.7, 16) ✱. The slice starts at a far-layer seam inside the picture, never the frame edge (NARR-001 N8), widens by tier, is flat VOID (`mix(void_lo, void_hi, 0.22)`), never black, and stops short of the entity's mid loss step. Tested: zero at T1 and strictly growing; drives saturation, slice and stars together; starts off-centre and never reaches the frame edge or the play core.
 
-**T1 lit sun.** The dark orrery globe is now a lit brass sun (BONE_3 body, BONE_4 bloom); rings calmer (`ORRERY_CALM` 0.72 ✱). Rule: no dark, round, centred object in T1 (it pre-empts the entity). Open (TECH-001 Q-T124): §15.4's T1 row asks for "one dark smudge in the fog that is a little too still", while the pass 6 brief said "nothing in T1 darker than the fog". The smudge was kept; ruled 2026-11-19: §15.4 wins (§16.6h).
+**T1 lit sun.** The dark orrery globe is now a lit brass sun (BONE_3 body, BONE_4 bloom); rings calmer (`ORRERY_CALM` 0.72 ✱). Rule: no dark, round, centred object in T1 (it pre-empts the entity). Open (TECH-001 Q-T124): §15.4's T1 row asks for "one dark smudge in the fog that is a little too still", while the pass 6 brief said "nothing in T1 darker than the fog". The smudge was kept; ruled 2026-11-19: §15.4 wins (§16.6i).
 
 **No closed circles (pareidolia extension, §16.6c).** Loss steps follow two spiral arms broken every half turn (`A_LOSS_ARM` 0.2 ✱) with a soft side toward the frame centre (`A_LOSS_SOFT` 0.08 ✱); the drain stretch is twisted off the radial (`A_DRAIN_TWIST` 0.5 ✱); `A_LOSS_REACH` 1.75 to 2.02 keeps the early-out provably conservative. Test: a CPU mirror of the loss boundary: at least 2 breaks per turn, no unbroken arc longer than π × 1.02, radius varies at least 0.9 × the arm. Same limits as §16.6c (CPU mirror, not a shader render).
 
@@ -769,7 +790,7 @@ Slice part A (`AetherFarLayer`, `FrostPresence`, the reveal, the ladder; TECH-00
 
 **The Presence (ZONES-001 §2.3).** The Pale Marches Presence is a frost-drifting shelf of ice, bigger than the playfield (`FrostPresence` quad 1700×1000 ✱), only ever seen cropped, with a slow heartbeat of glass light (PHOS-4) travelling its veins. The leviathan stays the T3 Presence (PM ruling 2026-11-19, TECH-001 §11.2). Rules: far layer only; never a hitbox (no physics body under it); never adds light to the play layer; never black (body `far_silhouette`, `presence_pearl` AETHER-4, `presence_frost` BONE-3); it flees the entity (turns, accelerates away and dims over `FLEE_S` 6 s ✱, also on its own when the entity drains the world); heartbeat at most 1 Hz (built at one beat per 4 s ✱); under reduced motion and photosensitivity the pulse is held steady and the flee only dims in place.
 
-**Lantern-down reveal (CH-3, ZONES-001 §2.3).** Lantern down fades the warm pool out and, over `REVEAL_FADE_S` 0.8 s ✱ (monotonic, no flicker), the far-band life (`reveal_life_count`) and the Presence's full lit pattern in. Far layer only: it changes nothing in the play layer. Lantern up, the Presence is a vague mass. The T3+ part (showing where the Aether is already gone) is built in pass 7 (§16.6h; Q-T129 ruled).
+**Lantern-down reveal (CH-3, ZONES-001 §2.3).** Lantern down fades the warm pool out and, over `REVEAL_FADE_S` 0.8 s ✱ (monotonic, no flicker), the far-band life (`reveal_life_count`) and the Presence's full lit pattern in. Far layer only: it changes nothing in the play layer. Lantern up, the Presence is a vague mass. The T3+ part (showing where the Aether is already gone) is built in pass 7 (§16.6i; Q-T129 ruled).
 
 **One-biome damage ladder (G-2, TECH-001 Q-T126; `data/aether/ladder/pm_t1..t5.tres`).** Each rung is the previous one plus one more kind of damage, so a still sorts cold: T1 intact (Presence here, rings turning); T2 life thinner and 1 ring stalled; T3 plus the Presence fleeing (35% gone) and the first sky crack; T4 plus the Presence gone, rings broken (1 snapped open) and panes open; T5 plus subtraction. Role laws (faction hues, phosphor = truth, SIGNAL ≤ 3) hold on every rung. The ladder is a capture aid, not the shipped tier table.
 
@@ -813,7 +834,16 @@ The look of the Ruins of the Ninth Sky on the first visit (NARR-001 §5.7, GDD �
 - The flash and lantern-law tests are structural, not pixel-measured (TECH-001 §9.1, Q-T64).
 - Authored for 640×360; wider aspects not designed (TECH-001 Q-T159).
 
-### 16.6h Pass 7: the Pale Marches escalation (2026-11-19, PM under the owner autonomy grant)
+### 16.6h The sector at Aether tier (sector slice look, 2026-11-19)
+How the M1 sector reads once it wears the Aether. Built; not yet scored by The Reviewer, and the captures (scenario `m1_sector_look_capture`) are not evaluated here. Implementation: TECH-001 §2.5, §2.9, §5.4. Every value is an engineering ✱ drawing parameter, in `Pal` colours.
+
+**Near depth, no grid.** At Aether tiers the M1 debug grid does not draw. The Aether far layer is the backdrop; two screen-space depth layers sit around the play layer: behind it, fog wisps and glass motes at slow parallax; in front of it (below the HUD), sparse brass-gold motes and a faint fog lens at faster parallax. They are hash-placed, never jump at the torus seam, and their twinkle and drift are off under Reduced Motion. They never carry information and never hide a hitbox or a telegraph.
+
+**Brass instrument HUD.** The sector HUD is a set of riveted brass plates and studs (the Ledger Compass bezel, the Composure wick bracket, the Steady Ledger tier, the Vigil Index, the Charge strip, the Seam index). Lamps are glass: lit = phosphor = truth (loaded Charge, honest state); to-come items are chalk rings; the current Seam stud is lit gold. Text is `VectorLabel` stroke glyphs. SIGNAL stays at most 3 on screen; the HUD adds none.
+
+**Actors.** The Grub, the geodes and the Sepulchre have filled bodies, a rim light, a soft glow halo in faction hue (Choir hue for Choir bodies) and crystal facets with a slow shimmer (off under Reduced Motion). The geodes read as crystal spheres' cousins, not as pickups. Collision shapes are unchanged. Nothing in the sector is true black: the only true black remains the entity (§16.1).
+
+### 16.6i Pass 7: the Pale Marches escalation (2026-11-19, PM under the owner autonomy grant)
 PM rulings of 2026-11-19 (TECH-001 §11.2): Q-T124 (§15.4 wins: T1 keeps the dark smudge, a VOID fog tone, never black, round or centred), Q-T126 (G-2 is the one-biome Pale Marches ladder; each tier is the previous tier plus one more kind of damage to the same elements), Q-T129 (built, below). Tests: `features/aether/tests/test_aether_lavish.gd`. Evidence: one windowed `aether_ladder_capture` run, judged by eye. There is no Reviewer score and no human sort yet.
 
 **The other heavens (`SisterSpheres`, far band).** Five small, far crystal spheres float in the far fog. Each holds:
@@ -850,3 +880,39 @@ It follows the reveal's monotonic ramp, so there is no flicker. It is PHOS-4 (tr
 2. T1 is now busy at the top: the Presence, the orrery, two sisters and jellies.
 3. PM-01 does not have the sisters yet. The sector look belongs to the sector-slice session; switching them on there is a data change (`sister_spheres`).
 4. Pass 7 has no cost measurement (TECH-001 §8.5).
+
+### 16.7 The Aether Vigil: a brass lantern skiff with visible systems (ruled, PM under owner autonomy grant, 2026-11-19)
+
+> **Status: ruled, PM under owner autonomy grant, 2026-11-19** (TECH-001 Q-T170; queued for the owner's later review). It goes with the Aether handling profile (GDD §4.2a, SYS-001 §1.1a). Act 0's neon Vigil (§3, §15.2) is unchanged.
+
+**Intent.** In the Cabinet the Vigil is a simple wedge and a lamp. After THE PRETENCE the player should see the ship it always was: a hand-built Victorian lantern skiff with a keel, bellows and vanes. It is heavy, riveted and engraved, and every system the Lantern Tree brings online is a part you can see. The weight in the hands (GDD §4.2a) and the complexity in the art are the same idea.
+
+**Silhouette.** The §3 grammar is kept and extended. It is still a wedge with a lantern globe on top and still symmetric. The **lamp globe stays the brightest pixel in the frame** (§3, palette law 4). What changes:
+- **Length and keel.** The hull lengthens along a brass keel spine, so the ship has an obvious nose and an obvious heading: the keel *is* the heading tell. The composite grows from the Act 0 48×48 core toward ART-002's 128×64 nominal footprint (about 64 × 40 px of visible hull at the 640×360 frame, ✱).
+- **The lamp on a gimbal.** The globe hangs in a brass gimbal above the hull and swings against acceleration: the visible sign of inertia. The Arc-Lance turret sits under the lamp and follows the aim, separately from the hull.
+- **Stern drive.** Bellows and a flue at the stern, with gaslight in the flue. It brightens with thrust and dims when running dark.
+- **Readability at gameplay scale.** At 640×360 the read order is: lamp (brightest), keel direction (the longest line), then everything else. Greyscale check: with the modules removed, the silhouette must still say "nose here, lamp there". Modules are small, never break the outline into noise, and never cover the lamp. The hitbox does not change (`ds_vigil.move.hitbox_circle_px` 🔒); the art grows around a small, honest core.
+
+**Modules show the Lantern Tree** (sockets in ART-002 §4.1; node map in LOOP-001 §3.8). A bare Vigil is a hull, a keel spine, a lamp and one bellows. Each handling or survival node adds a part: trim vanes on the flanks (HULL-1, HULL-7), a keel lamp and blade (LANTERN-10, -13), extra bellows (LANTERN-1), lamp louvres (LANTERN-5), brake shutters on the cowl (HULL-3, -5, -15), a riveted plate (HULL-4), and an anchor ring and hook reel at the bow (HULL-9, ORDNANCE-1). Run Sigils keep their own reads on the sprite (LOOP-001 §4). At a glance, a veteran's ship looks different from a first launch: more systems online.
+
+**Lamp and lantern lighting** (§5; §15.1 per tier).
+- **T1:** the lantern is a real light (soft falloff, occluder shadows). Two small running lamps at the vane tips (GAS-2 glass, never brighter than GAS-3) show the heading in fog.
+- **T2:** the flue glows, with bloom on the globe.
+- **T3 and up:** god-rays from the lantern through the gimbal ribs, and normal-mapped brass on the hull.
+- **Lantern Down:** the globe shutters to `lampGlobeDim`, the running lamps go out, and the flue dims to an ember (the drive runs weaker, GDD §4.2a). The Vigil becomes a dark brass shape in the fog. It must still read, through rim light from the fog and the phosphor Charge ring when Charges are carried.
+
+**Instruments on the hull (the hull never lies).** These come from cosmic-horror change C-27 and are not invented here: up to 5 Charge lamps on the hull, then one phosphor ring for Charges 6–13, and a cockpit flame with 4 shape states for Composure. They sit on the sockets listed in ART-002 §4.1.
+
+**Damage states.** The default is one hit (D-08 stays open), so the hull has only one damage read:
+- **Plating (HULL-4) shears:** on the first hit the plate tears off in a GAS spark burst, and a patch of bare ribs stays for the rest of the Seam (or until HULL-14 re-arms it). Shape carries the read, not colour: the Vigil never uses SIGNAL, so the SIGNAL ≤ 3 budget stays with the threats.
+- **Death:** the lamp gutters out first, then the hull goes dark and drifts. This matches the cinematic image of the unlit, drifting Vigil (M2 slice beat 6).
+- **Second Vigil (HULL-6) revive:** the lamp relights before the hull does.
+
+**Role laws** (§4 laws 1–5; §15.1 "what survives every rung"):
+- No CHOIR on any Vigil part, at any tier.
+- Brass is a BONE/VOID mix (§16.6a). GAS appears only in flames, glass and light.
+- PHOSPHOR appears only on truth-telling things: the Charge ring and the Null-Iron Charges.
+- The Vigil never uses SIGNAL.
+- The lamp stays the warmest and brightest light in the frame.
+
+**Generated only (D-13, D-14; §14).** The hull and modules are runtime vector parts (`Polygon2D` or draw calls in `Pal` colours, assembled on the ART-002 sockets), or pxl renders (`art/src/vigil_aether*.px.js`, ✱ names) for engraved static detail. The lamp swing, flue glow, shutters and plate shear change continuously, so they stay runtime. No hand-made or recorded file is used.

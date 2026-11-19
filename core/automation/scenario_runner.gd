@@ -26,6 +26,8 @@ const InputDriver := preload("res://core/automation/input_driver.gd")
 const UiView := preload("res://core/automation/ui_view.gd")
 const Capture := preload("res://core/automation/capture.gd")
 const ErrorCapture := preload("res://core/automation/error_capture.gd")
+const FrameStats := preload("res://core/automation/frame_stats.gd")
+const LumaWatch := preload("res://core/automation/luma_watch.gd")
 
 ## route id -> probe script (loaded only if present in the build)
 const PROBES := {"cabinet": "res://features/cabinet/automation/cabinet_probe.gd"}
@@ -39,6 +41,7 @@ const COIN_STEP_FRAMES := 240  ## ✱ per phase of the coin sequence
 const MAX_SNAPSHOTS := 50        ## ✱ snapshot steps per run
 const MAX_EVENTS := 256          ## ✱ events kept in result.events
 const MAX_PERF := 200            ## ✱ perf samples kept
+const MAX_WINDOWS := 32          ## ✱ perf_begin / luma_begin windows per run
 const FEATURE_TAGS: Array[String] = ["editor", "automation_dev", "automation_qa"]
 
 var done := false
@@ -63,6 +66,13 @@ var _events: Array = []
 var _event_counts: Dictionary = {}
 var _snapshots: Array = []
 var _perf: Array = []
+var _perf_open: Dictionary = {}    ## name -> {start, samples: Array of ms (an Array, so appends stick)}
+var _perf_windows: Array = []
+var _last_usec := 0
+var _saved_vsync := -1   ## vsync mode before the first open perf window (-1 = none saved)
+var _saved_max_fps := 0
+var _luma_open: Dictionary = {}    ## name -> {start, target, watch}
+var _luma_windows: Array = []
 var _logger: ErrorCapture
 var _detail_do := "preflight"
 
@@ -335,6 +345,14 @@ func _exec(step: Dictionary) -> bool:
 			return _snapshot(str(step.name))
 		"perf_sample":
 			return _perf_sample()
+		"perf_begin":
+			return _perf_begin(str(step.name))
+		"perf_end":
+			return _perf_end(str(step.name), float(step.get("budget_ms", 0.0)))
+		"luma_begin":
+			return _luma_begin(str(step.name), str(step.get("target", "window")))
+		"luma_end":
+			return _luma_end(str(step.name), bool(step.get("report_only", false)))
 		"wait_event":
 			return await _wait_event(step)
 		"mouse_button":
@@ -431,6 +449,145 @@ func _perf_sample() -> bool:
 			"orphan_nodes": int(Performance.get_monitor(Performance.OBJECT_ORPHAN_NODE_COUNT)),
 			"static_mem_mb": Performance.get_monitor(Performance.MEMORY_STATIC) / 1048576.0})
 	return true
+
+
+## Per-frame hooks for perf and luma windows. Wall-clock time between successive process frames is
+## the frame time (with --fixed-fps 60 the engine does not sleep, so it is the frame's real cost).
+func _process(_delta: float) -> void:
+	var now := Time.get_ticks_usec()
+	if _last_usec > 0 and not _perf_open.is_empty():
+		var ms := (now - _last_usec) / 1000.0
+		for w: Dictionary in _perf_open.values():
+			(w.samples as Array).append(ms)
+	_last_usec = now
+	if _luma_open.is_empty() or DisplayServer.get_name() == "headless":
+		return
+	var imgs := {}
+	for w: Dictionary in _luma_open.values():
+		var target := str(w.target)
+		if not imgs.has(target):
+			imgs[target] = _frame_image(target)
+		var img: Image = imgs[target]
+		if img != null:
+			(w.watch as LumaWatch).add_image(frames, img)
+
+
+func _frame_image(target: String) -> Image:
+	var vp: Viewport = get_tree().root
+	if target == "arcade":
+		var root := _view.route_root()
+		var found: Node = root.get_node_or_null("%ScreenViewport") if root != null else null
+		if not (found is Viewport):
+			return null
+		vp = found as Viewport
+	var tex := vp.get_texture()
+	if tex == null:
+		return null
+	var img := tex.get_image()
+	return null if img == null or img.is_empty() else img
+
+
+func _window_name_error(n: String, open: Dictionary) -> String:
+	if not Schema.is_name(n):
+		return "window name '%s' must match ^[a-z0-9_]+$" % n
+	if open.has(n):
+		return "window '%s' is already open" % n
+	if _perf_windows.size() + _luma_windows.size() + _perf_open.size() + _luma_open.size() >= MAX_WINDOWS:
+		return "too many windows (max %d)" % MAX_WINDOWS
+	return ""
+
+
+## Opens a frame-time window (TECH-001 §8.3). Closed by perf_end, or at finish (marked open_at_finish).
+func _perf_begin(n: String) -> bool:
+	var err := _window_name_error(n, _perf_open)
+	if err != "":
+		return _fail(err)
+	if _perf_open.is_empty():
+		_unthrottle(true)
+	_perf_open[n] = {"start": frames, "samples": []}
+	return true
+
+
+## While a perf window is open, vsync and max_fps are off: with --fixed-fps the engine then runs
+## unthrottled, so a frame's wall time is its cost, not the display's refresh interval.
+func _unthrottle(on: bool) -> void:
+	if on and _saved_vsync < 0:
+		_saved_vsync = DisplayServer.window_get_vsync_mode()
+		_saved_max_fps = Engine.max_fps
+		DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
+		Engine.max_fps = 0
+	elif not on and _saved_vsync >= 0:
+		DisplayServer.window_set_vsync_mode(_saved_vsync as DisplayServer.VSyncMode)
+		Engine.max_fps = _saved_max_fps
+		_saved_vsync = -1
+
+
+## Closes a frame-time window into result.perf_windows: p50/p95/p99/max/mean ms. budget_ms > 0 adds a
+## report-only check of p50 against it (machine-dependent, never fails the run; TECH-001 §8.1).
+func _perf_end(n: String, budget_ms: float) -> bool:
+	if not _perf_open.has(n):
+		return _fail("perf window '%s' is not open" % n)
+	_close_perf(n, budget_ms, false)
+	return true
+
+
+func _close_perf(n: String, budget_ms: float, at_finish: bool) -> void:
+	var w: Dictionary = _perf_open[n]
+	_perf_open.erase(n)
+	var rec := FrameStats.summarise(PackedFloat64Array(w.samples as Array))
+	rec["name"] = n
+	rec["frame_start"] = int(w.start)
+	rec["frame_end"] = frames
+	rec["headless"] = DisplayServer.get_name() == "headless"
+	rec["luma_active"] = not _luma_open.is_empty()
+	if budget_ms > 0.0:
+		rec["budget_ms"] = budget_ms
+		rec["p50_within_budget"] = float(rec.p50_ms) <= budget_ms
+	if at_finish:
+		rec["open_at_finish"] = true
+	_perf_windows.append(rec)
+	if _perf_open.is_empty():
+		_unthrottle(false)
+
+
+## Opens a flash-rule window over the captured frames (luma_watch.gd). Headless: recorded as skipped.
+func _luma_begin(n: String, target: String) -> bool:
+	var err := _window_name_error(n, _luma_open)
+	if err != "":
+		return _fail(err)
+	if target not in ["window", "arcade"]:
+		return _fail("luma target must be window or arcade")
+	_luma_open[n] = {"start": frames, "target": target, "watch": LumaWatch.new()}
+	return true
+
+
+## Closes a flash-rule window into result.luma_windows. Fails on any violation unless report_only.
+func _luma_end(n: String, report_only: bool) -> bool:
+	if not _luma_open.has(n):
+		return _fail("luma window '%s' is not open" % n)
+	var rec := _close_luma(n, report_only, false)
+	if rec.has("skipped") or bool(rec.ok) or report_only:
+		return true
+	return _fail("flash rule: %d violation(s) in '%s'; first: %s" % [int(rec.violation_count), n, JSON.stringify((rec.violations as Array)[0])])
+
+
+func _close_luma(n: String, report_only: bool, at_finish: bool) -> Dictionary:
+	var w: Dictionary = _luma_open[n]
+	_luma_open.erase(n)
+	var rec: Dictionary = {}
+	if DisplayServer.get_name() == "headless":
+		rec = {"skipped": "headless", "ok": true}
+	else:
+		rec = (w.watch as LumaWatch).report()
+	rec["name"] = n
+	rec["target"] = str(w.target)
+	rec["frame_start"] = int(w.start)
+	rec["frame_end"] = frames
+	rec["report_only"] = report_only
+	if at_finish:
+		rec["open_at_finish"] = true
+	_luma_windows.append(rec)
+	return rec
 
 
 ## Waits for `count` (default 1) occurrences of a probe event that happen after this step starts.
@@ -614,6 +771,10 @@ func _finish(code: int, outcome: StringName, detail: String) -> void:
 			detail = "fail_on_errors: %d error(s): %s" % [bad.size(), " | ".join(bad.slice(0, 3).map(func(e: Dictionary) -> String: return str(e.message)))]
 	if detail != "" and _detail == "":
 		_detail = detail
+	for n: String in _perf_open.keys():
+		_close_perf(n, 0.0, true)
+	for n: String in _luma_open.keys():
+		_close_luma(n, true, true)
 	var steps_out := _step_log.duplicate()
 	if detail != "":
 		steps_out.append({"i": -1, "do": _detail_do, "outcome": "fail", "frame_start": 0, "frame_end": 0, "detail": detail.substr(0, MAX_DETAIL * 3)})
@@ -636,6 +797,7 @@ func _finish(code: int, outcome: StringName, detail: String) -> void:
 		"outcome": str(outcome), "exit_code": code, "frames": frames,
 		"steps": steps_out, "checkpoints": _checkpoints, "screenshots": _shots,
 		"snapshots": _snapshots, "events": _events, "perf": _perf,
+		"perf_windows": _perf_windows, "luma_windows": _luma_windows,
 		"errors": _logger.snapshot() if _logger != null else [],
 		"error_count": _logger.error_count if _logger != null else 0,
 		"warning_count": _logger.warning_count if _logger != null else 0,

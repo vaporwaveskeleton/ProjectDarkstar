@@ -73,7 +73,7 @@ func advance(delta: float) -> void:
 	_time_s += delta
 	var before := _recent.size()
 	_prune()
-	if _recent.size() != before:
+	if _recent.size() != before or not bool(SettingsService.get_value(&"reduced_motion")):
 		queue_redraw()
 
 
@@ -170,23 +170,54 @@ func _build_shape(rng: RandomNumberGenerator) -> void:
 			_glints.append(Vector2.from_angle(rng.randf() * TAU) * radius * rng.randf_range(0.1, 0.55))
 
 
-## Runtime vector, base palette (ART-001 §14): bone rock, phosphor glass; heats toward phosphor
-## as the over-fire window fills; one chalk crack per shattered face.
+const FILL_ALPHA := 0.55          ## ✱ drawing: body fill opacity
+const SHIMMER_RATE := 1.7         ## rad/s ✱ drawing: facet glint shimmer
+const RIM_SHARE := 0.4            ## ✱ drawing: fraction of the outline that takes the rim light
+const RIM_DIR := Vector2(-0.6, -0.8)   ## ✱ drawing: light comes from upper left
+
+
+## Runtime vector, Aether tier (ART-001 §15): translucent crystal body (AETHER ramp) with lighter
+## facet edges, a rim light on the lit side and slowly shimmering inner facets; heats toward phosphor
+## as the over-fire window fills; one chalk crack per shattered face. Reads only.
 func _draw() -> void:
-	if stats == null or _shape.is_empty():
+	if stats == null or _shape.size() < 3:
 		return
 	var heat := clampf(float(_recent.size()) / stats.overfire_hits, 0.0, 1.0)
-	var bright := Pal.BONE_3
+	var edge := Pal.AETHER_3
 	if heat > 0.6:
-		bright = Pal.PHOS_5
+		edge = Pal.PHOS_5
 	elif heat > 0.3:
-		bright = Pal.BONE_5
+		edge = Pal.AETHER_4
 	var pts := PackedVector2Array()
 	for v in _shape:
 		pts.append(v.round())
-	Pal.glow_polyline(self, pts, bright, Pal.BONE_0)
+	var n := pts.size()
+	var still := bool(SettingsService.get_value(&"reduced_motion"))
+	var fill := Pal.AETHER_1 if heat <= 0.3 else Pal.PHOS_1
+	draw_colored_polygon(pts, Color(fill, FILL_ALPHA))
+	var hub := (RIM_DIR * radius * 0.2).round()
+	for k in range(0, n, 2):
+		draw_line(hub, pts[k], Color(Pal.AETHER_2, 0.6), 1.0)
+	var inner := PackedVector2Array()
+	for p in pts:
+		inner.append((p * 0.6 + hub * 0.4).round())
+	draw_colored_polygon(inner, Color(Pal.AETHER_2, 0.25))
+	inner.append(inner[0])
+	draw_polyline(inner, Color(Pal.AETHER_3, 0.35), 1.0)
+	pts.append(pts[0])
+	draw_polyline(pts, edge, 1.0)
+	for k in n:
+		var a := pts[k]
+		var b := pts[k + 1]
+		if ((a + b) * 0.5).normalized().dot(RIM_DIR) > 1.0 - 2.0 * RIM_SHARE:
+			draw_line(a, b, Pal.AETHER_4, 2.0)
+	for f in mini(2, n):
+		var tri := PackedVector2Array([hub, pts[(f * 3 + 1) % n], pts[(f * 3 + 2) % n]])
+		var phase := 0.5 if still else 0.5 + 0.5 * sin(_time_s * SHIMMER_RATE + f * 2.4)
+		draw_colored_polygon(tri, Color(Pal.AETHER_4, 0.08 + 0.22 * phase))
 	for f in faces - faces_left:
-		draw_line(Vector2.ZERO, (Vector2.from_angle(f * 2.1) * radius * 0.9).round(), Pal.BONE_1)
+		draw_line(Vector2.ZERO, (Vector2.from_angle(f * 2.1) * radius * 0.9).round(), Pal.BONE_4, 1.0)
+		draw_line(Vector2.ZERO, (Vector2.from_angle(f * 2.1 + 0.15) * radius * 0.5).round(), Pal.AETHER_0, 1.0)
 	for g in _glints:
 		var q := g.round()
 		draw_rect(Rect2(q - Vector2(1, 1), Vector2(2, 2)), Pal.PHOS_3)

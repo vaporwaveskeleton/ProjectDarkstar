@@ -1,6 +1,6 @@
 class_name SisterSpheres
 extends Node2D
-## The other heavens (ART-001 §16.6h): small, far crystal spheres seen through the far fog, each one
+## The other heavens (ART-001 §16.6i): small, far crystal spheres seen through the far fog, each one
 ## holding its own lit sky, a brass meridian and a few motes of life. Runtime vector in the far band
 ## (FarLayer, under the mid fog), off-centre, never in the play core, some cropped by the frame.
 ## The cosmic-horror ladder: the entity eats the sky in order of beauty (GDD, the Eating of a Sky),
