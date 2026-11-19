@@ -49,7 +49,7 @@ func test_every_cabinet_message_fits_the_screen_at_its_scale() -> void:
 		["CAB_STAGE_A0_1", 3], ["CAB_STAGE_A0_2", 3], ["CAB_STAGE_A0_3", 3], ["CAB_STAGE_A0_4", 3], ["CAB_STAGE_A0_5", 3],
 		["CAB_STAGE_A0_1_SUB", 1], ["CAB_STAGE_A0_2_SUB", 1], ["CAB_STAGE_A0_3_SUB", 1], ["CAB_STAGE_A0_4_SUB", 1],
 		["CAB_STAGE_A0_5_SUB", 1], ["CAB_ZONE_DRIFT", 1], ["CAB_ZONE_CENSER_WATCH", 1], ["CAB_ZONE_SHOAL", 1],
-		["CAB_ZONE_HOLLOW", 1],
+		["CAB_ZONE_STILLWATER", 1],
 		["CAB_READY", 2], ["CAB_GAME_OVER", 2], ["CAB_VIGIL_COMPLETE", 2], ["CAB_ENTITY_DOWN", 2],
 		["CAB_EXTRA_VIGIL", 1], ["CAB_CAPTION_WHISPER", 1], ["CAB_CREDIT", 1],
 		["ENTITY_IT_WAKES", 3], ["REVEAL_PRETENCE", 3], ["REVEAL_ONE_SKY_LESS", 3], ["CAB_MAKER", 1],
@@ -65,6 +65,10 @@ func test_every_cabinet_message_fits_the_screen_at_its_scale() -> void:
 		if it.size() > 2:
 			s = s % int(it[2])
 		assert_bool(_fits(s, it[1], limit)).override_failure_message("%s at x%d does not fit %s px" % [it[0], it[1], limit]).is_true()
+	# the mid-shift tally title, in the credits typeface (x2), with a worst-case 2-digit stage number
+	var tally := tr("CAB_TALLY_TITLE")
+	assert_str(tally).is_not_equal("CAB_TALLY_TITLE")
+	assert_bool(_fits(tally.format({"n": 99}), 2, limit)).override_failure_message("CAB_TALLY_TITLE does not fit").is_true()
 
 
 func test_wrap_breaks_at_spaces_and_keeps_every_word() -> void:

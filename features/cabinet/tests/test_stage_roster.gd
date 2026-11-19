@@ -83,6 +83,19 @@ func test_the_cabinet_game_scene_plays_this_roster() -> void:
 	assert_bool(found).is_true()
 
 
+## PM 2026-11-19: THE LAST NORMAL DAY eased to 4 Grubs and 1 guard Acolyte.
+func test_the_last_normal_day_population() -> void:
+	var st := roster.get_stage(roster.index_of(&"a0_5"))
+	assert_int(st.grubs).is_equal(4)
+	assert_int(st.guard_acolytes).is_equal(1)
+
+
+func test_the_default_roster_is_this_roster_and_counts_five() -> void:
+	assert_str(CabinetStageRoster.DEFAULT_PATH).is_equal(ROSTER)
+	assert_object(CabinetStageRoster.default_roster()).is_not_null()
+	assert_int(CabinetStageRoster.default_size()).is_equal(5)
+
+
 func test_a_zone_card_has_a_zone_cue_and_only_then() -> void:
 	for st: CabinetStage in roster.stages:
 		assert_bool(st.zone_cue != &"").override_failure_message("%s: zone_cue iff zone_key" % st.id) \

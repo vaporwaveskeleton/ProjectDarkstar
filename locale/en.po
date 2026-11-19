@@ -175,8 +175,8 @@ msgid "CAB_ZONE_SHOAL"
 msgstr "ENTERING THE SHOAL"
 
 #. Zone line above the A0-5 READY card title. WORDING PROPOSED.
-msgid "CAB_ZONE_HOLLOW"
-msgstr "ENTERING THE HOLLOW"
+msgid "CAB_ZONE_STILLWATER"
+msgstr "ENTERING STILLWATER"
 
 #. Attract CONTINUE page. {stage} is the 1-based stage number (stage index + 1), filled in code (L10N-001 §3). WORDING PROPOSED.
 msgid "CAB_CONTINUE"
@@ -223,6 +223,10 @@ msgstr "CHARGES THROWN: %d"
 #. S7 service record. Wording approved by the owner 2026-11-18, NARR-001 §7.5; counts are true.
 msgid "CAB_CREDITS_STAT_CARRIED"
 msgstr "GLASS CARRIED: %d"
+
+#. Mid-shift stage tally title, followed by the four stat lines for that stage only. {n} is the 1-based stage number, filled in code (L10N-001 §3). WORDING PROPOSED.
+msgid "CAB_TALLY_TITLE"
+msgstr "VIGIL {n} TALLY"
 
 msgid "CAB_CREDITS_4"
 msgstr "DARKSTAR"
