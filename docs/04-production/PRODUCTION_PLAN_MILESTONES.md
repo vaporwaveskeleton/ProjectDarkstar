@@ -196,6 +196,7 @@ Not covered yet: Composure, the full Ledger Compass and the Litany Ring are not 
 | Art / audio | generator render tests and frame cost at the on-screen caps (ART-001 §14.7); audio voice budget and boot-time generation check (AUDIO-001 §7.5, §11.5) |
 | Docs | TECH-001 §8.1–§8.4 with measurements; ASSET-003 import presets verified |
 | Risks | the warp misses budget → WARP-001 §5.3 refusal ladder, never a silent quality drop |
+| Watch items | Ledger Compass p99/max frame spikes (up to 0.365 ms p99, 2.65 ms max on a debug build, against the 0.2 ms ✱ budget whose statistic is p95): re-measure on a release build on minimum spec (TECH-001 §5.4, §8.5; PM 2026-11-19) |
 
 ### M4 — Demo (target 2027-09 ✱)
 | | |

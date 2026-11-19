@@ -653,7 +653,8 @@ The compass draws the sector list, corruption state and up to 8 markers ✱. Sta
 - **Sector list:** a **one-cell stub** (the current sector, `PHOS-1` fill, `BONE-3` keyline). No doc specifies a sector entry's fields, so none are invented; `HudModel.sector_list_cells` = 1. Fields come with ZONES-001's macro map.
 - **Honesty seam:** `HudModel` (`features/hud/hud_model.gd`, the compass slice of §5.2's model only) samples the world (true positions, torus-wrapped; the Vigil's is `own_position`). The drawing reads `HudModel.presented()` only and never applies a lie. With `SettingsService` `steady_ledger` on (default) `presented()` is the honest model; with it off the state goes through `HudModel.lie_hook()`, the seam where `HudLiar` plugs in. `HudLiar` is **not built**, so the hook returns the honest state: no lie path exists. The own-position readout never lies (WARP-001 §4.7).
 - **Not built:** the corruption layer, `HudLiar`, H16, W1-09/W3-02/W3-07/W4-09, sector-list fields.
-- **Budget:** measured by `tests/perf/bench_ledger_compass` (§8.3, §8.5): p95 0.14–0.20 ms per frame on a desktop debug build, inside the 0.2 ms ✱ budget at p95; p99 and max exceed it in some runs.
+- **Budget:** measured by `tests/perf/bench_ledger_compass` (§8.3, §8.5): p95 0.14–0.20 ms per frame on a desktop debug build, inside the 0.2 ms ✱ budget. **p95 is the budget statistic** (PM under owner autonomy grant 2026-11-19). p99 and max spike over it in some runs (up to 0.365 ms p99 and 2.65 ms max); this is an M3 watch item, to be re-measured on a release build (PROD-001 §3 M3).
+- **Cache (PM under owner autonomy grant 2026-11-19):** the static layer is cached as Godot's retained canvas draw-command list, not a texture; this counts as the "cached texture" above for now. Move it into a SubViewport texture when the corruption bruise needs one.
 
 ### 5.5 Rendering ladder (ART-001 §15)
 Fidelity grows with the warp; the WarpComposer owns the switches.
