@@ -20,6 +20,7 @@ const BED_PITCH_RISE_S := 0.35         ## ✱ full-range glide time going up (sl
 const BED_PITCH_MIN := 0.25            ## ✱ safety clamp (engine minimum is 0.01)
 const CUE_IDS_PATH := "res://data/audio/cue_ids.tres"
 const CUE_POLICY_PATH := "res://data/audio/cue_policy.tres"
+const SHUTDOWN_DRAIN_MS := 100   ## ✱ wait for the mixer to free stopped playbacks at exit
 const UNSTEALABLE_BELOW := 2           ## P0 and P1 are never stolen (AUDIO-001 §12.6)
 const SUBTRACTION_OPEN_HZ := 20000.0   ## ✱ low-pass cutoff at subtraction 0 (the Passing / Waking lanes, AUDIO-001 §12.14)
 const SUBTRACTION_CLOSED_HZ := 500.0   ## ✱ low-pass cutoff at subtraction 1
@@ -302,17 +303,27 @@ func _stop_voices() -> void:
 
 
 ## Release every stream at shutdown so no playback outlives the engine (no leaks at exit).
+## Stopping a player only marks its playback for deletion; the mixer thread frees it on its next
+## tick. A voice still sounding at exit would leave the playback and its stream alive past
+## engine teardown ("ObjectDB instances leaked", TECH-001 Q-T79), so wait one mixer tick.
 func _exit_tree() -> void:
 	_apply_subtraction(0.0)   # never leave the shared buses filtered or cut
-	for p in _voices:
+	# children leave the tree first, so Player.playing is already false here: use our own books
+	var was_sounding := active_count() > 0 or _chant_level > 0.0 or _amb_id != &""
+	var players: Array[AudioStreamPlayer] = []
+	players.append_array(_voices)
+	players.append_array(_amb)
+	if _chant != null:
+		players.append(_chant)
+	for p in players:
 		p.stop()
 		p.stream = null
-	if _chant != null:
-		_chant.stop()
-		_chant.stream = null
-	for a in _amb:
-		a.stop()
-		a.stream = null
+	_cues.clear()
+	_beds.clear()
+	_trim.clear()
+	_rendered.clear()
+	if was_sounding:
+		OS.delay_msec(SHUTDOWN_DRAIN_MS)
 
 
 func stop_all() -> void:

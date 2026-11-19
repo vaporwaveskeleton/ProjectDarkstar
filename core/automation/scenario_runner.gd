@@ -5,6 +5,19 @@ extends Node
 ##   0 pass, 1 fail/timeout, 2 invalid, 3 refused.
 ## All waiting is physics frames; there is no wall-clock time anywhere in here.
 ## No class_name: release builds may exclude core/automation.
+##
+## Probe contract. Game knowledge lives in one probe per route, loaded by path from PROBES only if the
+## script exists (release builds exclude it, so they simply have none). A probe is a RefCounted with
+## no class_name and these duck-typed methods:
+##   setup(route_root: Node)                       called when the route is mounted
+##   describe() -> {ids, props, events, dev_ops}   for caps.json
+##   has(id: String) -> bool                       does the entity exist right now
+##   read(id, prop) -> {ok, value, error}          allow-listed scalar props only
+##   snapshot() -> Dictionary                      scalars; lists capped by the probe
+##   dev_op(op: String, args: Dictionary) -> String   "" on success, else a plain failure message
+##   event_names() -> PackedStringArray; connect_events(sink: Callable); disconnect_events()
+##                                                 sink(event_id: String, args: Array), scalars only
+## Catalog steps with "probe_op": true are dispatched to dev_op (the catalog "route" must be current).
 
 signal scenario_finished(outcome: StringName)
 
@@ -12,6 +25,10 @@ const Schema := preload("res://core/automation/scenario_schema.gd")
 const InputDriver := preload("res://core/automation/input_driver.gd")
 const UiView := preload("res://core/automation/ui_view.gd")
 const Capture := preload("res://core/automation/capture.gd")
+const ErrorCapture := preload("res://core/automation/error_capture.gd")
+
+## route id -> probe script (loaded only if present in the build)
+const PROBES := {"cabinet": "res://features/cabinet/automation/cabinet_probe.gd"}
 
 const FIXTURE_DIR := "res://tests/fixtures/saves/"
 const APPROVED_FIXTURES := "res://tests/fixtures/saves/approved.json"
@@ -19,6 +36,9 @@ const RESET_ROUTE_FRAMES := 240  ## ✱ the reset step waits this long for attra
 const MAX_DETAIL := 300        ## ✱ characters kept per step detail
 const COIN_PEEL_FRAMES := 300  ## ✱ give up peeling the tape after this many frames
 const COIN_STEP_FRAMES := 240  ## ✱ per phase of the coin sequence
+const MAX_SNAPSHOTS := 50        ## ✱ snapshot steps per run
+const MAX_EVENTS := 256          ## ✱ events kept in result.events
+const MAX_PERF := 200            ## ✱ perf samples kept
 const FEATURE_TAGS: Array[String] = ["editor", "automation_dev", "automation_qa"]
 
 var done := false
@@ -36,6 +56,15 @@ var _preset: Dictionary = {}   ## a failure decided before _ready (by the gate)
 var _timed_out := false
 var _detail := ""
 var _profile := ""   ## effective profile this run is held to ("dev" or "qa")
+var _probe: RefCounted
+var _probe_route := ""
+var _probe_root: Node
+var _events: Array = []
+var _event_counts: Dictionary = {}
+var _snapshots: Array = []
+var _perf: Array = []
+var _logger: ErrorCapture
+var _detail_do := "preflight"
 
 
 ## The build's profile: "dev" in the editor or an automation_dev build, "qa" in an automation_qa
@@ -77,6 +106,9 @@ func _ready() -> void:
 		return
 	SettingsService.persist = false
 	SettingsService.reset_to_defaults()
+	_logger = ErrorCapture.new()
+	OS.add_logger(_logger)
+	_current_probe()
 	var fx := _write_fixtures()
 	if fx != "":
 		_finish(3 if fx.begins_with("fixture not approved") else 2, &"refused" if fx.begins_with("fixture not approved") else &"invalid", fx)
@@ -103,6 +135,8 @@ func _profile_refusal() -> String:
 
 func _exit_tree() -> void:
 	input.release_all()
+	_detach_probe()
+	_remove_logger()
 	if SceneRouter.route_changed.is_connected(_on_route_changed):
 		SceneRouter.route_changed.disconnect(_on_route_changed)
 	done = true
@@ -110,6 +144,48 @@ func _exit_tree() -> void:
 
 func _on_route_changed(_route: StringName) -> void:
 	input.release_all()
+	_current_probe()
+
+
+## The probe for the current route (attached on demand; replaced when the route or its root changes).
+func _current_probe() -> RefCounted:
+	var route := str(SceneRouter.current_route)
+	var root: Node = _view.route_root() if _view != null else null
+	if _probe != null and _probe_route == route and _probe_root == root:
+		return _probe
+	_detach_probe()
+	if root == null or not PROBES.has(route) or not ResourceLoader.exists(str(PROBES[route])):
+		return null
+	var script := load(str(PROBES[route])) as GDScript
+	if script == null:
+		return null
+	_probe = script.new() as RefCounted
+	_probe_route = route
+	_probe_root = root
+	_probe.setup(root)
+	_probe.connect_events(_on_probe_event)
+	return _probe
+
+
+func _detach_probe() -> void:
+	if _probe != null:
+		_probe.disconnect_events()
+	_probe = null
+	_probe_route = ""
+	_probe_root = null
+
+
+func _on_probe_event(event_id: String, args: Array) -> void:
+	_event_counts[event_id] = int(_event_counts.get(event_id, 0)) + 1
+	_events.append({"frame": frames, "id": event_id, "args": args})
+	if _events.size() > MAX_EVENTS:
+		_events.remove_at(0)
+
+
+func _remove_logger() -> void:
+	if _logger != null:
+		OS.remove_logger(_logger)
+		_logger = null
 
 
 func _write_fixtures() -> String:
@@ -204,12 +280,12 @@ func _exec(step: Dictionary) -> bool:
 				return {"ok": SceneRouter.current_route == want and not SceneRouter.is_busy,
 					"text": "route=%s busy=%s" % [SceneRouter.current_route, SceneRouter.is_busy]}, int(step.within))
 		"wait_until":
-			return await _wait_for(func() -> Dictionary: return _probe(step), int(step.within))
+			return await _wait_for(func() -> Dictionary: return _check(step), int(step.within))
 		"assert":
 			if step.has("exists"):
-				var found: bool = _view.resolve(str(step.id)).ok
+				var found := _exists(str(step.id))
 				return true if found == bool(step.exists) else _fail("'%s' exists=%s, expected %s" % [step.id, found, step.exists])
-			var p := _probe(step)
+			var p := _check(step)
 			return true if p.ok else _fail("assert failed; last value: %s" % p.text)
 		"checkpoint":
 			_checkpoints.append({"name": step.name, "frame": frames})
@@ -255,15 +331,134 @@ func _exec(step: Dictionary) -> bool:
 			return await _reset()
 		"set_setting":
 			return _set_setting(str(step.key), step.value)
+		"snapshot":
+			return _snapshot(str(step.name))
+		"perf_sample":
+			return _perf_sample()
+		"wait_event":
+			return await _wait_event(step)
 		"mouse_button":
 			input.mouse_button({"left": MOUSE_BUTTON_LEFT, "right": MOUSE_BUTTON_RIGHT, "middle": MOUSE_BUTTON_MIDDLE}[str(step.button)], bool(step.pressed))
 			return true
+	var def: Variant = (Schema.catalog().get("steps", {}) as Dictionary).get(str(step.do))
+	if typeof(def) == TYPE_DICTIONARY and bool((def as Dictionary).get("probe_op", false)):
+		return _probe_op(step, def as Dictionary)
 	return _fail("step '%s' is not implemented" % step.do)
 
 
+## A catalog step with "probe_op": true is run by the current route's probe.
+func _probe_op(step: Dictionary, def: Dictionary) -> bool:
+	if _profile == "qa" and bool(def.get("dev", false)):
+		return _fail("step '%s' is dev-only" % step.do)
+	var need := str(def.get("route", ""))
+	if need != "" and str(SceneRouter.current_route) != need:
+		return _fail("step '%s' needs route '%s' (current: '%s')" % [step.do, need, SceneRouter.current_route])
+	var p := _current_probe()
+	if p == null:
+		return _fail("step '%s': no probe is attached for route '%s'" % [step.do, SceneRouter.current_route])
+	var args := step.duplicate()
+	args.erase("do")
+	var msg: String = p.dev_op(str(step.do), args)
+	return true if msg == "" else _fail(msg)
+
+
+func _exists(id: String) -> bool:
+	if not _is_probe_id(id):
+		return _view.resolve(id).ok
+	if _view.route_root() == null or id.get_slice("/", 0) != str(SceneRouter.current_route):
+		return false
+	var p := _current_probe()
+	return p != null and p.has(id)
+
+
+static func _is_probe_id(id: String) -> bool:
+	var parts := id.split("/")
+	# Routes without a probe (sector) keep their state ids in ui_view.STATE_IDS.
+	return parts.size() >= 2 and parts[1] != "ui" and PROBES.has(parts[0])
+
+
+## Reads an id through the UI view (ui ids) or the route's probe (state ids).
+func _read(id: String, prop: String) -> Dictionary:
+	if not _is_probe_id(id):
+		var parts := id.split("/")
+		if parts.size() >= 2 and parts[1] != "ui" and not UiView.STATE_IDS.has(id):
+			return {"ok": false, "value": null, "error": "no probe is attached for route '%s' (id '%s')" % [parts[0], id]}
+		return _view.read(id, prop)
+	var fail := {"ok": false, "value": null, "error": ""}
+	if _view.route_root() == null:
+		fail.error = "no route is mounted"
+		return fail
+	if id.get_slice("/", 0) != str(SceneRouter.current_route):
+		fail.error = "id '%s' needs route '%s' (current: '%s')" % [id, id.get_slice("/", 0), SceneRouter.current_route]
+		return fail
+	var p := _current_probe()
+	if p == null:
+		fail.error = "no probe is attached for route '%s' (id '%s')" % [SceneRouter.current_route, id]
+		return fail
+	return p.read(id, prop)
+
+
+func _snapshot(snap_name: String) -> bool:
+	if _snapshots.size() >= MAX_SNAPSHOTS:
+		return _fail("snapshot limit (%d per run) reached" % MAX_SNAPSHOTS)
+	var dir := str(_opts.get("out_dir", ""))
+	if dir == "":
+		return _fail("snapshot needs an output directory")
+	var p := _current_probe()
+	var data := {"frame": frames, "route": str(SceneRouter.current_route),
+		"ui": _view.list_focusable(), "probe": p.snapshot() if p != null else null}
+	var folder := dir.path_join("snapshots")
+	DirAccess.make_dir_recursive_absolute(folder)
+	var path := folder.path_join(snap_name + ".json")
+	var f := FileAccess.open(path, FileAccess.WRITE)
+	if f == null:
+		return _fail("could not write %s" % path)
+	f.store_string(JSON.stringify(data, "\t"))
+	f.close()
+	_snapshots.append(path)
+	return true
+
+
+## Appends one Performance sample to result.perf (extra samples beyond MAX_PERF are dropped).
+func _perf_sample() -> bool:
+	if _perf.size() < MAX_PERF:
+		_perf.append({"frame": frames,
+			"fps": Performance.get_monitor(Performance.TIME_FPS),
+			"process_ms": Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0,
+			"physics_ms": Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000.0,
+			"objects": int(Performance.get_monitor(Performance.OBJECT_COUNT)),
+			"nodes": int(Performance.get_monitor(Performance.OBJECT_NODE_COUNT)),
+			"orphan_nodes": int(Performance.get_monitor(Performance.OBJECT_ORPHAN_NODE_COUNT)),
+			"static_mem_mb": Performance.get_monitor(Performance.MEMORY_STATIC) / 1048576.0})
+	return true
+
+
+## Waits for `count` (default 1) occurrences of a probe event that happen after this step starts.
+func _wait_event(step: Dictionary) -> bool:
+	var p := _current_probe()
+	var ev := str(step.event)
+	if p == null:
+		return _fail("wait_event: no probe is attached for route '%s'" % SceneRouter.current_route)
+	var known: PackedStringArray = p.event_names()
+	if not known.has(ev):
+		return _fail("wait_event: unknown event '%s' (known: %s)" % [ev, ", ".join(known)])
+	var want := int(step.get("count", 1))
+	var base := _event_counts.duplicate()
+	return await _wait_for(func() -> Dictionary:
+		var seen: PackedStringArray = []
+		var got := 0
+		for k: Variant in _event_counts.keys():
+			var n := int(_event_counts[k]) - int(base.get(k, 0))
+			if n > 0:
+				seen.append("%s x%d" % [k, n])
+			if str(k) == ev:
+				got = n
+		return {"ok": got >= want, "text": "'%s' seen %d of %d; events seen: %s" % [ev, got, want, ", ".join(seen) if not seen.is_empty() else "none"]}, int(step.within))
+
+
 ## Evaluate a wait_until / assert comparator against the current value.
-func _probe(step: Dictionary) -> Dictionary:
-	var r := _view.read(str(step.id), str(step.prop))
+func _check(step: Dictionary) -> Dictionary:
+	var r := _read(str(step.id), str(step.prop))
 	if not r.ok:
 		return {"ok": false, "text": str(r.error)}
 	for op: String in Schema.COMPARATORS:
@@ -410,11 +605,18 @@ func _finish(code: int, outcome: StringName, detail: String) -> void:
 	if done:
 		return
 	input.release_all()
+	if code == 0 and _logger != null and bool(_scenario.get("fail_on_errors", false)):
+		var bad: Array = _logger.blocking(_scenario.get("allow_errors", []) as Array)
+		if not bad.is_empty():
+			code = 1
+			outcome = &"fail"
+			_detail_do = "errors"
+			detail = "fail_on_errors: %d error(s): %s" % [bad.size(), " | ".join(bad.slice(0, 3).map(func(e: Dictionary) -> String: return str(e.message)))]
 	if detail != "" and _detail == "":
 		_detail = detail
 	var steps_out := _step_log.duplicate()
 	if detail != "":
-		steps_out.append({"i": -1, "do": "preflight", "outcome": "fail", "frame_start": 0, "frame_end": 0, "detail": detail.substr(0, MAX_DETAIL * 3)})
+		steps_out.append({"i": -1, "do": _detail_do, "outcome": "fail", "frame_start": 0, "frame_end": 0, "detail": detail.substr(0, MAX_DETAIL * 3)})
 	var tags: Array = []
 	for t in FEATURE_TAGS:
 		if OS.has_feature(t):
@@ -433,7 +635,13 @@ func _finish(code: int, outcome: StringName, detail: String) -> void:
 		},
 		"outcome": str(outcome), "exit_code": code, "frames": frames,
 		"steps": steps_out, "checkpoints": _checkpoints, "screenshots": _shots,
+		"snapshots": _snapshots, "events": _events, "perf": _perf,
+		"errors": _logger.snapshot() if _logger != null else [],
+		"error_count": _logger.error_count if _logger != null else 0,
+		"warning_count": _logger.warning_count if _logger != null else 0,
 	}
+	_detach_probe()
+	_remove_logger()
 	var dir := str(_opts.get("out_dir", ""))
 	if dir != "":
 		DirAccess.make_dir_recursive_absolute(dir)

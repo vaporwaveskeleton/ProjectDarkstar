@@ -1,6 +1,6 @@
 class_name BezelField
 extends Control
-## The plain printed field around the screen hole (interim: PR C re-composes the bezel). Navy print
+## The printed field around the screen hole (interim: PR C re-composes the bezel), reverse-printed on glass. Navy print
 ## ink over the whole window in rig units (ScreenFit.bezel_rect, so no bars at any aspect) except the
 ## hole itself, with the key-black tube-mask edge hugging the hole above and below; the two columns
 ## (BezelPrint) sit on top of it, flush against the hole's sides. It is drawn as four rectangles
@@ -25,6 +25,7 @@ func _ready() -> void:
 	show_behind_parent = true
 	if inks == null:
 		inks = BezelInks.default() as BezelInks
+	material = CabinetLighting.print_material(CabinetSurface.default() as CabinetSurface, Vector2.ZERO, true)
 	if rig != null:
 		rig.refitted.connect(set_area)
 		set_area(rig.bezel_rect())
@@ -39,8 +40,13 @@ func set_area(r: Rect2) -> void:
 ## The four print rectangles (before peel): top band, bottom band, left of the left column, right of
 ## the right column. Together with the hole and the two columns they tile the whole area.
 func bands() -> Array[Rect2]:
+	return bands_for(_area)
+
+
+## The four bands of any window rect `area` (rig units).
+static func bands_for(area: Rect2) -> Array[Rect2]:
 	var h := CabinetBezel.hole()
-	var a := _area
+	var a := area
 	if a.size == Vector2.ZERO:
 		a = Rect2(Vector2.ZERO, Vector2(ScreenFit.REF))
 	var out: Array[Rect2] = []
@@ -70,6 +76,22 @@ func painted() -> Array[Rect2]:
 	var e := edges()
 	out.append(_shift(e[0], Vector2(0.0, -peel * (b[0].size.y + 20.0))))
 	out.append(_shift(e[1], Vector2(0.0, peel * (b[1].size.y + 20.0))))
+	return out
+
+
+## Every rectangle the glass covers at `peel`: the four bands and the two columns, all shifted with the
+## costume. Together with the hole they tile `area`; none ever touches the hole.
+static func glass_rects(area: Rect2, peel: float) -> Array[Rect2]:
+	var h := CabinetBezel.hole()
+	var b := bands_for(area)
+	var travel := CabinetBezel.SIDE + 20.0
+	var out: Array[Rect2] = []
+	out.append(_shift(b[0], Vector2(0.0, -peel * (b[0].size.y + 20.0))))
+	out.append(_shift(b[1], Vector2(0.0, peel * (b[1].size.y + 20.0))))
+	out.append(_shift(b[2], Vector2(-peel * travel, 0.0)))
+	out.append(_shift(b[3], Vector2(peel * travel, 0.0)))
+	out.append(Rect2(CabinetBezel.left_x() - peel * travel, h.position.y, CabinetBezel.SIDE, h.size.y))
+	out.append(Rect2(CabinetBezel.right_x() + peel * travel, h.position.y, CabinetBezel.SIDE, h.size.y))
 	return out
 
 

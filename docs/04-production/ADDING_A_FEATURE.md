@@ -35,7 +35,7 @@ data/<feature>/<name>.tres  the tunable values (TECH-001 §3)
 ## 5. UI and text
 - [ ] Every visible string is a key in `locale/en.po` with a context note when the meaning is not obvious (L10N-001 §3).
 - [ ] New screens follow UI-001 §8.
-- [ ] UI control or entity worth testing: unique `%Name` / automation id (TECH-001 §9.1).
+- [ ] UI control or entity worth testing: unique `%Name` / automation id (TECH-001 §9.1). New feature with state worth testing: a probe in `features/<f>/automation/` (TECH-001 §9.1).
 - [ ] Colours come from the palette (ART-001 §4); the palette test must stay green.
 
 ## 6. Saves

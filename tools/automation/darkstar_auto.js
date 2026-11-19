@@ -16,7 +16,7 @@ const catalogPath = path.join(root, "core", "automation", "step_catalog.json");
 const scenarioDir = path.join(root, "tests", "scenarios");
 const NAME_RE = /^[a-z0-9_]+$/;
 const COMPARATORS = ["eq", "ne", "lt", "lte", "gt", "gte", "in"];
-const TOP_KEYS = ["format", "version", "id", "args", "fixtures", "timeout_frames", "steps", "profile"];
+const TOP_KEYS = ["format", "version", "id", "args", "fixtures", "timeout_frames", "steps", "profile", "fail_on_errors", "allow_errors"];
 const MAX_STEPS = 2000; // engineering-only limits, mirror scenario_schema.gd
 const MAX_TIMEOUT_FRAMES = 216000;
 const MAX_SCREENSHOTS = 100;
@@ -63,6 +63,8 @@ function validate(sc) {
   if (typeof sc.id !== "string" || !NAME_RE.test(sc.id)) errs.push("id must match ^[a-z0-9_]+$");
   if (sc.profile !== undefined && !["qa", "dev"].includes(sc.profile)) errs.push("profile must be 'qa' or 'dev'");
   if (sc.args !== undefined && !typeOk(sc.args, "string_array")) errs.push("args must be an array of strings");
+  if (sc.fail_on_errors !== undefined && typeof sc.fail_on_errors !== "boolean") errs.push("fail_on_errors must be a bool");
+  if (sc.allow_errors !== undefined && !typeOk(sc.allow_errors, "string_array")) errs.push("allow_errors must be an array of strings");
   if (sc.fixtures !== undefined && (typeof sc.fixtures !== "object" || sc.fixtures === null || Array.isArray(sc.fixtures))) errs.push("fixtures must be an object");
   if (!Number.isInteger(sc.timeout_frames) || sc.timeout_frames < 1 || sc.timeout_frames > MAX_TIMEOUT_FRAMES) errs.push(`timeout_frames must be an int in 1..${MAX_TIMEOUT_FRAMES}`);
   if (!Array.isArray(sc.steps) || sc.steps.length === 0) { errs.push("steps must be a non-empty array"); return errs; }
@@ -148,9 +150,17 @@ function summarise(out, result, code) {
 async function run(flags) {
   const id = flags._[1];
   if (!id) { console.error("usage: run <id> [--windowed] [--keep] [--godot=<exe>] [--timeout=<s>] [--out=<dir>]"); return 2; }
+  return (await runScenario(id, flags, false)).code;
+}
+
+/**
+ * Runs one scenario. quiet = print only failures (used by run-all).
+ * @returns {Promise<{code: number, frames: number, outcome: string}>}
+ */
+async function runScenario(id, flags, quiet) {
   const { scenario } = loadScenario(id);
   const errs = validate(scenario);
-  if (errs.length) { console.error(errs.join("\n")); return 2; }
+  if (errs.length) { console.error(errs.join("\n")); return { code: 2, frames: 0, outcome: "invalid" }; }
   const godot = findGodot(flags);
   const out = path.resolve(typeof flags.out === "string" ? flags.out : path.join(root, "reports", "automation", `${scenario.id}-${stamp()}`)).replace(/\\/g, "/");
   fs.mkdirSync(out, { recursive: true });
@@ -166,18 +176,64 @@ async function run(flags) {
   const code = await new Promise((resolve) => child.on("close", (c) => resolve(c === null ? -1 : c)));
   clearTimeout(timer);
   log.end();
-  if (watchdog) { console.error(`watchdog: killed after ${limit / 1000}s (output in ${out})`); return 4; }
+  if (watchdog) { console.error(`watchdog: killed after ${limit / 1000}s (output in ${out})`); return { code: 4, frames: 0, outcome: "watchdog" }; }
   const resultPath = path.join(out, "result.json");
-  if (!fs.existsSync(resultPath)) { console.error(`no result.json produced (exit ${code}); see ${path.join(out, "console.log")}`); return 5; }
+  if (!fs.existsSync(resultPath)) { console.error(`no result.json produced (exit ${code}); see ${path.join(out, "console.log")}`); return { code: 5, frames: 0, outcome: "crash" }; }
   const result = JSON.parse(fs.readFileSync(resultPath, "utf8"));
-  console.log(summarise(out, result, code));
+  if (!quiet || code !== 0) console.log(summarise(out, result, code));
   const shots = (result.screenshots || []).some((x) => x.path);
   if (code === 0 && !flags.keep && !shots && typeof flags.out !== "string") {
     fs.rmSync(out, { recursive: true, force: true });
-    console.log("  output: removed (clean pass, no screenshots; use --keep to retain)");
-  } else {
+    if (!quiet) console.log("  output: removed (clean pass, no screenshots; use --keep to retain)");
+  } else if (!quiet || code !== 0) {
     console.log(`  output: ${out}`);
   }
+  return { code, frames: result.frames, outcome: result.outcome };
+}
+
+/** @param {any} flags */
+async function runAll(flags) {
+  const ids = fs.readdirSync(scenarioDir).filter((f) => f.endsWith(".scenario.json")).map((f) => f.replace(".scenario.json", "")).sort()
+    .filter((id) => typeof flags.only !== "string" || id.includes(flags.only));
+  if (!ids.length) { console.error("no scenarios match"); return 2; }
+  const rows = [];
+  for (const id of ids) {
+    const r = await runScenario(id, { ...flags, out: undefined }, true);
+    rows.push({ id, ...r });
+  }
+  const w = Math.max(...rows.map((r) => r.id.length));
+  console.log("\n" + "scenario".padEnd(w + 1) + " outcome   exit  frames");
+  for (const r of rows) console.log(`${r.id.padEnd(w + 1)} ${String(r.outcome).padEnd(9)} ${String(r.code).padEnd(5)} ${r.frames}`);
+  const bad = rows.filter((r) => r.code !== 0).length;
+  console.log(bad ? `${bad} of ${rows.length} FAILED` : `all ${rows.length} passed`);
+  return bad ? 1 : 0;
+}
+
+/** @param {any} flags */
+async function caps(flags) {
+  const godot = findGodot(flags);
+  const out = path.join(root, "reports", "automation", `caps-${stamp()}`).replace(/\\/g, "/");
+  fs.mkdirSync(out, { recursive: true });
+  const args = ["--path", root, ...(flags.windowed ? [] : ["--headless"]), "--", "--automation-caps", "--no-save", `--out=${out}`];
+  const code = await new Promise((resolve) => {
+    const c = spawn(godot, args, { cwd: root, stdio: "ignore" });
+    const t = setTimeout(() => c.kill(), (Number(flags.timeout) || 60) * 1000);
+    c.on("close", (x) => { clearTimeout(t); resolve(x === null ? -1 : x); });
+  });
+  const file = path.join(out, "caps.json");
+  if (!fs.existsSync(file)) { console.error(`no caps.json produced (exit ${code}); is this a build without automation?`); return 5; }
+  const c = JSON.parse(fs.readFileSync(file, "utf8"));
+  console.log(`profile: ${c.profile}  protocol: ${c.protocol}  godot: ${c.build.godot}  game: ${c.build.game_version}`);
+  console.log(`steps (${c.steps.length}): ${c.steps.map((s) => s.name + (s.dev ? "*" : "")).join(" ")}   (* = dev only)`);
+  console.log(`comparators: ${c.comparators.join(" ")}   screenshot targets: ${c.screenshot_targets.join(" ")}`);
+  for (const [route, pr] of Object.entries(c.probes)) {
+    console.log(`probe ${route}:`);
+    console.log(`  ids: ${pr.ids.join(" ")}`);
+    console.log(`  events: ${pr.events.join(" ")}`);
+    console.log(`  dev ops: ${pr.dev_ops.join(" ")}`);
+  }
+  console.log(`fixtures: ${c.fixtures.join(" ")}`);
+  fs.rmSync(out, { recursive: true, force: true });
   return code;
 }
 
@@ -191,11 +247,13 @@ async function main() {
       return errs.length ? 2 : 0;
     }
     if (cmd === "run") return await run(flags);
+    if (cmd === "run-all") return await runAll(flags);
+    if (cmd === "caps") return await caps(flags);
   } catch (e) {
     console.error(String(e.message || e));
     return 2;
   }
-  console.error("commands: validate <file|id> | run <id> [--windowed] [--keep] [--godot=<exe>] [--timeout=<s>] [--out=<dir>]");
+  console.error("commands: validate <file|id> | caps [--windowed] | run-all [--only=<substr>] | run <id> [--windowed] [--keep] [--godot=<exe>] [--timeout=<s>] [--out=<dir>]");
   return 2;
 }
 
