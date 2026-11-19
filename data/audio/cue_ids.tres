@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="CueIds" load_steps=48 format=3]
+[gd_resource type="Resource" script_class="CueIds" load_steps=60 format=3]
 
 [ext_resource type="Script" path="res://core/audio/cue_ids.gd" id="1"]
 [ext_resource type="Script" path="res://core/audio/cue_id_entry.gd" id="2"]
@@ -408,6 +408,114 @@ has_synth_fallback = false
 is_loop = false
 note = "render only, M1 slice 3 (AUDIO-001 6.2)"
 
+[sub_resource type="Resource" id="e45"]
+script = ExtResource("2")
+id = &"phantom_fire"
+doc_id = "F14"
+act0_only = false
+has_synth_fallback = false
+is_loop = false
+note = "render only, Choir/Passing handoff (AUDIO-001 12.14)"
+
+[sub_resource type="Resource" id="e46"]
+script = ExtResource("2")
+id = &"listener_heard"
+doc_id = "F03"
+act0_only = false
+has_synth_fallback = false
+is_loop = false
+note = "render only, Choir/Passing handoff (AUDIO-001 12.14)"
+
+[sub_resource type="Resource" id="e47"]
+script = ExtResource("2")
+id = &"matron_birth"
+doc_id = "F13"
+act0_only = false
+has_synth_fallback = false
+is_loop = false
+note = "render only, Choir/Passing handoff (AUDIO-001 12.14)"
+
+[sub_resource type="Resource" id="e48"]
+script = ExtResource("2")
+id = &"matron_silenced"
+doc_id = "F07"
+act0_only = false
+has_synth_fallback = false
+is_loop = false
+note = "render only, Choir/Passing handoff (AUDIO-001 12.14)"
+
+[sub_resource type="Resource" id="e49"]
+script = ExtResource("2")
+id = &"deceiver_steal"
+doc_id = "B07"
+act0_only = false
+has_synth_fallback = false
+is_loop = false
+note = "render only, Choir/Passing handoff (AUDIO-001 12.14)"
+
+[sub_resource type="Resource" id="e50"]
+script = ExtResource("2")
+id = &"presence_flee"
+doc_id = "PAS-01"
+act0_only = false
+has_synth_fallback = false
+is_loop = false
+note = "render only, Choir/Passing handoff (AUDIO-001 12.14)"
+
+[sub_resource type="Resource" id="e51"]
+script = ExtResource("2")
+id = &"comforters_murmur"
+doc_id = "PAS-02"
+act0_only = false
+has_synth_fallback = false
+is_loop = false
+note = "render only, Choir/Passing handoff (AUDIO-001 12.14)"
+
+[sub_resource type="Resource" id="e52"]
+script = ExtResource("2")
+id = &"lie_tell_chalk"
+doc_id = "LIE-01"
+act0_only = false
+has_synth_fallback = false
+is_loop = false
+note = "render only, Cosmic horror L11 lie tells (AUDIO-001 12.14)"
+
+[sub_resource type="Resource" id="e53"]
+script = ExtResource("2")
+id = &"lie_tell_glyph"
+doc_id = "LIE-02"
+act0_only = false
+has_synth_fallback = false
+is_loop = false
+note = "render only, Cosmic horror L11 lie tells (AUDIO-001 12.14)"
+
+[sub_resource type="Resource" id="e54"]
+script = ExtResource("2")
+id = &"lie_tell_mirror"
+doc_id = "LIE-03"
+act0_only = false
+has_synth_fallback = false
+is_loop = false
+note = "render only, Cosmic horror L11 lie tells (AUDIO-001 12.14)"
+
+[sub_resource type="Resource" id="e55"]
+script = ExtResource("2")
+id = &"lie_tell_smear"
+doc_id = "LIE-04"
+act0_only = false
+has_synth_fallback = false
+is_loop = false
+note = "render only, Cosmic horror L11 lie tells (AUDIO-001 12.14)"
+
+[sub_resource type="Resource" id="e56"]
+script = ExtResource("2")
+id = &"lie_tell_absence"
+doc_id = "LIE-05"
+act0_only = false
+has_synth_fallback = false
+is_loop = false
+note = "render only, Cosmic horror L11 lie tells (AUDIO-001 12.14)"
+
 [resource]
 script = ExtResource("1")
-entries = [SubResource("e0"), SubResource("e1"), SubResource("e2"), SubResource("e3"), SubResource("e4"), SubResource("e5"), SubResource("e6"), SubResource("e7"), SubResource("e8"), SubResource("e9"), SubResource("e10"), SubResource("e11"), SubResource("e12"), SubResource("e13"), SubResource("e14"), SubResource("e15"), SubResource("e16"), SubResource("e17"), SubResource("e18"), SubResource("e19"), SubResource("e20"), SubResource("e21"), SubResource("e22"), SubResource("e23"), SubResource("e24"), SubResource("e25"), SubResource("e26"), SubResource("e27"), SubResource("e28"), SubResource("e29"), SubResource("e30"), SubResource("e31"), SubResource("e32"), SubResource("e33"), SubResource("e34"), SubResource("e35"), SubResource("e36"), SubResource("e37"), SubResource("e38"), SubResource("e39"), SubResource("e40"), SubResource("e41"), SubResource("e42"), SubResource("e43"), SubResource("e44")]
+entries = [SubResource("e0"), SubResource("e1"), SubResource("e2"), SubResource("e3"), SubResource("e4"), SubResource("e5"), SubResource("e6"), SubResource("e7"), SubResource("e8"), SubResource("e9"), SubResource("e10"), SubResource("e11"), SubResource("e12"), SubResource("e13"), SubResource("e14"), SubResource("e15"), SubResource("e16"), SubResource("e17"), SubResource("e18"), SubResource("e19"), SubResource("e20"), SubResource("e21"), SubResource("e22"), SubResource("e23"), SubResource("e24"), SubResource("e25"), SubResource("e26"), SubResource("e27"), SubResource("e28"), SubResource("e29"), SubResource("e30"), SubResource("e31"), SubResource("e32"), SubResource("e33"), SubResource("e34"), SubResource("e35"), SubResource("e36"), SubResource("e37"), SubResource("e38"), SubResource("e39"), SubResource("e40"), SubResource("e41"), SubResource("e42"), SubResource("e43"), SubResource("e44"), SubResource("e45"), SubResource("e46"), SubResource("e47"), SubResource("e48"), SubResource("e49"), SubResource("e50"), SubResource("e51"), SubResource("e52"), SubResource("e53"), SubResource("e54"), SubResource("e55"), SubResource("e56")]

@@ -49,3 +49,13 @@ func test_out_confinement() -> void:
 func test_boot_helper_returns_null_without_the_arg() -> void:
 	var boot: Node = auto_free(load("res://scenes/boot/boot.gd").new())
 	assert_object(boot.call("_make_automation_runner")).is_null()
+
+
+func test_record_arg_and_node_factory() -> void:
+	var a := PackedStringArray(["--record=my_run", "--no-save"])
+	assert_bool(Gate.has_record_arg(a)).is_true()
+	assert_bool(Gate.has_record_arg(PackedStringArray(["--scenario=x"]))).is_false()
+	var rec: Node = auto_free(Gate.create_node(a))
+	assert_str(rec.get_script().resource_path).is_equal("res://core/automation/recorder.gd")
+	var run: Node = auto_free(Gate.create_node(PackedStringArray(["--scenario=a0_first_contact"])))
+	assert_str(run.get_script().resource_path).is_equal("res://core/automation/scenario_runner.gd")
