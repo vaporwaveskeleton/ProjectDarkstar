@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=3]
+[gd_scene load_steps=18 format=3]
 
 [ext_resource type="Script" path="res://features/aether/aether_backdrop.gd" id="1_bd"]
 [ext_resource type="Script" path="res://features/aether/aether_fog_band.gd" id="2_band"]
@@ -16,6 +16,7 @@
 [ext_resource type="Shader" path="res://shaders/aether/light_shafts.gdshader" id="14_shaft"]
 [ext_resource type="Shader" path="res://shaders/aether/aether_grade.gdshader" id="15_grade"]
 [ext_resource type="Shader" path="res://shaders/aether/entity_presence.gdshader" id="16_ent"]
+[ext_resource type="Script" path="res://features/aether/far_set_pieces.gd" id="17_set"]
 
 [node name="AetherBackdrop" type="Node2D"]
 script = ExtResource("1_bd")
@@ -28,7 +29,6 @@ scroll_scale = Vector2(0.04, 0.04)
 unique_name_in_owner = true
 script = ExtResource("2_band")
 shader = ExtResource("10_fog")
-lit = true
 
 [node name="SkyLayer" type="Parallax2D" parent="."]
 unique_name_in_owner = true
@@ -38,6 +38,10 @@ scroll_scale = Vector2(0.06, 0.06)
 unique_name_in_owner = true
 script = ExtResource("3_sphere")
 shader = ExtResource("11_sph")
+
+[node name="CracksCopy" type="BackBufferCopy" parent="SkyLayer"]
+unique_name_in_owner = true
+copy_mode = 2
 
 [node name="Cracks" type="ColorRect" parent="SkyLayer"]
 unique_name_in_owner = true
@@ -53,6 +57,20 @@ script = ExtResource("9_smudge")
 unique_name_in_owner = true
 scroll_scale = Vector2(0.1, 0.1)
 
+[node name="SetPieces" type="Node2D" parent="RibLayer"]
+unique_name_in_owner = true
+script = ExtResource("17_set")
+
+[node name="FarLife" type="Node2D" parent="RibLayer"]
+unique_name_in_owner = true
+
+[node name="VastJellies" type="GPUParticles2D" parent="RibLayer/FarLife"]
+unique_name_in_owner = true
+position = Vector2(320, 180)
+script = ExtResource("6_life")
+kind = 4
+extents = Vector2(520, 300)
+
 [node name="Ribs" type="Node2D" parent="RibLayer"]
 unique_name_in_owner = true
 script = ExtResource("8_ribs")
@@ -65,7 +83,6 @@ scroll_scale = Vector2(0.15, 0.15)
 unique_name_in_owner = true
 script = ExtResource("2_band")
 shader = ExtResource("10_fog")
-lit = true
 band_index = 1
 
 [node name="MidLayerB" type="Parallax2D" parent="."]
@@ -76,7 +93,6 @@ scroll_scale = Vector2(0.35, 0.35)
 unique_name_in_owner = true
 script = ExtResource("2_band")
 shader = ExtResource("10_fog")
-lit = true
 band_index = 2
 
 [node name="LeviathanLayer" type="Parallax2D" parent="."]
@@ -98,6 +114,7 @@ offset_right = 640.0
 offset_bottom = 360.0
 script = ExtResource("4_rect")
 shader = ExtResource("14_shaft")
+additive = true
 
 [node name="LifeLayer" type="Parallax2D" parent="."]
 unique_name_in_owner = true
@@ -134,7 +151,6 @@ scroll_scale = Vector2(0.7, 0.7)
 unique_name_in_owner = true
 script = ExtResource("2_band")
 shader = ExtResource("10_fog")
-lit = true
 band_index = 3
 
 [node name="VeilLayer" type="Parallax2D" parent="."]
@@ -145,7 +161,6 @@ scroll_scale = Vector2(1.1, 1.1)
 unique_name_in_owner = true
 script = ExtResource("2_band")
 shader = ExtResource("10_fog")
-lit = true
 band_index = 4
 
 [node name="EntityLayer" type="Parallax2D" parent="."]
@@ -156,6 +171,7 @@ scroll_scale = Vector2(0.24, 0.24)
 unique_name_in_owner = true
 script = ExtResource("7_ent")
 shader = ExtResource("16_ent")
+max_radius = 215.0
 wobble = 0.22
 seed = 0.7
 
@@ -163,7 +179,7 @@ seed = 0.7
 unique_name_in_owner = true
 script = ExtResource("7_ent")
 shader = ExtResource("16_ent")
-max_radius = 40.0
+max_radius = 150.0
 wobble = 0.22
 seed = 3.1
 
@@ -171,7 +187,7 @@ seed = 3.1
 unique_name_in_owner = true
 script = ExtResource("7_ent")
 shader = ExtResource("16_ent")
-max_radius = 40.0
+max_radius = 150.0
 wobble = 0.22
 seed = 5.9
 
@@ -179,7 +195,7 @@ seed = 5.9
 unique_name_in_owner = true
 script = ExtResource("7_ent")
 shader = ExtResource("16_ent")
-max_radius = 40.0
+max_radius = 150.0
 wobble = 0.22
 seed = 8.4
 

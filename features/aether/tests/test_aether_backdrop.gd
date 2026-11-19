@@ -62,7 +62,7 @@ func test_leviathan_enters_and_reaches_closest() -> void:
 	b.set_process(false)
 	lev.configure(b.look)
 	var t := 0.0
-	while t < 20.0:
+	while t < b.look.leviathan_period_s:
 		lev.advance(t, 0.0)
 		t += 0.25
 	assert_array(got).contains(["entered", "closest"])

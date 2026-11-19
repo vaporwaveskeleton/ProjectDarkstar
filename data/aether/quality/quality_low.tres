@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="AetherQuality" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://features/aether/aether_quality.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+ds_namespace = "ds_aether.quality.low"
+source_section = "engineering ✱ (PM ruling CH-7 quality ladder); not a game number"
+level = "low"
+fog_octave_drop = 2
+warp_octaves = 2
+two_sample_advection = 0
+silver_lining = 0
+fog_resolution_scale = 0.5
+max_fog_bands = 3
+particle_scale = 0.4
+animated_shafts = 0
+shaft_resolution_scale = 0.25
+sphere_refraction = 0
+nested_shells = 0
+entity_edge_octaves = 2
+set_pieces = 1
+glow = 1
