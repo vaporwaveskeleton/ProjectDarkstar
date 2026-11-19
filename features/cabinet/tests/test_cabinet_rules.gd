@@ -208,6 +208,27 @@ func test_grubs_carry_glass_and_every_three_deposits_add_a_segment() -> void:
 	assert_int(world.ritual.segments).is_equal(1)
 
 
+## A Grub that fled the lamp while it held a live claim goes back to its shard once the lamp has passed
+## (it used to stay in FLEE for good; found by the autopilot shift harness, 2026-11-19).
+func test_a_grub_that_fled_returns_to_its_claimed_shard() -> void:
+	for pilfer in [false, true]:
+		var s := _stage()
+		s.grubs = 1
+		s.grub_pilfer = pilfer
+		world.start(s)
+		var g: GrubFlock.Grub = world.grubs.items[0]
+		world.vigil.pos = world.torus.wrap(world.ritual.pos + Vector2(900, 300))
+		var shard := world.glass.spawn_shard(world.torus.wrap(g.pos + Vector2(300, 0)), Vector2.ZERO)
+		_steps(0.5)                                         # it claims the shard and sets off
+		assert_object(g.shard).is_same(shard)
+		world.vigil.pos = world.torus.wrap(g.pos + Vector2(-20, 0))   # the lamp arrives: it flees
+		world.step(DT)
+		assert_int(g.state).is_equal(GrubFlock.State.FLEE)
+		world.vigil.pos = world.torus.wrap(world.ritual.pos + Vector2(900, 300))   # and leaves
+		_steps(1.0)
+		assert_bool(g.state == GrubFlock.State.SEEK or g.state == GrubFlock.State.CARRY).override_failure_message("pilfer=%s: still fleeing an absent lamp (state %d)" % [pilfer, g.state]).is_true()
+
+
 func test_cold_sepulchre_never_wakes() -> void:
 	world.start(_stage(CabinetStage.Goal.CLEAR_SEPULCHRE, t.segments_total - 1, false))
 	for k in t.shards_per_segment:
