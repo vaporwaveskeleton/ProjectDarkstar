@@ -52,8 +52,10 @@ Ids: `<route>/ui/<UniqueName>` for controls, plus `cabinet/game` (`state`, `stag
 `camera_x`, `compass_markers`, `camera_gap`, `facing_deg`, `aim_x`, `aim_y`; scenario `m1_sector_feel`),
 `sector/field` (`geodes_alive`, `geodes_detonated`, `shards_free`, `charges`, `score`; scenarios
 `m1_geode_mine` (feathered fire, calm mining), `m1_magnet_collect` (mine, then fly in and collect
-glass), `m1_overfire` (held fire detonates a 3-face geode; it lines up with `move_up` and the
-`aim_right` action, because headless `mouse_move` did not aim the Vigil, TECH-001 §11.1 Q-T67)). Fixtures: `{"profile": "<name>"}` loads
+glass), `m1_overfire` (held fire detonates a 3-face geode; it lines up with `move_up` and aims
+with `mouse_move`), `m1_mouse_aim` (`mouse_move`, then asserts `facing_deg`, `aim_x`, `aim_y`; TECH-001 §9.1 "Mouse aim
+and injected input")). `mouse_move` coordinates are logical 640×360 (the catalog wording "window coordinates" is a known
+follow-up). Fixtures: `{"profile": "<name>"}` loads
 `tests/fixtures/saves/<name>.json` into the in-memory save.
 
 The same runner runs inside GdUnit: `tests/test_scenarios.gd` plays every scenario that is valid for
