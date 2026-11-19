@@ -78,7 +78,9 @@ func _physics_process(delta: float) -> void:
 		if g != null:
 			var to_g := t.delta(v.pos, g.pos)
 			aim = to_g
-			var hot := g.recent.size() >= world.tuning.overfire_hits - 3
+			# count the bolts already in flight, so the window never fills to the over-fire threshold
+			var in_flight := ceili(to_g.length() / world.tuning.lance_speed * world.tuning.lance_rate)
+			var hot := g.recent.size() + in_flight >= world.tuning.overfire_hits - 1
 			fire = not hot and to_g.length() < 240.0
 			if move == Vector2.ZERO:
 				var dist := to_g.length() - (g.radius + 50.0)
