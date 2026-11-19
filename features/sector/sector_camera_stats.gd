@@ -21,7 +21,17 @@ extends TunableResource
 ## ✱ D-3 (accepted): no screen shake under Settings `reduced_motion`. One flag so it can flip.
 @export var shake_off_under_reduced_motion: bool = true
 
+## SYS-001 §9 "Race framing reach" (px, proposed 2026-11-19): race points farther than this from
+## the Vigil (torus distance) are ignored by the RaceFramer.
+@export var race_reach_px: float = 0.0
+## SYS-001 §9 "Race framing lean max" (fraction of the half view per axis, proposed 2026-11-19):
+## the camera never leans further, so the Vigil always stays on screen.
+@export var race_lean_max_frac: float = 0.0
+## SYS-001 §9 "Race framing lean time" (s, proposed 2026-11-19): smoothing time of the lean spring.
+@export var race_lean_time_s: float = 0.0
+
 
 func tunable_properties() -> PackedStringArray:
 	return PackedStringArray(["follow_time_s", "deadzone_px", "aim_lookahead_frac", "shake_max_px",
-		"shake_max_s", "zoom", "shake_off_under_reduced_motion"])
+		"shake_max_s", "zoom", "shake_off_under_reduced_motion", "race_reach_px", "race_lean_max_frac",
+		"race_lean_time_s"])

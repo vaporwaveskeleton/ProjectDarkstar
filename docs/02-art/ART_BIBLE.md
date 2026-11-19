@@ -808,6 +808,15 @@ The look of the Ruins of the Ninth Sky on the first visit (NARR-001 §5.7, GDD �
 - No occlusion shadows (`shadow_enabled` is false on every light).
 - The torn vault shows mostly the navy far band of the Aether.
 - Before any Tree lamp the hangar mouth is near-black by default (`mouth_veil_dark` 1.0 ✱, NARR-001 §5.7 "dark"); `mouth_aether_hint` (0..1, default 0 ✱) lets the owner bring back a faint glimpse of the Aether without code (TECH-001 Q-T156, agreed with M1, pending the owner).
+
+### 16.6h The sector at Aether tier (sector slice look, 2026-11-19)
+How the M1 sector reads once it wears the Aether. Built; not yet scored by The Reviewer, and the captures (scenario `m1_sector_look_capture`) are not evaluated here. Implementation: TECH-001 §2.5, §2.9, §5.4. Every value is an engineering ✱ drawing parameter, in `Pal` colours.
+
+**Near depth, no grid.** At Aether tiers the M1 debug grid does not draw. The Aether far layer is the backdrop; two screen-space depth layers sit around the play layer: behind it, fog wisps and glass motes at slow parallax; in front of it (below the HUD), sparse brass-gold motes and a faint fog lens at faster parallax. They are hash-placed, never jump at the torus seam, and their twinkle and drift are off under Reduced Motion. They never carry information and never hide a hitbox or a telegraph.
+
+**Brass instrument HUD.** The sector HUD is a set of riveted brass plates and studs (the Ledger Compass bezel, the Composure wick bracket, the Steady Ledger tier, the Vigil Index, the Charge strip, the Seam index). Lamps are glass: lit = phosphor = truth (loaded Charge, honest state); to-come items are chalk rings; the current Seam stud is lit gold. Text is `VectorLabel` stroke glyphs. SIGNAL stays at most 3 on screen; the HUD adds none.
+
+**Actors.** The Grub, the geodes and the Sepulchre have filled bodies, a rim light, a soft glow halo in faction hue (Choir hue for Choir bodies) and crystal facets with a slow shimmer (off under Reduced Motion). The geodes read as crystal spheres' cousins, not as pickups. Collision shapes are unchanged. Nothing in the sector is true black: the only true black remains the entity (§16.1).
 - The left side is cluttered: the telescope crosses the chalk star chart.
 - The orrery can read as an atom symbol.
 - The flash and lantern-law tests are structural, not pixel-measured (TECH-001 §9.1, Q-T64).

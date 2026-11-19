@@ -28,8 +28,14 @@ func test_vigil_spawns_at_anchor_with_hud() -> void:
 	var vigil: Vigil = runner.get_property("vigil")
 	assert_object(vigil).is_not_null()
 	assert_vector(vigil.global_position).is_equal(Vector2(320, 180))
-	var hud: Label = runner.find_child("HullLabel")
-	assert_str(hud.text).is_equal("Hull 1")
+	var hud: BrassHud = runner.find_child("BrassHud")
+	assert_object(hud).is_not_null()
+	# one-hit hull (D-08 open, data-switchable): no hull line until it is breached
+	assert_int(hud.hull_max).is_equal(1)
+	assert_bool(hud.hull_label.visible).is_false()
+	assert_int(hud.seam_index).is_equal(1)
+	assert_int(hud.seams_per_run).is_greater(0)
+	assert_int(hud.charge_capacity).is_greater(0)
 
 
 func test_camera_and_compass_are_wired_to_the_vigil() -> void:
