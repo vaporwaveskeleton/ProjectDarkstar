@@ -22,6 +22,7 @@ node tools/automation/darkstar_auto.js run <id> [--windowed] [--keep] [--godot=<
 - Godot exe: `--godot=`, then env `DARKSTAR_GODOT`, then `tools/godot/Godot_v4.7.2-stable_win64_console.exe`
   (a worktree falls back to the main checkout's copy).
 - `--timeout` is the real-time watchdog (default 120 s).
+- CI (`.github/workflows/ci.yml`) runs the scenarios (with the suite and smoke) only at milestone gates: a pushed tag `milestone/<id>` or a manual `workflow_dispatch`, not per PR (TECH-001 §9.2). Before a PR, run the scenarios you touched and the suite locally.
 - Extra game args: everything after a bare `--` goes to the game after the scenario's own `args`, e.g.
   `node tools/automation/darkstar_auto.js run aether_unmaking_capture --windowed -- --aether-cine-scale=8`.
   Only `--name` / `--name=value` tokens; the runner's own (`--scenario`, `--record`, `--out`, `--no-save`,

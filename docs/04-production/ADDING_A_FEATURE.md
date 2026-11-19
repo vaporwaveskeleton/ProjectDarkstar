@@ -44,6 +44,7 @@ data/<feature>/<name>.tres  the tunable values (TECH-001 §3)
 ## 7. Tests and done
 - [ ] Unit tests for the rules, plus a scene test if it has input or UI.
 - [ ] Run the commands in TECH-001 §9: all tests pass, and the boot smoke prints `BOOT_SMOKE` with no `ERROR` lines.
+- [ ] Put the local suite and smoke counts in the PR body: CI does not run per PR, only at milestone gates (tag `milestone/*`; TECH-001 §9.2).
 - [ ] Update the docs that own the change (TECH-001 row status, EVT-001, L10N-001, UI-001). Update `CLAUDE.md` if a rule or command changed.
 - [ ] The final report lists every file and doc touched, every command run with its result, and what was not verified.
 
