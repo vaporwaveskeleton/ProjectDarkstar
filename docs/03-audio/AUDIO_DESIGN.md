@@ -1,6 +1,7 @@
 # DARKSTAR — Audio Design
 
 **Doc ID:** AUDIO-001 · **Version:** 1.1 · **Date:** 2026-11-18 · **Owner:** Audio / Design · **Status:** authored, pending review
+**Rev 1.12 (2026-11-19, PM-directed, coordinated with the Arcade layer chat): §12.16 added (The Act 0 shift: seven cues, all unauditioned); cue ids 67 to 74 and policy entries 61 to 68 (counted). No design change to §1–§11.**
 **Rev 1.11 (2026-11-19, M1 slice 3 PR 4; PM under owner autonomy grant 2026-11-19): §6.2 trigger rules for B06 (interception only; guttering plays B12), F06 (only a carrying Grub's death) and G01 (`segment_deposit` once per completed segment, TECH-001 Q-T113); §12.13 wiring: F11 and B12 wired. No new cue, no render or policy change.**
 **Rev 1.10 (2026-11-18): §6.2 gains built ids on F01, F04, F05, B08; §12.15 added (The Six (Heralds) and Choir tells: ten new renders, all unauditioned); cue ids 57 to 67 and policy entries 46 to 56 (counted).**
 **Rev 1.9 (2026-11-18, PM-directed, placement only, no design change): §4.16 added (placement of NARR-001 §3.2's nine borrowed entity lines: channel, trigger, delivery rules); §5.6 added (placement of NARR-001 §2.1's six Choir fragments); §5.1 rewritten by the Q-T85 ruling (PM under owner grant, 2026-11-18: NARR-001 adopted, litany written in nine, sung in eight, ending 3 sings nine; §8.2 tracker 8 ticks plus 1 ghost; `chant` render rebuilt to the sung-eight shape, unauditioned); §12.14 (c) records MSG_DEATH_LIE_COMPASS live, CHARGES and INDEX reserved. Nothing built or rendered.**
@@ -1534,3 +1535,25 @@ The Quiet Pew chant mute itself is the caller's (SYS-001 §5.2); `herald_hush` o
 | `herald_hush` | HER-06 | 2.11 s | −21.68 / −36.13 | `BUS-CHO`, P2, 1 voice, 2000 ms gate |
 
 **Counts (counted in the data files):** cue ids 57 + 10 = 67 and policy entries 46 + 10 = 56. Re-check against `data/audio/cue_ids.tres` and `cue_policy.tres` once the code lands. The §12.14 deferred list (e) above is superseded for Heralds, F01, F04 and F05.
+
+### 12.16 The Act 0 shift (PM-directed 2026-11-19, coordinated with the Arcade layer chat)
+
+**Status: specified; renders in `audio/src/cabinet.cx.js` (cites this section); all UNAUDITIONED; levels are dBFS from the chirp build info, LUFS not measured; all mono, Cabinet chiptune voice.** The Act 0 shift is five stages: First Vigil, Drift, Censer Watch, Shoal, Hollow. No stings (§1.1): a zone card is a short jingle, not a sting. Numbers are first-pass ✱.
+
+**Zone jingles.** One shared three-note motif (the litany's foot), re-voiced per zone: Drift calm and major; Censer Watch minor, answered by the censer bell; Shoal a rippling arpeggio; Hollow falling with its last note missing ("always one short"). Each is at most 2.5 s, the READY card (`CabinetGame.READY_SECONDS` ✱). Caller: `CabinetGame.start_stage()` when the stage has a zone.
+
+| Cue | Use and caller | Length | Peak / RMS dBFS | Bus, priority, voices, gate, jitter |
+|---|---|---|---|---|
+| `censer_bell` | one bell 1 s before an Acolyte reinforcement enters; `features/cabinet/sim/acolyte_squad.gd` (Arcade layer P2) | 0.53 s | −13.46 / −25.6 | `BUS-FLY`, P1, 2 voices, 500 ms gate, ±20 cents |
+| `zone_drift` | Drift card | 1.45 s | −15.43 / −25.88 | `BUS-UI`, P2, 1 voice, 2000 ms gate |
+| `zone_censer_watch` | Censer Watch card | 1.28 s | −15.43 / −25.98 | same |
+| `zone_shoal` | Shoal card | 1.63 s | −15.67 / −26.73 | same |
+| `zone_hollow` | Hollow card | 1.63 s | −14.82 / −28.58 | same |
+| `continue_tick` | CONTINUE? countdown tick, one call per step; the countdown and its timing are Visual Design's (attract pass 2b), not set here | 0.06 s | −16.17 / −22.18 | `BUS-UI`, P2, 1 voice, 200 ms gate |
+| `continue_taken` | a continued stage starts; `CabinetGame.on_route_entered` | 0.64 s | −15.4 / −23.79 | `BUS-UI`, P2, 1 voice, 1000 ms gate |
+
+The reinforcement timings behind `censer_bell` are the Arcade layer's PROPOSED numbers, not owned here. Design option, not built: a bell that rises with alive/cap would need a pitch argument on `play()`.
+
+**Reused, no new cue:** `extra_life` (H10), `quota` (stage cleared), `tally_blip` (final roll). **Not needed:** the attract demo stays silent (§2.1 shell layer only); Grub re-entry is silent; the intermission tally card is P3 and not built.
+
+**Counts (counted in the data files):** cue ids 67 + 7 = 74 and policy entries 61 + 7 = 68.

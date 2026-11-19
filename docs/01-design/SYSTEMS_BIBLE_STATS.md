@@ -104,10 +104,10 @@ Conventions used everywhere:
 | Charge life | 6.0 s ✱ | — | a fired Charge gutters (expires) after this; the Cabinet value. PM-approved 2026-11-18 (Q-T17 part) |
 | Charge speed | 210 px/s 🔒 | 250 px/s (`Homing Song`) | |
 | Turn authority | 1.6 s 🔒 | 2.6 s (`Homing Song`, +Composure cost) | read as the time a Charge needs to turn through 180°, so the steering limit is π / turn authority rad/s (the Cabinet's reading, `glass_field.gd`; M1 uses the same). PM-accepted 2026-11-19 (PM under owner autonomy grant 2026-11-19) |
-| Charge HP (interceptable) | 1 dmg unit ✱ | — | Grub 1, Acolyte 1, Listener 2, geode contact 1, Shrine proximity destroys it (0.9 s fuse). As built (M1): Grub and geode contact intercept it; Acolyte, Listener and Shrine are not built |
+| Charge HP (interceptable) | 1 dmg unit ✱ | — | Grub 1, Acolyte 1, Listener 2, geode contact 1, Shrine proximity destroys it (0.9 s fuse). Phase 2: living Litany Ring nodes intercept it like Acolytes (1) unless the ring is broken (§3.1; Q-T121). As built (M1): Grub and geode contact intercept it; Acolyte, Listener, Shrine and the Litany Ring are not built |
 | Charge contact radius | 4 px ✱ | — | the Charge's hit and interception circle; the Cabinet value. PM-accepted 2026-11-19 (PM under owner autonomy grant 2026-11-19) |
 | Charge trail (presentation) | 10 points ✱ | — | drawing only; the Cabinet value. PM-accepted 2026-11-19 (PM under owner autonomy grant 2026-11-19) |
-| Charge hits on its target (phases 0–1) | 1 ✱ | — | in phases 0–1 the Charge's target is the Sepulchre and one hit knocks 1 segment off (§2 row 0). PM ruling C4, M1 slice 3 (PM under owner autonomy grant 2026-11-18; TECH-001 Q-T110) |
+| Charge hits on its target (phases 0–2) | 1 ✱ | — | in phases 0–2 (phase 2 per Q-T121) the Charge's target is the Sepulchre and one hit knocks 1 segment off (§2 row 0). PM ruling C4, M1 slice 3 (PM under owner autonomy grant 2026-11-18; TECH-001 Q-T110) |
 | Charge → entity | 1 **Unravel hit** | — | 🔒 |
 | Entity hits to unmake (complete) | 13 🔒 | — | fewer while incomplete: `hits_needed = 13 - 3 + ceil(segments/7)` ✱ → 3 at 0 segments, 13 at 20 |
 | Charge loss feedback | glass chime + Choir half-note | — | 🔒 GDD; audio doc owns the sound |
@@ -157,8 +157,8 @@ Formal name **Nhael'Gharoth, the Waking Dark**; Choir names "the Hollow King", "
 |---|---|---|
 | 0 Seed / Cold Sepulchre | sector start | no Sepulchre HP: in phases 0–1 one Null-Iron Charge hit knocks **1 segment** off (500 pts, §7.1); the former "Sepulchre HP per segment 8 ✱" is dropped for phases 0–1 (PM ruling C4, M1 slice 3; recorded as TECH-001 Q-T110, PM under owner autonomy grant 2026-11-19); salt ward blocks 1 deposit for 30 s |
 | 1 Procession | 1–11 segments | each deposited shard = **1 segment point**, segment costs **3 shards** ✱ → **60 shards** to complete a sector (GDD §8.4 follows this, TECH-001 Q-T111) |
-| 2 Guard | 6+ segments (Litany Ring) | 8 Acolyte ring nodes; +15% deposit speed per living node |
-| 3 Quickening | ≥ 12 segments 🔒 | Compass starts lying; whisper line; charges can knock modules off (§2.1 `Module knock`; phases 0–1 use row 0's 1 segment per hit) |
+| 2 Guard | 6+ segments (Litany Ring) | 8 Acolyte ring nodes; +15% deposit speed per living node. **Charge rule (phase 2, TECH-001 Q-T121):** same as phases 0–1, one Charge hit on the Sepulchre knocks **1 segment** off; living ring nodes intercept Charges like Acolytes (§1.4 `Charge HP`, −0.5 Composure per §1.5); a **broken** ring (4+ nodes down, §3.1) is the window: while broken, nodes do not intercept. *Deconsecrate* in phase 2 destroys an outer ring node (GDD §8.4) |
+| 3 Quickening | ≥ 12 segments 🔒 | Compass starts lying; whisper line; charges can knock modules off (§2.1 `Module knock`; phases 0–2 use 1 segment per hit, Q-T121) |
 | 4 AWAKENING | 20/20 🔒 | 3 s stagger window; stagger needs **3 hits** in it 🔒; the Awakening line (AUDIO-001) |
 | 5 Rampage | after awakening | contact death 🔒 (no weapons); speed below; heals by eating |
 | 6 Unravel | Act 3–4 only | 3 rule-threads; latch time 1.4 s each ✱; R key GDD §4.1 |
@@ -184,7 +184,7 @@ Sepulchre numbers for phases 0–1 as built in M1 (`ds_sepulchre.*`, TECH-001 §
 | Eats a Choir unit | +1 Unravel hit restored | 1 restore per 6 s, cap 3 per rampage | ✱ keeps healing legible |
 | Eats a Shrine | +1 Unravel hit restored, Corruption −1 | — | the entity does not share; this is a claw-back tool |
 | Gaze cone | 62° half-angle, 520 px | +8° per T above 2 | |
-| Module knock (charge on a piece) | knocks 1–3 modules off | — | 500 pts each, Sinistar's "piece" score kept (RES-001). In phases 0–1 a Charge hit on the Sepulchre knocks exactly 1 segment (§2 row 0, TECH-001 Q-T110) |
+| Module knock (charge on a piece) | knocks 1–3 modules off | — | 500 pts each, Sinistar's "piece" score kept (RES-001). In phases 0–2 a Charge hit on the Sepulchre knocks exactly 1 segment (§2 row 0, TECH-001 Q-T110; phase 2 per Q-T121); the 1–3 module knock starts at phase 3 |
 | Post-failure | sector → **Hollow**, permanent entity patrol in that biome, Hunger +1 🔒 | — | GDD §8.4 failure state |
 
 ### 2.2 Hunger (entity-side escalation, automatic)

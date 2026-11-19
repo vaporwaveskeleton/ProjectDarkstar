@@ -90,9 +90,60 @@ An imagined 1.0 review scored the game 9/10, with sub-scores for graphics and ar
 | Art | Vigil kit, Grub kit, geode kit, Sepulchre seed parts (ART-002 §4) at slice quality for PM kits only |
 | Audio | synthesised lance/mining/chime (AUDIO-001 §11); the glass chime (AUDIO-001 §6.4) final, because it carries the race |
 | Narrative | none required |
-| Progress | **Slice 1 done (2026-11-18):** Arc-Lance base + D-08 hull switch. **Slice 2 part A done (2026-11-18):** D-08 A/B playable by CLI (`--hull=1|2`, `HullMode`), so exit criterion 4 is met for CLI testers (no in-game setting yet). **Slice 2 part B done (2026-11-18):** `RunSeed` and `SeedCode` built in `core/rng/` (FNV-1a 64 + SplitMix64, CRC-5 checksum; owner ruling, TECH-001 §4.9); `ReplayVerifier` and wiring into features pending (needs a deterministic sim). **Slice 3 rulings (2026-11-18, PM under owner autonomy grant):** all proposals accepted, Q-T29 (4–6) and Q-T25 (Z1) closed, Cabinet values promoted to SYS-001 (TECH-001 §11.2). **Slice 3 PR 1 done (2026-11-18):** the sector is reachable with the dev switch `--route=sector`; sector camera (follow, deadzone, lookahead, shake API; no shake triggered yet); Ledger Compass stub (always honest); scenario `m1_sector_feel`; suite 364 cases, 0 failures as reported by the PR 1 run. Camera readings and the torus sandbox arena ruled (Q-T55..Q-T58, renumbered at merge); the sandbox is a wrapping 1920×720 torus with a repeating floor. **Slice 3 PR 2 done (2026-11-18):** Lance bite (muzzle star, visual-only recoil, flecks, chalk tick + `lance_dull` on non-biting hurtboxes). **Slice 3 PR 3 done (2026-11-18):** geodes with calm mining and over-fire (7 hits in 1.2 s, warn at 5; detonation seeded from the `loot` stream), Mourning Glass `ShardField` (struct-of-arrays, 64 px torus grid, magnet, pool 144), `ChargeMagazine` (cap 5), seeded 10-geode sandbox, probe `sector/field`, scenarios `m1_geode_mine`, `m1_magnet_collect`, `m1_overfire`; bench `bench_shard_field` p99 0.21 ms against the 0.3 ms ✱ budget (Ryzen 7 7700, debug; not min spec); suite 523 cases, 0 failures, 9 scenarios pass, as reported by the PR 3 run (TECH-001 §4.3, §8.5, §11.2). Open from PR 3: Q-T75..Q-T79 (TECH-001 §11.1). **Slice 3 PR 4 done (2026-11-19):** Null-Iron Charges fire from the magazine (dry fire at 0), home on the Sepulchre, are intercepted by Grub or geode contact or gutter; 4 Oubliette Grubs steal free glass, carry it along the procession route and deposit it (carriers never flee); the Sepulchre builds segments in phases 0–1 and a Charge hit knocks 1 segment off (Q-T110..Q-T113 ruled). **The full M1 verb set (over-fire, magnet, Charges, Grub, Sepulchre) is playable in the sandbox, by automation only so far.** Probe `sector/choir`; scenarios `m1_charge_fire`, `m1_charge_intercept`, `m1_grub_procession`; suite 740 cases, 0 failures, 18 scenarios pass, as reported by the PR 4 run (TECH-001 §11.2). Composure was not built in PR 4. **Composure built (2026-11-19, Q-T118, Q-T119):** 0–10, starts at 10, no passive regen, the full SYS-001 §1.5 event API; a Charge lost to an interceptor now costs −0.5 (the only wired source); cockpit flame on the Vigil (band by shape) and the HUD wick (band by four heights); sector-scoped until `RunSession` exists. Band effects (false cues, phantom Grubs, axis inversion, +1 tier) come later; E01–E04 have no renders yet. Suite 817 cases, 0 failures; 20 scenarios pass, as reported by the run. **Remaining for M1:** human feel tests with 5 ✱ testers (exit criteria 1–2), D-08 A/B data from those tests, the Ledger Compass beyond the stub, Composure band effects. **Not yet done by a human:** a real `--route=sector` play of the camera feel and of mining/over-fire/magnet feel, real mouse aim (mouse aim verified by automation, headless + windowed; human feel check still pending), the slice 1 real-input mouse-fire check, a real play of Charges and the Grub procession, and a real `--hull=2` launch |
+| Progress | **Slice 1 done (2026-11-18):** Arc-Lance base + D-08 hull switch. **Slice 2 part A done (2026-11-18):** D-08 A/B playable by CLI (`--hull=1|2`, `HullMode`), so exit criterion 4 is met for CLI testers (no in-game setting yet). **Slice 2 part B done (2026-11-18):** `RunSeed` and `SeedCode` built in `core/rng/` (FNV-1a 64 + SplitMix64, CRC-5 checksum; owner ruling, TECH-001 §4.9); `ReplayVerifier` and wiring into features pending (needs a deterministic sim). **Slice 3 rulings (2026-11-18, PM under owner autonomy grant):** all proposals accepted, Q-T29 (4–6) and Q-T25 (Z1) closed, Cabinet values promoted to SYS-001 (TECH-001 §11.2). **Slice 3 PR 1 done (2026-11-18):** the sector is reachable with the dev switch `--route=sector`; sector camera (follow, deadzone, lookahead, shake API; no shake triggered yet); Ledger Compass stub (always honest); scenario `m1_sector_feel`; suite 364 cases, 0 failures as reported by the PR 1 run. Camera readings and the torus sandbox arena ruled (Q-T55..Q-T58, renumbered at merge); the sandbox is a wrapping 1920×720 torus with a repeating floor. **Slice 3 PR 2 done (2026-11-18):** Lance bite (muzzle star, visual-only recoil, flecks, chalk tick + `lance_dull` on non-biting hurtboxes). **Slice 3 PR 3 done (2026-11-18):** geodes with calm mining and over-fire (7 hits in 1.2 s, warn at 5; detonation seeded from the `loot` stream), Mourning Glass `ShardField` (struct-of-arrays, 64 px torus grid, magnet, pool 144), `ChargeMagazine` (cap 5), seeded 10-geode sandbox, probe `sector/field`, scenarios `m1_geode_mine`, `m1_magnet_collect`, `m1_overfire`; bench `bench_shard_field` p99 0.21 ms against the 0.3 ms ✱ budget (Ryzen 7 7700, debug; not min spec); suite 523 cases, 0 failures, 9 scenarios pass, as reported by the PR 3 run (TECH-001 §4.3, §8.5, §11.2). Open from PR 3: Q-T75..Q-T79 (TECH-001 §11.1). **Slice 3 PR 4 done (2026-11-19):** Null-Iron Charges fire from the magazine (dry fire at 0), home on the Sepulchre, are intercepted by Grub or geode contact or gutter; 4 Oubliette Grubs steal free glass, carry it along the procession route and deposit it (carriers never flee); the Sepulchre builds segments in phases 0–1 and a Charge hit knocks 1 segment off (Q-T110..Q-T113 ruled). **The full M1 verb set (over-fire, magnet, Charges, Grub, Sepulchre) is playable in the sandbox, by automation only so far.** Probe `sector/choir`; scenarios `m1_charge_fire`, `m1_charge_intercept`, `m1_grub_procession`; suite 740 cases, 0 failures, 18 scenarios pass, as reported by the PR 4 run (TECH-001 §11.2). Composure was not built in PR 4. **Ledger Compass beyond the stub done (2026-11-19):** 64 × 64 module (Q-T120), cached static layer (frame, chalk ticks, torus map grid, one-cell sector list stub, empty entity frame) redrawn only on change at ≤ 10 Hz ✱, markers every frame, `HudModel` honesty seam (always honest; lies, `HudLiar` and H16 later); bench p95 0.14–0.20 ms against 0.2 ms ✱ (Ryzen 7 7700, debug) (TECH-001 §5.4, §8.5). **Composure built (2026-11-19, Q-T118, Q-T119):** 0–10, starts at 10, no passive regen, the full SYS-001 §1.5 event API; a Charge lost to an interceptor now costs −0.5 (the only wired source); cockpit flame on the Vigil (band by shape) and the HUD wick (band by four heights); sector-scoped until `RunSession` exists. Band effects (false cues, phantom Grubs, axis inversion, +1 tier) come later; E01–E04 have no renders yet. Suite 817 cases, 0 failures; 20 scenarios pass, as reported by the run. **Remaining for M1:** human feel tests with 5 ✱ testers (exit criteria 1–2), D-08 A/B data from those tests, Composure band effects. **Not yet done by a human:** a real `--route=sector` play of the camera feel and of mining/over-fire/magnet feel, real mouse aim (mouse aim verified by automation, headless + windowed; human feel check still pending), the slice 1 real-input mouse-fire check, a real play of Charges and the Grub procession, and a real `--hull=2` launch |
 | Docs | TECH-001 §4.3 (shard magnet), §4.9 (seed); SYS-001 rows for anything new |
 | Risks | the race is invisible at 640×360 → fix with art/audio, not with UI text (GDD-001 P5) |
+
+#### M1 playtest protocol (exit criteria 1, 2 and 4)
+
+The owner runs these sessions. One protocol, five testers ✱ (exit criterion 1). Session lengths and the order below are ✱ production values for the PM to adjust; they are not game numbers.
+
+**Setup (once per machine).**
+- Build from a checkout of `main` with the editor binary (it carries the `editor` feature, so `--route` works). Release exports ignore `--route` (TECH-001 §9.1). The **Windows QA** export (`automation_qa`) also honours it.
+- Launch, one line per hull mode; `--no-save` keeps the tester's profile untouched:
+
+```
+tools\godot\Godot_v4.7.2-stable_win64_console.exe --path . -- --route=sector --hull=1 --no-save
+tools\godot\Godot_v4.7.2-stable_win64_console.exe --path . -- --route=sector --hull=2 --no-save
+```
+
+- `--hull=1` is the one-hit hull (D-08 default); `--hull=2` is the 2 HP hull with 0.75 s post-hit grace (SYS-001 §1.2). Any other value falls back to 1. Note: `--hull` is not build-gated.
+- Mouse and keyboard only for M1 (the exit criterion is about mouse aim). Record the mouse model and the monitor's refresh rate.
+
+**Order (counterbalanced).** Testers 1, 4 and 5 play hull 1 then hull 2; testers 2 and 3 play hull 2 then hull 1. Each block is 8 minutes ✱ of free play, with a 2-minute ✱ break between blocks. Do not tell the tester which mode is which; call them "A" and "B".
+
+**Say only this at the start:** "Fly with WASD, aim with the mouse, left button fires, right button throws a Charge. Play however you like. Think aloud if you can." No mention of glass, Grubs, the Sepulchre or the race.
+
+**Record during play** (the observer, on paper or a sheet):
+| Field | How |
+|---|---|
+| Race described unprompted | yes/no, plus the time from launch (exit criterion 2: within 90 s) and the tester's own words |
+| Mouse-aim complaints | count and quote each one (lag, floaty, offset, overshoot); exit criterion 1 needs zero across all five |
+| Deaths and immediate retries | per block; note when a death felt unfair to the tester |
+| First over-fire, first Charge thrown, first Grub killed | time from launch, or "never" |
+| Confusion points | what the tester asked or misread, with a timestamp |
+
+**Ask after each block** (open answers; do not lead):
+1. "What were you trying to do?"
+2. "Did the ship go where you aimed? Describe anything that felt off."
+3. "What killed you, and was it fair?"
+
+**Ask after both blocks:**
+4. "Which mode, A or B, would you rather play? Why?" (D-08 preference.)
+5. "In which one did you take more risks?"
+6. "Anything you wanted to do that you couldn't?"
+
+**Results.** One row per tester in the table below, then a one-line verdict per exit criterion. D-08 is decided from this data plus M2 data (§6), not from preference alone.
+
+| Tester | Order | Race unprompted (time) | Aim complaints | Deaths A / B | Prefers | Reason (quote) |
+|---|---|---|---|---|---|---|
+| 1 | 1→2 | | | | | |
+| 2 | 2→1 | | | | | |
+| 3 | 2→1 | | | | | |
+| 4 | 1→2 | | | | | |
+| 5 | 1→2 | | | | | |
+
+Not covered yet: Composure, the full Ledger Compass and the Litany Ring are not built, so do not ask about them.
 
 #### Status notes (2026-11-18)
 

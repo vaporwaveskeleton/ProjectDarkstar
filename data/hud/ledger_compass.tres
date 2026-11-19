@@ -5,6 +5,10 @@
 [resource]
 script = ExtResource("1")
 ds_namespace = "ds_hud.compass"
-source_section = "TECH-001 §5.4 (engineering ✱)"
+source_section = "TECH-001 §5.4 (engineering ✱); size ART-001 §12.5 (Q-T120)"
 max_markers = 8
 redraw_hz = 10.0
+size_px = Vector2(64, 64)
+bezel_px = 4.0
+grid_world_px = Vector2(640, 360)
+marker_radius_px = 1.5
