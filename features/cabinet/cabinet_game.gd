@@ -62,6 +62,7 @@ func _ready() -> void:
 	world.entity_unmade.connect(_on_entity_unmade)
 	world.entity_line.connect(func(key: String) -> void: messages.entity_line(tr(key)))
 	world.caption.connect(func(key: String) -> void: messages.caption(tr(key)))
+	messages.credits_stat_shown.connect(func(_i: int) -> void: AudioService.play(&"tally_blip"))   # cue owned by AUDIO-001 (unknown id = silent no-op)
 	reveal.finished.connect(_on_reveal_finished)
 	autopilot.enabled = OS.get_cmdline_user_args().has("--autopilot")
 	overlays.emptied.connect(func() -> void: get_tree().paused = false)
