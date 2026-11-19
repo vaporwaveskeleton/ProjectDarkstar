@@ -5,6 +5,9 @@ extends Node2D
 ## divides the torus size, so it looks the same on both sides of the seam and through a camera rebase.
 
 @export var style: SectorFloorStyle
+## Fill the cells with `style.base_colour`. Off when the Aether far layer shows behind the play layer
+## (golden path, TECH-001 §2.9): only the grid lines are drawn, so the Aether is never covered.
+@export var draw_base := true
 
 
 func _ready() -> void:
@@ -41,7 +44,8 @@ func _draw() -> void:
 	var r := covered_rect(visible_world_rect(), cell)
 	# The node may be moved; draw in its local space.
 	r = Rect2(r.position - global_position, r.size)
-	draw_rect(r, style.base_colour, true)
+	if draw_base:
+		draw_rect(r, style.base_colour, true)
 	var major := maxi(1, style.major_every)
 	var i0 := roundi((r.position.x + global_position.x) / cell)
 	var n := roundi(r.size.x / cell)

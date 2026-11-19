@@ -29,6 +29,8 @@ const MID_SHIFT_HOLD_SECONDS := CREDITS_SECONDS * 0.6   ## ✱ the banner stays 
 
 ## Profile key (ids and numbers only, TECH-001 §7): furthest stage index this shift; -1 = nothing to continue.
 const KEY_STAGE_REACHED := "act0_stage_reached"
+## Where THE PRETENCE goes: the first Unmaking cinematic, which then routes to the Ruins.
+const UNMAKING_ROUTE := &"aether"
 
 @export var roster: CabinetStageRoster   ## the shift, a0_1 … a0_5 in play order (data/cabinet/stage_roster.tres)
 @export var tuning: CabinetTuning
@@ -65,6 +67,9 @@ var stage_record_start: Array[int] = [0, 0, 0, 0]
 var _end_charges := -1             ## P2 carry-over: Charges held when this stage ended (cleared/unmade); -1 = not ended
 var _early_params: Dictionary = {}   ## route params that arrived before _ready (see on_route_entered)
 var _has_early_params := false
+## Whether the Pretence had been seen before this reveal started (read before the reveal's save sets it):
+## the Unmaking that follows is skippable on the same terms as the reveal (Q-T153, TECH-001 §11.1).
+var _reveal_seen_before := false
 
 
 func _ready() -> void:
@@ -355,7 +360,8 @@ func _on_timer() -> void:
 				start_stage(next, _end_charges if _end_charges >= 0 else world.glass.charges)
 			else:
 				_enter(State.REVEAL)
-				reveal.play(self, bool(_profile.get("pretence_seen", false)))
+				_reveal_seen_before = bool(_profile.get("pretence_seen", false))
+				reveal.play(self, _reveal_seen_before)
 
 
 ## A mid-shift stage end (PM 2026-11-19): banner only, no roll. The stage-end banner stays up for
@@ -408,7 +414,7 @@ func _on_extra_life() -> void:
 
 func _on_reveal_finished() -> void:
 	_save_act0_complete()
-	SceneRouter.go_to(&"ruins", _reveal_params())
+	SceneRouter.go_to(UNMAKING_ROUTE, unmaking_params())
 
 
 ## The reveal's boundary save: Act 0 is done, so there is nothing to continue.
@@ -426,6 +432,17 @@ func _reveal_params() -> Dictionary:
 	var params := {"shift_total": shift_total()}
 	if not demo:
 		params["act0_vigil_index"] = shift_total()
+	return params
+
+
+## The golden path (TECH-001 §2.1, §2.10): the reveal hands off to the first Unmaking (route &"aether",
+## beats 4–6) with no curtain, and the Unmaking forwards the Ruins keys (_reveal_params) unchanged.
+## Camera continuity params (aether_time_s, camera_centre, camera_zoom) are not sent yet: the reveal
+## ends in the maw's full black, so the cinematic's defaults apply (Q-T161).
+func unmaking_params() -> Dictionary:
+	var params := _reveal_params()
+	params["skip_curtain"] = true
+	params["can_skip"] = _reveal_seen_before
 	return params
 
 
