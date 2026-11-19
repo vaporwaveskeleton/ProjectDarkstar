@@ -15,6 +15,8 @@ var braking: bool = false
 var firing: bool = false
 var stick_aim: Vector2 = Vector2.ZERO
 var read_devices: bool = true
+## Latched on a `deploy_charge` press; ChargeLauncher consumes it (one Charge per press).
+var deploy_requested: bool = false
 
 ## Last pointer position from a motion event, in this viewport's (stretched, logical) coordinates.
 var _pointer_pos: Vector2 = Vector2.ZERO
@@ -28,6 +30,15 @@ func _physics_process(_delta: float) -> void:
 	braking = Input.is_action_pressed(&"brake")
 	firing = Input.is_action_pressed(&"fire_lance")
 	stick_aim = Input.get_vector(&"aim_left", &"aim_right", &"aim_up", &"aim_down")
+	if Input.is_action_just_pressed(&"deploy_charge"):
+		deploy_requested = true
+
+
+## Returns and clears the latched Charge request.
+func consume_deploy() -> bool:
+	var r := deploy_requested
+	deploy_requested = false
+	return r
 
 
 ## Observes mouse motion; never marks it handled, so UI and other nodes still get it.

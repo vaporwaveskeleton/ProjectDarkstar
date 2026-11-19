@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="ProcessionSandboxStats" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://features/sepulchre/procession_sandbox_stats.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+ds_namespace = "ds_sepulchre.sandbox"
+source_section = "PM M1 slice 3 PR 4 (4 Grubs, 1 route of 3 waypoints); positions and spawn ring ✱ (sandbox layout, off the spawn sightline per ZONES-001 §6.1)"
+sepulchre_pos = Vector2(1100, 560)
+route = PackedVector2Array(760, 440, 900, 520, 1010, 580)
+grub_count = 4
+grub_spawn_ring_px = 60.0

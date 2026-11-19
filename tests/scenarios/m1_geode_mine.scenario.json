@@ -29,7 +29,7 @@
 		{"do": "press", "action": "fire_lance"},
 		{"do": "wait_frames", "frames": 15},
 		{"do": "release", "action": "fire_lance"},
-		{"do": "wait_until", "id": "sector/field", "prop": "shards_free", "gt": 0, "within": 120},
+		{"do": "wait_until", "id": "sector/field", "prop": "shards_live", "gt": 0, "within": 120},
 		{"do": "wait_until", "id": "sector/field", "prop": "geodes_alive", "lt": 10, "within": 120},
 		{"do": "checkpoint", "name": "geode_mined"},
 		{"do": "assert", "id": "sector/field", "prop": "geodes_detonated", "eq": 0},

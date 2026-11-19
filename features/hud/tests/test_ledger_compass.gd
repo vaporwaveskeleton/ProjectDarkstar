@@ -91,3 +91,33 @@ func test_kind_colours_are_palette_entries() -> void:
 func test_registered_kind_is_read() -> void:
 	var m := _marker(Vector2(1, 1), LedgerCompass.KIND_THREAT)
 	assert_str(str(LedgerCompass.kind_of(m))).is_equal("threat")
+
+
+func test_choir_kinds_use_the_choir_hue() -> void:
+	assert_object(LedgerCompass.color_for(LedgerCompass.KIND_SEPULCHRE)).is_equal(Pal.CHOIR_4)
+	assert_object(LedgerCompass.color_for(LedgerCompass.KIND_GRUB)).is_equal(Pal.CHOIR_4)
+
+
+func test_lower_rank_first_and_stable() -> void:
+	var a := _marker(Vector2(1, 1), &"geode")
+	var b := _marker(Vector2(2, 2), &"geode")
+	var s: Node2D = auto_free(Node2D.new())
+	add_child(s)
+	LedgerCompass.register(s, LedgerCompass.KIND_SEPULCHRE, 0)
+	var nodes: Array[Node] = [a, b, s]
+	var out := LedgerCompass.by_rank(nodes)
+	assert_object(out[0]).is_same(s)
+	assert_object(out[1]).is_same(a)
+	assert_object(out[2]).is_same(b)
+
+
+func test_torus_wraps_actor_images_before_mapping() -> void:
+	var c := _compass()
+	c.world_rect = Rect2(0, 0, 1920, 720)
+	c.torus = Torus.new(Vector2(1920, 720))
+	var m := _marker(Vector2(-960, 360))   # an image left of the field = x 960 on the torus
+	m.set_meta(LedgerCompass.RANK_META, 0)
+	c.refresh()
+	assert_bool(c.marker_points.size() >= 1).is_true()
+	var expected := LedgerCompass.map_point(Vector2(960, 360), c.world_rect, c.size)
+	assert_bool(c.marker_points.has(expected)).is_true()
