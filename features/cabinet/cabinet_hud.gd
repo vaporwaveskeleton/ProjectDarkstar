@@ -52,6 +52,8 @@ var peel := 0.0:
 		if _left != null:
 			_left.peel = v
 			_right.peel = v
+		if _glass != null:
+			_glass.peel = v
 		if field != null:
 			field.peel = v
 		if screen_hud != null:
@@ -64,6 +66,8 @@ var crack := 0.0:
 			_right.crack = v
 var _left: BezelPrint
 var _right: BezelPrint
+var _door: CoinDoorFace
+var _glass: BezelGlass
 
 
 func _ready() -> void:
@@ -71,6 +75,13 @@ func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	_left = _make_print(&"left")
 	_right = _make_print(&"right")
+	_door = CoinDoorFace.new()
+	add_child(_door)
+	_door.fit_to(_door_plate())
+	_glass = BezelGlass.new()
+	_glass.rig = get_parent() as ScreenRig
+	add_child(_glass)
+	_glass.peel = peel
 	_left.peel = peel
 	_right.peel = peel
 	_left.crack = crack
@@ -97,11 +108,19 @@ func _make_print(column: StringName) -> BezelPrint:
 
 func _process(_delta: float) -> void:
 	queue_redraw()
+	if _door != null:
+		_door.visible = peel < 1.0
+		_door.fit_to(_door_plate())
+
+
+## The coin door rides the right column as it peels away.
+func _door_plate() -> Rect2:
+	var plate := CabinetBezel.coin_plate()
+	plate.position.x += peel * (CabinetBezel.SIDE + 20.0)
+	return plate
 
 
 func _draw() -> void:
 	if peel >= 1.0:
 		return
-	var plate := CabinetBezel.coin_plate()
-	plate.position.x += peel * (CabinetBezel.SIDE + 20.0)
-	CabinetBezel.draw_coin_plate(self, plate, 0.0, tr("CAB_COIN_PRICE"))
+	CabinetBezel.draw_price(self, _door_plate(), tr("CAB_COIN_PRICE"))

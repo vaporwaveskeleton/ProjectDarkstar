@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="CabinetSurface" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://features/cabinet/cabinet_surface.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+ds_namespace = "ds_cabinet.surface"
+source_section = "✱ bezel hardware materials and wear, owner direction 2026-11-18 (TECH-001 §2.10); outside the Neon Cabinet palette"
