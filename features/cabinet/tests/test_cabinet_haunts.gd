@@ -358,25 +358,44 @@ func test_the_stranger_is_an_extra_row_tied_with_you_shown_once() -> void:
 
 # --- stacked on #101: the bezel art's haunt anchors, the marquee, the arcade backdrop ---
 
-func test_the_marquee_letters_loosen_but_never_change_order_and_one_fades() -> void:
-	var s := tr("GAME_TITLE")
+## Owner, 2026-11-19: the marquee is a screenprint; letters may fade or wear, never move, fall off or reorder.
+func test_the_marquee_letters_never_move_fall_or_reorder_they_only_wear() -> void:
+	var sign := BezelMarquee.new()
+	add_child(sign)
+	var before := sign.lettering_override
+	var w := CabinetMarqueeWear.new()
+	w.attach(sign)
+	w.set_state(1.0, 1.0, 1.0, 1.0, 3.7)
+	assert_str(sign.lettering_override).is_equal(before)          # the printed title is never replaced
+	assert_str(tr(BezelMarquee.KEY)).is_equal("DARKSTAR")
 	var surf := CabinetSurface.default() as CabinetSurface
+	var r := BezelMarquee.lettering_rect()
+	var at_rest := CabinetMarqueeWear.letter_boxes("DARKSTAR", r, surf.marquee_lettering, surf.marquee_stroke, surf.marquee_tracking)
 	var prev := -INF
-	for i in s.length():
-		var x := BezelText.measure(s.substr(0, i), surf.marquee_lettering, surf.marquee_stroke, surf.marquee_tracking).x if i > 0 else 0.0
-		var pose := CabinetMarqueeDrift.letter_pose(i, 1.0)
-		assert_float(x + pose.x).is_greater(prev)                 # the order never changes: no new word
-		prev = x + pose.x
-		assert_float(absf(pose.z)).is_less_equal(CabinetMarqueeDrift.TILT + 0.0001)
-		assert_float(pose.y).is_between(0.0, CabinetMarqueeDrift.SAG + 0.0001)
-	assert_vector(CabinetMarqueeDrift.letter_pose(3, 0.0)).is_equal(Vector3.ZERO)
-	var kept := s.substr(0, CabinetMarqueeDrift.LOST) + s.substr(CabinetMarqueeDrift.LOST + 1)
-	assert_str(kept).is_equal("DARKSTR")
-	var d := CabinetMarqueeDrift.new()
-	d.still = true
-	d.set_state(1.0, 0.5)
-	assert_float(d.k).is_equal(0.0)                               # reduced motion: no sag, tilt or slide
-	assert_float(d.lost_k).is_equal(0.5)                          # the fade is kept
+	for box in at_rest:
+		assert_float(box.position.x).is_greater(prev)                 # D-A-R-K-S-T-A-R, left to right, in place
+		assert_float(box.position.y).is_equal(r.position.y)
+		prev = box.position.x
+	var code := FileAccess.get_file_as_string("res://features/cabinet/cabinet_marquee_wear.gd")
+	assert_bool(code.contains("lettering_override =")).is_false()  # no code path rewrites the print
+	assert_bool(ResourceLoader.exists("res://features/cabinet/cabinet_marquee_drift.gd")).is_false()
+	sign.free()
+
+
+func test_the_guttering_letter_dips_slowly_and_holds_still_under_reduced_motion() -> void:
+	var w := CabinetMarqueeWear.new()
+	assert_float(CabinetMarqueeWear.GUTTER_DIP_HZ).is_less_equal(3.0)
+	w.set_state(0.5, 0.5, 0.5, 0.5, 0.0)
+	var seen := {}
+	for f in 120:
+		w.time_s = f / 60.0
+		seen[snappedf(w.gutter_level(), 0.001)] = true
+		assert_float(w.gutter_level()).is_between(0.5, 1.0)
+	assert_int(seen.size()).is_greater(1)                          # it gutters
+	w.still = true
+	for f in 120:
+		w.time_s = f / 60.0
+		assert_float(w.gutter_level()).is_equal(0.5)               # still: a plain fade, no dips
 
 
 func test_the_printed_eye_wears_through_first_and_never_before_the_decay() -> void:
