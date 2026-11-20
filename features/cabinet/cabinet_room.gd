@@ -27,6 +27,8 @@ func _ready() -> void:
 	_mat.set_shader_parameter(&"sheet_x", sx)
 	_mat.set_shader_parameter(&"trim", surface.tmold_width)
 	_mat.set_shader_parameter(&"room_glow", surface.room_glow)
+	CabinetTextures.bind(_mat, CabinetTextures.SIDE_ALBEDO, CabinetTextures.SIDE_NORMAL, surface.side_tile, 1.0,
+			surface.texture_detail)
 	if rig != null:
 		rig.refitted.connect(set_area)
 		set_area(rig.bezel_rect())

@@ -115,3 +115,29 @@ func test_draws_without_error() -> void:
 	r.play_breach()
 	await get_tree().process_frame
 	assert_bool(is_instance_valid(r)).is_true()
+
+
+## Owner direction 2026-11-19 (ART-001 §14.8a, §15.1a): the hull wears loom's hammered brass as a CanvasTexture
+## with a normal map, lit only by the skiff's own lantern; the lantern going down takes that light with it.
+func test_brass_plating_is_a_lit_canvas_texture_that_follows_the_lamp() -> void:
+	var r := _rig()
+	var tex := r.brass_texture()
+	assert_object(tex).is_not_null()
+	assert_object(tex.diffuse_texture).is_not_null()
+	assert_object(tex.normal_texture).is_not_null()
+	assert_int(tex.texture_repeat).is_equal(CanvasItem.TEXTURE_REPEAT_ENABLED)
+	var light := r.brass_light()
+	assert_int(light.range_item_cull_mask).is_equal(AetherVigilRig.BRASS_LIGHT_LAYER)
+	var plating := r.get_node("Plating") as CanvasItem
+	assert_bool(plating.show_behind_parent).is_true()
+	assert_int(plating.light_mask & AetherVigilRig.BRASS_LIGHT_LAYER).is_equal(AetherVigilRig.BRASS_LIGHT_LAYER)
+	assert_int(r.light_mask & AetherVigilRig.BRASS_LIGHT_LAYER).override_failure_message("only the plating takes the brass light").is_equal(0)
+	_pose(r)
+	_run(r, 1.0)
+	assert_bool(light.enabled).is_true()
+	var lit := light.energy
+	assert_float(lit).is_greater(0.0)
+	_pose(r, Vector2.ZERO, false, false)
+	_run(r, 2.0)
+	assert_float(light.energy).is_less(lit * 0.5)
+	assert_float(light.energy).is_less(1.0)   # never a second key light (ART-001 §5, test_aether_lantern_key)

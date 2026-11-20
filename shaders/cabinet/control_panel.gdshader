@@ -6,6 +6,8 @@ shader_type canvas_item;
 // Each button throws a tight contact shadow. Wear is causal: a palm-polished patch where hands rest beside START
 // (smoother, glossier, the grain worn away). Procedural (D-13/D-14), resolution independent, in rig units.
 #include "res://shaders/cabinet/cabinet_material.gdshaderinc"
+// The laminate's grain, scratches and packed grime are a loom texture (ART-001 §14.8a, CabinetTextures).
+#include "res://shaders/cabinet/cabinet_detail.gdshaderinc"
 
 uniform vec2 panel_size = vec2(256.0, 26.0);
 uniform vec2 rig_origin = vec2(0.0);
@@ -37,12 +39,10 @@ void fragment() {
 	float g2 = vnoise(p * vec2(0.9, 14.0) + 11.0);                 // brushing along x
 	float wearing = 1.0 - 0.85 * polish;
 	vec3 base = panel_color.rgb * (0.86 + 0.28 * g1 * grain * wearing + 0.06 * (g2 - 0.5) * wearing);
+	// the worn laminate (loom ds_cab_laminate): its tone and relief, both rubbed smooth in the polish
+	base *= detail_tone(rp, 0.9 * wearing);
 	vec3 n = normalize(vec3(0.0, -0.34, 1.0));
-	// laminate has a gentle orange-peel in the normal
-	float e = max(px, 0.1);
-	float hx = fbm(p + vec2(e, 0.0), 3.0, px) - fbm(p - vec2(e, 0.0), 3.0, px);
-	float hy = fbm(p + vec2(0.0, e), 3.0, px) - fbm(p - vec2(0.0, e), 3.0, px);
-	n = normalize(n + vec3(-hx, -hy, 0.0) * (0.5 * grain * wearing / (2.0 * e)) * 0.35);
+	n = normalize(n + vec3(detail_tilt(rp, 0.9 * wearing), 0.0));
 
 	// the lip: a bright bevel on the top edge, a dark seam just beneath it where the slab meets the bezel
 	float yt = p.y - 0.0;

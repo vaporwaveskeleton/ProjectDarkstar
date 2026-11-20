@@ -8,6 +8,8 @@ shader_type canvas_item;
 // bright place, the coin slot's lip. The lit plate is the reject / price plate. Wear is causal: where
 // coins, keys, hands, thumbs and feet go.
 #include "res://shaders/cabinet/cabinet_material.gdshaderinc"
+// The painted steel's orange-peel, dents, rubbed-through scuffs and grime are a loom texture (ds_cab_steel).
+#include "res://shaders/cabinet/cabinet_detail.gdshaderinc"
 
 uniform vec2 plate_size = vec2(56.0, 80.0);
 uniform vec2 rig_origin = vec2(0.0);
@@ -156,10 +158,9 @@ void fragment() {
 		float grain_fade = smoothstep(1.5, 3.5, 1.0 / (3.0 * px));
 		vec2 gr = vec2(vnoise(p * 3.0 + 3.1), vnoise(p * 3.0 + 11.7)) - 0.5;
 		n.xy += gr * 0.14 * grain_fade;
-		float fine_fade = smoothstep(1.5, 3.5, 1.0 / (11.0 * px));
-		vec2 gf = vec2(vnoise(p * 11.0 + 5.3), vnoise(p * 11.0 + 17.9)) - 0.5;
-		n.xy += gf * 0.1 * micro_texture * fine_fade;
-		col *= 1.0 + (vnoise(p * 17.0 + 2.0) - 0.5) * 0.35 * micro_texture * fine_fade;
+		// the steel itself (loom ds_cab_steel, mipmapped so it never aliases): dents, scuffs, grime in the low spots
+		n.xy += detail_tilt(rp, 0.6 * micro_texture);
+		col *= detail_tone(rp, 1.4 * micro_texture);
 
 		// dull zinc-plated steel: the entry plate (brushed), lock collar, screws, flap
 		float brush_fade = smoothstep(1.5, 3.5, 1.0 / (16.0 * px));

@@ -63,6 +63,14 @@ extends TunableResource
 @export var flue_noise_hz: float = 14.0
 @export var surge_bloom_s: float = 0.25
 
+@export_group("Brass plating ✱ (loom ds_vigil_brass, ART-001 §14.8a)")
+@export var brass_tile: float = 40.0                   ## px of hull per texture repeat
+@export var brass_specular: Color = Pal.BONE_4          ## CanvasTexture specular colour (the lamp's glint on the plate)
+@export_range(0.0, 1.0) var brass_shininess: float = 0.6
+@export var brass_light_energy: float = 0.9            ## the lantern's own light on the plating (lit lamp = 1)
+@export var brass_light_radius: float = 48.0           ## px
+@export var brass_light_height: float = 12.0           ## px above the hull, for the normal map
+
 @export_group("Glow ✱")
 @export var lamp_glow_radius: float = 26.0
 @export var lamp_glow_alpha: float = 0.45

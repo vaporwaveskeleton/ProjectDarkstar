@@ -6,6 +6,14 @@ extends Node2D
 ## Origin = the lamp (near the 12 px hitbox). Hull points along local +X, rotated by hull_heading.
 
 const LOOK_PATH := "res://data/vigil/aether_vigil_look.tres"
+## Hammered-brass plating (loom render of art/src/vigil_textures.tx.js, ART-001 §14.8a): a near-white luminance
+## map the plate bands multiply, and an OpenGL normal map lit by the skiff's own lantern (BRASS_LIGHT_LAYER).
+const BRASS_ALBEDO := preload("res://assets/art/generated/textures/ds_vigil_brass/ds_vigil_brass_albedo.png")
+const BRASS_NORMAL := preload("res://assets/art/generated/textures/ds_vigil_brass/ds_vigil_brass_normal.png")
+## ✱ light/visibility layer bit (value) only the lantern's own brass light and the hull plating share.
+const BRASS_LIGHT_LAYER := 1 << 9
+## ✱ size in px of the generated radial texture of that light.
+const BRASS_LIGHT_TEX := 128
 
 ## Lantern Tree node id -> part (ART-002 §4.1). Parts not listed here are always present.
 const MODULE_PARTS := {
@@ -48,6 +56,9 @@ var _sparks: Array[Dictionary] = []
 var _glows: Array[Dictionary] = []
 var _glow_node: Node2D
 var _glow_tex: GradientTexture2D
+var _hull_node: Node2D
+var _brass_tex: CanvasTexture
+var _brass_light: PointLight2D
 
 
 func _init() -> void:
@@ -78,6 +89,68 @@ func _ready() -> void:
 	layer.material = mat
 	_glow_node = layer
 	add_child(layer)
+	_build_brass()
+
+
+## The plating layer (wake, keel, hull: drawn behind the rest of the rig, as before) wears the brass
+## CanvasTexture; the lantern's PointLight2D lights only that layer, so the hammered relief catches the lamp
+## and nothing else in the world changes (the Aether's lantern key light stays the brightest, ART-001 §5).
+func _build_brass() -> void:
+	var lk := _look()
+	_brass_tex = CanvasTexture.new()
+	_brass_tex.diffuse_texture = BRASS_ALBEDO
+	_brass_tex.normal_texture = BRASS_NORMAL
+	_brass_tex.specular_color = lk.brass_specular
+	_brass_tex.specular_shininess = lk.brass_shininess
+	_brass_tex.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	_brass_tex.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
+	var hull := _HullLayer.new()
+	hull.name = "Plating"
+	hull.owner_rig = self
+	hull.show_behind_parent = true
+	hull.light_mask = light_mask | BRASS_LIGHT_LAYER
+	_hull_node = hull
+	add_child(hull)
+	_brass_light = PointLight2D.new()
+	_brass_light.name = "BrassLight"
+	var g := Gradient.new()
+	g.set_color(0, Color.WHITE)
+	g.set_color(1, Color.BLACK)
+	var t := GradientTexture2D.new()
+	t.gradient = g
+	t.fill = GradientTexture2D.FILL_RADIAL
+	t.fill_from = Vector2(0.5, 0.5)
+	t.fill_to = Vector2(1.0, 0.5)
+	t.width = BRASS_LIGHT_TEX
+	t.height = BRASS_LIGHT_TEX
+	_brass_light.texture = t
+	_brass_light.texture_scale = lk.brass_light_radius * 2.0 / float(BRASS_LIGHT_TEX)
+	_brass_light.color = lk.lamp_glass_hi
+	_brass_light.height = lk.brass_light_height
+	_brass_light.blend_mode = Light2D.BLEND_MODE_ADD
+	_brass_light.range_item_cull_mask = BRASS_LIGHT_LAYER
+	_brass_light.shadow_enabled = false
+	add_child(_brass_light)
+	_apply_brass_light()
+
+
+func _apply_brass_light() -> void:
+	if _brass_light == null:
+		return
+	var e: float = _look().brass_light_energy * _lamp
+	_brass_light.position = _gimbal
+	_brass_light.energy = e
+	_brass_light.enabled = e > 0.001 and is_visible_in_tree()
+
+
+## The hull plating's CanvasTexture (albedo + normal), for tests and captures.
+func brass_texture() -> CanvasTexture:
+	return _brass_tex
+
+
+## The lantern's own brass light (lights the plating only), for tests and captures.
+func brass_light() -> PointLight2D:
+	return _brass_light
 
 
 ## Per-frame pose. Angles in radians, world space. accel in px/s² (world). thrust 0..1.
@@ -175,6 +248,8 @@ func _process(delta: float) -> void:
 		queue_redraw()
 		if _glow_node != null:
 			_glow_node.queue_redraw()
+		if _hull_node != null:
+			_hull_node.queue_redraw()
 
 
 ## Advance the rig's own motion (springs, easing, wake). Public so tests can step it deterministically.
@@ -211,6 +286,7 @@ func step(delta: float) -> void:
 	_surge_t = maxf(_surge_t - delta, 0.0)
 	_step_wake(delta)
 	_step_sparks(delta)
+	_apply_brass_light()
 
 
 func _hull_dark() -> float:
@@ -278,11 +354,9 @@ func _draw() -> void:
 	var lk := _look()
 	_glows.clear()
 	var lamp: float = _lamp
-	_draw_wake()
+	# Wake, keel and hull plating are drawn first, by the Plating layer behind this node (_draw_plating).
 	# Hull layer (rotated by the heading): keel -> hull -> plate -> flanks -> stern -> cowl -> bow.
 	draw_set_transform(Vector2.ZERO, _heading)
-	_draw_keel()
-	_draw_hull(lamp)
 	if has_part(&"plate"):
 		_draw_plate()
 	_draw_vanes(lamp)
@@ -300,51 +374,70 @@ func _draw() -> void:
 		_add_glow(_gimbal, lk.surge_glow_radius, lk.lamp_glass_hi, 0.6 * f)
 
 
+## Wake, keel and the brass hull, onto the Plating layer `ci` (behind the rest of the rig, as before).
+func _draw_plating(ci: CanvasItem) -> void:
+	_draw_wake(ci)
+	ci.draw_set_transform(Vector2.ZERO, _heading)
+	_draw_keel(ci)
+	_draw_hull(ci, _lamp)
+	ci.draw_set_transform(Vector2.ZERO, 0.0)
+
+
+## Texture coordinates of hull-local points on the hammered brass (one repeat per brass_tile px).
+func _brass_uv(pts: PackedVector2Array) -> PackedVector2Array:
+	var t: float = maxf(_look().brass_tile, 1.0)
+	var uv := PackedVector2Array()
+	for p in pts:
+		uv.append(p / t)
+	return uv
+
+
 func _add_glow(pos: Vector2, radius: float, col: Color, alpha: float) -> void:
 	_glows.append({"pos": pos, "r": radius, "c": Color(col, clampf(alpha, 0.0, 1.0))})
 
 
-func _draw_wake() -> void:
+func _draw_wake(ci: CanvasItem) -> void:
 	if _wake.size() < 2:
 		return
 	var lk := _look()
-	draw_set_transform_matrix(global_transform.affine_inverse())
+	ci.draw_set_transform_matrix(global_transform.affine_inverse())
 	for i in range(1, _wake.size()):
 		var a: Dictionary = _wake[i - 1]
 		var b: Dictionary = _wake[i]
 		var f: float = 1.0 - clampf((b["age"] as float) / maxf(lk.wake_life_s, 0.001), 0.0, 1.0)
 		var col: Color = lk.wake_a.lerp(lk.wake_b, 1.0 - f)
 		col.a = lk.wake_alpha * f
-		draw_line(a["pos"] as Vector2, b["pos"] as Vector2, col, maxf(lk.wake_width * f, 1.0))
-	draw_set_transform_matrix(Transform2D.IDENTITY)
+		ci.draw_line(a["pos"] as Vector2, b["pos"] as Vector2, col, maxf(lk.wake_width * f, 1.0))
+	ci.draw_set_transform_matrix(Transform2D.IDENTITY)
 
 
-func _draw_keel() -> void:
+func _draw_keel(ci: CanvasItem) -> void:
 	var lk := _look()
 	var s: float = lk.hull_stern_x + 2.0
 	var n: float = lk.hull_nose_x + 3.0
 	if has_part(&"keelFairing"):
-		draw_colored_polygon(PackedVector2Array([Vector2(-s, -2.0), Vector2(-4.0, -4.5), Vector2(n - 4.0, -1.5),
+		ci.draw_colored_polygon(PackedVector2Array([Vector2(-s, -2.0), Vector2(-4.0, -4.5), Vector2(n - 4.0, -1.5),
 				Vector2(n - 4.0, 1.5), Vector2(-4.0, 4.5), Vector2(-s, 2.0)]), _tint(lk.brass_dark))
-	draw_line(Vector2(-s, 0), Vector2(n, 0), _tint(lk.brass_shadow), 4.0)
-	draw_line(Vector2(-s, 0), Vector2(n, 0), _tint(lk.brass_light), 2.0)
-	draw_line(Vector2(-s + 3.0, -0.5), Vector2(n - 2.0, -0.5), _tint(lk.brass_gleam), 1.0)
+	ci.draw_line(Vector2(-s, 0), Vector2(n, 0), _tint(lk.brass_shadow), 4.0)
+	ci.draw_line(Vector2(-s, 0), Vector2(n, 0), _tint(lk.brass_light), 2.0)
+	ci.draw_line(Vector2(-s + 3.0, -0.5), Vector2(n - 2.0, -0.5), _tint(lk.brass_gleam), 1.0)
 	if has_part(&"keelBlade"):
-		draw_colored_polygon(PackedVector2Array([Vector2(n - 6.0, -2.5), Vector2(n + 6.0, 0.0), Vector2(n - 6.0, 2.5)]),
+		ci.draw_colored_polygon(PackedVector2Array([Vector2(n - 6.0, -2.5), Vector2(n + 6.0, 0.0), Vector2(n - 6.0, 2.5)]),
 				_tint(lk.brass_high))
-		draw_line(Vector2(n - 5.0, 0), Vector2(n + 5.0, 0), _tint(lk.brass_gleam), 1.0)
+		ci.draw_line(Vector2(n - 5.0, 0), Vector2(n + 5.0, 0), _tint(lk.brass_gleam), 1.0)
 	if has_part(&"keelLamp"):
 		var p := Vector2(lk.hull_nose_x * 0.55, 0.0)
-		draw_circle(p, 2.2, _tint(lk.brass_dark))
-		draw_circle(p, 1.4, _tint(lk.lamp_glass.lerp(lk.lamp_ember, 1.0 - _lamp)))
+		ci.draw_circle(p, 2.2, _tint(lk.brass_dark))
+		ci.draw_circle(p, 1.4, _tint(lk.lamp_glass.lerp(lk.lamp_ember, 1.0 - _lamp)))
 		if _lamp > 0.1:
 			_add_glow(p.rotated(_heading), 9.0, lk.lamp_glass, 0.35 * _lamp)
 
 
-func _draw_hull(lamp: float) -> void:
+func _draw_hull(ci: CanvasItem, lamp: float) -> void:
 	var lk := _look()
 	var out := _outline()
-	draw_colored_polygon(out, _tint(lk.brass_dark))
+	# Every plate wears the hammered brass (CanvasTexture: albedo x band colour, normal lit by the lantern).
+	ci.draw_colored_polygon(out, _tint(lk.brass_dark), _brass_uv(out), _brass_tex)
 	# Plate bands: nested, lighter toward the lit centre (cheap brass gradient).
 	var bands: Array[Color] = [lk.brass_mid, lk.brass_light, lk.brass_high]
 	for i in bands.size():
@@ -352,16 +445,16 @@ func _draw_hull(lamp: float) -> void:
 		var inner := PackedVector2Array()
 		for p in out:
 			inner.append(Vector2(p.x * lerpf(1.0, 0.92, float(i) * 0.4), p.y * sc))
-		draw_colored_polygon(inner, _tint(bands[i]))
-	draw_polyline(_close(out), _tint(lk.brass_shadow), 1.5)
+		ci.draw_colored_polygon(inner, _tint(bands[i]), _brass_uv(inner), _brass_tex)
+	ci.draw_polyline(_close(out), _tint(lk.brass_shadow), 1.5)
 	# Ribs and rivets.
 	var rib_x: Array[float] = [-23.0, -15.0, -7.0, 1.0, 9.0, 17.0, 25.0]
 	for x in rib_x:
 		var h: float = _hw(x)
 		if h > 1.0:
-			draw_line(Vector2(x, -h + 0.5), Vector2(x, h - 0.5), _tint(lk.engraving), 1.0)
+			ci.draw_line(Vector2(x, -h + 0.5), Vector2(x, h - 0.5), _tint(lk.engraving), 1.0)
 			for sgn in [-1.0, 1.0]:
-				draw_circle(Vector2(x + 1.5, (h - 1.8) * (sgn as float)), 0.7, _tint(lk.rivet))
+				ci.draw_circle(Vector2(x + 1.5, (h - 1.8) * (sgn as float)), 0.7, _tint(lk.rivet))
 	# Engraved filigree: two mirrored scrolls along the flanks.
 	for sgn in [-1.0, 1.0]:
 		var sg: float = sgn as float
@@ -369,21 +462,21 @@ func _draw_hull(lamp: float) -> void:
 		for i in 21:
 			var x: float = lerpf(-24.0, 24.0, float(i) / 20.0)
 			pts.append(Vector2(x, sg * (_hw(x) * 0.52 + sin(x * 0.55) * 1.4)))
-		draw_polyline(pts, _tint(lk.engraving), 1.0)
-		draw_arc(Vector2(-16.0, sg * 5.0), 2.2, 0.0, TAU, 12, _tint(lk.engraving), 1.0)
-		draw_arc(Vector2(14.0, sg * 4.0), 1.8, 0.0, TAU, 10, _tint(lk.engraving), 1.0)
+		ci.draw_polyline(pts, _tint(lk.engraving), 1.0)
+		ci.draw_arc(Vector2(-16.0, sg * 5.0), 2.2, 0.0, TAU, 12, _tint(lk.engraving), 1.0)
+		ci.draw_arc(Vector2(14.0, sg * 4.0), 1.8, 0.0, TAU, 10, _tint(lk.engraving), 1.0)
 	# Cockpit window with a warm glow that follows the lamp.
 	var win := PackedVector2Array()
 	for i in 14:
 		var a: float = TAU * float(i) / 14.0
 		win.append(Vector2(12.0 + cos(a) * 5.0, sin(a) * 3.0))
-	draw_colored_polygon(win, _tint(lk.brass_shadow))
+	ci.draw_colored_polygon(win, _tint(lk.brass_shadow))
 	var glass: Color = lk.lamp_ember.lerp(lk.window_glass, clampf(lamp, 0.0, 1.0))
 	var inner_win := PackedVector2Array()
 	for p in win:
 		inner_win.append(Vector2(12.0 + (p.x - 12.0) * 0.78, p.y * 0.7))
-	draw_colored_polygon(inner_win, _tint(glass))
-	draw_line(Vector2(9.0, -1.0), Vector2(13.0, -1.2), _tint(lk.lamp_glass_hi.lerp(lk.lamp_ember, 1.0 - lamp)), 1.0)
+	ci.draw_colored_polygon(inner_win, _tint(glass))
+	ci.draw_line(Vector2(9.0, -1.0), Vector2(13.0, -1.2), _tint(lk.lamp_glass_hi.lerp(lk.lamp_ember, 1.0 - lamp)), 1.0)
 	if lamp > 0.1:
 		_add_glow(Vector2(12.0, 0.0).rotated(_heading), 11.0, lk.window_glass, 0.4 * lamp)
 
@@ -583,6 +676,14 @@ func _close(pts: PackedVector2Array) -> PackedVector2Array:
 
 
 ## Additive glow layer: soft radial blobs from the rig's list (child of the rig so it draws on top).
+class _HullLayer extends Node2D:
+	var owner_rig: AetherVigilRig
+
+	func _draw() -> void:
+		if owner_rig != null:
+			owner_rig._draw_plating(self)
+
+
 class _GlowLayer extends Node2D:
 	var owner_rig: AetherVigilRig
 

@@ -128,6 +128,12 @@ extends TunableResource
 @export var tape_black: Color = Color8(0x16, 0x14, 0x14)          ## its black ink
 @export var rocker_lamp_color: Color = Color8(0xFF, 0x4A, 0x1C)   ## the lit half of the POWER rocker
 
+# --- loom textures (owner direction 2026-11-19; ART-001 §14.8a; CabinetTextures, art/src/cabinet_textures.tx.js) ---
+@export_range(0.0, 1.0) var texture_detail: float = 1.0           ## strength of every loom detail texture (0 = the untextured look)
+@export var laminate_tile: float = 40.0                           ## control-panel laminate: rig units per texture repeat
+@export var side_tile: float = 48.0                               ## the side panel's chipped paint over plywood: rig units per repeat
+@export var steel_tile: float = 30.0                              ## the coin door's painted steel: rig units per repeat
+
 const _DEFAULT_PATH := "res://data/cabinet/cabinet_surface.tres"
 
 

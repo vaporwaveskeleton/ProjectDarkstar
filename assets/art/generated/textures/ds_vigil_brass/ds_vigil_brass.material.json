@@ -1,0 +1,20 @@
+{
+ "name": "ds_vigil_brass",
+ "size": 256,
+ "normal": "gl",
+ "depth": 0.035,
+ "seam": {
+  "worst": 0.86,
+  "map": "height"
+ },
+ "maps": {
+  "albedo": "ds_vigil_brass_albedo.png",
+  "normal": "ds_vigil_brass_normal.png",
+  "height": "ds_vigil_brass_height.png",
+  "roughness": "ds_vigil_brass_roughness.png",
+  "metallic": "ds_vigil_brass_metallic.png",
+  "ao": "ds_vigil_brass_ao.png",
+  "orm": "ds_vigil_brass_orm.png",
+  "emissive": null
+ }
+}
