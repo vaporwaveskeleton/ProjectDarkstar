@@ -36,7 +36,7 @@ const BRANCH_KEYS: Array[StringName] = [&"RUINS_TREE_BRANCH_LANTERN", &"RUINS_TR
 var tree: LanternTreeData
 var owned: Array[StringName] = []
 var ember := 0
-## Stamped Codex entry ids (none until Codex stamping exists, Q-T327).
+## Stamped Codex entry ids (the profile's Codex record, Q-T350), set by the Ruins before the push.
 var known: Array[StringName] = []
 
 ## id -> TreeLantern

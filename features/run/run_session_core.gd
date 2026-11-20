@@ -9,7 +9,7 @@ extends RefCounted
 ## (the throwaway core a sector builds when no session is handed in).
 ##
 ## Saves happen only here, only at these call sites (§4.2a, §7.2, Q-T139):
-##   arrive_at_ruins → profile + iteration, `ruins_entry`
+##   arrive_at_ruins → profile + iteration, `ruins_entry` (carries Codex stamps, reads and the run count)
 ##   end_seam (not the last) → run, `seam_boundary`
 ##   die / win / abandon / return_from_frontier → run + iteration, `run_end`
 ## Never from tick, enter_seam, a sky or any mid-Seam moment.
@@ -21,6 +21,9 @@ signal seam_cleared(seam_index: int)
 signal run_ended(outcome: StringName)
 signal sky_darkened(skies_dark: int)
 signal iteration_ended()
+## A Codex entry was stamped (CodexRecord; Q-T350). In memory; the profile carries it to disk at the
+## next allowed write (`ruins_entry`, `tree_purchase`). EVT-001.
+signal codex_stamped(entry_id: StringName)
 
 const SLOT_PROFILE := &"profile"
 const SLOT_ITERATION := &"iteration"
@@ -116,14 +119,18 @@ func _load(slot: StringName) -> Dictionary:
 # --- the Ruins and the Act 0 bank ------------------------------------------------------------------
 
 ## The player arrives in the Ruins (TECH-001 §4.2a): Act 0 bank, begin the Iteration if needed,
-## then one profile and one iteration write (`ruins_entry`). Returns the Ember banked from Act 0.
-func arrive_at_ruins(params: Dictionary = {}) -> int:
+## the Codex (the Act 0 page; the tier-1 backstop when `tree` is given and the run count is due), then
+## one profile and one iteration write (`ruins_entry`). Returns the Ember banked from Act 0.
+func arrive_at_ruins(params: Dictionary = {}, tree: LanternTreeData = null) -> int:
 	_refresh_profile()
 	var paid := _bank_act0(params)
 	# Reaching the Ruins means Act 0 is done (the Ruins stub set these before Q-T142).
 	_profile.act0_complete = true
 	_profile.pretence_seen = true
 	begin_iteration_if_needed()
+	# The Codex (Q-T350): the Act 0 page the desk shows (Q-T352), then the tier-1 backstop (Q-T353).
+	stamp_codex(CodexRecord.ACT0_PAGE)
+	apply_codex_backstop(tree)
 	_save(SLOT_PROFILE, REASON_RUINS_ENTRY)
 	_save(SLOT_ITERATION, REASON_RUINS_ENTRY)
 	return paid
@@ -149,13 +156,12 @@ func buy_tree_node(stock: LanternTreeStock) -> StringName:
 
 ## Buys one chosen node of `tree` (the Tree station screen, Q-T326) when LanternTreeRules says it is
 ## buyable: its SYS-001 §7.7 price from the banked Ember, the id into the profile, one profile write
-## with reason `tree_purchase`. Only in the Ruins (never mid-run). No Codex entry is stamped yet
-## (Codex stamping is not built, Q-T327), so Codex-gated nodes stay closed. True when bought.
+## with reason `tree_purchase`. Only in the Ruins (never mid-run). A Codex-gated node needs its entry
+## in the profile's Codex record (`codex_known`, Q-T350). True when bought.
 func buy_tree_node_id(tree: LanternTreeData, id: StringName) -> bool:
 	if tree == null or _run.is_active() or not _profile_writable:
 		return false
-	var known: Array[StringName] = []
-	if not LanternTreeRules.can_buy(tree, id, _profile.tree_nodes, _profile.ember_banked, known):
+	if not LanternTreeRules.can_buy(tree, id, _profile.tree_nodes, _profile.ember_banked, _profile.codex_known):
 		return false
 	_profile.ember_banked -= tree.price_of(tree.get_node_def(id))
 	_profile.tree_nodes.append(id)
@@ -348,6 +354,9 @@ func _end_run(outcome: StringName) -> void:
 	if outcome != OUTCOME_NINTH_SKY:
 		_profile.ember_banked += _run.ember_in_run
 	# TODO(Q-T143): the ninth-sky bank is deferred (outside the slice); a ninth-sky end banks nothing.
+	# The Chronicle run count (Q-T353): every run end counts, a ninth-sky end too. Written with the
+	# profile at the next `ruins_entry`, as the banked Ember is.
+	_profile.runs_ended += 1
 	_run = RunState.new()
 	_in_seam = false
 	run_ended.emit(outcome)
@@ -356,6 +365,47 @@ func _end_run(outcome: StringName) -> void:
 func _save_run_end() -> void:
 	_save(SLOT_RUN, REASON_RUN_END)
 	_save(SLOT_ITERATION, REASON_RUN_END)
+
+
+# --- the Codex record (Q-T350; LOOP-001 §8, §3.7) --------------------------------------------------
+
+## Stamps a Codex entry into the profile's record (in memory; never saves: the next `ruins_entry` or
+## `tree_purchase` write carries it). Emits `codex_stamped` when the entry is new. A stamp is never
+## undone (LOOP-001 §8.1). True when newly stamped.
+func stamp_codex(entry_id: StringName) -> bool:
+	if not CodexRecord.stamp(_profile.codex_known, entry_id):
+		return false
+	codex_stamped.emit(entry_id)
+	return true
+
+
+## The player opened a stamped entry (the Ruins Codex desk). In memory; never saves. True when it was
+## unread before.
+func read_codex(entry_id: StringName) -> bool:
+	return CodexRecord.mark_read(_profile.codex_known, _profile.codex_read, entry_id)
+
+
+## LOOP-001 §3.7 backstop (a), tier 1 (SYS-001 §7.6, `ds_run.session.codex_backstop_tier1_runs`): once
+## the Chronicle's run count reaches it, every tier-1 gating entry of `tree` is stamped. Idempotent.
+## Returns how many entries were newly stamped. Never saves (arrive_at_ruins writes after it).
+func apply_codex_backstop(tree: LanternTreeData) -> int:
+	if tree == null or not CodexRecord.tier1_backstop_due(_profile.runs_ended, stats.codex_backstop_tier1_runs):
+		return 0
+	var n := 0
+	for id in CodexRecord.gating_ids(tree, 1):
+		if stamp_codex(id):
+			n += 1
+	return n
+
+
+## Stamped Codex entry ids (callers never mutate it).
+func codex_known() -> Array[StringName]:
+	return _profile.codex_known
+
+
+## How many runs have ended on this profile (the Chronicle run count; Q-T353).
+func runs_ended() -> int:
+	return _profile.runs_ended
 
 
 # --- the Hourglass Clock ---------------------------------------------------------------------------
