@@ -315,7 +315,7 @@ func _haunt_showcase() -> void:
 		[11.0, func() -> void: haunts.screen.show_figure(60)],
 		[14.0, func() -> void: haunts.perform(CabinetHauntDeck.LITANY)],
 		[14.0, func() -> void: haunts.perform(CabinetHauntDeck.SOUR_JINGLE)],
-		[16.5, func() -> void: haunts.show_crag_for_still(60)],
+		[16.5, func() -> void: haunts.show_crag_for_still(120)],
 	]
 	for s: Array in steps:
 		get_tree().create_timer(float(s[0])).timeout.connect(s[1] as Callable)
