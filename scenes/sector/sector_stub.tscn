@@ -185,6 +185,7 @@ unique_name_in_owner = true
 process_mode = 3
 layer = 10
 script = ExtResource("3")
+costume = 2
 
 [node name="WarpComposer" type="Node" parent="."]
 unique_name_in_owner = true

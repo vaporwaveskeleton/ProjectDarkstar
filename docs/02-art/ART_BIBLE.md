@@ -363,7 +363,7 @@ Code: `features/cabinet/bezel_art.gd`, `bezel_piece.gd`, `bezel_print.gd`, `cabi
 **Cabinet realism direction (owner, relayed by the PM session, 2026-11-18; for PR C).** Owner's words: "the Diagetic aspects of the bezel such as the coin slot are too cartoony, they should look realistic. As if you are really infront of an old arcade cabinet. You should feel as if you could reach out and touch it's grimy surface."
 - Physical cabinet parts move from cartoon to tactile realism: coin door and slot, coin return, buttons and control panel, T-molding, bezel glass, screws, metal and plastic. Worn paint, scratches, chipped edges, grime in recesses, fingerprints and smudges on the glass, specular highlights on metal and plastic, wear where hands go (round the coin slot and buttons).
 - Printed art may stay comic-book (real cabinets had printed comic art) but must read as printed on a worn surface: fading, scuffs, peeling edges.
-- Still generated in code only (D-13): runtime vector plus canvas shaders (procedural noise for grime, bump-style lighting, layered specular and dirt masks) or pxl renders; never photos or hand-made textures. The bezel stays native resolution and outside the screen palette and registers (§15.2a).
+- Still generated in code only (D-13): runtime vector plus canvas shaders (procedural noise for grime, bump-style lighting, layered specular and dirt masks) or pxl renders, or loom textures (§14.8a: the control panel's laminate, the side panel, the coin door's steel); never photos or hand-made textures. The bezel stays native resolution and outside the screen palette and registers (§15.2a).
 - Process: a coin-door prototype capture goes to the owner's delegate (PM) for yes/adjust before the rest is built.
 - This supersedes the "cartoon" wording above (e.g. "cartoon reliquary moon" is a printed-art motif and stays; the physical parts follow this direction; the coin door is satin black-painted steel with dull zinc parts, not chrome, and its screws are zinc, not brass).
 
@@ -484,7 +484,9 @@ Story facts that only work if the art carries them. Each is a single frame or pr
 
 ## 14. Generated art doctrine (D-13, 2026-11-18)
 
-**Every image in DARKSTAR is generated at runtime by code: vector geometry or shaders.** That covers the Vigil, every Choir unit, the entity, geodes, shards, terrain, VFX, the HUD, the UI and type. No sprite, texture, tile or image file ships (GDD-001 D-13). Sections 1–13 still define the *look*: palette, silhouettes, lighting, line, UI and type. This section defines how code produces that look, and why it is better for this game.
+**Every image in DARKSTAR is generated at runtime by code: vector geometry or shaders.** That covers the Vigil, every Choir unit, the entity, geodes, shards, terrain, VFX, the HUD, the UI and type. No hand-made or recorded sprite, texture, tile or image file ships (GDD-001 D-13, as amended: images rendered from committed code, by pxl §14.8 or loom §14.8a, are generated art). Sections 1–13 still define the *look*: palette, silhouettes, lighting, line, UI and type. This section defines how code produces that look, and why it is better for this game.
+
+**Generated does not mean hollow (owner direction, 2026-11-19).** Vector and algorithmic art is not limited to outlines. Any layer may use solid fills, gradients, shader-driven procedural textures, and pre-rendered seamless procgen textures (loom, §14.8a), including normal maps lit by Godot 2D lights through a `CanvasTexture`. How rich a surface may be is set by the fidelity ladder (§15.1a), not by the technique. Two things never change: colours come from `Pal` roles (§4, §15), and a texture never hides a hitbox, a silhouette or a read (§16.3, WARP-001 §5.1).
 
 ### 14.1 Why generated
 The game's signature is a continuous fall from a clean 1983 arcade into cosmic horror (GDD-001 §1, §8.7). With baked sprites, every Warp Tier is an asset swap: a cut. With generators, every body is a function of parameters, so the fall is a **sweep**. The same Grub can be drawn with three chalk circles at T0, breathe at T1, grow a fourth limb at T2, and become a lamp with a face at T4. One generator per part, every tier, every frame in between.
@@ -552,6 +554,28 @@ node .claude/skills/pxl/bin/pxl.js serve art/src/<file>.px.js                   
 ```
 First asset (2026-11-18): `ds_ui_paletteSwatch` (`art/src/reference.px.js`), the 32-colour palette as a swatch card, which proves the pipeline and the palette test.
 
+### 14.8a loom: build-time seamless textures (owner direction, 2026-11-19)
+
+[loom](https://github.com/uilianks/loom) (MIT; same author family as pxl and chirp) is textures as code: a JavaScript DSL (`.tx.js`) of tiling fields (noise, cells, bricks, planks, weave…) and weathering operators (`cavity`, `convex`, `drips`…) that writes seamless PBR maps and checks the seam on every build. Like pxl, **a texture rendered from committed code is generated art.**
+
+| Rule | Detail |
+|---|---|
+| Sources | `art/src/*.tx.js`, committed. Every source starts with `include("darkstar_palette.tx.js")`, which names the 32 `Pal` roles plus the AETHER ramp (`void0`…`signal`, `aether0`…`aether5`). Material names follow ART-002 §2 (`ds_<kit>_<part>`) |
+| Palette | colours **by Pal role name only**: no `pal()` of its own and no `#rrggbb` literal outside the include (the test enforces both, and checks the include against `Pal`). `ramp()`, `mix()`, `mul()` and `hsv()` derive in-between tones, as lighting does in pxl. **Scope of the one exception (owner, 2026-11-19):** only the Act 0 bezel and cabinet hardware — the realistic cabinet, whose real-object colours live in `CabinetSurface` and `BezelInks` (§12.7a) — may keep colours outside `Pal`; there loom adds **only luminance and normal detail** (a neutral BONE-ramp map the shader reads around its mean and multiplies into the `CabinetSurface` colour). This is not a Pal exemption anywhere else: the Act 0 screen, every Aether tier, the HUD and UI take loom colours by Pal role only |
+| Output | `assets/art/generated/textures/<name>/<name>_{albedo,normal,orm}.png` (+ `_emissive` when `emit` is set) and `<name>.material.json`. Committed, never hand-edited. Height, roughness, metallic and AO maps and `_preview/` stay local (git-ignored); the game may load only the four committed maps |
+| Forbidden | `image()`: it pastes an outside PNG (a photo, a painted texture) into the material |
+| Godot import | lossless (`compress/mode=0`), **mipmaps on**, no size limit. Normal maps are OpenGL (green up, loom's default). 2D canvas renders in sRGB space, so albedo, normal and ORM import the same; a shader marks the albedo sampler `source_color` and leaves normal and ORM samplers plain (data). Repeat and filter are set where the texture is used: `CanvasTexture.texture_repeat = ENABLED` + `LINEAR_WITH_MIPMAPS`, or `repeat_enable, filter_linear_mipmap` on a shader sampler |
+| In Godot | a `CanvasTexture` (albedo + normal) on `draw_colored_polygon(…, uvs, texture)` or a `Sprite2D`, lit either by a `PointLight2D` (its `height` drives the normal map) or, when the light must be controlled exactly, by the part's own canvas shader reading `TEXTURE` and `NORMAL_TEXTURE` (the Aether Vigil: `shaders/vigil/vigil_plating.gdshader`, lamp + sky key in the hull's frame). Shader-drawn parts sample albedo/normal as detail and do their own light (the Cabinet, `shaders/cabinet/cabinet_detail.gdshaderinc`). **Strength:** a texture must read at 1280×720 (owner, 2026-11-19): check the before/after crops at 1×, not only the 4× previews |
+| When to use loom | surfaces that tile: wood, laminate, metal, brass plating, rivets, stone, plaster, fabric, crystal facets. Not silhouettes (vector), not anything that must morph continuously (runtime shader), not the Act 0 screen |
+
+Commands (from the repo root; the tool lives in `.claude/skills/loom/`, git-ignored, installed per README at a pinned commit):
+```
+node .claude/skills/loom/bin/loom.js build art/src/<file>.tx.js --out assets/art/generated/textures   # then --import
+node .claude/skills/loom/bin/loom.js info art/src/<file>.tx.js <name>                               # value ranges + seam check
+node .claude/skills/loom/bin/loom.js serve art/src/<file>.tx.js                                     # live viewer, http://127.0.0.1:4350
+```
+Read `assets/art/generated/textures/_preview/<name>.png` (tiled under a raking light, sphere, cube, every map) before calling a texture done. First textures (2026-11-19): `ds_cab_laminate`, `ds_cab_side`, `ds_cab_steel`, `ds_cab_brushed`, `ds_cab_glass_smudge` (`art/src/cabinet_textures.tx.js`: the control panel worn through to its core where hands rest, the side panel, the coin door with grime packed along its edge, brushed and scratched trim, fingerprint grease on the glass) and `ds_vigil_brass` (`art/src/vigil_textures.tx.js`: the Aether Vigil's hammered hull with tarnish in the hollows, rivet heads, and a specular from its lantern that slides as it turns).
+
 ## 15. The visual fidelity ladder (owner direction, 2026-11-18)
 
 **The game starts as a neon arcade machine and becomes something richer as it reveals itself.** Act 0 looks like a classic 1983 cabinet: neon colours on black, flat vector shapes, no lighting. Each Act 0 stage carries a dim VOID-register backdrop signature behind the stars (currents, censer chains, a shoal of glass motes, a still horizon; never a faction hue; TECH-001 §2.10). After THE PRETENCE the Aether look takes over (§16: retro-future Victorian space), and the graphics are allowed to *transcend* arcade limits: real 2D lighting with the lantern as the key light, shadows, fog and volumetric haze, bloom, complex particle systems, normal-mapped and shader-rich bodies. Gameplay stays top-down 2D throughout; the Act 0 screen's pixel grid is 256×304 (TECH-001 §1.1) and 640×360 is the logical space, which renders at native resolution after Act 0 (owner, 2026-11-18). This section governs; where §4–§5 or §14 read as a hard cap on colours or lighting, this section wins.
@@ -562,7 +586,7 @@ First asset (2026-11-18): `ds_ui_paletteSwatch` (`art/src/reference.px.js`), the
 
 | Stage | Palette | What rendering may do | What it may not do |
 |---|---|---|---|
-| **T0 — Act 0 (the Cabinet)** | **Neon Cabinet palette** (§15.2), flat | vector lines and fills, the glow under-stroke, CRT scanlines and curvature, screen shake | lighting, fog, gradients, soft particles, bloom. Every pixel of the **screen** is a Neon Cabinet entry (the CRT pass aside). The screen is a low-res pixel-perfect grid in its own SubViewport (**256×304 portrait, 4 bpp**, owner 2026-11-18, PR B, TECH-001 §1.3; video limits below); the bezel is native-res vector print art outside this palette (§12.7; Sinistar-style re-composition approved, PR C, not built) |
+| **T0 — Act 0 (the Cabinet)** | **Neon Cabinet palette** (§15.2), flat | vector lines and fills, the glow under-stroke, CRT scanlines and curvature, screen shake | lighting, fog, gradients, soft particles, bloom. Every pixel of the **screen** is a Neon Cabinet entry (the CRT pass aside). The screen is a low-res pixel-perfect grid in its own SubViewport (**256×304 portrait, 4 bpp**, owner 2026-11-18, PR B, TECH-001 §1.3; video limits below); the bezel is native-res vector print art outside this palette (§12.7; Sinistar-style re-composition approved, PR C, not built), and the bezel and cabinet may wear realistic textures (§15.1a) |
 | **THE PRETENCE (T0 → T1)** | the neon **morphs entry by entry** into the base palette (§4) | first the Decay (§12.7b: persistence, CRT bleed, raster sag, drift of registers 1–6 only; built 2026-11-19), then the tear, the morph, the maw | a title card or any new text (NARR-001 §4.5) |
 | **T1 Frayed** | base palette as **base colours** | the lantern becomes a real light (soft falloff, shadows from occluders), light fog, first soft particles (dust, chalk flecks, glass motes) | — |
 | **T2 Bleeding** | base + derived | bioluminescent emitters (Shroud, glass, veins) light the field; bloom; Shroud as an animated shader field; denser particle systems | — |
@@ -572,7 +596,21 @@ First asset (2026-11-18): `ds_ui_paletteSwatch` (`art/src/reference.px.js`), the
 
 **What survives every rung, including neon:** the role laws. Laws 1–3 of §4 (faction hues, phosphor = truth, SIGNAL ≤ 3 objects) hold at every tier, because the Neon Cabinet palette keeps the same 32 roles. Law 4 (the background never out-shines GAS-3) and the readability rules of WARP-001 §5.1 (value before hue, nothing moves a hitbox) also hold. What changes is fidelity, never legibility.
 
-**What "base colours" means from T1:** authored art (generator parameters, pxl sources, shader albedo) picks its colours from the base palette and its kit pool (ART-002 §8). Lighting, fog, bloom, particles and shading then produce *derived* colours freely. No per-pixel quantisation is required after T0.
+**What "base colours" means from T1:** authored art (generator parameters, pxl sources, loom sources, shader albedo) picks its colours from the base palette and its kit pool (ART-002 §8). Lighting, fog, bloom, particles and shading then produce *derived* colours freely. No per-pixel quantisation is required after T0.
+
+### 15.1a Texture richness climbs the ladder (owner direction, 2026-11-19)
+
+"As the game progresses and increases in complexity so should visual fidelity." Fills, gradients, procedural shader textures and loom textures (§14, §14.8a) are allowed everywhere below except the Act 0 screen; how rich they get follows this table.
+
+| Where | Texture richness | Example |
+|---|---|---|
+| **Act 0 screen** (layer one) | none: flat Neon Cabinet colours inside the Williams video limits (§15, §15.2a). **The screen does not change** | the 1983 costume, unchanged |
+| **Act 0 bezel and cabinet** (native res) | **realistic**: grime, wood, laminate, painted and plated metal, glass, with normal-mapped relief under the one cabinet light. Owner, 2026-11-18: "you could reach out and touch its grimy surface" (§12.7a) | the control panel's worn laminate, the side panel's chipped paint over plywood, the coin door's dented, scuffed steel |
+| **T1 Frayed** | first materials: brass plating, rivets, hammered metal, lamp glass; normal maps lit by the lantern | the Aether Vigil's hammered brass hull (§16.7) |
+| **T2 Bleeding** | richer materials and more of them: riveted hulls, Ruins stone and wood, crystal facets that catch emitters | Ruins plaster, worn floorboards |
+| **T3 Unbound → T5** | full material stacks: layered grime and wear, emissive maps, distortion over textured bodies; T5 takes them apart | a crystal sphere's facets, a riveted hull peeling |
+
+**Role laws hold at every rung, textured or not.** Colours by `Pal` role (or a neutral detail map multiplied into a material colour that is itself on-role); faction hues stay their faction's; phosphor = truth; SIGNAL ≤ 3; the background never out-shines GAS-3. **Readability first:** at gameplay scale a texture is surface, never shape: keep its luminance swing low on anything with a hitbox, never let it break a silhouette, never put SIGNAL- or PHOS-like accents in it, and check the 160 × 90 thumbnail and 50 % greyscale reads (§10) with the texture on.
 
 ### 15.2 The Neon Cabinet palette (T0)
 The same 32 roles as §4, re-voiced as a 1983 arcade machine. Entry *n* here morphs into entry *n* of §4 during THE PRETENCE, so the transition is continuous and every role stays itself.
@@ -925,7 +963,7 @@ Ruling Q-T193 (PM under the owner autonomy grant, TECH-001 §11.2): the Ruins ob
 
 > **Status: ruled, PM under owner autonomy grant, 2026-11-19** (TECH-001 Q-T170; queued for the owner's later review). It goes with the Aether handling profile (GDD §4.2a, SYS-001 §1.1a). Act 0's neon Vigil (§3, §15.2) is unchanged.
 >
-> **Built 2026-11-19** as `AetherVigilRig` (runtime `_draw`); visual values are ✱ in `ds_vigil.aether_look` (TECH-001 §3.4). Palette: brass from BONE/VOID mixes, GAS only for lamp, glass, flue and sparks; no CHOIR, SIGNAL or PHOS.
+> **Built 2026-11-19** as `AetherVigilRig` (runtime `_draw`); visual values are ✱ in `ds_vigil.aether_look` (TECH-001 §3.4). Palette (amended 2026-11-20, PM under owner direction, overnight push; the owner reviews in the morning): the hull is the player's brass, GASLIGHT GAS-0…GAS-3 as on the brass HUD (§4: GASLIGHT is the player's), with dark VOID/GAS tarnish in the recesses and pale-gold gleams (GAS-4/BONE-4 mix) that stay below GAS-5, so the lantern core is still the brightest warm pixel; silver (BONE) only on the prow fittings (anchor ring, hook reel, keel blade). Green-black verdigris is not used: the only green is PHOS, which is truth. Two detail levels: at gameplay scale the hull is a few big shapes (two plate bands, three bold ribs with rivets, the orb cage, the keel) with a 1 px dark outline and a light rim on the sky-lit side; filigree, the edge rivet row and the in-between ribs draw only close up (`close_detail_zoom`). The lamp's additive glow is held at the orb cage (`lamp_glow_radius`) so the lantern lights the hull through the plating shader instead of washing it out; no CHOIR, SIGNAL or PHOS.
 
 **Intent.** In the Cabinet the Vigil is a simple wedge and a lamp. After THE PRETENCE the player should see the ship it always was: a hand-built Victorian lantern skiff with a keel, bellows and vanes. It is heavy, riveted and engraved, and every system the Lantern Tree brings online is a part you can see. The weight in the hands (GDD §4.2a) and the complexity in the art are the same idea.
 
