@@ -88,6 +88,13 @@ func apply_surface() -> void:
 	_mat.set_shader_parameter(&"finger_halo", surface.finger_halo)
 	_mat.set_shader_parameter(&"thumb_wear", surface.thumb_wear)
 	_mat.set_shader_parameter(&"micro_texture", surface.micro_texture)
+	CabinetTextures.bind(_mat, CabinetTextures.STEEL_ALBEDO, CabinetTextures.STEEL_NORMAL, surface.steel_tile,
+			CabinetTextures.STEEL_MEAN, surface.texture_detail)
+	CabinetTextures.bind_trim(_mat, surface.trim_tile)
+	_mat.set_shader_parameter(&"door_edge_grime", surface.door_edge_grime)
+	_mat.set_shader_parameter(&"slot_polish", surface.door_slot_polish)
+	_mat.set_shader_parameter(&"lock_scratches", surface.door_lock_scratches)
+	_mat.set_shader_parameter(&"low_grime", surface.door_low_grime)
 	_mat.set_shader_parameter(&"lamp_idle", surface.lamp_idle)
 	_mat.set_shader_parameter(&"lamp_spill", surface.lamp_spill)
 	_mat.set_shader_parameter(&"lamp_spill_radius", surface.lamp_spill_radius)

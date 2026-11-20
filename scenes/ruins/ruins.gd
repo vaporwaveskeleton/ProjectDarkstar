@@ -348,6 +348,8 @@ func _label(n: String, face: VectorFace, col: Color, pos: Vector2, width: float,
 func launch() -> bool:
 	if launched or session == null or router == null:
 		return false
+	if router.get("is_busy") == true:   # mid-transition: the retry in _process launches once it frees (Q-T249)
+		return false
 	if not session.run().is_active():   # a live run (e.g. after a quit to title) is re-entered, not replaced
 		session.start_run()
 	_hold_clock(false)                  # the sand starts when you leave (beat 11)
@@ -401,6 +403,9 @@ func _process(delta: float) -> void:
 		return
 	var axis := Input.get_axis(&"move_left", &"move_right")
 	_react(onboarding.step(delta, axis))
+	# Q-T249: EV_LAUNCH fires once; a router still busy with the arrival curtain refuses go_to, so retry.
+	if onboarding.phase == RuinsOnboarding.PHASE_LAUNCHED and not launched:
+		launch()
 	_mirror(delta)
 	queue_redraw()
 

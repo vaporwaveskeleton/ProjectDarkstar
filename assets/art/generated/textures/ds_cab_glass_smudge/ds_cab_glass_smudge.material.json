@@ -1,0 +1,20 @@
+{
+ "name": "ds_cab_glass_smudge",
+ "size": 256,
+ "normal": "gl",
+ "depth": 0.004,
+ "seam": {
+  "worst": 0.47,
+  "map": "normal"
+ },
+ "maps": {
+  "albedo": "ds_cab_glass_smudge_albedo.png",
+  "normal": "ds_cab_glass_smudge_normal.png",
+  "height": "ds_cab_glass_smudge_height.png",
+  "roughness": "ds_cab_glass_smudge_roughness.png",
+  "metallic": "ds_cab_glass_smudge_metallic.png",
+  "ao": "ds_cab_glass_smudge_ao.png",
+  "orm": "ds_cab_glass_smudge_orm.png",
+  "emissive": null
+ }
+}
