@@ -10,6 +10,8 @@ extends Node2D
 
 const PAUSE_SCENE := preload("res://scenes/sector/pause_screen.tscn")
 const EXIT_STATS := preload("res://data/sector/seam_exit.tres")
+## Race edge marker layout (`ds_hud.race_marks`, Q-T357).
+const RACE_MARKS := preload("res://data/hud/race_edge_markers.tres")
 ## Where a run goes when it ends (Q-T152 (d), Q-T279): the hub, never the title.
 const RUINS_ROUTE := &"ruins"
 const SECTOR_ROUTE := &"sector"
@@ -31,7 +33,7 @@ const PARAM_RUN_OUTCOME := "run_outcome"
 ## Near depth (Q-T163 resolved): fog wisps and glass motes behind and in front of the play layer.
 @onready var _depth_back: SectorDepth = %DepthBack
 @onready var _depth_front: SectorDepth = %DepthFront
-## Leans the camera toward the race (Charge, Grub, Sepulchre) without zoom (Q-T25 Z1).
+## Frames the race (Charge, Grub, Sepulchre): a box-centre lean and a fitted pull-out (Q-T354, Q-T355).
 @onready var _framer: RaceFramer = %RaceFramer
 @onready var _overlays: ScreenStack = %Overlays
 @onready var _camera: SectorCamera = %SectorCamera
@@ -70,6 +72,8 @@ var _far_last := Vector2.ZERO
 ## The sector bed and the Vigil's flight voice (AUDIO-001 §12.19), built in _start_sound.
 var soundscape: SectorSoundscape
 var flight_voice: VigilFlightVoice
+## Brass chevrons on the frame for race parts off screen (Q-T357), built in _start_race_marks.
+var race_marks: RaceEdgeMarkers
 var _breached := false
 ## The Seam's clear rule and exit throat (built in _start_exit).
 var seam_exit: SeamExit
@@ -147,7 +151,7 @@ var camera_x: float:
 ## The race framing lean now (world px, length) and how many race points are in play.
 var race_lean: float:
 	get: return _framer.lean.length() if _framer else 0.0
-## The camera zoom now (1 = Z1; below 1 only during a Q-T211 pull-out).
+## The camera zoom now (1 = Z1; below 1 only during a race pull-out, Q-T211 / Q-T355).
 var camera_zoom: float:
 	get: return _camera.zoom.x if _camera else 1.0
 var race_points: int:
@@ -157,6 +161,15 @@ var race_on_screen: int:
 	get: return _race_on_screen()
 var compass_markers: int:
 	get: return _compass.marker_points.size() if _compass else 0
+## Race edge markers drawn now (Q-T357) and whether the race pull-out is on.
+var race_markers: int:
+	get: return race_marks.count() if race_marks else 0
+var race_pulling: bool:
+	get: return _framer.pulling if _framer else false
+## Race parts neither on screen nor marked at the edge: the Reviewer's gap-6 check, 0 when the race
+## reads (both ends on screen or signposted).
+var race_unsignposted: int:
+	get: return maxi(0, race_points - race_on_screen - race_markers)
 ## Shortest (torus) distance from the camera to the Vigil; stays small through the seam.
 var camera_gap: float:
 	get: return torus.distance(_camera.global_position, vigil.global_position) \
@@ -236,7 +249,7 @@ func _ready() -> void:
 	_launcher.composure = _composure
 	_framer.anchor = vigil
 	_framer.points = race_points_now
-	_framer.pull_target = race_pull_target
+	_framer.charge_flying = func() -> bool: return _launcher != null and _launcher.in_flight() > 0
 	vigil.cockpit_flame.composure = _composure
 	_wick.composure = _composure
 	vigil.health.damaged.connect(func(_a, _r): _refresh_hud())
@@ -244,6 +257,7 @@ func _ready() -> void:
 	_overlays.emptied.connect(_on_overlays_emptied)
 	_start_sound()
 	_start_exit()
+	_start_race_marks()
 	if router == null:
 		router = get_node_or_null(^"/root/SceneRouter")
 	_use_session(_throwaway_session(), true)
@@ -318,6 +332,7 @@ func _start_far() -> void:
 
 func _process(delta: float) -> void:
 	_step_far()
+	_step_race_marks()
 	_refresh_hud()
 	if _return_in >= 0.0:
 		_return_in -= delta
@@ -348,23 +363,49 @@ func _step_far() -> void:
 ## Sepulchre while either is happening (the moments the camera must show, Reviewer rank 6).
 func race_points_now() -> PackedVector2Array:
 	var out := PackedVector2Array()
-	if _launcher:
-		for c in _launcher.flying:
-			if is_instance_valid(c):
-				out.append(c.global_position)
-	if _grubs:
-		for g in _grubs.grubs:
-			if is_instance_valid(g) and g.carrying and not g.dead:
-				out.append(g.global_position)
-	if not out.is_empty() and _procession and is_instance_valid(_procession.sepulchre):
-		out.append(_procession.sepulchre.global_position)
+	for item: Array in race_items_now():
+		out.append(item[0] as Vector2)
 	return out
 
 
-## The Sepulchre while it is a race target (Q-T211 pull-out), else empty.
-func race_pull_target() -> PackedVector2Array:
-	var pts := race_points_now()
-	return PackedVector2Array([pts[pts.size() - 1]]) if pts.size() >= 2 else PackedVector2Array()
+## The race with kinds: [world position, RaceEdgeMarkers kind] per part, Charges first, the Sepulchre
+## last (only while a Charge flies or a Grub carries).
+func race_items_now() -> Array:
+	var out: Array = []
+	if _launcher:
+		for c in _launcher.flying:
+			if is_instance_valid(c):
+				out.append([c.global_position, RaceEdgeMarkers.KIND_CHARGE])
+	if _grubs:
+		for g in _grubs.grubs:
+			if is_instance_valid(g) and g.carrying and not g.dead:
+				out.append([g.global_position, RaceEdgeMarkers.KIND_GRUB])
+	if not out.is_empty() and _procession and is_instance_valid(_procession.sepulchre):
+		out.append([_procession.sepulchre.global_position, RaceEdgeMarkers.KIND_SEPULCHRE])
+	return out
+
+
+## The race edge markers (Q-T357) on the HUD canvas layer, above the brass plates.
+func _start_race_marks() -> void:
+	race_marks = RaceEdgeMarkers.new()
+	race_marks.name = "RaceEdgeMarkers"
+	race_marks.stats = RACE_MARKS
+	_hud.get_parent().add_child(race_marks)
+
+
+## Pushes the true screen offsets of the race to the edge markers each frame (honest by construction:
+## world truth, no HudModel, no lie seam; Q-T357).
+func _step_race_marks() -> void:
+	if race_marks == null or torus == null or _camera == null:
+		return
+	var centre := _camera.get_screen_center_position()
+	var z := _camera.zoom.x
+	var offsets := PackedVector2Array()
+	var kinds: Array[StringName] = []
+	for item: Array in race_items_now():
+		offsets.append(torus.delta(centre, item[0] as Vector2) * z)
+		kinds.append(item[1] as StringName)
+	race_marks.show_race(offsets, kinds, get_viewport_rect().size)
 
 
 func _race_on_screen() -> int:

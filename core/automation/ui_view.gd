@@ -15,10 +15,11 @@ const STATE_IDS := {
 	"sector/field": {"route": "sector", "member": "", "props": ["geodes_alive", "geodes_detonated", "shards_free", "shards_live", "charges", "score", "charges_in_flight", "charges_lost", "charges_hit", "charges_guttered", "dry_fires"]},
 	"sector/run": {"route": "sector", "member": "", "props": ["seam_index", "run_session", "far_look", "seam_cleared", "exit_taken", "throat_dx", "throat_dy"]},
 	"sector/warp": {"route": "sector", "member": "", "props": ["warp_tier", "warp_live", "warp_novel", "warp_cost_ms", "warp_smear", "warp_glyph", "warp_frayed_edge", "warp_false_chant", "warp_teeth"]},
+	"sector/race": {"route": "sector", "member": "", "props": ["race_points", "race_on_screen", "race_markers", "race_unsignposted", "race_pulling", "race_lean", "camera_zoom"]},
 	"sector/choir": {"route": "sector", "member": "", "props": ["grubs_alive", "grubs_carrying", "segments", "segments_knocked", "deposited_shards", "sepulchre_complete"]},
 	"ruins/onboarding": {"route": "ruins", "member": "", "props": ["beat", "focus_id", "lamp_x", "gate_open", "tickets_landed", "codex_open", "codex_read", "chalk_lines", "first_visit", "clock_held", "paid_ember", "dark_revealed", "launched", "return_outcome", "tree_open"]},
 	# Route-independent: read from the RunSession autoload (TECH-001 §4.2a), on any route.
-	"run/session": {"route": "*", "autoload": "RunSession", "props": ["ember", "act0_banked", "hourglass_left", "skies_dark", "seam_index", "clock_paused", "run_active", "tree_owned"]},
+	"run/session": {"route": "*", "autoload": "RunSession", "props": ["ember", "act0_banked", "hourglass_left", "skies_dark", "seam_index", "clock_paused", "run_active", "tree_owned", "codex_known", "runs_ended"]},
 }
 
 var _route_host: Node

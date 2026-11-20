@@ -1,6 +1,6 @@
 # DARKSTAR — Systems Bible (Numbers)
 
-**Doc ID:** SYS-001 · **Version:** 1.9 · **Status:** Authoritative for all numbers · **Last updated:** 2026-11-19
+**Doc ID:** SYS-001 · **Version:** 1.10 · **Status:** Authoritative for all numbers · **Last updated:** 2026-11-19
 **Owner:** Design (systems) · **Upstream:** `GDD_DARKSTAR_v0.2.md` (GDD-001) · **Downstream:** every other doc in this set
 **Data target:** `docs/04-production/TECH_ARCHITECTURE.md` §6 (data-driven tables) — every table below maps 1:1 to a `.tres`/JSON resource.
 **Rev 1.1 (2026-11-17):** the Anchor field rows in §1.1 (owner decision D-11 of GDD-001 §18); **rev 1.2 (2026-11-17, owner-delegated rulings R-01, R-04, R-10, R-11, R-14):** §1.2 post-hit grace, §9 resolution closed to 640×360, hitbox diameter and entity exception, on-screen caps; §2.2 ninth-sky Hunger as one +2 row, §6 Hourglass budget/death cost/refund, §7.2 Codex stamp note, §7.5 Fragments and Threads (LOOP-001 LR-09…LR-13); the warp-owned numbers WARP-001 asked for in its §8 R-01 to R-05, added to §6, §9 and §10; and the §2.2 eaten-rule pointer corrected from WARP-001 §6 to §3. **No pre-existing number in this doc was changed by that revision.**
@@ -12,6 +12,7 @@
 
 **Rev 1.8 (2026-11-19 overnight, the run's back door; PM under owner direction, TECH-001 Q-T275..Q-T277):** §6 two **proposed** rows, `Seam clear: Sepulchre segments knocked` (3) and `Slice frontier Seam` (1), and a proposed amendment to `Abandon` (mid-Seam Abandon Run at the same price). Owner confirmation: TECH-001 Q-T282.
 **Rev 1.9 (2026-11-19 overnight, the M2 Lantern Tree stub; PM under owner direction, TECH-001 Q-T330):** §7.7 two **proposed** rows, `Lantern Tree tier-2 gate` (2) and `Lantern Tree tiers on sale (M2 slice)` (1). No existing value changed; the tier prices are read from the §7.7 rows as they stand (`ds_lantern_tree.stock.price_tier1`, `ds_lantern_tree.tree.price_tier2`, `ds_lantern_tree.tree.price_codex_gated`).
+**Rev 1.10 (2026-11-19 overnight, race framing and the Codex record; PM under owner direction, TECH-001 Q-T353, Q-T355, Q-T356):** §9 one **proposed** row, `Race fit margin` (24 px); the `Race pull-out zoom` and `Race pull-out max` rows now describe the fitted pull-out (0.8 is its floor; a Charge in flight holds it for the whole flight; never under Reduced Motion). §7.6 `Gating backstop: tier-1 entries` gains its data key and its reading of "run 3" (the profile run count, every outcome). No existing value changed.
 
 ---
 
@@ -513,7 +514,7 @@ Cosmic horror design rev 3 (PM ruling 2026-11-18 (owner grant)). Unwritten Ink r
 | Field | Value | Notes |
 |---|---|---|
 | Ink-node Ember price | 0 Ember | the node is still bought at the Lantern Tree; it needs its gating entry stamped. PM-approved 2026-11-18 under owner grant; retune at playtest |
-| Gating backstop: tier-1 entries | stamped after run 3 of the Chronicle | backstop (a), tier floor for tier 1. PM-approved 2026-11-18 under owner grant; retune at playtest |
+| Gating backstop: tier-1 entries | stamped after run 3 of the Chronicle | backstop (a), tier floor for tier 1. PM-approved 2026-11-18 under owner grant; retune at playtest. Data key `ds_run.session.codex_backstop_tier1_runs` = 3; "run 3" = the profile's `runs_ended` count, every outcome (TECH-001 Q-T353); stamped at the next Ruins arrival (built 2026-11-19 overnight) |
 | Gating backstop: tier-t entries | stamped at the start of Iteration t | backstop (a), tier floor. PM-approved 2026-11-18 under owner grant; retune at playtest |
 | Gating backstop: per death | 1 entry: the oldest pending gating entry, lowest tier first | backstop (b), "death teaches". PM-approved 2026-11-18 under owner grant; retune at playtest |
 | Gating discovery: dark flight seconds (LANTERN-4) | 5 s | first sustained dark flight (Lantern down, no fire) this long stamps `cx_rule_lantern_dark`. PM-approved 2026-11-18 under owner grant; retune at playtest |
@@ -584,8 +585,9 @@ The tree totals (LOOP-001 §3.3 node rollup, 17,480 Ember over 63 Ember nodes) a
 | Race framing reach (`ds_camera.race_reach_px`) | 900 px ⚙ **proposed** | Race points (Charges in flight, Grubs carrying glass, the Sepulchre while either happens) farther than this from the Vigil are ignored by the camera lean. PM under owner autonomy grant 2026-11-19 (sector slice look); retune at playtest |
 | Race framing max lean (`ds_camera.race_lean_max_frac`) | 0.7 of the half view per axis ⚙ **proposed** | Caps the lean so the Vigil never leaves the screen; zoom stays fixed (Z1). PM under owner autonomy grant 2026-11-19; retune at playtest |
 | Race framing lean time (`ds_camera.race_lean_time_s`) | 0.6 s ⚙ **proposed** | Smoothing time of the lean (same critically damped spring as follow). PM under owner autonomy grant 2026-11-19; retune at playtest |
-| Race pull-out zoom (`ds_camera.race_pull_zoom`) | 0.8 ⚙ **proposed** | Zoom the camera eases to (same spring and time as the lean) while the Sepulchre is a race target off the zoom-1 frame (TECH-001 Q-T211). The one context exception to Zoom 1.0; 0 = off. PM under owner autonomy grant 2026-11-19; retune at playtest |
-| Race pull-out max (`ds_camera.race_pull_max_s`) | 2.5 s ⚙ **proposed** | Longest one pull-out lasts; then zoom 1 until the Sepulchre stops being a race target. PM under owner autonomy grant 2026-11-19; retune at playtest |
+| Race pull-out zoom (`ds_camera.race_pull_zoom`) | 0.8 ⚙ **proposed** | Floor of the race pull-out (same spring and time as the lean): while the race in reach does not fit the zoom-1 frame, the camera eases to the zoom that fits it, never below this (TECH-001 Q-T211; fitted since Q-T355, 2026-11-19 overnight). Never under Reduced Motion (Q-T356). The one context exception to Zoom 1.0; 0 = off. PM under owner autonomy grant 2026-11-19; retune at playtest |
+| Race pull-out max (`ds_camera.race_pull_max_s`) | 2.5 s ⚙ **proposed** | Longest one pull-out lasts when no Charge is in flight (a Grub theft); then zoom 1 until the race ends. A Charge in flight holds the pull for its whole flight (its `Charge life` bounds it) and each new Charge re-arms it (Q-T355). PM under owner autonomy grant 2026-11-19; retune at playtest |
+| Race fit margin (`ds_camera.race_fit_margin_px`) | 24 px ⚙ **proposed** | Screen margin the fitted pull-out keeps between the outermost race point (or the Vigil) and the frame edge (TECH-001 Q-T355). PM under owner direction, 2026-11-19 overnight push; retune at playtest |
 | M1 sandbox arena | wrapping torus 1920×720 ✱ | Same source as the Cabinet's torus field (`CabinetStage.field_size`), so M1 matches Act 0; no clear colour shows (a repeating floor covers the view). Real kit bounds come from ZONES-001 later. TECH-001 Q-T58, PM under owner autonomy grant 2026-11-18 |
 | Zoom | 1.0 (T0) → 1.06 (T3) → breathing ±2% over 11 s (T5) | GDD §4.2. Zoom 1.0 = the 640×360 logical frame, the fixed post-Act 0 camera scale (TECH-001 Q-T25 resolved Z1, PM under owner autonomy grant 2026-11-18) |
 | Lie spend window (L6) | 3 s | a HUD lie never concerns the count of a resource the player can spend within this window (WARP-001 §4.2 L6, widened). PM-approved 2026-11-18 under owner grant; retune at playtest |

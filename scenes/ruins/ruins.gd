@@ -192,7 +192,7 @@ func _arrive() -> void:
 	_arrived = true
 	var vi := -1
 	if session != null:
-		paid = session.arrive_at_ruins(_params)
+		paid = session.arrive_at_ruins(_params, tree_data)
 		if paid > 0:
 			vi = session.act0_vi_banked
 	var first := _bool_param(_params, "first_visit") or paid > 0
@@ -441,6 +441,8 @@ func _react(events: Array[StringName]) -> void:
 				_light_tree(false)
 			RuinsOnboarding.EV_CODEX_OPEN:
 				_set_codex_paused(true)
+				if session != null:
+					session.read_codex(CodexRecord.ACT0_PAGE)
 				_cue(&"ruins_codex_page")
 			RuinsOnboarding.EV_CODEX_CLOSED:
 				_set_codex_paused(false)
@@ -465,7 +467,7 @@ func _buy_tree() -> StringName:
 		return &""
 	if onboarding != null and onboarding.first_visit:
 		var p := session.profile()
-		var id := LanternTreeRules.suggested(tree_data, p.tree_nodes, p.ember_banked)
+		var id := LanternTreeRules.suggested(tree_data, p.tree_nodes, p.ember_banked, p.codex_known)
 		return id if session.buy_tree_node_id(tree_data, id) else &""
 	open_tree()
 	return &""
@@ -479,6 +481,7 @@ func open_tree() -> LanternTreeScreen:
 	_hold_menu()
 	var p := session.profile()
 	var screen := LanternTreeScreen.create(tree_data, p.tree_nodes, p.ember_banked)
+	screen.known = p.codex_known.duplicate()
 	screen.purchase_confirmed.connect(_on_tree_purchase.bind(screen))
 	return _overlays.push(screen) as LanternTreeScreen
 

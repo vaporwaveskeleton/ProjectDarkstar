@@ -31,6 +31,11 @@ var run_active: bool:
 	get: return core.run().is_active() if core else false
 var tree_owned: int:
 	get: return core.profile().tree_nodes.size() if core else 0
+## Codex entries stamped and runs ended on this profile (Q-T350, Q-T353).
+var codex_known: int:
+	get: return core.profile().codex_known.size() if core else 0
+var runs_ended: int:
+	get: return core.profile().runs_ended if core else 0
 
 
 func _ready() -> void:

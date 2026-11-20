@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1")
 ds_namespace = "ds_run.session"
-source_section = "SYS-001 §6 Hourglass Clock, slice frontier Seam (proposed, Q-T276), §7.1 Act 0 bank, §7.2 Seam clears (Q-T136, Q-T140, Q-T144, Q-T145, Q-T146)"
+source_section = "SYS-001 §6 Hourglass Clock, slice frontier Seam (proposed, Q-T276), §7.1 Act 0 bank, §7.2 Seam clears, §7.6 tier-1 gating backstop (Q-T136, Q-T140, Q-T144, Q-T145, Q-T146)"
 iteration_budget_loop_min = 120.0
 skies = 9
 loop_min_per_real_min = 1.0
@@ -19,5 +19,6 @@ score_per_ember = 200
 act0_bank_floor_ember = 40
 carry_between_seams = true
 slice_last_seam = 1
+codex_backstop_tier1_runs = 3
 dev_seed = 1
 clock_free_routes = Array[StringName]([&"attract", &"cabinet"])

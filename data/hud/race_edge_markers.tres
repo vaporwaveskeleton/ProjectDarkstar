@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="RaceEdgeMarkerStats" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://features/hud/race_edge_marker_stats.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+ds_namespace = "ds_hud.race_marks"
+source_section = "TECH-001 §5.4 race edge markers (Q-T357); all values ✱ layout"
+inset_side_px = 10.0
+inset_top_px = 30.0
+inset_bottom_px = 26.0
+size_px = 5.0
+sepulchre_size_px = 7.0
+max_markers = 6

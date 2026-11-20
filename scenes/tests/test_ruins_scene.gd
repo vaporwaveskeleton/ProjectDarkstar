@@ -113,8 +113,31 @@ func test_reading_the_codex_pauses_the_clock() -> void:
 	ruins.call("_react", ob.use())
 	assert_bool(bool(ruins.get("codex_open"))).is_true()
 	assert_bool(core.pause_reasons().has(RunSessionCore.PAUSE_CODEX)).is_true()
+	# The Codex record (Q-T350): the page is stamped on arrival and now read; reading saves nothing.
+	assert_bool(core.codex_known().has(CodexRecord.ACT0_PAGE)).is_true()
+	assert_array(core.profile().codex_read).is_equal([CodexRecord.ACT0_PAGE])
+	assert_bool(saver.calls.all(func(c: Dictionary) -> bool: return c.reason in [&"ruins_entry", &"tree_purchase"])).is_true()
 	ruins.call("_react", ob.use())
 	assert_bool(core.is_clock_paused()).is_false()
+
+
+## Q-T353: after the Chronicle's third run the Ruins arrival stamps the tier-1 gating entries, and the
+## Tree screen it opens shows the four gated lamps as buyable.
+func test_after_run_three_the_tree_screen_sells_the_gated_lamps() -> void:
+	var core := RunSessionCore.new(STATS, saver)
+	core.arrive_at_ruins({"act0_vigil_index": 1200})
+	core.buy_tree_node(preload("res://data/lantern_tree/tier1_stock.tres"))
+	for i in STATS.codex_backstop_tier1_runs:
+		core.start_run(3)
+		core.enter_seam()
+		core.die()
+	var ruins := await _ruins(core, RouterSpy.new(), {})
+	assert_bool(core.codex_known().has(&"cx_rule_gaze")).is_true()
+	var screen: LanternTreeScreen = ruins.call("open_tree")
+	assert_object(screen).is_not_null()
+	await get_tree().process_frame
+	for id: StringName in [&"LANTERN-4", &"WARD-1", &"MADNESS-2", &"MADNESS-3"]:
+		assert_str(String(screen.state_of(id))).is_equal(String(LanternTreeRules.BUYABLE))
 
 
 func test_leaving_releases_every_hold() -> void:
