@@ -98,6 +98,15 @@ key = &"SETTINGS_TAB_VIDEO"
 desc_key = &"SETTINGS_TAB_VIDEO_DESC"
 style = 2
 
+[node name="TabAudio" type="BaseButton" parent="Center/Panel/Layout/Body/Rail"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(112, 0)
+layout_mode = 2
+script = ExtResource("row")
+key = &"SETTINGS_TAB_AUDIO"
+desc_key = &"SETTINGS_TAB_AUDIO_DESC"
+style = 2
+
 [node name="TabControls" type="BaseButton" parent="Center/Panel/Layout/Body/Rail"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(112, 0)
@@ -193,6 +202,60 @@ script = ExtResource("row")
 key = &"SETTINGS_MUZZLE_FLASH"
 desc_key = &"SETTINGS_MUZZLE_FLASH_DESC"
 style = 1
+
+[node name="PageAudio" type="VBoxContainer" parent="Center/Panel/Layout/Body/Content/Scroll/Pages"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="VolMaster" type="BaseButton" parent="Center/Panel/Layout/Body/Content/Scroll/Pages/PageAudio"]
+unique_name_in_owner = true
+layout_mode = 2
+script = ExtResource("row")
+key = &"SETTINGS_VOL_MASTER"
+desc_key = &"SETTINGS_VOL_MASTER_DESC"
+style = 4
+
+[node name="VolMusic" type="BaseButton" parent="Center/Panel/Layout/Body/Content/Scroll/Pages/PageAudio"]
+unique_name_in_owner = true
+layout_mode = 2
+script = ExtResource("row")
+key = &"SETTINGS_VOL_MUSIC"
+desc_key = &"SETTINGS_VOL_MUSIC_DESC"
+style = 4
+
+[node name="VolChoir" type="BaseButton" parent="Center/Panel/Layout/Body/Content/Scroll/Pages/PageAudio"]
+unique_name_in_owner = true
+layout_mode = 2
+script = ExtResource("row")
+key = &"SETTINGS_VOL_CHOIR"
+desc_key = &"SETTINGS_VOL_CHOIR_DESC"
+style = 4
+
+[node name="VolEntity" type="BaseButton" parent="Center/Panel/Layout/Body/Content/Scroll/Pages/PageAudio"]
+unique_name_in_owner = true
+layout_mode = 2
+script = ExtResource("row")
+key = &"SETTINGS_VOL_ENTITY"
+desc_key = &"SETTINGS_VOL_ENTITY_DESC"
+style = 4
+
+[node name="VolUi" type="BaseButton" parent="Center/Panel/Layout/Body/Content/Scroll/Pages/PageAudio"]
+unique_name_in_owner = true
+layout_mode = 2
+script = ExtResource("row")
+key = &"SETTINGS_VOL_UI"
+desc_key = &"SETTINGS_VOL_UI_DESC"
+style = 4
+
+[node name="VolFoley" type="BaseButton" parent="Center/Panel/Layout/Body/Content/Scroll/Pages/PageAudio"]
+unique_name_in_owner = true
+layout_mode = 2
+script = ExtResource("row")
+key = &"SETTINGS_VOL_FOLEY"
+desc_key = &"SETTINGS_VOL_FOLEY_DESC"
+style = 4
 
 [node name="PageControls" type="VBoxContainer" parent="Center/Panel/Layout/Body/Content/Scroll/Pages"]
 unique_name_in_owner = true

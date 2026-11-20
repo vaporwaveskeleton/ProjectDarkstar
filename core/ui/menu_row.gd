@@ -7,9 +7,13 @@ extends BaseButton
 ##   TAB     a page tab; `active` marks the one whose page is shown (drawn as the lit plate)
 ##   INFO    a read-only line with up to two value columns (the controls reference); focusable so a
 ##           pad can scroll to it, pressing does nothing
+##   SLIDER  a 0..100 setting: a bar and the number; left/right step it (`step`), a click or drag on
+##           the bar sets it. Emits `value_changed` for a change the player made (not `show_slider`).
 ## Holds no game state: the owning Screen reads and writes the service.
 
-enum Style { ACTION, TOGGLE, TAB, INFO }
+signal value_changed(value: int)
+
+enum Style { ACTION, TOGGLE, TAB, INFO, SLIDER }
 
 @export var key: StringName = &"":
 	set(v):
@@ -35,6 +39,16 @@ enum Style { ACTION, TOGGLE, TAB, INFO }
 			_value_2.text = v
 ## ✱ Width of each INFO value column at 100 % text (logical px), unless the Screen sets `columns`.
 @export var value_column: float = 78.0
+## SLIDER: range and key step (percent). `floor_value` is the lowest the player may set.
+@export var max_value := 100
+@export var step := 5
+@export var floor_value := 0
+## ✱ SLIDER bar size (logical px; the bar does not grow with Large Text, the number and label do).
+const BAR_SIZE := Vector2(56.0, 7.0)
+## ✱ Gap between the label, the bar and the number (logical px at 100 % text).
+const BAR_GAP := 8.0
+var value := 0
+var _dragging := false
 ## INFO column widths at the current text size, set by the Screen so every row of a table lines up
 ## (0 = use value_column).
 var columns := Vector2.ZERO:
@@ -67,8 +81,11 @@ func _ready() -> void:
 		tooltip_text = desc_key
 	_label = _make_text(&"Label", MenuSkin.Role.ROW)
 	_label.key = key
-	if style == Style.TOGGLE:
+	if style == Style.TOGGLE or style == Style.SLIDER:
 		_value = _make_text(&"Value", MenuSkin.Role.VALUE)
+		if style == Style.SLIDER:
+			_value.text = str(value)
+			gui_input.connect(_on_slider_input)
 	elif style == Style.INFO:
 		_value = _make_text(&"Value", MenuSkin.Role.VALUE)
 		_value.text = value_text
@@ -121,6 +138,13 @@ func _get_minimum_size() -> Vector2:
 	if style == Style.TOGGLE:
 		w += _value_width() + _lamp_r() * 2.0 + pad.x * 2.0
 		h = maxf(h, _value.get_combined_minimum_size().y)
+	elif style == Style.SLIDER:
+		if _slider_stacked():
+			w = maxf(lm.x + BAR_GAP * s + _number_width(), STACK_INDENT * s + BAR_SIZE.x * 2.0) + pad.x * 2.0
+			h = lm.y + STACK_GAP * s + BAR_SIZE.y
+		else:
+			w += (BAR_GAP * 2.0) * s + BAR_SIZE.x + _number_width() + pad.x
+			h = maxf(h, _value.get_combined_minimum_size().y)
 	elif _stacked():
 		var v1 := _value.get_combined_minimum_size()
 		var v2 := _value_2.get_combined_minimum_size()
@@ -146,6 +170,29 @@ func _value_width() -> float:
 		VectorText.measure(MenuSkin.shown(tr(&"SETTINGS_OFF"), kind), g, f).x) + f.stroke_width
 
 
+## Reserve the width of "100" so the bar never moves as the number changes.
+func _number_width() -> float:
+	var f := MenuSkin.face(MenuSkin.Role.VALUE)
+	return VectorText.measure("100", VectorText.default_glyphs(), f).x + f.stroke_width
+
+
+## At Large Text the bar drops under the label (a wider bar, the number stays on the label line), so
+## the longest label still fits the 640 px frame (UI-001 §4 safe area).
+func _slider_stacked() -> bool:
+	return style == Style.SLIDER and MenuSkin.text_scale() > 1.5
+
+
+## The bar's rect in the row's own space.
+func slider_rect() -> Rect2:
+	var s := MenuSkin.text_scale()
+	var pad := MenuSkin.ROW_PAD * Vector2(1.0, s)
+	if _slider_stacked():
+		var y := pad.y + _label.get_combined_minimum_size().y + STACK_GAP * s
+		return Rect2(Vector2(pad.x + STACK_INDENT * s, y), Vector2(BAR_SIZE.x * 2.0, BAR_SIZE.y))
+	var x := size.x - pad.x - _number_width() - BAR_GAP * s - BAR_SIZE.x
+	return Rect2(Vector2(x, (size.y - BAR_SIZE.y) * 0.5), BAR_SIZE)
+
+
 func _lamp_r() -> float:
 	return 2.5 * MenuSkin.text_scale()
 
@@ -156,7 +203,7 @@ func _layout() -> void:
 	var s := MenuSkin.text_scale()
 	var pad := MenuSkin.ROW_PAD * Vector2(1.0, s)
 	var lm := _label.get_combined_minimum_size()
-	var ly := pad.y if _stacked() else (size.y - lm.y) * 0.5
+	var ly := pad.y if (_stacked() or _slider_stacked()) else (size.y - lm.y) * 0.5
 	if align_center:
 		_label.position = Vector2(maxf((size.x - lm.x) * 0.5, pad.x), ly)
 	else:
@@ -167,6 +214,12 @@ func _layout() -> void:
 		var vw := _value_width()
 		_value.position = Vector2(size.x - pad.x - vw, (size.y - vm.y) * 0.5)
 		_value.size = Vector2(vw, vm.y)
+	elif style == Style.SLIDER:
+		var vm := _value.get_combined_minimum_size()
+		# right-aligned in the reserved number width, so the bar never moves as the digits change
+		var vy := pad.y if _slider_stacked() else (size.y - vm.y) * 0.5
+		_value.position = Vector2(size.x - pad.x - vm.x, vy)
+		_value.size = vm
 	elif style == Style.INFO:
 		for i in 2:
 			var t: MenuText = [_value, _value_2][i]
@@ -187,6 +240,8 @@ func _refresh() -> void:
 	if style == Style.TOGGLE:
 		_value.key = &"SETTINGS_ON" if button_pressed else &"SETTINGS_OFF"
 		_value.color = MenuSkin.on_ink(kind) if button_pressed else MenuSkin.off_ink(kind)
+	elif style == Style.SLIDER:
+		_value.color = MenuSkin.ink(kind, MenuSkin.Role.VALUE)
 	elif style == Style.INFO:
 		_value.color = MenuSkin.ink(kind, MenuSkin.Role.VALUE)
 		_value_2.color = MenuSkin.ink(kind, MenuSkin.Role.VALUE)
@@ -248,6 +303,8 @@ func _draw_row() -> void:
 	if style == Style.TOGGLE and _value:
 		var lr := _lamp_r()
 		MenuSkin.indicator(self, Vector2(_value.position.x - lr - 5.0 * MenuSkin.text_scale(), size.y * 0.5), lr, kind, button_pressed)
+	if style == Style.SLIDER and _value:
+		MenuSkin.slider(self, slider_rect(), kind, float(value) / float(max_value), float(floor_value) / float(max_value))
 	if style != Style.TAB and kind == MenuSkin.Kind.CABINET and not has_focus():
 		# a ruled line under each cabinet row, like a printed service sheet
 		MenuSkin.rule(self, Vector2(MenuSkin.ROW_PAD.x, size.y - 1.0), size.x - MenuSkin.ROW_PAD.x * 2.0, kind, false)
@@ -264,6 +321,47 @@ func value_widths() -> Vector2:
 	if _value == null or _value_2 == null:
 		return Vector2.ZERO
 	return Vector2(_value.get_combined_minimum_size().x, _value_2.get_combined_minimum_size().x)
+
+
+## SLIDER: show `v` (held inside the floor and the maximum) without emitting `value_changed`.
+func show_slider(v: int) -> void:
+	value = clampi(v, floor_value, max_value)
+	if _value:
+		_value.text = str(value)
+	update_minimum_size()
+	queue_redraw()
+
+
+## SLIDER: the player moved it to `v`. Emits only when the held value actually changes.
+func set_slider(v: int) -> void:
+	var nv := clampi(v, floor_value, max_value)
+	if nv == value:
+		return
+	show_slider(nv)
+	value_changed.emit(value)
+
+
+func _on_slider_input(event: InputEvent) -> void:
+	if disabled:
+		return
+	if event.is_action_pressed(&"ui_left", true):
+		set_slider(value - step)
+		accept_event()   # left/right belong to the slider; Escape/Back returns to the tab (Settings)
+	elif event.is_action_pressed(&"ui_right", true):
+		set_slider(value + step)
+		accept_event()
+	elif event is InputEventMouseButton and (event as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT:
+		_dragging = (event as InputEventMouseButton).pressed
+		if _dragging:
+			_set_from_x((event as InputEventMouseButton).position.x)
+	elif event is InputEventMouseMotion and _dragging:
+		_set_from_x((event as InputEventMouseMotion).position.x)
+
+
+func _set_from_x(x: float) -> void:
+	var r := slider_rect()
+	var f := clampf((x - r.position.x) / r.size.x, 0.0, 1.0)
+	set_slider(int(round(f * float(max_value) / float(step))) * step)
 
 
 ## Show a setting's value without emitting `toggled` (the Screen reads the service).

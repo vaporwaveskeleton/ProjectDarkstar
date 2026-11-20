@@ -19,6 +19,13 @@ const DEFAULTS := {
 	&"photosensitivity": false,    # kills flicker/strobe; never hides information (GDD §10)
 	&"steady_ledger": true,        # WARP-001 §4.4: ships ON
 	&"muzzle_flash": true,         # S4 owner ruling 2026-11-18: ships ON; the player may turn it off
+	# Volume sliders, 0..100 ints (AUDIO-001 §8.4; curve and bus map in UserVolume).
+	&"vol_master": 70,             # AUDIO-001 §8.4: default 70 ✱
+	&"vol_music": 100,             # ✱ proposed default (§8.4 gives none)
+	&"vol_choir": 100,             # AUDIO-001 §8.4: defaults to the top of the range
+	&"vol_entity": 100,            # ✱ proposed default; floor 40 ✱ (§8.4)
+	&"vol_ui": 100,                # ✱ proposed default
+	&"vol_foley": 100,             # ✱ proposed default; floor 40 ✱ (Q-T391)
 }
 
 var _values: Dictionary = {}
@@ -40,6 +47,8 @@ func load_settings() -> void:
 				var v: Variant = cfg.get_value(SECTION, String(key), DEFAULTS[key])
 				if typeof(v) == typeof(DEFAULTS[key]):
 					_values[key] = v
+					if not UserVolume.entry_for_key(key).is_empty():
+						_values[key] = UserVolume.clamp_value(key, int(v))   # a hand-edited file cannot go below a floor
 	_apply_locale()
 	UiTheme.apply_text_scale(float(_values[&"text_scale"]))
 
@@ -57,6 +66,8 @@ func set_value(key: StringName, value: Variant) -> void:
 		return
 	if key == &"text_scale":
 		value = clampf(value, 1.0, 2.0)
+	elif not UserVolume.entry_for_key(key).is_empty():
+		value = UserVolume.clamp_value(key, int(value))
 	if _values.get(key) == value:
 		return
 	_values[key] = value

@@ -138,6 +138,55 @@ msgstr "Video"
 msgid "SETTINGS_TAB_VIDEO_DESC"
 msgstr "How weapon effects look on screen."
 
+#. Settings page tab: the volume sliders (AUDIO-001 §8.4).
+msgid "SETTINGS_TAB_AUDIO"
+msgstr "Audio"
+
+msgid "SETTINGS_TAB_AUDIO_DESC"
+msgstr "How loud each kind of sound is. Left and right change a slider; Back returns to the tabs."
+
+#. Volume slider: the whole game.
+msgid "SETTINGS_VOL_MASTER"
+msgstr "Master"
+
+msgid "SETTINGS_VOL_MASTER_DESC"
+msgstr "The volume of everything. Left and right change it."
+
+#. Volume slider: music.
+msgid "SETTINGS_VOL_MUSIC"
+msgstr "Music"
+
+msgid "SETTINGS_VOL_MUSIC_DESC"
+msgstr "The volume of the music. Warnings and cues are not on this slider, so turning it down hides nothing."
+
+#. Volume slider: the Choir's chant and keening. Choir is a glossary word.
+msgid "SETTINGS_VOL_CHOIR"
+msgstr "Choir"
+
+msgid "SETTINGS_VOL_CHOIR_DESC"
+msgstr "The volume of the Choir's chant and keening, which tell you where they are."
+
+#. Volume slider: the entity's spoken lines. It cannot be turned fully off.
+msgid "SETTINGS_VOL_ENTITY"
+msgstr "Entity voice"
+
+msgid "SETTINGS_VOL_ENTITY_DESC"
+msgstr "The volume of the entity's spoken lines. It stops short of silence, because the lines tell you what state the run is in."
+
+#. Volume slider: menu and readout sounds.
+msgid "SETTINGS_VOL_UI"
+msgstr "UI and readouts"
+
+msgid "SETTINGS_VOL_UI_DESC"
+msgstr "The volume of menu sounds and the tally, apart from the world around you."
+
+#. Volume slider: the ship's brass, the clock and the ambience. It cannot be turned fully off.
+msgid "SETTINGS_VOL_FOLEY"
+msgstr "Foley and ambience"
+
+msgid "SETTINGS_VOL_FOLEY_DESC"
+msgstr "The volume of the ship's brass, the clock and the background beds. It stops short of silence so a warning chime is never lost."
+
 #. Settings page tab: a read-only reference of the current bindings.
 msgid "SETTINGS_TAB_CONTROLS"
 msgstr "Controls"

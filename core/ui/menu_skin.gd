@@ -244,6 +244,28 @@ static func indicator(ci: CanvasItem, center: Vector2, radius: float, kind: Kind
 	ci.draw_rect(r, c(kind, Pal.BONE_1), false, 1.0)
 
 
+## A volume bar inside `r`: a track with a lit fill to `fraction`, and a tick at `floor_fraction`
+## when the slider cannot go below it. The number beside it always prints the value (never colour alone).
+static func slider(ci: CanvasItem, r: Rect2, kind: Kind, fraction: float, floor_fraction: float = 0.0) -> void:
+	var f := clampf(fraction, 0.0, 1.0)
+	if kind == Kind.BRASS:
+		ci.draw_rect(r, Pal.GAS_0, true)
+		ci.draw_rect(Rect2(r.position, Vector2(r.size.x * f, r.size.y)).grow(-1.0), Pal.GAS_3, true)
+		ci.draw_rect(r, Pal.GAS_2, false, 1.0)
+	else:
+		ci.draw_rect(r, c(kind, Pal.VOID_2), true)
+		var cells := 10
+		var gap := 1.0
+		var cw := (r.size.x - gap * float(cells + 1)) / float(cells)
+		var lit := int(round(f * float(cells)))
+		for i in lit:
+			ci.draw_rect(Rect2(r.position + Vector2(gap + float(i) * (cw + gap), gap), Vector2(cw, r.size.y - gap * 2.0)), c(kind, Pal.PHOS_3), true)
+		ci.draw_rect(r, c(kind, Pal.BONE_1), false, 1.0)
+	if floor_fraction > 0.0:
+		var x := r.position.x + r.size.x * floor_fraction
+		ci.draw_line(Vector2(x, r.position.y - 2.0), Vector2(x, r.end.y + 2.0), on_ink(kind) if kind == Kind.CABINET else Pal.GAS_4, 1.0)
+
+
 static func _round_rect(ci: CanvasItem, r: Rect2, rad: float, col: Color, width: float) -> void:
 	var k := minf(rad, minf(r.size.x, r.size.y) * 0.5)
 	var pts := PackedVector2Array()

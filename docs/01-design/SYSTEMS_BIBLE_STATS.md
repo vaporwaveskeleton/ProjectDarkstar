@@ -729,3 +729,6 @@ These are audio engineering values, not gameplay numbers. AUDIO-001 §12.19 owns
 | Threat | `threat_rise_s`, `threat_fall_s`, `threat_poll_s` | 4 s, 8 s, 0.25 s |
 | Threat | `threat_frayed`, `threat_unmoored`, `threat_hollowed` | 0.35, 0.7, 1.0 (by Composure band) |
 | Threat | `threat_per_carrier`, `threat_carrier_cap`, `threat_sepulchre_weight` | 0.2, 0.6, 0.9 |
+| Player volume | `vol_master`, `vol_music`, `vol_choir`, `vol_entity`, `vol_ui`, `vol_foley` defaults (`SettingsService.DEFAULTS`, not `ds_`) | 70 / 100 / 100 / 100 / 100 / 100 (**Proposed**: Master 70 and Choir "top of the range" are AUDIO-001 §8.4's; the other four are new) |
+| Player volume | floors for `vol_entity`, `vol_foley` | 40 / 40 (**Proposed**: Entity's 40 is AUDIO-001 §8.4's; the Foley floor is new, TECH-001 Q-T391) |
+| Player volume | slider curve exponent, key step, preview delay | amplitude = (value / 100)², 5 points, 0.18 s (**Proposed**, TECH-001 Q-T392) |
