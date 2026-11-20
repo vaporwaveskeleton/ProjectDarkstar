@@ -16,6 +16,10 @@ var table: RouteTable
 var current_route: StringName = &""
 var is_busy: bool = false
 var _host: Node
+## Routes whose scene is loading on a worker thread (prewarm): route id -> path.
+var _prewarm: Dictionary = {}
+## Prewarmed scenes already taken from the loader: route id -> PackedScene.
+var _prewarmed: Dictionary = {}
 
 
 func _ready() -> void:
@@ -91,8 +95,39 @@ static func skips_curtain(params: Dictionary) -> bool:
 	return false
 
 
+## Starts loading a route's scene on a worker thread, so the later go_to does not load it on the
+## main thread (Q-T243: the first Unmaking hitched ~225 ms on its synchronous load). Safe to call
+## more than once; unknown routes are ignored. The finished resource is taken in _perform.
+func prewarm(route_id: StringName) -> void:
+	if table == null or not table.has_route(route_id) or _prewarm.has(route_id):
+		return
+	var path := table.path_for(route_id)
+	if ResourceLoader.load_threaded_request(path, "PackedScene", true) == OK:
+		_prewarm[route_id] = path
+
+
+## The prewarmed scene of a route (waits for the worker if it is still loading), or null when the
+## route was not prewarmed. The next go_to of that route mounts this same resource.
+func prewarmed(route_id: StringName) -> PackedScene:
+	if _prewarmed.has(route_id):
+		return _prewarmed[route_id] as PackedScene
+	if not _prewarm.has(route_id):
+		return null
+	var res := ResourceLoader.load_threaded_get(str(_prewarm[route_id])) as PackedScene
+	_prewarm.erase(route_id)
+	if res != null:
+		_prewarmed[route_id] = res
+	return res
+
+
+func _load_scene(route_id: StringName) -> PackedScene:
+	var res := prewarmed(route_id)
+	_prewarmed.erase(route_id)
+	return res if res != null else load(table.path_for(route_id)) as PackedScene
+
+
 func _perform(route_id: StringName, params: Dictionary) -> void:
-	var packed := load(table.path_for(route_id)) as PackedScene
+	var packed := _load_scene(route_id)
 	if packed == null:
 		push_error("SceneRouter: could not load scene for route %s" % route_id)
 		is_busy = false
