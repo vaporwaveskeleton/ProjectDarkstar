@@ -63,9 +63,14 @@ Rules: signal names are past tense (`hull_breached`, `save_failed`), payloads ar
 | `RunSessionCore` | `run_started` | `run_seed: int` | tests; future Ruins / HUD | built |
 | `RunSessionCore` | `seam_entered` | `seam_index: int` (1–5) | tests; future music / HUD | built |
 | `RunSessionCore` | `seam_cleared` | `seam_index: int` (the Seam just cleared) | tests; future Run-Sigil pick flow | built |
-| `RunSessionCore` | `run_ended` | `outcome: StringName` (`died`, `won`, `abandoned`, `ninth_sky`) | tests; future Ruins return flow | built |
+| `RunSessionCore` | `run_ended` | `outcome: StringName` (`died`, `won`, `abandoned`, `ninth_sky`, `returned` (the slice frontier exit, TECH-001 Q-T276)) | tests; future Ruins return flow (the route itself is the sector's, TECH-001 §2.1) | built |
 | `RunSessionCore` | `sky_darkened` | `skies_dark: int` (1–9; one emit per sky crossed, a lump can emit two) | tests; future sky presentation (HUD polls, never listens) | built |
 | `RunSessionCore` | `iteration_ended` | — (the ninth sky) | tests; future Hard Unmaking flow | built |
+| `RunSessionCore` | `codex_stamped` | `entry_id: StringName` (a `cx_` Codex entry newly stamped into the profile record; never re-emitted for a known entry; TECH-001 Q-T350) | tests; future run-summary stamp beat and Codex screen (LOOP-001 §8.6, Q-T351). In memory only: the profile reaches disk at its allowed reasons | built (2026-11-19 overnight) |
+| `SeamExit` (`features/sector`, TECH-001 Q-T275, Q-T278) | `throat_opened` | — (the Seam cleared: the Sepulchre unmade; once per sector) | tests; future clear presentation (chalk, sound) | built 2026-11-19 overnight |
+| `SeamExit` | `throat_entered` | — (the Vigil flew into the open throat; once per sector) | `SectorStub.take_exit` (report + route) | built 2026-11-19 overnight |
+| `LanternTreeScreen` (`features/lantern_tree`, TECH-001 Q-T326) | `purchase_confirmed` | `node_id: StringName` (the lamp the player confirmed; not yet bought) | the Ruins (`_on_tree_purchase`: `RunSessionCore.buy_tree_node_id`, then `show_state`) | built 2026-11-19 overnight |
+| `LanternTreeConfirm` | `confirmed` | — (LIGHT IT pressed; once per plate) | the `LanternTreeScreen` that pushed it | built 2026-11-19 overnight |
 | `WarpComposer` | `warp_tier_set` | `tier: int` (0–5; the effective tier: world tier + a Hollowed forced rise) | tests; future HUD (Steady Ledger tier number, WARP-001 §4.4), music | built |
 | `WarpComposer` | `warp_effect_started` | `effect_id: StringName` (WARP-001 W-code, e.g. `&"W1-09"`) | tests; future Codex witnessed-effect log, AudioService tells | built |
 | `WarpComposer` | `warp_effect_ended` | `effect_id: StringName` | tests | built |

@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1")
 ds_namespace = "ds_camera"
-source_section = "SYS-001 §9 (camera follow, screen shake, zoom T0); Q-T25 Z1; D-3; race framing (proposed 2026-11-19)"
+source_section = "SYS-001 §9 (camera follow, screen shake, zoom T0); Q-T25 Z1; D-3; race framing (proposed 2026-11-19; fit margin Q-T355)"
 follow_time_s = 0.12
 deadzone_px = 24.0
 aim_lookahead_frac = 0.015
@@ -18,3 +18,5 @@ race_lean_max_frac = 0.7
 race_lean_time_s = 0.6
 race_pull_zoom = 0.8
 race_pull_max_s = 2.5
+race_fit_margin_px = 24.0
+race_pull_off_under_reduced_motion = true
