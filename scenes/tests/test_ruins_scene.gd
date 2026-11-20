@@ -27,6 +27,7 @@ func before_test() -> void:
 
 
 func after_test() -> void:
+	get_tree().paused = false
 	AudioService.muted_for_tests = false
 	saver.free_service()
 
@@ -91,7 +92,9 @@ func test_the_walk_into_the_lit_mouth_launches_seam_one_and_starts_the_sand() ->
 	assert_int(router.calls.size()).is_equal(0)                  # the dark stopped the lamp
 	ob.walk_to(TREE_X)
 	_drive(ruins, 0.0, func() -> bool: return is_nan(ob.walk_target))
-	ruins.call("_react", ob.use())
+	ruins.call("_react", ob.use())   # the first visit: no menu, the suggested lamp lights (noun budget)
+	assert_bool(bool(ruins.get("tree_open"))).is_false()
+	assert_array(core.profile().tree_nodes).is_equal([&"LANTERN-1"])
 	assert_bool(bool(ruins.get("gate_open"))).is_true()
 	_drive(ruins, 1.0, func() -> bool: return bool(ruins.get("launched")))
 	assert_int(router.calls.size()).is_equal(1)
@@ -149,22 +152,40 @@ func test_closing_the_pause_resumes() -> void:
 	assert_bool(core.is_clock_paused()).is_false()
 
 
-func test_the_tree_station_buys_the_next_node_with_each_use() -> void:
+## Q-T326: on a later visit, using the Tree opens the station screen (the clock holds, `ruins_menu`);
+## each confirmed lamp is bought through RunSessionCore (one `tree_purchase` write), and the screen
+## is shown the new Ember. Closing the screen lets the clock run again.
+func test_a_later_visit_opens_the_tree_and_buys_the_chosen_lamps() -> void:
 	var core := RunSessionCore.new(STATS, saver)
-	var ruins := await _ruins(core, RouterSpy.new(), {"act0_vigil_index": 20_000, "first_visit": true})   # 100 Ember
+	core.arrive_at_ruins({"act0_vigil_index": 20_000})   # 100 Ember banked on an earlier visit
+	var ruins := await _ruins(core, RouterSpy.new(), {})
 	var ob: RuinsOnboarding = ruins.get("onboarding")
+	assert_bool(ob.first_visit).is_false()
 	_drive(ruins, 0.0, func() -> bool: return ob.tickets_landed)
 	ob.walk_to(TREE_X)
 	_drive(ruins, 0.0, func() -> bool: return is_nan(ob.walk_target))
 	ruins.call("_react", ob.use())
+	assert_bool(bool(ruins.get("tree_open"))).is_true()
+	assert_array(core.profile().tree_nodes).is_empty()   # opening buys nothing
+	assert_bool(core.pause_reasons().has(RunSessionCore.PAUSE_RUINS_MENU)).is_true()
+	var screen: LanternTreeScreen = ruins.call("_tree_screen")
+	saver.calls.clear()
+	screen.purchase_confirmed.emit(&"HULL-4")   # any tier-1 lamp, not only the old sale order
 	assert_bool(bool(ruins.get("gate_open"))).is_true()
 	assert_int(core.profile().ember_banked).is_equal(60)
-	assert_array(core.profile().tree_nodes).is_equal([&"LANTERN-1"])
-	ruins.call("_react", ob.use())   # the station stays usable: the next node
-	assert_array(core.profile().tree_nodes).is_equal([&"LANTERN-1", &"HULL-1"])
+	assert_array(core.profile().tree_nodes).is_equal([&"HULL-4"])
+	assert_array(saver.slots_and_reasons()).is_equal(["profile:tree_purchase"])
+	assert_str((screen.find_child("Ember", true, false) as VectorLabel).shown_text()).is_equal("60 EMBER")
+	screen.purchase_confirmed.emit(&"LANTERN-5")   # a dark tier-2 lamp: refused, nothing spent
+	screen.purchase_confirmed.emit(&"HULL-1")
+	assert_array(core.profile().tree_nodes).is_equal([&"HULL-4", &"HULL-1"])
 	assert_int(core.profile().ember_banked).is_equal(20)
-	ruins.call("_react", ob.use())   # 20 Ember: nothing bought, the gate stays open
+	screen.purchase_confirmed.emit(&"HULL-3")      # 20 Ember: nothing bought
 	assert_int(core.profile().tree_nodes.size()).is_equal(2)
+	screen.close()
+	assert_bool(bool(ruins.get("tree_open"))).is_false()
+	assert_bool(core.pause_reasons().has(RunSessionCore.PAUSE_RUINS_MENU)).is_false()
+	assert_bool(get_tree().paused).is_false()
 	assert_bool(bool(ruins.get("gate_open"))).is_true()
 
 

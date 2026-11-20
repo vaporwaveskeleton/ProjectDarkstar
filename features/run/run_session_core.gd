@@ -147,6 +147,22 @@ func buy_tree_node(stock: LanternTreeStock) -> StringName:
 	return id
 
 
+## Buys one chosen node of `tree` (the Tree station screen, Q-T326) when LanternTreeRules says it is
+## buyable: its SYS-001 §7.7 price from the banked Ember, the id into the profile, one profile write
+## with reason `tree_purchase`. Only in the Ruins (never mid-run). No Codex entry is stamped yet
+## (Codex stamping is not built, Q-T327), so Codex-gated nodes stay closed. True when bought.
+func buy_tree_node_id(tree: LanternTreeData, id: StringName) -> bool:
+	if tree == null or _run.is_active() or not _profile_writable:
+		return false
+	var known: Array[StringName] = []
+	if not LanternTreeRules.can_buy(tree, id, _profile.tree_nodes, _profile.ember_banked, known):
+		return false
+	_profile.ember_banked -= tree.price_of(tree.get_node_def(id))
+	_profile.tree_nodes.append(id)
+	_save(SLOT_PROFILE, REASON_TREE_PURCHASE)
+	return true
+
+
 ## The Cabinet or attract mode may have written the profile since boot: take their keys, keep ours.
 func _refresh_profile() -> void:
 	var d := _load(SLOT_PROFILE)

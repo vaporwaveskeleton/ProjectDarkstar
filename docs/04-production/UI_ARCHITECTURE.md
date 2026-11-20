@@ -18,7 +18,7 @@
 | Rebinding, mouse sensitivity, aim assist, colourblind variants, subtitles, audio options | GDD §10, AUDIO-001 §8.4 | planned |
 | Death / cause-of-death screen | GDD §6.3, §8.9; AUDIO-001 §4.10 | planned |
 | Ruins first arrival (title, the lit sapling, continue) | GDD §6.4 | stub — `scenes/ruins/` |
-| Ruins hub, Lantern Tree, Chalk Desk, Codex, run summary | GDD §6.4, LOOP-001 §3, §7 | planned |
+| Ruins hub, Lantern Tree, Chalk Desk, Codex, run summary | GDD §6.4, LOOP-001 §3, §7 | Lantern Tree station built (2026-11-19 overnight, TECH-001 Q-T326): `features/lantern_tree/lantern_tree_screen.tscn` + `lantern_tree_confirm.tscn` on the Ruins `ScreenStack`, from the second visit (the first visit has no menu, LOOP-001 §10.5); lamps are focusable `TreeLantern`s (wrapping neighbours, `%Lamp_<BRANCH>_<n>`), captions are `VectorLabel`, the confirm defaults to "Not yet"; the rest planned |
 | Endings / credits | GDD §9.3 | planned |
 | Act 0 high-score screen ("honour roll"): three-letter initials entry after any Act 0 clear, Cabinet face (ART-001 §11); from Hard Unmaking 3 the table also lists `T.L. — 0 WARD 0 SURGE` | NARR-001 §14 Q-03, LOOP-001 §11.6 | planned |
 | Streamer mode (settings toggle): SeedCode shown on the HUD and the pause screen, Vigil Index on pause, no OS user name anywhere | MARKET-001 §8.2 | planned |
