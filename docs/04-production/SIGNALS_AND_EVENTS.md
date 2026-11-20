@@ -66,6 +66,8 @@ Rules: signal names are past tense (`hull_breached`, `save_failed`), payloads ar
 | `RunSessionCore` | `iteration_ended` | — (the ninth sky) | tests; future Hard Unmaking flow | built |
 | `SeamExit` (`features/sector`, TECH-001 Q-T275, Q-T278) | `throat_opened` | — (the Seam cleared: the Sepulchre unmade; once per sector) | tests; future clear presentation (chalk, sound) | built 2026-11-19 overnight |
 | `SeamExit` | `throat_entered` | — (the Vigil flew into the open throat; once per sector) | `SectorStub.take_exit` (report + route) | built 2026-11-19 overnight |
+| `LanternTreeScreen` (`features/lantern_tree`, TECH-001 Q-T326) | `purchase_confirmed` | `node_id: StringName` (the lamp the player confirmed; not yet bought) | the Ruins (`_on_tree_purchase`: `RunSessionCore.buy_tree_node_id`, then `show_state`) | built 2026-11-19 overnight |
+| `LanternTreeConfirm` | `confirmed` | — (LIGHT IT pressed; once per plate) | the `LanternTreeScreen` that pushed it | built 2026-11-19 overnight |
 | `WarpComposer` | `warp_tier_set` | `tier: int` (0–5; the effective tier: world tier + a Hollowed forced rise) | tests; future HUD (Steady Ledger tier number, WARP-001 §4.4), music | built |
 | `WarpComposer` | `warp_effect_started` | `effect_id: StringName` (WARP-001 W-code, e.g. `&"W1-09"`) | tests; future Codex witnessed-effect log, AudioService tells | built |
 | `WarpComposer` | `warp_effect_ended` | `effect_id: StringName` | tests | built |

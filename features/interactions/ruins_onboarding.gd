@@ -301,6 +301,19 @@ func use() -> Array[StringName]:
 	return ev
 
 
+## A purchase made at the Tree station screen (Q-T326): the `tree_buyer` opened the screen and
+## returned nothing; the scene reports the node here once it is bought. Lights the gate.
+func note_tree_bought(id: StringName) -> Array[StringName]:
+	var ev: Array[StringName] = []
+	if id == &"" or phase == PHASE_LAUNCHED:
+		return ev
+	last_node = id
+	tree_lit = true
+	used[TREE] = true
+	ev.append(EV_TREE_LIT)
+	return ev
+
+
 ## Close the Codex page without using anything (ui_cancel). True when a page was open.
 func close_codex() -> bool:
 	if not codex_open:

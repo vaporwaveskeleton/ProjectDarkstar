@@ -1,6 +1,6 @@
 # DARKSTAR — Systems Bible (Numbers)
 
-**Doc ID:** SYS-001 · **Version:** 1.7 · **Status:** Authoritative for all numbers · **Last updated:** 2026-11-19
+**Doc ID:** SYS-001 · **Version:** 1.9 · **Status:** Authoritative for all numbers · **Last updated:** 2026-11-19
 **Owner:** Design (systems) · **Upstream:** `GDD_DARKSTAR_v0.2.md` (GDD-001) · **Downstream:** every other doc in this set
 **Data target:** `docs/04-production/TECH_ARCHITECTURE.md` §6 (data-driven tables) — every table below maps 1:1 to a `.tres`/JSON resource.
 **Rev 1.1 (2026-11-17):** the Anchor field rows in §1.1 (owner decision D-11 of GDD-001 §18); **rev 1.2 (2026-11-17, owner-delegated rulings R-01, R-04, R-10, R-11, R-14):** §1.2 post-hit grace, §9 resolution closed to 640×360, hitbox diameter and entity exception, on-screen caps; §2.2 ninth-sky Hunger as one +2 row, §6 Hourglass budget/death cost/refund, §7.2 Codex stamp note, §7.5 Fragments and Threads (LOOP-001 LR-09…LR-13); the warp-owned numbers WARP-001 asked for in its §8 R-01 to R-05, added to §6, §9 and §10; and the §2.2 eaten-rule pointer corrected from WARP-001 §6 to §3. **No pre-existing number in this doc was changed by that revision.**
@@ -11,6 +11,7 @@
 **Rev 1.7 (2026-11-19, M2 RunSession; PM under owner autonomy grant 2026-11-19, TECH-001 §11.1a Q-T136, Q-T138, Q-T144–Q-T147, Q-T149):** §6 new rows Hourglass Clock rate (1:1), Hourglass Clock pauses, Abandon (costs the death clock cost); §7.1 `Act 0 bank` gains a floor of 40 Ember (`max(floor(VI / 200), 40)`); §7.2 Seam clears pay 40 each **including Seam 5** (won-run row 160 → 200) and in-run Ember banks on a win and on a death; §7.2 Run-Sigil picks timing stated (after Seams 1–3); new §7.7 Lantern Tree node prices by tier and the Run Sigil reroll ladder, moved from LOOP-001 with no value change.
 
 **Rev 1.8 (2026-11-19 overnight, the run's back door; PM under owner direction, TECH-001 Q-T275..Q-T277):** §6 two **proposed** rows, `Seam clear: Sepulchre segments knocked` (3) and `Slice frontier Seam` (1), and a proposed amendment to `Abandon` (mid-Seam Abandon Run at the same price). Owner confirmation: TECH-001 Q-T282.
+**Rev 1.9 (2026-11-19 overnight, the M2 Lantern Tree stub; PM under owner direction, TECH-001 Q-T330):** §7.7 two **proposed** rows, `Lantern Tree tier-2 gate` (2) and `Lantern Tree tiers on sale (M2 slice)` (1). No existing value changed; the tier prices are read from the §7.7 rows as they stand (`ds_lantern_tree.stock.price_tier1`, `ds_lantern_tree.tree.price_tier2`, `ds_lantern_tree.tree.price_codex_gated`).
 
 ---
 
@@ -544,6 +545,8 @@ Moved here from LOOP-001 §3.3 (per-node Cost column) and §4.1 (Reroll row) on 
 | Lantern Tree node price, tier 5 (capstones 17–18) | 900 Ember | every Ember-priced capstone |
 | Codex-gated nodes (27) | 0 Ember at every tier | the §7.6 `Ink-node Ember price` row; the gate is the stamped entry (LOOP-001 §3.7) |
 | Run Sigil reroll, by choice number | 40 / 90 / 160 / 240 Ember | bought in-run (GDD §7.3; LOOP-001 §4.1). SIG-M-07 *Second Thought* halves it; SIG-S-14 lets banked Ember pay (LOOP-001 §4.2) |
+| Lantern Tree tier-2 gate | 2 tier-1 nodes of the same branch | **proposed** (2026-11-19 overnight, the M2 Tree stub; PM approval, TECH-001 Q-T330): the LOOP-001 §3.1 Pity value for T2, moved here like the prices (Q-T149); a T2 node also needs its hard prerequisite. `ds_lantern_tree.tree.tier2_gate`. The T3+ gate waits on Q-T329 (LOOP-001 §3.1 and its §3.3 footnote disagree) |
+| Lantern Tree tiers on sale (M2 slice) | 1 | **proposed** (2026-11-19 overnight; TECH-001 Q-T330): PROD-001 §3 M2 "the slice Tree shows tier 1 only"; the stub's 10 tier-2 nodes hang as dark lamps. `ds_lantern_tree.tree.max_tier_on_sale`; raise to 2 to sell them |
 
 The tree totals (LOOP-001 §3.3 node rollup, 17,480 Ember over 63 Ember nodes) are derived from these rows and the node tiers.
 

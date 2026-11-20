@@ -1,0 +1,318 @@
+[gd_resource type="Resource" script_class="LanternTreeData" format=3]
+
+[ext_resource type="Script" path="res://features/lantern_tree/lantern_tree_node.gd" id="1_ee7o5"]
+[ext_resource type="Script" path="res://features/lantern_tree/lantern_tree_data.gd" id="2_roasd"]
+[ext_resource type="Resource" path="res://data/lantern_tree/tier1_stock.tres" id="3_eup5w"]
+
+[sub_resource type="Resource" id="Resource_n2xcc"]
+script = ExtResource("1_ee7o5")
+id = &"LANTERN-1"
+branch = &"LANTERN"
+name_key = &"RUINS_TREE_LANTERN_1_NAME"
+effect_key = &"RUINS_TREE_LANTERN_1_FX"
+requires = PackedStringArray()
+rules_bending = true
+wiring = 2
+
+[sub_resource type="Resource" id="Resource_ujsd8"]
+script = ExtResource("1_ee7o5")
+id = &"LANTERN-2"
+branch = &"LANTERN"
+name_key = &"RUINS_TREE_LANTERN_2_NAME"
+effect_key = &"RUINS_TREE_LANTERN_2_FX"
+requires = PackedStringArray()
+stub_note = "no-op: Surgelight Shroud burn radius is not tree-driven yet (needs the Shroud burn row to read the tree)."
+
+[sub_resource type="Resource" id="Resource_mmkn1"]
+script = ExtResource("1_ee7o5")
+id = &"LANTERN-3"
+branch = &"LANTERN"
+name_key = &"RUINS_TREE_LANTERN_3_NAME"
+effect_key = &"RUINS_TREE_LANTERN_3_FX"
+requires = PackedStringArray()
+wiring = 1
+stub_note = "partial: the larger lamp globe module shows (AetherVigilRig globeLarge); Lantern radius 260 -> 340 px is not tree-driven yet (VigilLantern)."
+
+[sub_resource type="Resource" id="Resource_cuwq8"]
+script = ExtResource("1_ee7o5")
+id = &"LANTERN-4"
+branch = &"LANTERN"
+name_key = &"RUINS_TREE_LANTERN_4_NAME"
+effect_key = &"RUINS_TREE_LANTERN_4_FX"
+requires = PackedStringArray()
+codex_gate = &"cx_rule_lantern_dark"
+stub_note = "no-op: the Ledger Compass light ring is not built; Codex stamping is not built, so the gate cannot be met (Q-T327)."
+
+[sub_resource type="Resource" id="Resource_2s46u"]
+script = ExtResource("1_ee7o5")
+id = &"LANTERN-5"
+branch = &"LANTERN"
+tier = 2
+name_key = &"RUINS_TREE_LANTERN_5_NAME"
+effect_key = &"RUINS_TREE_LANTERN_5_FX"
+requires = PackedStringArray("LANTERN-3")
+rules_bending = true
+wiring = 1
+stub_note = "partial: the Aether reading (lantern_down_thrust 0.85) and the louvres module act; dark mining and Choir detection are not tree-driven yet."
+
+[sub_resource type="Resource" id="Resource_60whe"]
+script = ExtResource("1_ee7o5")
+id = &"LANTERN-6"
+branch = &"LANTERN"
+tier = 2
+name_key = &"RUINS_TREE_LANTERN_6_NAME"
+effect_key = &"RUINS_TREE_LANTERN_6_FX"
+requires = PackedStringArray("LANTERN-1")
+wiring = 2
+
+[sub_resource type="Resource" id="Resource_3o4ix"]
+script = ExtResource("1_ee7o5")
+id = &"HULL-1"
+branch = &"HULL"
+name_key = &"RUINS_TREE_HULL_1_NAME"
+effect_key = &"RUINS_TREE_HULL_1_FX"
+requires = PackedStringArray()
+wiring = 2
+
+[sub_resource type="Resource" id="Resource_x0r1l"]
+script = ExtResource("1_ee7o5")
+id = &"HULL-2"
+branch = &"HULL"
+name_key = &"RUINS_TREE_HULL_2_NAME"
+effect_key = &"RUINS_TREE_HULL_2_FX"
+requires = PackedStringArray()
+rules_bending = true
+stub_note = "no-op: the Compass lie chalk strike waits on Ledger Compass lies (WARP-001 §4)."
+
+[sub_resource type="Resource" id="Resource_yla4x"]
+script = ExtResource("1_ee7o5")
+id = &"HULL-3"
+branch = &"HULL"
+name_key = &"RUINS_TREE_HULL_3_NAME"
+effect_key = &"RUINS_TREE_HULL_3_FX"
+requires = PackedStringArray()
+wiring = 1
+stub_note = "partial: brake x1.25 and the shutter module act; the chalk stop ring is not drawn yet."
+
+[sub_resource type="Resource" id="Resource_4kh35"]
+script = ExtResource("1_ee7o5")
+id = &"HULL-4"
+branch = &"HULL"
+name_key = &"RUINS_TREE_HULL_4_NAME"
+effect_key = &"RUINS_TREE_HULL_4_FX"
+requires = PackedStringArray()
+wiring = 1
+stub_note = "partial: the plate module shows and shears on the breach; Hull HP 1 -> 2 is not tree-driven (D-08 is open, Q-T334)."
+
+[sub_resource type="Resource" id="Resource_tivfv"]
+script = ExtResource("1_ee7o5")
+id = &"HULL-6"
+branch = &"HULL"
+tier = 2
+name_key = &"RUINS_TREE_HULL_6_NAME"
+effect_key = &"RUINS_TREE_HULL_6_FX"
+requires = PackedStringArray("HULL-4")
+rules_bending = true
+stub_note = "no-op: the per-run revive is not built."
+
+[sub_resource type="Resource" id="Resource_1yq4w"]
+script = ExtResource("1_ee7o5")
+id = &"HULL-7"
+branch = &"HULL"
+tier = 2
+name_key = &"RUINS_TREE_HULL_7_NAME"
+effect_key = &"RUINS_TREE_HULL_7_FX"
+requires = PackedStringArray("HULL-1")
+wiring = 2
+
+[sub_resource type="Resource" id="Resource_lvb6h"]
+script = ExtResource("1_ee7o5")
+id = &"ORDNANCE-1"
+branch = &"ORDNANCE"
+name_key = &"RUINS_TREE_ORDNANCE_1_NAME"
+effect_key = &"RUINS_TREE_ORDNANCE_1_FX"
+requires = PackedStringArray()
+wiring = 1
+stub_note = "partial: the hook reel module shows; Shard magnet radius 96 -> 190 px is not tree-driven yet."
+
+[sub_resource type="Resource" id="Resource_j2hii"]
+script = ExtResource("1_ee7o5")
+id = &"ORDNANCE-2"
+branch = &"ORDNANCE"
+name_key = &"RUINS_TREE_ORDNANCE_2_NAME"
+effect_key = &"RUINS_TREE_ORDNANCE_2_FX"
+requires = PackedStringArray()
+rules_bending = true
+stub_note = "no-op: Charge interception is not built."
+
+[sub_resource type="Resource" id="Resource_ub0ft"]
+script = ExtResource("1_ee7o5")
+id = &"ORDNANCE-3"
+branch = &"ORDNANCE"
+name_key = &"RUINS_TREE_ORDNANCE_3_NAME"
+effect_key = &"RUINS_TREE_ORDNANCE_3_FX"
+requires = PackedStringArray()
+stub_note = "no-op: Arc-Lance fire rate is not tree-driven yet (ArcLanceStats)."
+
+[sub_resource type="Resource" id="Resource_7qohx"]
+script = ExtResource("1_ee7o5")
+id = &"ORDNANCE-4"
+branch = &"ORDNANCE"
+name_key = &"RUINS_TREE_ORDNANCE_4_NAME"
+effect_key = &"RUINS_TREE_ORDNANCE_4_FX"
+requires = PackedStringArray()
+stub_note = "no-op: Charge magazine is not tree-driven yet."
+
+[sub_resource type="Resource" id="Resource_aug55"]
+script = ExtResource("1_ee7o5")
+id = &"ORDNANCE-6"
+branch = &"ORDNANCE"
+tier = 2
+name_key = &"RUINS_TREE_ORDNANCE_6_NAME"
+effect_key = &"RUINS_TREE_ORDNANCE_6_FX"
+requires = PackedStringArray()
+rules_bending = true
+stub_note = "no-op: the per-run Charge cap gain is not built."
+
+[sub_resource type="Resource" id="Resource_ieg76"]
+script = ExtResource("1_ee7o5")
+id = &"ORDNANCE-7"
+branch = &"ORDNANCE"
+tier = 2
+name_key = &"RUINS_TREE_ORDNANCE_7_NAME"
+effect_key = &"RUINS_TREE_ORDNANCE_7_FX"
+requires = PackedStringArray("ORDNANCE-3")
+stub_note = "no-op: Arc-Lance fire rate is not tree-driven yet (ArcLanceStats)."
+
+[sub_resource type="Resource" id="Resource_ap2dx"]
+script = ExtResource("1_ee7o5")
+id = &"WARD-1"
+branch = &"WARD"
+name_key = &"RUINS_TREE_WARD_1_NAME"
+effect_key = &"RUINS_TREE_WARD_1_FX"
+requires = PackedStringArray()
+codex_gate = &"cx_choir_shrine"
+stub_note = "no-op: Ward Pulse is not built and its SYS-001 base row is owed; Codex stamping is not built (Q-T327)."
+
+[sub_resource type="Resource" id="Resource_jjoi4"]
+script = ExtResource("1_ee7o5")
+id = &"WARD-2"
+branch = &"WARD"
+name_key = &"RUINS_TREE_WARD_2_NAME"
+effect_key = &"RUINS_TREE_WARD_2_FX"
+requires = PackedStringArray()
+rules_bending = true
+stub_note = "no-op: salt-glass wards are not built."
+
+[sub_resource type="Resource" id="Resource_c116p"]
+script = ExtResource("1_ee7o5")
+id = &"WARD-3"
+branch = &"WARD"
+name_key = &"RUINS_TREE_WARD_3_NAME"
+effect_key = &"RUINS_TREE_WARD_3_FX"
+requires = PackedStringArray()
+stub_note = "no-op: Ward Pulse is not built and its SYS-001 base row is owed."
+
+[sub_resource type="Resource" id="Resource_083ih"]
+script = ExtResource("1_ee7o5")
+id = &"WARD-4"
+branch = &"WARD"
+name_key = &"RUINS_TREE_WARD_4_NAME"
+effect_key = &"RUINS_TREE_WARD_4_FX"
+requires = PackedStringArray()
+stub_note = "no-op: Ward Pulse and Shroud HP are not built."
+
+[sub_resource type="Resource" id="Resource_nbnia"]
+script = ExtResource("1_ee7o5")
+id = &"WARD-5"
+branch = &"WARD"
+tier = 2
+name_key = &"RUINS_TREE_WARD_5_NAME"
+effect_key = &"RUINS_TREE_WARD_5_FX"
+requires = PackedStringArray("WARD-3")
+stub_note = "no-op: Ward Pulse is not built and its SYS-001 base row is owed."
+
+[sub_resource type="Resource" id="Resource_716j8"]
+script = ExtResource("1_ee7o5")
+id = &"WARD-6"
+branch = &"WARD"
+tier = 2
+name_key = &"RUINS_TREE_WARD_6_NAME"
+effect_key = &"RUINS_TREE_WARD_6_FX"
+requires = PackedStringArray("WARD-2")
+codex_gate = &"cx_choir_matron"
+rules_bending = true
+stub_note = "no-op: Ward Pulse on the Sepulchre is not built; Codex stamping is not built (Q-T327)."
+
+[sub_resource type="Resource" id="Resource_fe5hu"]
+script = ExtResource("1_ee7o5")
+id = &"MADNESS-1"
+branch = &"MADNESS"
+name_key = &"RUINS_TREE_MADNESS_1_NAME"
+effect_key = &"RUINS_TREE_MADNESS_1_FX"
+requires = PackedStringArray()
+stub_note = "no-op: Frayed-band false audio cues are not built."
+
+[sub_resource type="Resource" id="Resource_h40ak"]
+script = ExtResource("1_ee7o5")
+id = &"MADNESS-2"
+branch = &"MADNESS"
+name_key = &"RUINS_TREE_MADNESS_2_NAME"
+effect_key = &"RUINS_TREE_MADNESS_2_FX"
+requires = PackedStringArray()
+codex_gate = &"cx_rule_gaze"
+rules_bending = true
+stub_note = "no-op: the gaze-cone drain is not tree-driven yet; Codex stamping is not built (Q-T327)."
+
+[sub_resource type="Resource" id="Resource_ptewb"]
+script = ExtResource("1_ee7o5")
+id = &"MADNESS-3"
+branch = &"MADNESS"
+name_key = &"RUINS_TREE_MADNESS_3_NAME"
+effect_key = &"RUINS_TREE_MADNESS_3_FX"
+requires = PackedStringArray()
+codex_gate = &"cx_rule_frayed"
+stub_note = "no-op: Unmoored inverted-axis bursts are not built; Codex stamping is not built (Q-T327)."
+
+[sub_resource type="Resource" id="Resource_yv3ho"]
+script = ExtResource("1_ee7o5")
+id = &"MADNESS-4"
+branch = &"MADNESS"
+name_key = &"RUINS_TREE_MADNESS_4_NAME"
+effect_key = &"RUINS_TREE_MADNESS_4_FX"
+requires = PackedStringArray()
+stub_note = "no-op: the Frayed chain-bonus cap is not built."
+
+[sub_resource type="Resource" id="Resource_phr6d"]
+script = ExtResource("1_ee7o5")
+id = &"MADNESS-5"
+branch = &"MADNESS"
+tier = 2
+name_key = &"RUINS_TREE_MADNESS_5_NAME"
+effect_key = &"RUINS_TREE_MADNESS_5_FX"
+requires = PackedStringArray("MADNESS-2")
+codex_gate = &"cx_rule_unmoored"
+rules_bending = true
+stub_note = "no-op: Clear Eyed is not built; Codex stamping is not built (Q-T327)."
+
+[sub_resource type="Resource" id="Resource_bl48n"]
+script = ExtResource("1_ee7o5")
+id = &"MADNESS-6"
+branch = &"MADNESS"
+tier = 2
+name_key = &"RUINS_TREE_MADNESS_6_NAME"
+effect_key = &"RUINS_TREE_MADNESS_6_FX"
+requires = PackedStringArray()
+stub_note = "no-op: Deacon phantoms are not built."
+
+[resource]
+script = ExtResource("2_roasd")
+nodes = Array[ExtResource("1_ee7o5")]([SubResource("Resource_n2xcc"), SubResource("Resource_ujsd8"), SubResource("Resource_mmkn1"), SubResource("Resource_cuwq8"), SubResource("Resource_2s46u"), SubResource("Resource_60whe"), SubResource("Resource_3o4ix"), SubResource("Resource_x0r1l"), SubResource("Resource_yla4x"), SubResource("Resource_4kh35"), SubResource("Resource_tivfv"), SubResource("Resource_1yq4w"), SubResource("Resource_lvb6h"), SubResource("Resource_j2hii"), SubResource("Resource_ub0ft"), SubResource("Resource_7qohx"), SubResource("Resource_aug55"), SubResource("Resource_ieg76"), SubResource("Resource_ap2dx"), SubResource("Resource_jjoi4"), SubResource("Resource_c116p"), SubResource("Resource_083ih"), SubResource("Resource_nbnia"), SubResource("Resource_716j8"), SubResource("Resource_fe5hu"), SubResource("Resource_h40ak"), SubResource("Resource_ptewb"), SubResource("Resource_yv3ho"), SubResource("Resource_phr6d"), SubResource("Resource_bl48n")])
+stock = ExtResource("3_eup5w")
+price_tier2 = 120
+price_codex_gated = 0
+tier2_gate = 2
+max_tier_on_sale = 1
+sell_unwired = true
+ds_namespace = "ds_lantern_tree.tree"
+source_section = "LOOP-001 §3.1, §3.3, §3.7 (nodes); SYS-001 §7.6, §7.7 (prices, gate); PROD-001 §3 M2 (30-node stub)"
