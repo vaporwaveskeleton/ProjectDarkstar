@@ -350,3 +350,23 @@ static func _covered(r: float) -> float:
 			if _norm(p - TL.FRONT_ORIGIN) < r:
 				inside += 1
 	return float(inside) / float(n)
+
+
+## The hand-off veil (cursed-cabinet, TECH-001 Q-T267): the scene opens behind a VOID-dark veil that clears
+## over ENTRY_VEIL_S, smoothly, so the cut from the reveal is never one whole-field luma step ≥ 0.10.
+func test_the_entry_veil_clears_smoothly_over_the_first_frames() -> void:
+	var scene := (load("res://features/aether/aether_arrival.tscn") as PackedScene).instantiate()
+	add_child(scene)
+	scene.set_process(false)
+	assert_float(scene.entry_veil()).is_equal(1.0)
+	var prev: float = scene.entry_veil()
+	var steps := 0
+	while scene.entry_veil() > 0.0 and steps < 120:
+		scene.advance(1.0 / 60.0)
+		var a: float = scene.entry_veil()
+		assert_float(prev - a).is_less(0.1)          # never a big step, even at the smoothstep's steepest
+		assert_float(a).is_less_equal(prev)          # one way only
+		prev = a
+		steps += 1
+	assert_int(steps).is_between(15, 20)             # ≈ 0.3 s at 60 Hz
+	scene.free()
