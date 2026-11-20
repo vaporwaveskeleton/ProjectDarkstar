@@ -35,7 +35,7 @@ const FLEE_TURN := 0.24
 ## the WARP-001 §4.5 flicker cap) and the speed the beat travels along the veins.
 const BEAT_PERIOD_S := 4.0
 const WAVE_PX_S := 150.0
-## ✱ pass 8 (Q-T297..300; pass 8 c Q-T318: an eye no longer, a lightless disc): its centre (local px, ~90 px inside the front, on screen at the top
+## ✱ pass 8 (Q-T297..300; pass 8 c Q-T400: an eye no longer, a lightless disc): its centre (local px, ~90 px inside the front, on screen at the top
 ## left of the frame), how fast its gaze turns toward the Vigil (rad/s) and how fast its front's reach
 ## follows the Vigil along the front (local px/s). Slow: it turns, it never snaps.
 const EYE := Vector2(690.0, 545.0)

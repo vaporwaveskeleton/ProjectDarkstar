@@ -18,7 +18,7 @@ const MODULE_PARTS := {
 }
 const ALWAYS_PARTS: Array[StringName] = [&"keelSpine", &"hull", &"bellowsA", &"lanceTurret",
 		&"lampGimbal", &"lampGlobe", &"flue"]
-## ✱ drawing, pass 8 c (Q-T324): the Lantern Down ember (core radius and glow radius as globe radii,
+## ✱ drawing, pass 8 c (Q-T406): the Lantern Down ember (core radius and glow radius as globe radii,
 ## opacities) and the warm hull rim it lights. Gaslight on the player only (ART-001 law 1).
 const EMBER_CORE := 0.45
 const EMBER_ALPHA := 0.75
@@ -361,7 +361,7 @@ func _draw_hull(lamp: float) -> void:
 			inner.append(Vector2(p.x * lerpf(1.0, 0.92, float(i) * 0.4), p.y * sc))
 		draw_colored_polygon(inner, _tint(bands[i]))
 	draw_polyline(_close(out), _tint(lk.brass_shadow), 1.5)
-	# Pass 8 c (Q-T324): Lantern Down, the ember lights a faint warm rim along the upper hull.
+	# Pass 8 c (Q-T406): Lantern Down, the ember lights a faint warm rim along the upper hull.
 	var ember: float = _ember_level(clampf(lamp, 0.0, 1.0))
 	if ember > 0.01:
 		var top := PackedVector2Array()
@@ -581,7 +581,7 @@ func _draw_lamp(lamp: float) -> void:
 			draw_line(g + Vector2(-half, y), g + Vector2(half, y), _tint(lk.brass_dark), lerpf(1.8, 0.6, open))
 	draw_arc(g, r, 0.0, TAU, 24, _tint(lk.brass_high), 1.0)
 	draw_circle(g + Vector2(-r * 0.35, -r * 0.4), 0.9, _tint(lk.lamp_core.lerp(lk.lamp_ember, 1.0 - lit)))
-	# Pass 8 c (Q-T324): Lantern Down keeps a dim ember alive in the housing, so the ship stays the
+	# Pass 8 c (Q-T406): Lantern Down keeps a dim ember alive in the housing, so the ship stays the
 	# clearest shape in the dark (gaslight, the player's own colour; out once a breach gutters it).
 	var ember: float = _ember_level(lit)
 	if ember > 0.01:

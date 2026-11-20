@@ -209,7 +209,7 @@ extends TunableResource
 @export_range(0.0, 1.0) var far_cap_veil: float = 0.0
 ## ✱ the Presence drinks colour and light around itself (subtraction halo strength, 0 = off).
 @export_range(0.0, 1.0) var presence_drink: float = 0.0
-## ✱ the Presence's lightless disc (pass 8 c, Q-T318; was an eye): 0 = none, 1 = full. It leans toward the Vigil.
+## ✱ the Presence's lightless disc (pass 8 c, Q-T400; was an eye): 0 = none, 1 = full. It leans toward the Vigil.
 @export_range(0.0, 1.0) var presence_eye: float = 0.0
 ## ✱ the Presence's breathing edge: amplitude of the living swell of its front (logical px).
 @export var presence_breath_px: float = 0.0
@@ -218,7 +218,7 @@ extends TunableResource
 ## ✱ lantern-down night (Q-T310): how far the presenter crushes the far layer's dark and middle
 ## values toward cold VOID while the lantern is down (0 = off, 1 = full); lights keep their value.
 @export_range(0.0, 1.0) var lantern_night: float = 0.0
-## ✱ pass 8 c (Q-T322): split tone of the far layer in the normal state (teal deep fog, rose-pearl lit
+## ✱ pass 8 c (Q-T404): split tone of the far layer in the normal state (teal deep fog, rose-pearl lit
 ## fog, amber in the lantern pool) so lavender is one of three hues (0 = off, 1 = full).
 @export_range(0.0, 1.0) var far_split_tone: float = 0.0
 

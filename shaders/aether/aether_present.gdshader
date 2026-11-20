@@ -23,7 +23,7 @@ uniform vec3 veil_col = vec3(0.0065, 0.0070, 0.0215);
 uniform vec3 floor_col = vec3(0.003, 0.003, 0.006);
 uniform float night = 0.0;
 uniform vec3 night_floor = vec3(0.008, 0.005, 0.041);   // LINEAR: AETHER-0 × 0.35 (deep indigo)
-// pass 8 c (Q-T322): split tone of the far layer in the normal state, so lavender is one of three
+// pass 8 c (Q-T404): split tone of the far layer in the normal state, so lavender is one of three
 // hues: teal in the deep fog (tone_deep, AETHER-5's hue), a rose-pearl warmth on lit fog away from the
 // lantern (tone_lit, AETHER-4's hue) and amber in the lantern's own pool (tone_pool, GAS-3's hue: the
 // lantern's light). All LINEAR hue vectors; tone_k 0 = off.
@@ -81,7 +81,7 @@ void fragment() {
 			float k = mix(NIGHT_KEEP, 1.0, smoothstep(NIGHT_LO, NIGHT_HI, l));
 			float n = night * (1.0 - smoothstep(NIGHT_LO, NIGHT_HI * 0.6, l));   // lights keep their hue (PHOS stays truth)
 			c *= mix(1.0, k, night);
-			// pass 8 c (Q-T321): the crushed fog turns deep indigo (night_floor's hue), never neutral
+			// pass 8 c (Q-T403): the crushed fog turns deep indigo (night_floor's hue), never neutral
 			// near-black: the Aether is never a black vacuum. A floor of that hue is lifted under the
 			// fog, less under what was already dark (the vast bodies stay darker than the fog).
 			vec3 hue = night_floor / max(luma(night_floor), 0.0001);

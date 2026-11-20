@@ -79,7 +79,7 @@ func advance(delta: float) -> void:
 		queue_redraw()
 
 
-## Pass 8 c (Q-T325): how dark the sector is (the far layer's reveal ramp, 0..1). Drawing only.
+## Pass 8 c (Q-T407): how dark the sector is (the far layer's reveal ramp, 0..1). Drawing only.
 func set_dark(level: float) -> void:
 	var d := clampf(level, 0.0, 1.0)
 	if not is_equal_approx(d, dark):
@@ -239,7 +239,7 @@ func _draw() -> void:
 		var q := g.round()
 		draw_rect(Rect2(q - Vector2(1, 1), Vector2(2, 2)), Pal.PHOS_3)
 		draw_rect(Rect2(q, Vector2.ONE), Pal.PHOS_5 if heat > 0.0 else Pal.PHOS_4)
-	# pass 8 c (Q-T325): lantern down, the rock sinks to about DARK_KEEP of its light (a VOID veil, never
+	# pass 8 c (Q-T407): lantern down, the rock sinks to about DARK_KEEP of its light (a VOID veil, never
 	# black) and only a thin facet glint on its lit edge still catches the far light
 	if dark > 0.001:
 		var body := PackedVector2Array()

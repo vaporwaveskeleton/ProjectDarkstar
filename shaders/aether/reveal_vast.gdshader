@@ -119,7 +119,7 @@ void fragment() {
 			tend = max(tend, (1.0 - smoothstep(tw * 0.5, tw, abs(v - off - wave))) * step(0.0, ut) * (1.0 - smoothstep(0.6, 1.0, ut)));
 		}
 		body = max(body, tend * 0.9);
-		// pass 8 c (Q-T320): a directional rim. Only edges that face the glow catch it, per pixel; the rim
+		// pass 8 c (Q-T402): a directional rim. Only edges that face the glow catch it, per pixel; the rim
 		// is widest near the head and thins toward the tail; far from the glow the fog swallows it.
 		vec2 lp = normalize(horizon_px - p + vec2(0.001));
 		float lby = -lp.x * s + lp.y * c;
@@ -140,7 +140,7 @@ void fragment() {
 		float lsz = ls * mix(0.55, 1.0, smoothstep(0.2, 0.32, pu));   // smaller on the neck
 		float pd = length(b - pp) / lsz;
 		float pulse = mix(0.75 + 0.25 * sin(t * 1.2566 - idx * 0.5 + sd), 0.9, steady);
-		// pass 8 c (Q-T319): no head light (it sat where an eye would be). The rows run up the neck on the
+		// pass 8 c (Q-T401): no head light (it sat where an eye would be). The rows run up the neck on the
 		// lit flank only (single, never a pair near the head), paired along the body; the front lights
 		// brighten the more the head faces the Vigil (it is watching).
 		float neck_row = step(0.18, pu) * step(pu, 0.3) * step(0.0, v * lit_side);

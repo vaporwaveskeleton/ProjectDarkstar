@@ -48,7 +48,7 @@ uniform float lantern_r = 120.0;
 // subtraction: it drinks colour and light from what lies behind and around it (the backdrop's
 // PresenceCopy feeds screen_tex), and the fog bends in toward its front and its eye;
 // a living edge: the front breathes and reaches toward the Vigil (reach_x, local px);
-// wrongness: one lightless disc (pass 8 c, Q-T318; never black: near floor_col), seen only by what
+// wrongness: one lightless disc (pass 8 c, Q-T400; never black: near floor_col), seen only by what
 // it covers and drains, leaning toward the Vigil (gaze, local unit vector, smoothed in GDScript). `subtract` 0 = the old alpha path (no read).
 uniform sampler2D screen_tex : hint_screen_texture, filter_linear;
 uniform float subtract = 0.0;
@@ -209,7 +209,7 @@ void fragment() {
 	// living veins in PHOS under the surface. Strength `drink`.
 	float sheen = pow(slope, 9.0) * smoothstep(0.0, 0.06, pc.y);
 	vec3 film = mix(film_a, film_b, fract(h_val * 2.7 + slope * 0.6));
-	// pass 8 c (Q-T323): darker, cooler and of a piece: little value change between plates, a rarer sheen
+	// pass 8 c (Q-T405): darker, cooler and of a piece: little value change between plates, a rarer sheen
 	vec3 shell = mix(body_col, void_col, 0.62 + 0.1 * h_val) + film * sheen * 0.4 * step(0.55, h_val);
 	float vn = abs(a_noise(p / 26.0 + pid * 0.37) * 2.0 - 1.0);
 	float veins = (1.0 - smoothstep(0.0, 0.07, vn)) * smoothstep(10.0, 40.0, s) * (0.5 + 0.5 * a_noise(p / 90.0));
@@ -253,7 +253,7 @@ void fragment() {
 	col = mix(col, light_col, clamp(light, 0.0, 1.0));
 	a = max(a, clamp(light, 0.0, 1.0) * 0.85);
 
-	// --- pass 8 c (Q-T318): the lightless disc (it replaced the eye: nothing eye-like remains) ----
+	// --- pass 8 c (Q-T400): the lightless disc (it replaced the eye: nothing eye-like remains) ----
 	// A disc of near-floor VOID inside the body near the front: it gives back no light at all, so it
 	// is seen only by what it covers and what it drains. Its edge is torn a little and breathes; it
 	// shifts a few px toward the Vigil (gaze). Never black: the floor is VOID-0.

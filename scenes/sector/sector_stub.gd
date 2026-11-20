@@ -290,7 +290,7 @@ func _step_far() -> void:
 	# vast shapes' silhouettes are not broken up by bright motes (the play layer is untouched)
 	var night := _far.reveal() * (_far.look.lantern_night if _far.look else 0.0)
 	_depth_back.modulate.a = 1.0 - DEPTH_NIGHT_DIM * night
-	# the geodes sink too, keeping a thin facet glint (pass 8 c, Q-T325; drawing only)
+	# the geodes sink too, keeping a thin facet glint (pass 8 c, Q-T407; drawing only)
 	if _geodes:
 		for g in _geodes.geodes:
 			if is_instance_valid(g):
