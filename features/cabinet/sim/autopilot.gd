@@ -11,7 +11,8 @@ extends Node
 ## - waking Sepulchre (unmake the entity): let it build — never knock modules off or shoot laden
 ##   Grubs; fill the magazine, then mine for the Choir, give the Grubs room and put down a Grub
 ##   stuck fleeing — then dump the magazine into the entity while it forms, kite it, throw each
-##   Charge as it closes, and mine geodes away from it (it eats the ones it reaches and heals).
+##   Charge as it closes, and rebuild the magazine away from it: over-fire geodes (it eats the ones
+##   it reaches and heals) and chase loose glass anywhere (no Grub races it after the wake).
 ## Own glass is mined calmly (it stops before the over-fire window fills).
 ## The bot's own numbers below are behaviour, not game rules (✱, autopilot only).
 
@@ -98,7 +99,7 @@ func _physics_process(delta: float) -> void:
 	# 3 — glass on the field, while the magazine has room
 	if move == Vector2.ZERO and not full:
 		var shard := _nearest_free_shard(v.pos)
-		if shard != Vector2.INF and t.distance(v.pos, shard) < 400.0:
+		if shard != Vector2.INF and (hunting or t.distance(v.pos, shard) < 400.0):   # after the wake no Grub races it
 			move = t.delta(v.pos, shard).normalized()
 
 	# 4 — mine. Calm fire for our own glass; with a full magazine on a waking stage the glass is the
@@ -113,8 +114,9 @@ func _physics_process(delta: float) -> void:
 			var to_g := t.delta(v.pos, g.pos)
 			aim = to_g
 			var in_flight := ceili(to_g.length() / world.tuning.lance_speed * world.tuning.lance_rate)
-			# feeding the Choir it over-fires on purpose: a detonation scatters the glass at once
-			var hot := not feed_choir and g.recent.size() + in_flight >= world.tuning.overfire_hits - 1
+			# feeding the Choir, or starved after the wake (no Grub competes then), it over-fires on
+			# purpose: a detonation frees 4–6 glass at once, more and sooner than calm mining
+			var hot := not (feed_choir or hunting) and g.recent.size() + in_flight >= world.tuning.overfire_hits - 1
 			fire = not hot and to_g.length() < 280.0
 			if move == Vector2.ZERO:
 				var stand_d := g.radius + (STANDOFF_MINE if feed_choir else 50.0)
