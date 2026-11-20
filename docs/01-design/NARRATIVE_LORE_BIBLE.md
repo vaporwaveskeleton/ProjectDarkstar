@@ -434,7 +434,7 @@ PM ruling 2026-11-18 (owner grant), cosmic horror design rev 3, CHD-16.
 | Beat | Rule | Why |
 |---|---|---|
 | **Cabinet (Act 0)** | imperative, cheerful, transactional: it wants your credit. INSERT CREDIT. PLAYER 1. | the Office's recruitment voice (§4.4) |
-| **The Decay** (reveal decay, owner direction 2026-11-19; ruled by the PM under the owner autonomy grant 2026-11-19 (TECH-001 Q-T180–Q-T185) and built) | **wordless.** After A0-5's credits the Cabinet's skin wears out instead of printing a title card (GDD-001 §6.1; ART-001 §12.7b; AUDIO-001 §12.18). From the end of the credits to the end of the tear silence **no new text appears**. The Cabinet's existing copy (attract lines, INSERT CREDIT, the honour roll) may only **lose** glyphs: the Decay subtracts, it never writes, and lost glyphs never leave a word or message behind. In ending 5, Theodora's screens and the line come first, then the Decay (§9.5) | the owner: the title card read as cheesy; the costume should fail, not explain itself. A machine wearing out is something every player has seen; it needs no words |
+| **The Decay** (reveal decay, owner direction 2026-11-19; ruled by the PM under the owner autonomy grant 2026-11-19 (TECH-001 Q-T180–Q-T185) and built) | **wordless.** After A0-5's credits the Cabinet's skin wears out instead of printing a title card (GDD-001 §6.1; ART-001 §12.7b; AUDIO-001 §12.18). From the end of the credits to the end of the tear silence **no new text appears**. The Cabinet's existing copy (attract lines, INSERT CREDIT, the honour roll) may only **lose** glyphs: the Decay subtracts, it never writes, and lost glyphs never leave a word or message behind. **The cursed turn** (TECH-001 Q-T260, Q-T262; PROPOSED, PM under owner direction, 2026-11-19 overnight push): from D2 the glass leans toward the player and the collapse ends on a dot that is off-centre; the tear opens a torn wound there, not a disc or a maw. The body is shown only by the stars it removes (N3, N4 hold: no face, no gaze). In ending 5, Theodora's screens and the line come first, then the Decay (§9.5) | the owner: the title card read as cheesy; the costume should fail, not explain itself. A machine wearing out is something every player has seen; it needs no words |
 | **The tear** | after the Decay there is **no text at all** for the opening of the Aether, for SYS-001's tear silence row. Colour, fog and room tone only. No caption, prompt, tooltip or entity line in that time | the first thing the player meets after the lie is a world, not a sentence |
 | **First words** | the first words the player reads after the Pretence are in the Ruins, in sentence case, from a person: **Sable Vane** at the Chalk Desk (§5.7; §7.5, first Ruins visit). No other Ruins text (the Cabinet's marquee, Ilse's notes) may be read before it (§14 Q-14) | a human voice, after a machine's |
 | **The inversion** | from Act 1, **the Cabinet's face is the one the entity borrows**: its lines are set in the Cabinet's type (ART-001 owns the face). The cheerful voice of Act 0 comes back as the entity's | the player's own training (the Lampkeepers' curriculum) is what talks to them in the dark. AUDIO-001 §4.2 was brought into line by the Game audio chat (§14 Q-15, closed 2026-11-18) |
@@ -491,7 +491,9 @@ Four people and one machine. None of them is a vendor; each one owns a system (G
 
 **Its jokes.** The Cabinet is the only thing in DARKSTAR allowed deadpan humour, and only before Act 3 (§11.5). Its jokes are recruitment copy that has outlived its context: *INSERT CREDIT. THE SKY IS COUNTING ON YOU.* After Act 3 the jokes stop, because by then the player knows what the copy was for.
 
-**The high-score table.** From Hard Unmaking 3 (*The Ledger Opens*), the honour roll on the Cabinet shows a top score that is not yours, under the initials **T.L.**, with a note beside it: `0 WARD 0 SURGE` (LOOP-001 §11.6). Your best Vigil Index sits one line below it. Nobody comments on it. Nothing explains it. It is Theodora Lune's high score on her own machine, and it tells anyone who reads it how to find her (ending 5).
+**The high-score table.** From Hard Unmaking 3 (*The Ledger Opens*), the honour roll on the Cabinet shows a top score that is not yours, under the initials **T.L.**, with a note beside it: `0 WARD 0 SURGE` (LOOP-001 §11.6). Your best Vigil Index sits one line below it. Nobody comments on it. Nothing explains it. It is Theodora Lune's high score on her own machine, and it tells anyone who reads it how to find her (ending 5). **Foreshadowing in Act 0** (TECH-001 Q-T254; PROPOSED, PM under owner direction, 2026-11-19 overnight push): from A0-3 the Cabinet is haunted (WARP-001 W0-12). Rarely, the attract honour roll lists **T.L.** tied with the player's best, once. It is a Haunting: never explained, and it foreshadows the Hard Unmaking 3 roll above.
+
+**The Hauntings are never explained and are not the entity.** They have no face and no gaze (N4), no text beyond the initials, and nothing in the game says who or what does them. The standing figure that a Haunting sometimes shows behind the glass stays unnamed (TECH-001 Q-T269), and so does the one that sometimes stands on the crag in the side art (Q-T261).
 
 **Theodora Lune** was the Office engineer who designed the cabinet. She wrote its curriculum, its attract copy, its honour roll — and its last screen, *THAT WAS A PRETENCE.*, which the Office approved as an inspiring twist. She meant it literally. On a normal clear that screen never comes: the skin wears through first (GDD-001 §6.1, *the Decay*), and nothing in the game says why. The line survives in two places only: the Cabinet shows it after her message in ending 5 (§9.5), and it is the one line on her maker's plate, *THAT WAS A PRETENCE. — T. LUNE*, in the Cabinet face (ART-001 §13 maker's plate row) (reveal decay, owner direction 2026-11-19; ruled by the PM under the owner autonomy grant 2026-11-19 (TECH-001 Q-T180–Q-T185) and built). Her one honest act is hidden in the machine (§9.5). She is never seen. Her maker's plate is on the Cabinet's back panel, visible once the Ruins become a lattice (beat 5) and the wall behind it is gone. Her resignation letter is `cx_chron_hu_05`.
 
@@ -560,6 +562,27 @@ PM ruling 2026-11-18 (owner grant), Act 1 vertical slice, amended the same day a
 | `NARR_SABLE_DARK_1` ✚ | Some things are written only for the dark. | the hall wall, faint | with the pilot lamp down (the beat 15 pre-echo, LOOP-001 §10.5.2) |
 
 *Resolved 2026-11-18 (TECH-001 §11.1 Q-T102, design calls within the PM ruling):* no hand on the first visit (the chalk writes itself, matching §5.1 and §5.6); the old "first visit" Pact line re-triggered; line 1 in the present tense.
+
+### 5.7a The return chalk (after a run)
+
+PM under owner direction, 2026-11-19 overnight push (TECH-001 Q-T284). A visit that follows a run writes `NARR_SABLE_RETURN_1` and then one more slate line, picked from the pool for the run's outcome (`run_outcome`, TECH-001 §2.1). The pick is deterministic: `RuinsReturnChalk.key_for(outcome, run_seed, runs_ended)`, so the same run reads the same line and repeats are rare across runs. Register: Ruins, sentence case, never a question, never jokey. A `won` outcome has no pool and keeps the plain line.
+
+| Outcome | Voice | Keys (6 each) |
+|---|---|---|
+| `returned` (Seam cleared, exit taken) | quietly proud, uneasy | `NARR_SABLE_RET_OK_1…6` |
+| `died` | the Ruins notice the Vigil's absence; tally marks are `\|` | `NARR_SABLE_RET_DIED_1…6` |
+| `abandoned` | the lamp judges, gently | `NARR_SABLE_RET_QUIT_1…6` |
+| rare, any of the three | after 4 or more ended runs, on one pick in four; hints that the Cabinet has a maker | `NARR_SABLE_RET_RARE_1…2` |
+
+The lines (`locale/en.po` owns the text):
+
+- **Returned:** The way out held. Something let you through. · You carry less dark than you took. Do not ask where it went. · The lamp is lit. I counted twice. · The Seam closed behind you, slowly. · The Seam gave you back. Something there keeps a tally too. · You return clean. The walls notice.
+- **Died:** The Vigil's place by the door sat empty. One more mark. `||||` · The hall noticed the Vigil gone. It keeps the count. `|||` · Dust settled where the Vigil was not. A mark for it. `||` · No one lit the lamp for the Vigil. The wall did not forget. · A gap in the hall, the width of a Vigil. Marked. `|||||` · The Ruins held their breath for the Vigil. They are holding it still. `||`
+- **Abandoned:** The lamp saw you turn back. It does not say what it thinks. · The lamp burns a little lower. Not angry. Attentive. · Turning back is also a choice. The lamp writes it down. · The lamp is steady. It was always going to be. · Some doors are kind to leave. The lamp is not sure this was one. · You left the Seam open. The lamp will wait. It will not mind.
+- **Rare:** The machine on the wall has a maker. The plate is turned to the stone. · Someone built the Cabinet before the light failed. The chalk stops there.
+
+**Reveal stage (§10.3).** The rare lines stay inside S0/S1: the Cabinet is an object with a maker, and nothing more. They never name Theodora Lune (S3), never say what the machine was for (S3) and never mention the plate's text or the honour roll (S3). The "I" in "I counted twice" is the one place Sable speaks of herself; it is a count, not a confession.
+
 
 
 ---

@@ -5,7 +5,9 @@ extends Control
 ## Bindings are read live from the InputMap for the device in use; scores are read from the
 ## cabinet's own tuning, so the card never disagrees with the game. Costume art: honest at T0.
 
-enum Page { PITCH, CONTROLS, MISSION, SCORES }
+enum Page { PITCH, CONTROLS, MISSION, SCORES, ROLL }
+
+signal cycle_wrapped                 ## the loop came back round to the pitch (W0-12 Hauntings ask at this moment)
 
 const PITCH_KEYS := ["NARR_CAB_ATTRACT_1", "NARR_CAB_ATTRACT_2", "NARR_CAB_ATTRACT_3"]
 const ROW := 10.0
@@ -16,6 +18,9 @@ const BOX := Vector2(232, 96)     # fits the 256 px screen with 12 px clear each
 
 var gamepad := false
 var continue_stage := -1          ## 0-based stage on offer after GAME OVER (Q-T104); -1 = no offer. Pins the CONTINUE page.
+var hi_score := 0                 ## the honour roll's HI and PLAYER 1 rows (the profile's best; attract sets it)
+var _stranger_pending := false    ## W0-12 roll_stranger: the next honour roll lists T.L. tied with you, once
+var stranger_shown := false       ## the honour roll on screen now carries the stranger's row
 var page: int = Page.PITCH
 var _page_t := 0.0
 var _t := 0.0
@@ -29,6 +34,8 @@ func _ready() -> void:
 func reset() -> void:
 	page = Page.PITCH
 	_page_t = 0.0
+	stranger_shown = false
+	_stranger_pending = false
 
 
 func _process(delta: float) -> void:
@@ -37,7 +44,29 @@ func _process(delta: float) -> void:
 	if _page_t >= tuning.page_seconds:
 		_page_t = 0.0
 		page = (page + 1) % Page.size()
+		if page == Page.ROLL:
+			stranger_shown = _stranger_pending
+			_stranger_pending = false
+		else:
+			stranger_shown = false
+		if page == Page.PITCH:
+			cycle_wrapped.emit()
 	queue_redraw()
+
+
+## W0-12 roll_stranger (TECH-001 Q-T254): the next honour roll lists a row that is not yours, T.L., tied with
+## your best, for that one showing only. An extra row: your own row stays honest (WARP-001 §4.2).
+func show_stranger() -> void:
+	_stranger_pending = true
+
+
+## The honour roll's rows as drawn: [label, score] pairs (tests).
+func roll_rows() -> Array[PackedStringArray]:
+	var score := LocFormat.format_int(hi_score)
+	var rows: Array[PackedStringArray] = [PackedStringArray([tr("CAB_HI"), score]), PackedStringArray([tr("CAB_ROLL_PLAYER"), score])]
+	if stranger_shown:
+		rows.append(PackedStringArray([tr("CAB_ROLL_STRANGER"), score]))
+	return rows
 
 
 func _draw() -> void:
@@ -54,6 +83,20 @@ func _draw() -> void:
 			_draw_mission()
 		Page.SCORES:
 			_draw_scores()
+		Page.ROLL:
+			_draw_roll()
+
+
+## The honour roll (the page the Decay's D1 returns to): HI and PLAYER 1, and on a Haunting the stranger.
+func _draw_roll() -> void:
+	_header("CAB_HONOUR_ROLL")
+	var rows := roll_rows()
+	for i in rows.size():
+		var y := 30.0 + i * 14.0
+		var row := rows[i]
+		var col := Look.c(Pal.BONE_3) if i == 2 else Look.c(Pal.BONE_4)
+		PixelText.draw(self, Vector2(24, y), row[0], col)
+		PixelText.draw(self, Vector2(size.x - 24.0 - PixelText.width(row[1]), y), row[1], Look.c(Pal.GAS_4) if i < 2 else col)
 
 
 ## A border of marquee bulbs; every fourth one lit, chasing round (still under reduced motion).
@@ -194,3 +237,13 @@ func _icon(kind: String, c: Vector2) -> void:
 			# the only true black is the entity (ART-001 §16), even in the costume
 			draw_rect(Rect2(c - Vector2(5, 5), Vector2(10, 10)), Pal.NULL)
 			draw_rect(Rect2(c - Vector2(5, 5), Vector2(10, 10)), Look.c(Pal.PHOS_4), false, 1.0)
+
+
+## Jump to page `p` now (dev captures), with the same stranger bookkeeping as a turn of the loop.
+func show_page(p: int) -> void:
+	page = p
+	_page_t = 0.0
+	stranger_shown = p == Page.ROLL and _stranger_pending
+	if stranger_shown:
+		_stranger_pending = false
+	queue_redraw()

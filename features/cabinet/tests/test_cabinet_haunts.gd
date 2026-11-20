@@ -1,0 +1,564 @@
+extends GdUnitTestSuite
+## W0-12 Hauntings and the cursed turn (TECH-001 Q-T250–Q-T266, PM under owner direction 2026-11-19
+## overnight push; WARP-001 W0-07, W0-11, W0-12; ART-001 §12.7b, §12.7c; AUDIO-001 §12.20).
+## Hauntings: seeded and rare, each kind once per visit, costume only, never during play, never a readout,
+## no flash (the litany stays under 3 dips a second; the figure is one field), and the moving ones are gone
+## under photosensitivity / reduced motion. The cursed turn: the glass bulges and the picture collapses
+## off-centre, and the wound opens there with no disc, no eye and no ring.
+
+const SCENE := preload("res://features/cabinet/cabinet_game.tscn")
+const HAUNT := "res://data/cabinet/cabinet_haunt.tres"
+const DECAY := "res://data/cabinet/cabinet_decay.tres"
+const SPEC := "res://data/cabinet/cabinet_screen.tres"
+
+var _saved_backend: SaveBackend
+
+
+func before_test() -> void:
+	AudioService.muted_for_tests = true
+	_saved_backend = SaveService.backend
+	SaveService.set_backend(MemorySaveBackend.new())
+	SettingsService.persist = false
+
+
+func after_test() -> void:
+	SettingsService.persist = true
+	AudioService.muted_for_tests = false
+	SaveService.set_backend(_saved_backend)
+
+
+func _t() -> CabinetHauntTuning:
+	return load(HAUNT) as CabinetHauntTuning
+
+
+func _decay() -> CabinetDecayTuning:
+	return load(DECAY) as CabinetDecayTuning
+
+
+# --- the numbers (SYS-001 §9 ds_cabinet.haunt.*, PROPOSED) ---
+
+func test_the_numbers_are_sys001s_proposed_rows() -> void:
+	var t := _t()
+	assert_str(t.ds_namespace).is_equal("ds_cabinet.haunt")
+	assert_int(t.min_wear_level).is_equal(1)
+	assert_int(t.attract_min_stage).is_equal(2)
+	assert_float(t.chance_ready).is_equal(0.35)
+	assert_float(t.chance_hold).is_equal(0.3)
+	assert_float(t.chance_attract).is_equal(0.2)
+	assert_float(t.chance_coin).is_equal(0.25)
+	assert_float(t.chance_demo).is_equal(0.3)
+	assert_int(t.figure_frames).is_equal(1)
+	assert_array(Array(t.litany_dips)).is_equal([3, 3, 2])
+	var d := _decay()
+	assert_vector(d.focus_play).is_equal(Vector2(0.7, 0.38))
+	assert_float(d.bulge_max).is_equal(0.9)
+	assert_float(d.breath_hz).is_equal(0.22)
+
+
+# --- the deck: seeded, rare, once per kind, moment-bound ---
+
+func test_the_same_seed_tells_the_same_story() -> void:
+	var moments: Array[StringName] = [&"attract", &"attract", &"coin", &"attract", &"attract", &"attract", &"coin", &"attract"]
+	var a := CabinetHauntDeck.new(_t(), 4242)
+	var b := CabinetHauntDeck.new(_t(), 4242)
+	for m in moments:
+		assert_str(String(a.draw(m))).is_equal(String(b.draw(m)))
+
+
+func test_each_kind_happens_at_most_once_and_only_at_its_moments() -> void:
+	for s in 40:
+		var d := CabinetHauntDeck.new(_t(), s)
+		var seen: Dictionary = {}
+		for i in 60:
+			for m: StringName in [&"ready", &"hold", &"attract", &"coin", &"demo"]:
+				var k := d.draw(m)
+				if k == &"":
+					continue
+				assert_bool(seen.has(k)).override_failure_message("seed %d drew %s twice" % [s, k]).is_false()
+				seen[k] = true
+				assert_bool((CabinetHauntDeck.MOMENT_KINDS[m] as Array).has(k)).is_true()
+
+
+func test_hauntings_are_rare() -> void:
+	# over many seeds, a READY card haunts about chance_ready of the time (one draw each)
+	var fired := 0
+	for s in 2000:
+		if CabinetHauntDeck.new(_t(), s).draw(&"ready") != &"":
+			fired += 1
+	assert_float(fired / 2000.0).is_between(0.28, 0.42)
+
+
+func test_photosensitivity_and_reduced_motion_remove_the_moving_kinds() -> void:
+	for s in 60:
+		var d := CabinetHauntDeck.new(_t(), s, true)
+		for i in 30:
+			for m: StringName in [&"ready", &"hold", &"attract", &"demo"]:
+				var k := d.draw(m)
+				assert_bool(CabinetHauntDeck.MOVING.has(k)).is_false()
+
+
+func test_a_forced_kind_happens_at_the_first_moment_that_offers_it() -> void:
+	var d := CabinetHauntDeck.new(_t(), 1)
+	d.forced = &"after_image"
+	assert_str(String(d.draw(&"attract"))).is_not_equal("after_image")
+	assert_str(String(d.draw(&"ready"))).is_equal("after_image")
+	assert_str(String(d.forced)).is_empty()
+
+
+# --- no flash, no startle ---
+
+func test_the_litany_is_eight_dips_one_short_and_under_three_a_second() -> void:
+	var t := _t()
+	var times := t.litany_times()
+	assert_int(times.size()).is_equal(8)        # nine syllables sung in eight (NARR-001 §2.1)
+	for i in range(1, times.size()):
+		assert_float(times[i] - times[i - 1]).is_greater_equal(1.0 / 3.0)
+	# smooth: zero at every dip's edge, never deeper than litany_depth, never a hard step
+	var prev := 0.0
+	var step := 1.0 / 60.0
+	var x := 0.0
+	while x <= t.litany_s() + step:
+		var v := t.litany_dim(x)
+		assert_float(v).is_between(0.0, t.litany_depth + 0.0001)
+		assert_float(absf(v - prev)).is_less(0.05)
+		prev = v
+		x += step
+	assert_float(t.litany_dim(t.litany_s() + 0.1)).is_equal(0.0)
+
+
+func test_the_after_image_fades_in_and_out_inside_the_ready_card() -> void:
+	var t := _t()
+	assert_float(t.after_image_s()).is_less_equal(CabinetGame.READY_SECONDS)
+	assert_float(t.after_image_k(0.0)).is_equal(0.0)
+	assert_float(t.after_image_k(t.after_image_in_s + 0.1)).is_equal(1.0)
+	assert_float(t.after_image_k(t.after_image_s())).is_equal(0.0)
+	var prev := 0.0
+	var x := 0.0
+	while x < t.after_image_s():
+		var k := t.after_image_k(x)
+		assert_float(absf(k - prev)).is_less(0.05)   # ≤ VOID_2 × 0.05 per frame: far under the 0.02 luma step bound
+		prev = k
+		x += 1.0 / 60.0
+
+
+func test_the_breath_has_no_onset() -> void:
+	var t := _t()
+	assert_float(t.breath_gain_db(0.0)).is_equal_approx(0.0, 0.001)
+	assert_float(t.breath_gain_db(t.breath_s * 0.5)).is_equal_approx(t.breath_db, 0.001)
+	assert_float(t.breath_gain_db(t.breath_s - 0.001)).is_less(0.01)
+	var d := _decay()
+	var m := d.marks()
+	assert_float(CabinetDecayAudio.breath_db(d, m[1] - 0.01)).is_equal(0.0)
+	assert_float(CabinetDecayAudio.breath_db(d, m[1])).is_equal_approx(0.0, 0.001)
+	assert_float(CabinetDecayAudio.breath_db(d, m[3])).is_equal(0.0)
+
+
+# --- the screen layer: costume only, in the play view, no face ---
+
+func test_the_figure_stands_at_the_right_edge_of_the_play_view_away_from_the_centre() -> void:
+	var spec := load(SPEC) as CabinetScreenSpec
+	var play := spec.play_rect()
+	var pts := CabinetHauntScreen.figure_outline(play)
+	for p in pts:
+		assert_bool(play.has_point(p)).is_true()
+		assert_float(p.x).is_greater(play.position.x + play.size.x * 0.75)
+
+
+func test_the_after_image_is_the_column_the_reveal_will_empty_and_never_touches_the_strip() -> void:
+	var spec := load(SPEC) as CabinetScreenSpec
+	var hs := CabinetHauntScreen.new()
+	add_child(hs)
+	var want := CabinetHauntScreen.burn_outline(spec, _decay())
+	assert_int(want.size()).is_greater(10)
+	assert_array(Array(hs._outline)).is_equal(Array(want))
+	var field := spec.playfield_rect().grow(0.01)
+	for p in want:
+		assert_bool(field.has_point(p)).is_true()   # never the strip, never the maker mark
+	# it is the reveal's own column: its head is at the focus the wound opens from
+	var col := MawView.column_outline(MawView.focus_point(spec, _decay()), spec.play_rect().size.y)
+	assert_bool(Geometry2D.is_point_in_polygon(MawView.focus_point(spec, _decay()) + Vector2(0, 4), want)).is_true()
+	assert_int(col.size()).is_greater(want.size() >> 1)
+	hs.free()
+
+
+func test_the_figure_lasts_exactly_one_field() -> void:
+	var hs := CabinetHauntScreen.new()
+	add_child(hs)
+	hs.show_figure()
+	assert_bool(hs.is_showing_figure()).is_true()
+	await get_tree().process_frame
+	await get_tree().process_frame
+	assert_bool(hs.is_showing_figure()).is_false()
+	hs.free()
+
+
+func test_a_ghost_press_sinks_the_cap_and_does_nothing() -> void:
+	var b := ArcadeButton.new()
+	add_child(b)
+	var presses := [0]
+	b.pressed.connect(func() -> void: presses[0] += 1)
+	b.ghost_press(0.5)
+	assert_bool(b.is_ghost_pressed()).is_true()
+	b._process(0.2)
+	assert_float(float(b.face_material().get_shader_parameter(&"press"))).is_greater(0.0)
+	b._process(0.4)
+	assert_bool(b.is_ghost_pressed()).is_false()
+	assert_int(presses[0]).is_equal(0)
+	b.free()
+
+
+# --- the shift: only from a0_3, never during play; the stage loop is detuned by Wear ---
+
+func test_a0_1_and_a0_2_never_haunt_and_a0_3_may() -> void:
+	var game := SCENE.instantiate() as CabinetGame
+	add_child(game)
+	game.set_process(false)
+	game.start_stage(0)
+	assert_bool(game.haunts.enabled).is_false()
+	game.start_stage(1)
+	assert_bool(game.haunts.enabled).is_false()
+	game.start_stage(2)
+	assert_bool(game.haunts.enabled).is_true()
+	game.free()
+
+
+func test_a_forced_after_image_shows_on_the_ready_card_and_leaves_the_readouts_alone() -> void:
+	var game := SCENE.instantiate() as CabinetGame
+	add_child(game)
+	game.set_process(false)
+	var hud := game.hud
+	var score_before := hud.score
+	game.haunts.deck.forced = &"after_image"
+	game.start_stage(3)
+	assert_str(String(game.haunts.last_kind)).is_equal("after_image")
+	await get_tree().process_frame
+	await get_tree().process_frame
+	assert_float(game.haunt_screen.after_image_k()).is_greater(0.0)
+	assert_int(hud.score).is_equal(score_before)
+	assert_int(game.state).is_equal(CabinetGame.State.INTRO)   # a READY card, not play
+	game.free()
+
+
+func test_a0_4_and_a0_5_have_the_stage_loop_detuned_by_wear() -> void:
+	var game := SCENE.instantiate() as CabinetGame
+	add_child(game)
+	game.set_process(false)
+	assert_str(String(game.stages[3].music)).is_equal("a0_stage_loop")
+	assert_str(String(game.stages[4].music)).is_equal("a0_stage_loop")
+	assert_str(String(game.stages[2].music)).is_empty()
+	game.start_stage(4)
+	var d := _decay()
+	assert_float(game.music.pitch_scale()).is_equal_approx(CabinetDecayTuning.cents_to_pitch(d.wear_detune_cents_per_level * 3.0), 0.00001)
+	assert_float(game.music.pitch_scale()).is_less(1.0)
+	game.free()
+
+
+# --- the cursed turn ---
+
+func test_the_glass_leans_out_from_d2_and_holds_through_the_collapse() -> void:
+	var d := _decay()
+	var m := d.marks()
+	assert_float(d.bulge_k(m[1])).is_equal(0.0)
+	assert_float(d.bulge_k(m[3])).is_equal(1.0)
+	assert_float(d.bulge_k(m[4])).is_equal(1.0)
+	var prev := 0.0
+	var x := 0.0
+	while x <= m[4]:
+		var k := d.bulge_k(x)
+		assert_float(k).is_greater_equal(prev)    # one way only
+		prev = k
+		x += 0.05
+
+
+func test_the_focus_is_off_centre_inside_the_play_view() -> void:
+	var spec := load(SPEC) as CabinetScreenSpec
+	var f := MawView.focus_point(spec, _decay())
+	assert_bool(spec.play_rect().has_point(f)).is_true()
+	assert_float(f.distance_to(spec.play_centre())).is_greater(spec.play_size().y * 0.15)
+
+
+func test_the_decay_drives_the_bulge_and_the_off_centre_dot() -> void:
+	var mat := ShaderMaterial.new()
+	mat.shader = load("res://shaders/crt.gdshader")
+	var dec := CabinetDecay.new()
+	dec.tuning = _decay()
+	dec.crt = mat
+	dec.play_top = 0.2
+	add_child(dec)
+	dec.begin(0, 0)
+	dec.seek(dec.tuning.marks()[3])
+	assert_float(float(mat.get_shader_parameter(&"bulge"))).is_equal_approx(dec.tuning.bulge_max, 0.0001)
+	assert_vector(mat.get_shader_parameter(&"focus") as Vector2).is_equal_approx(dec.tuning.focus_uv(0.2), Vector2(0.0001, 0.0001))
+	dec.still = true
+	dec.seek(dec.tuning.marks()[3])
+	assert_float(float(mat.get_shader_parameter(&"bulge"))).is_equal(0.0)   # reduced motion: no swell
+	dec.stop()
+	dec.free()
+
+
+func test_the_wound_is_the_aether_erasure_with_no_disc_no_eye_no_ring() -> void:
+	var game := SCENE.instantiate() as CabinetGame
+	add_child(game)
+	game.set_process(false)
+	var maw := game.get_node("%Maw") as MawView
+	var wound: EntityPresence = null
+	for c in maw.get_children():
+		if c is EntityPresence:
+			wound = c
+	assert_object(wound).is_not_null()
+	assert_bool(wound.is_in_group(EntityPresence.GROUP)).is_true()
+	maw.radius = 40.0
+	assert_float(wound.radius).is_equal(40.0)
+	assert_vector(wound.centre).is_equal(maw.centre)
+	# the body is a column out of the wound, not a ring round it
+	var col := maw.column_points()
+	assert_float(col[0].distance_to(maw.centre)).is_less(3.0)
+	assert_float(col[col.size() - 1].distance_to(maw.centre)).is_greater(150.0)
+	game.free()
+
+
+# --- attract ---
+
+func test_the_attract_is_clean_until_a0_3() -> void:
+	var t := _t()
+	assert_bool(AttractMode_haunting_unlocked({}, t)).is_false()
+	assert_bool(AttractMode_haunting_unlocked({"act0_stage_reached": 1}, t)).is_false()
+	assert_bool(AttractMode_haunting_unlocked({"act0_stage_reached": 2}, t)).is_true()
+	assert_bool(AttractMode_haunting_unlocked({"act0_complete": true}, t)).is_true()
+	assert_bool(AttractMode_haunting_unlocked({"act0_stage_reached": "x"}, t)).is_false()
+
+
+func AttractMode_haunting_unlocked(p: Dictionary, t: CabinetHauntTuning) -> bool:
+	var script := load("res://scenes/attract/attract_mode.gd") as GDScript
+	return bool(script.call(&"haunting_unlocked", p, t))
+
+
+func test_the_stranger_is_an_extra_row_tied_with_you_shown_once() -> void:
+	var pages := AttractPages.new()
+	pages.tuning = load("res://data/cabinet/cabinet_boot_tuning.tres") as CabinetBootTuning
+	pages.scores = load("res://data/cabinet/cabinet_tuning.tres") as CabinetTuning
+	add_child(pages)
+	pages.hi_score = 12340
+	pages.show_stranger()
+	var guard := 0
+	while pages.page != AttractPages.Page.ROLL and guard < 10:
+		pages._process(pages.tuning.page_seconds + 0.01)
+		guard += 1
+	var rows := pages.roll_rows()
+	assert_int(rows.size()).is_equal(3)
+	assert_str(rows[1][1]).is_equal(LocFormat.format_int(12340))   # your row stays honest
+	assert_str(rows[2][0]).is_equal(tr("CAB_ROLL_STRANGER"))
+	assert_str(rows[2][1]).is_equal(rows[1][1])                    # tied with you
+	pages._process(pages.tuning.page_seconds + 0.01)               # leave the roll
+	while pages.page != AttractPages.Page.ROLL:
+		pages._process(pages.tuning.page_seconds + 0.01)
+	assert_int(pages.roll_rows().size()).is_equal(2)               # once only
+	pages.free()
+
+
+# --- stacked on #101: the bezel art's haunt anchors, the marquee, the arcade backdrop ---
+
+## Owner, 2026-11-19: the marquee is a screenprint; letters may fade or wear, never move, fall off or reorder.
+func test_the_marquee_letters_never_move_fall_or_reorder_they_only_wear() -> void:
+	var sign := BezelMarquee.new()
+	add_child(sign)
+	var w := CabinetMarqueeWear.new()
+	w.attach(sign)
+	w.set_state(1.0, 1.0, 1.0, 1.0, 3.7)
+	assert_bool("lettering_override" in sign).is_false()          # #101 dropped the override: the title can never be replaced
+	assert_str(tr(BezelMarquee.KEY)).is_equal("DARKSTAR")
+	var surf := CabinetSurface.default() as CabinetSurface
+	var anchor := sign.lettering_anchor()
+	var at_rest := CabinetMarqueeWear.letter_boxes("DARKSTAR", anchor, surf.marquee_lettering, surf.marquee_stroke, surf.marquee_tracking)
+	var prev := -INF
+	for box in at_rest:
+		assert_float(box.position.x).is_greater(prev)                 # D-A-R-K-S-T-A-R, left to right, in place
+		assert_float(box.position.y).is_equal(anchor.y)
+		prev = box.position.x
+	# centred on the print's own anchor, exactly as BezelMarquee centres it
+	assert_float((at_rest[0].position.x + at_rest[7].end.x) * 0.5).is_equal_approx(anchor.x, 0.75)
+	var code := FileAccess.get_file_as_string("res://features/cabinet/cabinet_marquee_wear.gd")
+	assert_bool(code.contains("lettering_override =")).is_false()  # no code path rewrites the print
+	assert_bool(ResourceLoader.exists("res://features/cabinet/cabinet_marquee_drift.gd")).is_false()
+	sign.free()
+
+
+func test_the_guttering_letter_dips_slowly_and_holds_still_under_reduced_motion() -> void:
+	var w := CabinetMarqueeWear.new()
+	assert_float(CabinetMarqueeWear.GUTTER_DIP_HZ).is_less_equal(3.0)
+	w.set_state(0.5, 0.5, 0.5, 0.5, 0.0)
+	var seen := {}
+	for f in 120:
+		w.time_s = f / 60.0
+		seen[snappedf(w.gutter_level(), 0.001)] = true
+		assert_float(w.gutter_level()).is_between(0.5, 1.0)
+	assert_int(seen.size()).is_greater(1)                          # it gutters
+	w.still = true
+	for f in 120:
+		w.time_s = f / 60.0
+		assert_float(w.gutter_level()).is_equal(0.5)               # still: a plain fade, no dips
+
+
+func test_the_printed_eye_goes_first_as_a_fixed_black_absence_off_its_slit() -> void:
+	var eye := BezelDecay.eye_anchor()
+	assert_float(eye.size.x).is_greater(0.0)
+	var e := BezelDecay.eye_hole()
+	assert_bool(e.is_empty()).is_false()
+	assert_bool((e["c"] as Vector2).is_equal_approx(eye.get_center())).is_false()   # never concentric with the slit (N4)
+	assert_bool(eye.has_point(e["c"] as Vector2)).is_true()            # it lands on the wear origin (the world's middle band)
+	assert_float(float(e["r"])).is_less_equal(minf(eye.size.x, eye.size.y))   # and never swallows the world
+	var bd := BezelDecay.new()
+	add_child(bd)
+	bd.grow = 0.0
+	assert_float(bd.eye_k()).is_equal(0.0)                         # Wear never opens it
+	var shape := bd.eye_points()
+	for g: float in [0.05, 0.2, 0.6, 1.0]:
+		bd.grow = g
+		assert_array(Array(bd.eye_points())).is_equal(Array(shape))  # no lid: the shape never changes, only its darkness
+		for s in bd.sites():
+			assert_float(bd.eye_k()).is_greater_equal(bd.site_k(s))   # the eye leads
+	bd.free()
+
+
+func test_the_damage_is_three_clustered_sites_sized_four_to_one_growing_out_from_the_screen() -> void:
+	var bd := BezelDecay.new()
+	add_child(bd)
+	var ss := bd.sites()
+	assert_int(ss.size()).is_equal(3)
+	var big := 0.0
+	var small := INF
+	for s in ss:
+		big = maxf(big, float(s["r0"]))
+		small = minf(small, float(s["r0"]))
+	assert_float(big / small).is_equal_approx(4.0, 0.001)
+	var hole := bd.hole_rect()
+	bd.grow = 1.0
+	for s in ss:
+		var o: Vector2 = s["origin"]
+		var n: Vector2 = s["n"]
+		var vs: Array[Dictionary] = []
+		vs.assign(s["voids"])
+		var prev := -INF
+		for k: float in [0.25, 0.5, 0.75, 1.0]:
+			for v in vs:
+				for p in bd.void_points(s, v, k, 1.1):              # even the torn edge stays off the tube
+					assert_bool(hole.has_point(p)).is_false()
+			var reach := (bd.void_centre(s, vs[0], k) - o).dot(n)
+			assert_float(reach).is_greater(prev)                    # it spreads outward from the screen's edge
+			prev = reach
+	bd.grow = 0.0
+	for s in ss:
+		assert_float(bd.site_k(s)).is_equal(0.0)                     # nothing before the Decay
+	bd.free()
+
+
+func test_the_last_line_throws_one_brief_bar_and_none_under_reduced_motion() -> void:
+	var dec := CabinetDecay.new()
+	dec.tuning = _decay()
+	var at := dec.last_line_at()
+	var m := dec.tuning.marks()
+	assert_float(at).is_between(m[3], m[4])
+	assert_float(dec.last_line_k(at)).is_equal(1.0)
+	var lit := 0
+	var rises := 0
+	var prev := 0.0
+	for f in 600:
+		var k := dec.last_line_k(m[3] - 1.0 + f / 60.0)
+		assert_float(k).is_between(0.0, 1.0)
+		if k > 0.0:
+			lit += 1
+		if k > 0.0 and prev == 0.0:
+			rises += 1
+		prev = k
+	assert_int(rises).is_equal(1)                                    # one bar, never repeated
+	assert_int(lit).is_less_equal(int(0.4 * 60.0))                   # brief
+	dec.still = true
+	assert_float(dec.last_line_k(at)).is_equal(0.0)
+	dec.free()
+
+
+func test_the_marquee_backlight_fails_to_half_with_slow_dips_and_fades_plainly_when_still() -> void:
+	var w := CabinetMarqueeWear.new()
+	assert_float(CabinetMarqueeWear.BACKLIGHT_DIP_HZ).is_less_equal(3.0)
+	w.set_state(0.0, 0.0, 0.0, 0.0, 0.0, 1.0)
+	assert_float(w.backlight_level()).is_equal_approx(0.5, 0.0001)
+	w.set_state(0.0, 0.0, 0.0, 0.0, 0.0, 0.5)
+	var seen := {}
+	for f in 240:
+		w.time_s = f / 60.0
+		seen[snappedf(w.backlight_level(), 0.001)] = true
+		assert_float(w.backlight_level()).is_between(0.5, 1.0)
+	assert_int(seen.size()).is_greater(1)                            # it flickers
+	w.still = true
+	for f in 240:
+		w.time_s = f / 60.0
+		assert_float(w.backlight_level()).is_equal_approx(0.75, 0.0001)   # still: a plain fade
+
+
+func test_the_early_crag_figure_is_planted_once_in_another_printed_place() -> void:
+	var summit := CabinetHaunts.crag_anchor(CabinetHaunts.SUMMIT)
+	var slope := CabinetHaunts.crag_anchor(CabinetHaunts.SLOPE)
+	assert_float(slope.size.y).is_greater(0.0)
+	assert_bool(slope.intersects(summit)).is_false()                 # a different place in the print
+	var rig := Control.new()
+	add_child(rig)
+	var h := CabinetHaunts.new()
+	h.rig = rig
+	h.deck = CabinetHauntDeck.new(_t(), 1)
+	h.enabled = true
+	add_child(h)
+	h.plant_crag_slope()
+	assert_str(str(h.moment(CabinetHauntDeck.HOLD))).is_equal("crag_figure")   # planted: whatever the odds
+	var crag: Control = rig.get_node("CragFigure")
+	assert_str(str(crag.get(&"spot"))).is_equal("slope")
+	assert_str(str(h.crag_spot)).is_equal("summit")                  # only once
+	h.plant_crag_slope()
+	assert_str(str(h.moment(CabinetHauntDeck.HOLD))).is_not_equal("crag_figure")
+	h.free()
+	rig.free()
+	var still_h := CabinetHaunts.new()
+	still_h.deck = CabinetHauntDeck.new(_t(), 1, true)
+	still_h.plant_crag_slope()
+	assert_str(str(still_h.crag_spot)).is_equal("summit")            # reduced motion: never planted
+	still_h.free()
+
+
+func test_the_arcade_goes_dark_one_way_from_d2_to_the_tear() -> void:
+	var dec := CabinetDecay.new()
+	dec.tuning = _decay()
+	var m := dec.tuning.marks()
+	assert_float(dec.backdrop_dark(m[1] - 0.1)).is_equal(0.0)
+	assert_float(dec.backdrop_dark(m[4])).is_equal(1.0)
+	var prev := 0.0
+	var x := 0.0
+	while x <= m[4]:
+		var v := dec.backdrop_dark(x)
+		assert_float(v).is_greater_equal(prev)
+		prev = v
+		x += 0.1
+	dec.free()
+	var code := FileAccess.get_file_as_string("res://shaders/cabinet/arcade_backdrop.gdshader")
+	assert_bool(code.contains("uniform float dark")).is_true()
+
+
+func test_the_crag_figure_stands_on_the_anchor_for_one_field() -> void:
+	var r := CabinetHaunts.crag_anchor()
+	assert_float(r.size.y).is_greater(0.0)
+	var pts := CabinetHauntScreen.figure_at(Vector2(r.get_center().x, r.end.y), r.size.y)
+	for p in pts:
+		assert_bool(r.grow(r.size.x).has_point(p)).is_true()
+	assert_bool(CabinetHauntDeck.MOVING.has(&"crag_figure")).is_true()   # one field: never under photosensitivity
+	var rig := Control.new()
+	add_child(rig)
+	var h := CabinetHaunts.new()
+	h.rig = rig
+	h.deck = CabinetHauntDeck.new(_t(), 1)
+	add_child(h)
+	h.perform(&"crag_figure")
+	var crag: Control = rig.get_node("CragFigure")
+	assert_float(float(crag.call(&"ink"))).is_equal(1.0)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	assert_float(float(crag.call(&"ink"))).is_equal(0.0)
+	h.free()
+	rig.free()

@@ -222,7 +222,18 @@ func _lines(first: bool, vi: int) -> PackedStringArray:
 			out.append(tr("NARR_SABLE_TALLY").format({"n": vi}))
 	else:
 		out.append(tr("NARR_SABLE_RETURN_1"))
+		var key := return_chalk_key()
+		if key != &"":
+			out.append(tr(key))
 	return out
+
+
+## The key of the slate's second line after a run (NARR-001 §5.7a; Q-T284), &"" when this visit did
+## not follow a run or the outcome has no pool. Deterministic in the run's seed and run count.
+func return_chalk_key() -> StringName:
+	if session == null:
+		return &""
+	return RuinsReturnChalk.key_for(StringName(return_outcome), session.last_run_seed, session.runs_ended())
 
 
 func _stations() -> Dictionary:

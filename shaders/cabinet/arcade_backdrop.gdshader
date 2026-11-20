@@ -28,6 +28,11 @@ uniform vec3 tungsten_color = vec3(1.0, 0.75, 0.47);
 uniform vec3 ceiling_color = vec3(0.16, 0.11, 0.07);
 uniform float warmth = 0.7;      // how far the other machines' hues are pulled toward tungsten
 uniform vec3 neon[6];          // set by ArcadeBackdrop from CabinetSurface.backdrop_neon
+// The cursed turn (TECH-001 Q-T294, cursed-cabinet; additive, 0 = as built): during the Decay the other machines
+// in the arcade go dark one by one, in a fixed per-cabinet order.
+uniform float dark : hint_range(0.0, 1.0) = 0.0;
+// The cursed turn (PM 2026-11-20): the whole room dims with them, ceiling cans and neon too, by this much at `dark` 1.
+uniform float room_dim : hint_range(0.0, 1.0) = 0.5;
 
 const float HORIZON = 238.0;    // where the far row stands (rig y)
 
@@ -61,6 +66,7 @@ void cabinet_row(vec2 rp, float pitch, float phase, float base, float h, float w
 		float cx = phase + (i + 0.5) * pitch + (h1 - 0.5) * pitch * 0.22;
 		float hh = h * (0.9 + 0.18 * h2);
 		float ww = w * (0.9 + 0.2 * h3);
+		float lit = 1.0 - smoothstep(h3 * 0.82, h3 * 0.82 + 0.16, dark);   // this machine's turn to go dark
 		vec3 nc = mix(neon_of(h1), tungsten_color, warmth);
 		vec3 sc = mix(mix(vec3(0.25, 0.42, 0.9), neon_of(h3), 0.45), tungsten_color, warmth * 0.6);
 		// body
@@ -75,20 +81,20 @@ void cabinet_row(vec2 rp, float pitch, float phase, float base, float h, float w
 		vec2 mc = vec2(cx, base - hh + mh + 1.0);
 		float md = sd_box(rp - mc, vec2(ww * 0.44, mh));
 		float mk = 0.55 + 0.45 * exp(-pow((rp.x - cx) / (ww * 0.28), 2.0));                 // brightest behind the blurred lettering
-		col = mix(col, nc * mk, soft(md, b));
-		glow += nc * exp(-max(md, 0.0) / (b * 3.0 + 6.0)) * 0.34;
+		col = mix(col, mix(body, nc * mk, lit), soft(md, b));
+		glow += nc * exp(-max(md, 0.0) / (b * 3.0 + 6.0)) * 0.34 * lit;
 		// the screen, set back in the cabinet
 		vec2 sp = vec2(cx, base - hh * 0.6);
 		float sd = sd_box(rp - sp, vec2(ww * 0.31, hh * 0.13));
-		col = mix(col, sc * 0.42, soft(sd, b));
-		glow += sc * exp(-max(sd, 0.0) / (b * 2.2 + 3.0)) * 0.1;
+		col = mix(col, mix(wall_color * 0.35, sc * 0.42, lit), soft(sd, b));
+		glow += sc * exp(-max(sd, 0.0) / (b * 2.2 + 3.0)) * 0.1 * lit;
 		// the control panel jutting out below the screen, lit by it
 		vec2 pc = vec2(cx, base - hh * 0.37);
 		float pd = sd_box(rp - pc, vec2(ww * 0.56, hh * 0.028));
-		col = mix(col, wall_color * 0.9 + sc * 0.14 + tungsten_color * 0.03, soft(pd, b));
+		col = mix(col, wall_color * 0.9 + sc * 0.14 * lit + tungsten_color * 0.03, soft(pd, b));
 		// the screen's light on the carpet in front of it
 		vec2 fp = (rp - vec2(cx, base + 5.0)) / vec2(ww * 0.8, 6.0 + b);
-		glow += sc * 0.14 * exp(-dot(fp, fp));
+		glow += sc * 0.14 * exp(-dot(fp, fp)) * lit;
 	}
 }
 
@@ -233,6 +239,7 @@ void fragment() {
 		float floor_pool = smoothstep(0.45, 1.0, yk);
 		glow += cab_screen_light.rgb * lum * room_glow * (0.12 * far * (0.3 + 1.4 * floor_pool * floor_pool));
 		vec3 c = (col + glow) * exposure;
+		c *= 1.0 - room_dim * dark;
 		// keep it out of the way: desaturate, darken next to the cabinet (its body and shadow) and toward the
 		// window's top and bottom
 		float l = dot(c, vec3(0.299, 0.587, 0.114));

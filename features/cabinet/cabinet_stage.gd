@@ -11,6 +11,7 @@ enum Goal { CLEAR_SEPULCHRE, UNMAKE_ENTITY }
 @export var subtitle_key: String = ""
 @export var zone_key: String = ""                   ## zone name line on the READY card; empty = none
 @export var zone_cue: StringName = &""              ## AUDIO-001 jingle under the READY card (unknown id = silent no-op); empty = none
+@export var music: StringName = &""                 ## the stage loop on BUS-MUS (chirp render id; CabinetStageMusic), detuned by W0-11 Wear; empty = none (Q-T188: a0_4, a0_5)
 @export var field_size: Vector2 = Vector2(1920, 720) ## ✱ torus field: 6 kit-screens (SYS-001 §6: 3–7 kits)
 @export var geodes: int = 10                         ## ≥ 24 shards of supply (SYS-001 §4 lint)
 @export var grubs: int = 4

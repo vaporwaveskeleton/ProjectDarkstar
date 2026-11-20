@@ -148,11 +148,17 @@ func test_world_view_and_centre_come_from_the_spec() -> void:
 	game.queue_free()
 
 
-func test_ledger_compass_sits_inside_the_strip_and_the_maw_is_centred_in_the_play_view() -> void:
+## The cursed turn (TECH-001 Q-T262, Reviewer v3 gap 3): the wound opens OFF-centre, inside the play view, at
+## the focus the glass bulged at (never a centred iris, ART-001 §16.6f).
+func test_ledger_compass_sits_inside_the_strip_and_the_wound_opens_off_centre_in_the_play_view() -> void:
 	var spec := load(SPEC) as CabinetScreenSpec
 	assert_bool(spec.strip_rect().encloses(CabinetScreenHud.COMPASS)).is_true()
 	var game := _game()
-	assert_vector((game.get_node("%Maw") as MawView).centre).is_equal(spec.play_centre())
+	var maw := game.get_node("%Maw") as MawView
+	assert_bool(spec.play_rect().has_point(maw.centre)).is_true()
+	assert_float(maw.centre.distance_to(spec.play_centre())).is_greater(spec.play_size().y * 0.15)
+	var decay := load("res://data/cabinet/cabinet_decay.tres") as CabinetDecayTuning
+	assert_vector(maw.centre).is_equal_approx(MawView.focus_point(spec, decay), Vector2(0.01, 0.01))
 	game.queue_free()
 
 
