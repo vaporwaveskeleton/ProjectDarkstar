@@ -15,6 +15,27 @@ const RADIUS_PX := 0.6
 ## ✱ px from a light inside which a mote glints, and the glint's strength.
 const GLINT_RADIUS := 70.0
 const GLINT := 0.55
+## ✱ the dot texture: size (px) and the share of its radius that is solid (so the quad covers the old
+## circle's radius). Runtime GradientTexture2D, no image files (D-13).
+const DOT_PX := 32
+const DOT_SOLID := 0.7
+
+static var _dot_tex: GradientTexture2D
+
+
+static func _ensure_dot() -> void:
+	if _dot_tex != null:
+		return
+	var g := Gradient.new()
+	g.offsets = PackedFloat32Array([0.0, 0.55, 0.85, 1.0])
+	g.colors = PackedColorArray([Color(1, 1, 1, 1), Color(1, 1, 1, 1), Color(1, 1, 1, 0.35), Color(1, 1, 1, 0)])
+	_dot_tex = GradientTexture2D.new()
+	_dot_tex.gradient = g
+	_dot_tex.fill = GradientTexture2D.FILL_RADIAL
+	_dot_tex.fill_from = Vector2(0.5, 0.5)
+	_dot_tex.fill_to = Vector2(1.0, 0.5)
+	_dot_tex.width = DOT_PX
+	_dot_tex.height = DOT_PX
 
 ## Light positions (stage-local px) the motes glint near.
 var lights: PackedVector2Array = []
@@ -54,6 +75,7 @@ func _process(delta: float) -> void:
 
 
 func _draw() -> void:
+	_ensure_dot()
 	for i in _seed.size():
 		var p := mote_at(i, _t)
 		var glint := 0.0
@@ -64,4 +86,7 @@ func _draw() -> void:
 		var twinkle := 0.75 + 0.25 * sin(_t * 1.7 + _phase[i])
 		var c := Pal.BONE_3.lerp(Pal.GAS_5, clampf(glint, 0.0, 1.0) * 0.5)
 		c.a = clampf((0.18 + GLINT * glint) * twinkle, 0.0, 0.9)
-		draw_circle(p, RADIUS_PX + 0.5 * glint, c)
+		# Perf (Q-T248, Ruins): one textured quad per mote from a shared generated dot, so the canvas
+		# batches all of them (was a tessellated circle each, every frame)
+		var d := 2.0 * (RADIUS_PX + 0.5 * glint) / DOT_SOLID
+		draw_texture_rect(_dot_tex, Rect2(p - Vector2(d, d) * 0.5, Vector2(d, d)), false, c)

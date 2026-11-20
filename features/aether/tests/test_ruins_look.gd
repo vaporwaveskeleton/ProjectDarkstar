@@ -437,3 +437,34 @@ func test_objects_hold_still_under_reduced_motion() -> void:
 	o.set_time(12.0)
 	assert_float(o._t).is_equal(12.0)
 	o.free()
+
+
+# --- Q-T248 (Ruins) perf: static vector art is drawn once; only what moves redraws ---------------------
+
+func test_static_art_does_not_redraw_as_time_passes() -> void:
+	var look := _make(false)
+	look.show_placeholders = true
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var o := look.objects()
+	var s := look.get_node("%Set") as RuinsSet
+	var counts := {"objects": 0, "set": 0, "live": 0, "planet": 0}
+	o.draw.connect(func() -> void: counts["objects"] += 1)
+	s.draw.connect(func() -> void: counts["set"] += 1)
+	o.get_node("Live").draw.connect(func() -> void: counts["live"] += 1)
+	s.get_node("OrreryPlanet").draw.connect(func() -> void: counts["planet"] += 1)
+	o.still = false
+	look.set_sand(0.5, true)
+	for k in 6:
+		look.step(DT * 10.0)
+		await get_tree().process_frame
+	assert_int(int(counts["objects"])).override_failure_message("objects redrew %s" % counts).is_equal(0)
+	assert_int(int(counts["set"])).override_failure_message("set redrew %s" % counts).is_equal(0)
+	assert_int(int(counts["live"])).is_greater_equal(5)
+	assert_int(int(counts["planet"])).is_greater_equal(5)
+	# a sand value that does not change does not redraw the Hourglass again
+	var before := int(counts["live"])
+	o.still = true
+	look.set_sand(0.5, true)
+	await get_tree().process_frame
+	assert_int(int(counts["live"])).is_equal(before)
