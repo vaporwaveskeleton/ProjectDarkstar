@@ -89,8 +89,8 @@ void fragment() {
 	asum += a_sc;
 
 	// the glass is the cabinet's front only: it fades out into the room beyond the sheet
-	float x0 = cab_hole.x - 80.0;
-	float x1 = cab_hole.x + cab_hole.z + 80.0;
+	float x0 = cab_hole.x - cab_side;
+	float x1 = cab_hole.x + cab_hole.z + cab_side;
 	float in_sheet = smoothstep(x0 - 5.0, x0 + 1.0, rp.x) * (1.0 - smoothstep(x1 - 1.0, x1 + 5.0, rp.x));
 
 	// the coin door sits in front of the glass

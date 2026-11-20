@@ -111,8 +111,8 @@ void fragment() {
 	// shaded a thin band along the sheet's edges, which keeps its colour
 	if (uv_fade > 0.0) {
 		float rm = clamp(((ink.r + ink.b * 0.6) / 1.6 - ink.g) * 2.4, 0.0, 1.0) * smoothstep(0.12, 0.4, ink.r);
-		float sx0 = cab_hole.x - 80.0;
-		float sx1 = cab_hole.x + cab_hole.z + 80.0;
+		float sx0 = cab_hole.x - cab_side;
+		float sx1 = cab_hole.x + cab_hole.z + cab_side;
 		float shade = smoothstep(uv_edge, uv_edge * 0.35, min(rp.x - sx0, sx1 - rp.x));
 		float lit_up = mix(0.55, 1.0, 1.0 - clamp(rp.y / cab_view_h, 0.0, 1.0));
 		float f = uv_fade * rm * lit_up * (1.0 - shade) * (0.8 + 0.4 * fbm(rp + 90.0, 0.03, px));

@@ -5,8 +5,8 @@ extends GdUnitTestSuite
 
 const GAME_SCENE := "res://features/cabinet/cabinet_game.tscn"
 const ATTRACT_SCENE := "res://scenes/attract/attract_mode.tscn"
-const COLUMN := Rect2(0, 0, 80, 360)
-const BLEED := 70.0                         ## art may run this far off a column edge: BezelPrint clips to the 80 x 360 box
+const COLUMN := Rect2(0, 0, CabinetBezel.SIDE, 360)
+const BLEED := 70.0                         ## art may run this far off a column edge: BezelPrint clips to the SIDE x 360 box
 const SCREEN := Rect2(192, 28, 256, 304)    ## the hole in rig units (spec grid 256×304 centred in 640×360)
 
 
@@ -65,7 +65,7 @@ func test_every_piece_has_geometry_inside_its_column() -> void:
 		assert_int(p.points.size()).override_failure_message("%s has no points" % p.id).is_greater(0)
 		var b := _bounds(p)
 		assert_bool(COLUMN.grow(BLEED).encloses(b)) \
-			.override_failure_message("%s %s runs further than the bleed off the 80 x 360 column" % [p.id, b]).is_true()
+			.override_failure_message("%s %s runs further than the bleed off the column" % [p.id, b]).is_true()
 		if p.kind in [BezelPiece.Kind.FILL, BezelPiece.Kind.OUTLINE, BezelPiece.Kind.HALFTONE]:
 			assert_int(p.points.size()).override_failure_message("%s needs 3+ points" % p.id).is_greater(2)
 
@@ -94,7 +94,7 @@ func test_pieces_are_sorted_by_z() -> void:
 			last = p.z
 
 
-## The print clips to its 80 x 360 box (art bleeds off the outer, top and bottom edges), so what reaches the
+## The print clips to its SIDE x 360 box (art bleeds off the outer, top and bottom edges), so what reaches the
 ## window is each piece's bounds clipped to the column: none of that touches the screen.
 func test_no_piece_covers_the_screen() -> void:
 	for p in _both():
@@ -114,21 +114,21 @@ func test_each_column_has_its_screen_lip() -> void:
 		if p.id == &"left_lip":
 			left_lip = p
 	assert_object(left_lip).is_not_null()
-	assert_float(_bounds(left_lip).position.x).is_equal(78.0)
+	assert_float(_bounds(left_lip).position.x).is_equal(CabinetBezel.SIDE - 2.0)
 	for p in BezelArt.build_right():
 		if p.id == &"right_lip":
 			assert_float(_bounds(p).end.x).is_equal(2.0)
 
 
 func test_how_to_play_lines_fit_the_panel_in_vector_text() -> void:
-	var width := CabinetBezel.LEFT_HOWTO.size.x - 2.0
-	var cap := BezelArt.howto_cap(BezelArt.HOWTO_KEYS, BezelArt.INK_W - 6.0, 5.4)
-	assert_float(cap).is_greater(3.0)          # still legible
+	var width := BezelArt.howto_line_width()
+	var cap := BezelArt.howto_cap(BezelArt.HOWTO_KEYS, width, BezelArt.HOWTO_CAP)
+	assert_float(cap).is_greater(3.0)          # still legible (about 9 px at 1080p)
 	for key in BezelArt.HOWTO_KEYS + BezelArt.SHEET_KEYS:
 		var s := tr(key)
 		assert_str(s).override_failure_message("%s has no translation" % key).is_not_equal(key)
 	for key in BezelArt.HOWTO_KEYS:
-		assert_float(BezelText.painted_size(tr(key), cap, cap * 0.2, 0.7).x) \
+		assert_float(BezelText.painted_size(tr(key), cap, cap * 0.2, 0.5).x) \
 			.override_failure_message("%s is wider than the panel" % key).is_less_equal(width)
 		assert_int(tr(key).length()).is_less_equal(12)
 

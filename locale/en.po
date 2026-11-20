@@ -542,7 +542,7 @@ msgstr "RT"
 msgid "CAB_PRESS_NEW_VIGIL"
 msgstr "PRESS NEW VIGIL"
 
-#. Printed on the bezel: the how-to-play card (the Pretence's 1983 marketing art). Each line must fit 72 px at 1x (12 characters).
+#. Printed on the bezel: the small how-to-play card (the Pretence's 1983 marketing art, fine print). Each line must fit the card (12 characters).
 msgid "CAB_HOWTO_TITLE"
 msgstr "HOW TO PLAY"
 
@@ -561,6 +561,10 @@ msgstr "SEPULCHRE"
 #. Printed on the bezel's die-cut sticker (VectorText).
 msgid "CAB_BEZEL_SLOGAN"
 msgstr "NEW!"
+
+#. Printed on the bezel's maker badge, bottom right (VectorText, fine print). The in-world maker (NARR-001, spoiler tier S1).
+msgid "CAB_BEZEL_MAKER"
+msgstr "LANTERN OFFICE"
 
 #. Printed on the bezel's tagline burst, line 1 (VectorText, 1983 marketing print). Keep each line under 12 characters.
 msgid "CAB_BEZEL_TAG_1"
