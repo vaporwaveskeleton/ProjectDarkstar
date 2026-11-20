@@ -1,6 +1,6 @@
 # DARKSTAR — UI Architecture (menus, overlays, buttons)
 
-**Doc ID:** UI-001 · **Version:** 1.1 · **Date:** 2026-11-17 · **Owner:** production
+**Doc ID:** UI-001 · **Version:** 1.2 · **Date:** 2026-11-19 · **Owner:** production
 **Upstream:** GDD §10 (menus, accessibility), ART-001 §4 (palette) and §7 (UI art), WARP-001 §4 (HUD lie law, Steady Ledger), AUDIO-001 §6.2 (I06–I08 UI cues), SYS-001 §9 (safe area at 200 % text)
 **Not here:** HUD lie content (WARP-001 §4), diegetic HUD implementation (TECH-001 §5, `DiegeticHud` row), player-text keys and English copy rules (L10N-001)
 
@@ -9,13 +9,13 @@
 | Screen | Required by | Status |
 |---|---|---|
 | Attract mode (title): the cabinet marquee (DARKSTAR in the Cabinet face), INSERT CREDIT (PRESS NEW VIGIL once credited), high score, drifting vector field, CRT glass; first attract of a launch opens with the power-on self-test (any input skips); four instruction cards cycle (pitch, how to play, mission, score table); a hazard-taped coin door on the right bezel (peel the tape, insert a coin); the menu is a physical control panel on the bezel (NEW VIGIL start button, a small SERVICE button that opens settings, and a POWER rocker under the coin door; one focus domain START → SERVICE → POWER → coin door; focus or mouse hover shows a plain caption, "Settings" or "Quit game"; POWER asks through `ConfirmScreen` first, and only the confirmed answer plays the CRT power-off and quits; `ui_cancel` and default focus unchanged; TECH-001 §2.10, Q-T34, pass 2c); New Vigil is dark and outside the focus loop until a credit is in, then spends it; 30 s idle (not while a credit waits or a peel is in progress) plays the autopilot demo, any input returns | GDD §10, WARP-001 W0-01/W0-03 | built — `scenes/attract/` |
-| Settings: large text, reduced motion, photosensitivity, weapon muzzle flash, Steady Ledger (no language setting: English only, L10N-001 §1) | GDD §10, WARP-001 §4.4 | built (subset) — `scenes/settings/` |
-| Pause: Resume, Settings, Abandon Run | GDD §4.1, WARP-001 §4.4 W4-07 | built — `scenes/sector/pause_screen.tscn` |
-| Confirmation (two-choice, safe default) | brief | built — `scenes/common/confirm_screen.tscn` |
+| Settings: tabs Accessibility (large text, reduced motion, photosensitivity, Steady Ledger), Video (weapon muzzle flash), Controls (read-only bindings reference); a description line; cabinet or brass costume (§10). No language setting: English only, L10N-001 §1 | GDD §10, WARP-001 §4.4 | built (subset) — `scenes/settings/` |
+| Pause: Resume, Settings, Abandon Run (Ruins: Leave for the Title); art panel; costume (§10) | GDD §4.1, WARP-001 §4.4 W4-07 | built — `scenes/sector/pause_screen.tscn` |
+| Confirmation (two-choice, safe default); caution plate; costume (§10) | brief | built — `scenes/common/confirm_screen.tscn` |
 | Loading / transition curtain | brief | built (fade) — `scenes/boot/boot.tscn` |
 | Act 0 cabinet HUD: printed bezel around the 256×304 portrait screen, 1UP/score, Vigils (readouts on the screen's 40 px HUD strip, TECH-001 §2.10), glass-lamp Charge pips, Ledger Compass mini-map; READY card, banners, captions, credits, the entity's big type | WARP-001 W0-01/W0-02/W0-04, ART-001 §11.5 | built — `features/cabinet/` (TECH-001 §2.10) |
 | HUD (diegetic, may lie) | WARP-001 §4 | Act 1+: stub (one honest hull label) |
-| Rebinding, mouse sensitivity, aim assist, colourblind variants, subtitles, audio options | GDD §10, AUDIO-001 §8.4 | planned |
+| Rebinding, mouse sensitivity, aim assist, colourblind variants, subtitles, audio options (Settings shows bindings read-only on its Controls page; no Audio tab until the sliders exist, TECH-001 Q-T250) | GDD §10, AUDIO-001 §8.4 | planned |
 | Death / cause-of-death screen | GDD §6.3, §8.9; AUDIO-001 §4.10 | planned |
 | Ruins first arrival (title, the lit sapling, continue) | GDD §6.4 | stub — `scenes/ruins/` |
 | Ruins hub, Lantern Tree, Chalk Desk, Codex, run summary | GDD §6.4, LOOP-001 §3, §7 | planned |
@@ -48,21 +48,21 @@ Route scene (e.g. AttractMode : Screen)        one per SceneRouter route
 | `ui_cancel` | only the top screen answers it. Overlays close. The root screen sets `cancel_closes = false` (cancel does nothing, never quits) |
 | `close()` | pops from the owning stack, or frees itself if it has none |
 
-`FitScrollContainer` (`core/ui/fit_scroll_container.gd`) wraps every overlay's rows. It is as tall as its content until the content would leave the safe area, then it scrolls and follows focus. The panel title is not a row: it sits above the scroller in a `VBoxContainer` (`Panel/Layout/Title`, `Panel/Layout/Scroll/Rows`), and the scroller subtracts its VBox siblings' height from its limit, so 200 % text scrolls the rows and never the title (2026-11-19, TECH-001 Q-T244).
+`FitScrollContainer` (`core/ui/fit_scroll_container.gd`) wraps every overlay's rows. It is as tall as its content until the content would leave the safe area, then it scrolls and follows focus. The panel title is not a row: it sits above the scroller in a `VBoxContainer` (`Panel/Layout/Title`, `Panel/Layout/Scroll/Rows`), and the scroller subtracts its VBox siblings' height from its limit, so 200 % text scrolls the rows and never the title (2026-11-19, TECH-001 Q-T244). Fixed controls outside its own VBox (the Settings title above the tab rail) are listed in `also_reserve` and kept on screen the same way (§10).
 
 ## 4. Interaction rules
 
 | Rule | How it is met |
 |---|---|
 | One clear primary action | `default_focus`; attract → the coin door until a credit is in, then New Vigil (control-panel pushbuttons, TECH-001 §2.10) |
-| Explicit focus neighbours, no dead ends | every button sets `focus_neighbor_top/bottom` (wrapping); tested |
+| Explicit focus neighbours, no dead ends | every button sets `focus_neighbor_top/bottom` (wrapping); Settings also sets left/right between its tab rail and the page (§10); tested |
 | Reliable `ui_cancel` | `Screen._unhandled_input`; root screens ignore it; tested |
 | Repeated input | busy state: New Vigil disables the menu; `SceneRouter.go_to` ignores calls while busy; Confirm disables itself on press |
 | Transitions | 150–300 ms (`Boot.TRANSITION_S = 0.2` ✱). Instant when `reduced_motion` is on |
 | Immediate feedback | Theme hover/pressed/focus styles. Audio cues I06 (confirm/back) and I07 (hover) from AUDIO-001 §6.2 are **not wired yet** |
 | Input-method changes | `InputModeTracker` emits `input_mode_changed`. Glyph widgets are planned |
-| Text scaling | `SettingsService.text_scale` 1.0 / 2.0 → `UiTheme.apply_text_scale` resizes the project Theme |
-| Safe area at 200 % text | all controls stay inside the 640×360 logical rect (SYS-001 §9; stays valid in logical units after Act 0); tested for attract and settings |
+| Text scaling | `SettingsService.text_scale` 1.0 / 2.0 → `UiTheme.apply_text_scale` resizes the project Theme; the overlay menus' stroke text (`MenuText`) doubles live on the same setting (§10) |
+| Safe area at 200 % text | all controls stay inside the 640×360 logical rect (SYS-001 §9; stays valid in logical units after Act 0); tested for attract, every Settings page, Pause and Confirm, in both costumes (§10) |
 | Resolution / aspect | Root is `canvas_items` stretch, `expand` aspect, `fractional` scale (built, PR A, 2026-11-18): the whole app renders at native resolution, 640×360 is the logical space, and the bezel fills the window with no bars. Integer scaling binds only the Act 0 arcade screen (`ScreenFit`, TECH-001 §1.2–§1.3; screen grid 256×304, §1.1). Pause/settings overlays cover the whole cabinet at native res (root `Overlays`, §2.10). Post-Act 0 UI text is `VectorLabel` (TECH-001 §2.9a). Layouts use anchors/containers only. Post-Act 0 UI is modern game-UI structure and UX (hierarchy, primary vs secondary actions, focus, input glyphs, list/preview/detail) with chalk-and-brass as the skin (D-C) |
 | Touch-safe targets | Windows-only, mouse targets ≥ ~22 logical px tall (✱ content margins). No touch support planned |
 | Steady Ledger / Esc always pauses | the `pause` action opens the real pause screen whenever the overlay stack is empty (WARP-001 §4.4) |
@@ -82,21 +82,71 @@ Route scene (e.g. AttractMode : Screen)        one per SceneRouter route
 | error | `ErrorLabel` BONE-5 text + chalk-strike icon (shape-coded, never SIGNAL); reassurance line in `TruthLabel` PHOS-4 (R-09) | theme built; icon planned |
 | cooldown | GAS-2 sweep over VOID-2 on the button or HUD glyph (R-09) | planned with Surgelight |
 
-Theme variations: `HeaderLabel`, `HintLabel`, `ErrorLabel`, `TruthLabel`, `DimPanel`. Every colour is a palette entry (tested by `core/ui/tests/test_theme_palette.gd`). Not yet done: the ±1 px chalk wobble (ART-001 §7), the Act 0 cabinet-bezel costume layer, and the bitmap font (ART-001 has no font section; TECH-001 §11 Q-T02).
+Theme variations: `HeaderLabel`, `HintLabel`, `ErrorLabel`, `TruthLabel`, `DimPanel`. Every colour is a palette entry (tested by `core/ui/tests/test_theme_palette.gd`). Settings, Pause and Confirm no longer use these Theme styles: they draw their own states in the cabinet or brass costume with the same role laws (focus GAS, §10). Not yet done: the ±1 px chalk wobble (ART-001 §7) and the bitmap font (ART-001 has no font section; TECH-001 §11 Q-T02).
 
 ## 6. Player-readable output
 Everything on screen comes from a `tr()` key in `locale/en.po` (L10N-001). Failure codes go through `PlayerMessages`, which maps them to a sentence saying what happened, whether progress is safe, and what to do next. Raw codes, paths, enum names and exceptions go to `push_warning`/`push_error` only. Authored HUD lies (WARP-001 §4.2) are content, not bugs. A raw key, debug value or error string on screen is a bug.
 
 ## 7. Tests
-`scenes/tests/test_attract_mode.gd`, `scenes/tests/test_attract_coin_slot.gd` (tape peel by hold/drag/pad A, coin → credit → New Vigil, power-on skip, page cycle, binding labels) and `scenes/tests/test_sector_and_pause.gd` cover focus on open, focus loops, modal stacking up to three deep, focus restoration, `ui_cancel` and the `pause` action, repeated input, safe area at 200 % text, and no raw keys on screen. `tests/test_boot_flow.gd` covers input-mode switching. Window-size variation is **not** automated yet. Automation scenarios (TECH-001 §9.1) find controls by id: every focusable Control on a Screen needs a scene-unique `%Name`, and that name is its automation id `<route>/ui/<Name>`.
+`scenes/tests/test_attract_mode.gd`, `scenes/tests/test_attract_coin_slot.gd` (tape peel by hold/drag/pad A, coin → credit → New Vigil, power-on skip, page cycle, binding labels) `scenes/tests/test_sector_and_pause.gd` and `scenes/tests/test_menu_layout.gd` (§10) cover focus on open, focus loops, modal stacking up to three deep, focus restoration, `ui_cancel` and the `pause` action, repeated input, safe area at 200 % text, and no raw keys on screen. `tests/test_boot_flow.gd` covers input-mode switching. Window-size variation is **not** automated yet. Automation scenarios (TECH-001 §9.1) find controls by id: every focusable Control on a Screen needs a scene-unique `%Name`, and that name is its automation id `<route>/ui/<Name>`.
 
 ## 8. Adding a screen
 1. Create `scenes/<area>/<name>_screen.tscn` with a `Control` root using a script that `extends Screen`. Wrap the rows in `FitScrollContainer`.
 2. Set `default_focus` and the focus neighbours of every control. Give every focusable Control a scene-unique `%Name`; it is its automation id `<route>/ui/<Name>` (TECH-001 §9.1).
-3. Use Theme variations only; no inline colours outside the palette.
+3. Use Theme variations only; no inline colours outside the palette. An overlay menu (a panel over play) uses the menu kit instead: `MenuFrame` panel, `MenuText`, `MenuRow`, `MenuRule`, `MenuOrnament`, so it wears the scene's costume (§10).
 4. Put every string in `locale/en.po` with a context note.
 5. Open it with `stack.push(scene.instantiate())` from the owning scene.
 6. Add a test: focus on open, `ui_cancel`, safe area at 200 % text.
 
 ## 9. Open questions
 * None open. Focus, error and font questions were ruled 2026-11-17 (TECH-001 §11.1a R-02, R-09); the full spec is ART-001 §11 (typography) and §12 (UI states). Until the bitmap faces are drawn, the code uses Godot's fallback font at ✱ 14/28 px; when Ledger lands, `UiTheme.BASE_FONT_SIZE` becomes the Ledger cell height and text scale stays an exact ×2.
+
+## 10. Overlay menus: layout and costumes (2026-11-19)
+Owner direction 2026-11-19 ("too narrow, not enough artwork"); built by the PM under that direction (TECH-001 §2.9b, §11.2). Settings, Pause and Confirm share one menu kit in `core/ui/` and draw their own art. They no longer use the Theme's slate panel or the fallback font.
+
+**Layout.**
+* **Settings** is a wide panel: about 470 logical px at 100 % text, up to the full 640 at 200 %.
+  * Header: the title, plus `Service Mode` on the cabinet, then a heavy rule.
+  * Body: a **tab rail** on the left (Accessibility, Video, Controls, an art panel, then Back) and the **active page** on the right. Under the page, one line describes the focused row (`*_DESC` keys).
+  * *Accessibility* page: Large Text, Reduced Motion, Photosensitivity Mode, Steady Ledger.
+  * *Video* page: Weapon Muzzle Flash.
+  * *Controls* page: a read-only table (action, keyboard, gamepad). It reads the live `InputMap` through `InputLabels`, so it always shows the real bindings. At 200 % text each row stacks the label, the keyboard binding and the gamepad binding on three lines, so the table never leaves the frame.
+  * There is no Audio tab until the AUDIO-001 §8.4 sliders are built (M2; TECH-001 Q-T250).
+  * The rows read and write `SettingsService` exactly as before. No setting, key, default or saved value changed.
+* **Pause:** an art panel on the left; Resume, Settings and Abandon Run on the right (in the Ruins, Leave for the Title).
+* **Confirm:** the title, a heavy rule, a caution plate beside the body text, then Cancel (default focus) and Confirm.
+
+**Focus (§4).**
+* The Settings rail is a wrapping ring. Each page is its own wrapping ring.
+* Focusing a tab shows its page. `ui_accept` on a tab, or right from anywhere on the rail, moves to the page's first row. Left from a row returns to its tab.
+* Default focus is the Accessibility tab. `ui_cancel` closes, as on every overlay.
+* The Controls table header is not a focus stop. Its rows are, so a pad can scroll the table.
+
+**Costumes (`MenuSkin`).** Each scene's `ScreenStack.costume` picks the costume. `Auto` follows the fidelity ladder (`Look.t`); the sector and the Ruins name `Brass`.
+* **Cabinet (Act 0)** is the cabinet's operator service mode, a period test-mode screen:
+  * neon on black through `Look.c`, and upper-case stroke text;
+  * a tube-shaped frame with registration marks, a faint convergence crosshatch and static scan lines;
+  * a 16-bar colour strip as the header rule, dashed rules between rows, and a block cursor on the focused row;
+  * an art panel showing the bezel's world in line art: a ringed planet, stars and the Vigil dart.
+* **Brass (Aether)** uses the sector HUD's instrument plates (`Brass`, ART-001 §16.6h):
+  * a riveted, bevelled case around a smoked-glass face, with engraved double rules and corner filigree;
+  * glass lamps for toggles;
+  * an art panel showing an orrery of crystal spheres in a graduated brass ring.
+* **Role laws in both:**
+  * Focus is GAS (R-09).
+  * ON is phosphor (an honest state) and is always printed as `On` or `Off` too, never shown by colour alone.
+  * SIGNAL is never used.
+
+**Readability.**
+* All menu text is `VectorLabel` stroke text (`MenuText`), sized by role. Large Text doubles it live.
+* At 200 % the art panels give their room to the text, and the rows scroll inside `FitScrollContainer`. The title and tab rail stay fixed (`also_reserve`).
+* The cabinet cursor blinks. Under Reduced Motion or Photosensitivity it holds still. Nothing else in the menus moves.
+
+**Tests:** `scenes/tests/test_menu_layout.gd` covers:
+* the rail and page rings, and real `ui_*` input;
+* the description line, On/Off, and the costume's letter case;
+* no raw keys and no missing glyphs;
+* the controls table;
+* the safe area at 200 %, inside a 640×360 viewport, for every page and menu in both costumes;
+* visible art at 100 %;
+* the costume choice per stack, and the still cursor.
