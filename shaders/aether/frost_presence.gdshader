@@ -44,6 +44,37 @@ uniform float max_alpha = 0.66;
 uniform int edge_octaves = 3;
 uniform vec2 lantern_px = vec2(320.0, 202.0);
 uniform float lantern_r = 120.0;
+// --- pass 8 (ART-001 §16.6k, Q-T297..300): a presence, not rock ----------------------------------
+// subtraction: it drinks colour and light from what lies behind and around it (the backdrop's
+// PresenceCopy feeds screen_tex), and the fog bends in toward its front and its eye;
+// a living edge: the front breathes and reaches toward the Vigil (reach_x, local px);
+// wrongness: one lightless disc (pass 8 c, Q-T400; never black: near floor_col), seen only by what
+// it covers and drains, leaning toward the Vigil (gaze, local unit vector, smoothed in GDScript). `subtract` 0 = the old alpha path (no read).
+uniform sampler2D screen_tex : hint_screen_texture, filter_linear;
+uniform float subtract = 0.0;
+uniform float drink = 0.0;
+uniform float eye_k = 0.0;
+uniform vec2 eye_px = vec2(690.0, 545.0);
+uniform vec2 gaze = vec2(0.0, 1.0);
+uniform float breath_px = 0.0;
+uniform float reach_x = 700.0;
+uniform float node_rot = 0.0;
+uniform vec3 void_col : source_color = vec3(0.075, 0.078, 0.157);   // VOID-1
+// pass 8 b (Q-T314): chitin film tints and living veins
+uniform vec3 film_a : source_color = vec3(0.588, 0.557, 0.824);     // AETHER-3
+uniform vec3 film_b : source_color = vec3(0.384, 0.812, 0.659);     // PHOS-4
+uniform vec3 vein_col : source_color = vec3(0.118, 0.486, 0.443);   // PHOS-2
+
+// ✱ breathing period (s), the eye's half-length and half-height (local px), its slow aperture
+// period (s), the drink halo's reach outside the front and around the eye (px), and the bend (px).
+const float BREATH_S = 7.0;
+const float EYE_APERTURE_S = 11.0;
+const float DISC_R = 24.0;        // pass 8 c: the lightless disc's radius (local px)
+const float DISC_LEAN_PX = 3.0;   // how far it shifts toward the Vigil
+const float DRINK_FRONT_PX = 70.0;
+const float DRINK_EYE_PX = 110.0;
+const float BEND_EYE_PX = 22.0;
+const float BEND_FRONT_PX = 14.0;
 
 // ✱ ice plate cell size (local px, along / across the front) and the crevasse field's.
 const vec2 PLATE = vec2(96.0, 34.0);
@@ -65,7 +96,12 @@ float front(float x, float t) {
 	float f = fract(x / 96.0);
 	float facet = mix(a_hash(vec2(c, 4.2)), a_hash(vec2(c + 1.0, 4.2)), f) * 34.0;
 	float swell = 30.0 * sin(x / 310.0 + t * 0.05) + 12.0 * sin(x / 137.0 - t * 0.031);
-	return front_y + swell - facet;
+	// pass 8: it breathes (a slow swell running along the front, plus a crawling ripple) and reaches
+	// toward the Vigil (a broad bulge at reach_x). Positive = the front moves outward (+y local).
+	float breath = breath_px * (0.6 * sin(t * 6.2831853 / BREATH_S + x / 260.0)
+		+ 0.8 * (a_noise(vec2(x / 120.0 - t * 0.09, 7.0)) - 0.5));
+	float reach = breath_px * 1.6 * exp(-pow((x - reach_x) / 220.0, 2.0));
+	return front_y + swell - facet + breath + reach;
 }
 
 // One heartbeat over phase 0..1: two soft bumps (lub, dub), then rest.
@@ -137,8 +173,11 @@ void fragment() {
 	float slope = clamp(0.5 + 1.1 * dot(-rel, vec2(cos(h_dir), sin(h_dir))), 0.0, 1.0);
 	// frosted grain: the surface is rough rime, not polished CG panels
 	float grain = a_noise(p / 5.0 + pid * 3.1) * 0.6 + a_noise(p / 13.0) * 0.4;
-	float val = 0.05 + 0.42 * h_val + 0.34 * (slope - 0.5) + 0.2 * near_front + 0.08 * (grain - 0.5);
-	vec3 ice = mix(body_col, pearl_col, clamp(val, 0.03, 0.75));
+	// pass 8: with subtraction on, the plates lose most of their cut-rock contrast and value; the
+	// light that is left lives in the rim, the veins and the eye (alive, not mineral)
+	float facet_k = mix(1.0, 0.45, drink);
+	float val = 0.05 + (0.42 * h_val + 0.34 * (slope - 0.5)) * facet_k + 0.2 * near_front + 0.08 * (grain - 0.5);
+	vec3 ice = mix(body_col, pearl_col, clamp(val * mix(1.0, 0.7, drink), 0.03, mix(0.75, 0.34, drink)));
 	// thick ice holds a cold glacier cast (teal-blue light inside), thin bright plates stay pearl
 	vec3 glacier = mix(body_col, light_col, 0.32);
 	vec3 col = mix(ice, mix(glacier, pearl_col, 0.25), 0.4 * (1.0 - slope) * (1.0 - h_val * 0.6));
@@ -164,6 +203,18 @@ void fragment() {
 	float crack_k = step(0.3, a_hash(cc.zw + vec2(2.2, 8.8))) * smoothstep(8.0, 50.0, s);
 	float ridge = 1.0 - smoothstep(0.0, crack_w, cc.y);        // 1 on the crack's centre
 	col = mix(col, body_col, ridge * crack_k * 0.65);
+
+	// --- pass 8 b (Q-T314): chitin, not stone. With subtraction on, each plate is a dark shell with a
+	// narrow wet sheen across it (a thin-film tint from AETHER-3 to PHOS-4 by the plate's tilt) and fine
+	// living veins in PHOS under the surface. Strength `drink`.
+	float sheen = pow(slope, 9.0) * smoothstep(0.0, 0.06, pc.y);
+	vec3 film = mix(film_a, film_b, fract(h_val * 2.7 + slope * 0.6));
+	// pass 8 c (Q-T405): darker, cooler and of a piece: little value change between plates, a rarer sheen
+	vec3 shell = mix(body_col, void_col, 0.62 + 0.1 * h_val) + film * sheen * 0.4 * step(0.55, h_val);
+	float vn = abs(a_noise(p / 26.0 + pid * 0.37) * 2.0 - 1.0);
+	float veins = (1.0 - smoothstep(0.0, 0.07, vn)) * smoothstep(10.0, 40.0, s) * (0.5 + 0.5 * a_noise(p / 90.0));
+	shell = mix(shell, vein_col, veins * 0.3);
+	col = mix(col, shell, clamp(drink * 1.3, 0.0, 1.0));
 
 	// --- thin edge: translucent where the shelf thins, a broken frost catch-light along it ---------
 	float thin = smoothstep(0.0, 70.0, s);
@@ -202,12 +253,51 @@ void fragment() {
 	col = mix(col, light_col, clamp(light, 0.0, 1.0));
 	a = max(a, clamp(light, 0.0, 1.0) * 0.85);
 
+	// --- pass 8 c (Q-T400): the lightless disc (it replaced the eye: nothing eye-like remains) ----
+	// A disc of near-floor VOID inside the body near the front: it gives back no light at all, so it
+	// is seen only by what it covers and what it drains. Its edge is torn a little and breathes; it
+	// shifts a few px toward the Vigil (gaze). Never black: the floor is VOID-0.
+	vec2 e = p - eye_px - gaze * DISC_LEAN_PX * eye_k;
+	float aperture = 0.94 + 0.06 * sin(t * 6.2831853 / EYE_APERTURE_S);
+	float disc_r = DISC_R * aperture + (a_noise(vec2(atan(e.y, e.x) * 3.0, 4.0 + t * 0.05)) - 0.5) * 3.0;
+	float eye_in = (1.0 - smoothstep(disc_r - 1.5, disc_r + 1.0, length(e))) * eye_k * body;
+	// the drained ring round it: the Presence's own plates lose their colour there
+	float ed = length(e) / DISC_R;
+	float ering = smoothstep(0.95, 1.15, ed) * (1.0 - smoothstep(1.9, 2.6, ed)) * eye_k * body;
+	col = mix(col, vec3(a_luma(col)) * 0.8, ering * 0.95);
+
+	// --- pass 8: subtraction (it drinks colour and light; the fog bends in) ----------------------
+	float eyed = length(e);
+	float k_pres = fade_q * presence;
+	float pull_e = exp(-eyed / 90.0) * eye_k;
+	float pull_f = (1.0 - body) * exp(min(s, 0.0) / 60.0);
+	float sw = 0.9 * pull_e + 0.15 * sin(t * 0.21);
+	vec2 disp = normalize(e + vec2(0.001)) * BEND_EYE_PX * pull_e + vec2(0.0, BEND_FRONT_PX) * pull_f;
+	disp = mat2(vec2(cos(sw), sin(sw)), vec2(-sin(sw), cos(sw))) * disp;
+	disp = mat2(vec2(cos(node_rot), sin(node_rot)), vec2(-sin(node_rot), cos(node_rot))) * disp;
+	vec3 behind = texture(screen_tex, SCREEN_UV + disp * k_pres * subtract / screen_size).rgb;
+	float dk = drink * max(max(body, ering), max(exp(min(s, 0.0) / DRINK_FRONT_PX), exp(-eyed / DRINK_EYE_PX) * eye_k));
+	vec3 drained = mix(behind, vec3(a_luma(behind)) * vec3(0.8, 0.85, 1.0), dk) * (1.0 - 0.6 * dk);
+	// inside the disc: nothing comes back (near the floor, a breath of VOID-1 so it is never black)
+	vec3 eye_col = mix(floor_col, void_col, 0.15);
+
 	// no light in the play layer: veiled to a vague mass near the lantern's pool
 	float dl = length(spx - lantern_px);
-	a *= mix(0.12, 1.0, smoothstep(lantern_r * 1.1, lantern_r * 2.4, dl));
+	float veil = mix(0.12, 1.0, smoothstep(lantern_r * 1.1, lantern_r * 2.4, dl));
+	a *= veil;
 	vec4 loss = a_loss(spx);
-	a *= fade_q * presence * (1.0 - loss.y);
+	float live = (1.0 - loss.y);
+	a *= k_pres * live;
+	float eye_a = eye_in * 0.95 * veil * k_pres * live;
 	col = mix(col, vec3(a_luma(col)), drain * 0.5);
-	col = max(col, floor_col);
-	COLOR = vec4(col, clamp(a, 0.0, 1.0));
+	if (subtract > 0.5) {
+		vec3 base = mix(behind, drained, k_pres * live);
+		col = mix(base, col, clamp(a, 0.0, 1.0));
+		col = mix(col, eye_col, clamp(eye_a, 0.0, 1.0));
+		col = max(col, floor_col);
+		COLOR = vec4(col, 1.0);
+	} else {
+		col = max(col, floor_col);
+		COLOR = vec4(col, clamp(a, 0.0, 1.0));
+	}
 }

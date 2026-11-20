@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3]
+[gd_scene load_steps=24 format=3]
 
 [ext_resource type="Script" path="res://features/aether/aether_backdrop.gd" id="1_bd"]
 [ext_resource type="Script" path="res://features/aether/aether_fog_band.gd" id="2_band"]
@@ -21,6 +21,8 @@
 [ext_resource type="Shader" path="res://shaders/aether/frost_presence.gdshader" id="19_pres"]
 [ext_resource type="Shader" path="res://shaders/aether/aether_edge_split.gdshader" id="20_edge"]
 [ext_resource type="Script" path="res://features/aether/sister_spheres.gd" id="21_sis"]
+[ext_resource type="Script" path="res://features/aether/reveal_vast.gd" id="23_vast"]
+[ext_resource type="Shader" path="res://shaders/aether/reveal_vast.gdshader" id="24_vast"]
 
 [node name="AetherBackdrop" type="Node2D"]
 script = ExtResource("1_bd")
@@ -73,6 +75,11 @@ script = ExtResource("9_smudge")
 [node name="PresenceLayer" type="Parallax2D" parent="."]
 unique_name_in_owner = true
 scroll_scale = Vector2(0.08, 0.08)
+
+[node name="PresenceCopy" type="BackBufferCopy" parent="PresenceLayer"]
+unique_name_in_owner = true
+visible = false
+copy_mode = 2
 
 [node name="FrostPresence" type="ColorRect" parent="PresenceLayer"]
 unique_name_in_owner = true
@@ -136,6 +143,18 @@ scroll_scale = Vector2(0.25, 0.25)
 unique_name_in_owner = true
 script = ExtResource("5_lev")
 shader = ExtResource("13_lev")
+
+[node name="VastLayer" type="Parallax2D" parent="."]
+unique_name_in_owner = true
+scroll_scale = Vector2(0, 0)
+
+[node name="RevealVast" type="ColorRect" parent="VastLayer"]
+unique_name_in_owner = true
+visible = false
+offset_right = 640.0
+offset_bottom = 360.0
+script = ExtResource("23_vast")
+shader = ExtResource("24_vast")
 
 [node name="ShaftLayer" type="Parallax2D" parent="."]
 unique_name_in_owner = true

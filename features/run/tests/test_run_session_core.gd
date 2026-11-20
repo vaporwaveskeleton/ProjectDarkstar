@@ -49,7 +49,7 @@ func test_data_matches_sys001() -> void:
 	assert_int(s.score_per_ember).is_equal(200)
 	assert_int(s.act0_bank_floor_ember).is_equal(40)
 	assert_bool(s.carry_between_seams).is_true()
-	assert_int(s.slice_last_seam).is_equal(1)   # proposed SYS-001 row (Q-T276)
+	assert_int(s.slice_last_seam).is_equal(2)   # PM-02 ruling: the slice is two Seams (Q-T276)
 	assert_float(s.death_cost_loop_min(1)).is_equal(10.0)
 	assert_float(s.death_cost_loop_min(5)).is_equal(18.0)
 
@@ -204,6 +204,7 @@ func test_abandon_from_seam_costs_the_death_price_and_banks() -> void:
 ## Q-T276: at the slice frontier the cleared Seam's exit ends the run `returned`: Seam clear Ember and
 ## the report's Ember bank in full, no death lump, no win refund.
 func test_frontier_exit_returns_and_banks_the_clear() -> void:
+	core.stats = _frontier_stats(1)
 	core.arrive_at_ruins({})
 	core.consume_clock(30.0, &"test")
 	core.start_run(1)
@@ -322,3 +323,27 @@ func test_hourglass_shows_in_run_at_threshold() -> void:
 	assert_bool(core.hourglass_visible()).is_false()
 	core.consume_clock(1.0, &"test")
 	assert_bool(core.hourglass_visible()).is_true()
+
+
+## A copy of the shipped stats with the slice frontier at Seam `last` (the shipped value is 2).
+func _frontier_stats(last: int) -> RunSessionStats:
+	var s := STATS.duplicate() as RunSessionStats
+	s.slice_last_seam = last
+	return s
+
+
+## PM-02: with the shipped frontier (Seam 2) Seam 1's exit is an ordinary clear into Seam 2, and
+## Seam 2's exit ends the run `returned`.
+func test_shipped_frontier_is_seam_2() -> void:
+	core.arrive_at_ruins({})
+	core.start_run(1)
+	core.enter_seam()
+	assert_bool(core.at_frontier()).is_false()
+	assert_bool(core.return_from_frontier(_report(6.0, 2, 3))).is_true()
+	assert_bool(core.run().is_active()).is_true()
+	assert_int(core.run().seam_index).is_equal(2)
+	core.enter_seam()
+	assert_bool(core.at_frontier()).is_true()
+	assert_bool(core.return_from_frontier(_report(6.0, 2, 3))).is_true()
+	assert_bool(core.run().is_active()).is_false()
+	assert_array(events).contains(["run_ended:returned"])

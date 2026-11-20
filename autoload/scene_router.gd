@@ -120,6 +120,30 @@ func prewarmed(route_id: StringName) -> PackedScene:
 	return res
 
 
+## True when `prewarmed(route_id)` would return at once: the worker has finished (or the scene was
+## already taken). Never blocks, so a caller can wait for it a frame at a time.
+func prewarm_ready(route_id: StringName) -> bool:
+	if _prewarmed.has(route_id):
+		return true
+	if not _prewarm.has(route_id):
+		return false
+	return ResourceLoader.load_threaded_get_status(str(_prewarm[route_id])) == ResourceLoader.THREAD_LOAD_LOADED
+
+
+func _exit_tree() -> void:
+	release_prewarms()
+
+
+## Takes every threaded load still pending and drops it with the prewarmed scenes. A request that is
+## never collected keeps its loader task alive at quit (Q-T341: one of the "ObjectDB instances were
+## leaked" lines per unfetched Ruins prewarm). Also the way to drop a prewarm that will not be used.
+func release_prewarms() -> void:
+	for route_id: Variant in _prewarm.keys():
+		ResourceLoader.load_threaded_get(str(_prewarm[route_id]))
+	_prewarm.clear()
+	_prewarmed.clear()
+
+
 func _load_scene(route_id: StringName) -> PackedScene:
 	var res := prewarmed(route_id)
 	_prewarmed.erase(route_id)

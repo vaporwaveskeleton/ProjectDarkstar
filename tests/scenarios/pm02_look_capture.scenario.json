@@ -1,0 +1,28 @@
+{
+	"format": "darkstar.scenario",
+	"version": 1,
+	"id": "pm02_look_capture",
+	"profile": "dev",
+	"args": [
+		"--kit=pm_02",
+		"--no-save"
+	],
+	"fixtures": {},
+	"timeout_frames": 1200,
+	"steps": [
+		{"do": "wait_route", "route": "attract", "within": 120},
+		{"do": "goto", "route": "sector"},
+		{"do": "wait_route", "route": "sector", "within": 240},
+		{"do": "assert", "id": "sector/run", "prop": "kit_id", "eq": "pm_02"},
+		{"do": "wait_frames", "frames": 60},
+		{"do": "screenshot", "name": "pm02_01_entry", "target": "window"},
+		{"do": "hold", "action": "move_down", "frames": 60},
+		{"do": "screenshot", "name": "pm02_02_throat", "target": "window"},
+		{"do": "hold", "action": "lantern_toggle", "frames": 2},
+		{"do": "wait_frames", "frames": 60},
+		{"do": "screenshot", "name": "pm02_03_lantern_down", "target": "window"},
+		{"do": "wait_frames", "frames": 90},
+		{"do": "screenshot", "name": "pm02_04_down_later", "target": "window"},
+		{"do": "quit"}
+	]
+}

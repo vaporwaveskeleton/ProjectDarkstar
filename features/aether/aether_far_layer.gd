@@ -47,6 +47,7 @@ func apply_look(new_look: AetherLook) -> void:
 	if not is_node_ready() or look == null:
 		return
 	view.apply_glow(look)
+	view.apply_grade(look)
 	backdrop.apply_look(look)
 	backdrop.set_tier(look.tier)
 
@@ -131,3 +132,4 @@ func set_chromatic_edge(on: bool) -> void:
 func _process(delta: float) -> void:
 	time_s += delta
 	backdrop.set_time(time_s)
+	view.update_night(backdrop)

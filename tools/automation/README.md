@@ -64,7 +64,7 @@ Ids: `<route>/ui/<UniqueName>` for controls, plus `cabinet/game` (`state`, `stag
 `sector/field` (`geodes_alive`, `geodes_detonated`, `shards_free`, `charges`, `score`; M1 slice 3
 PR 4 adds `shards_live`, `charges_in_flight`, `charges_lost`, `charges_hit`, `charges_guttered`,
 `dry_fires`), `sector/choir` (PR 4: `grubs_alive`, `grubs_carrying`, `segments`, `deposited_shards`,
-`sepulchre_complete`), `sector/run` (`seam_index`, `run_session`, `far_look`; scenario `a1_golden_path`); scenarios
+`sepulchre_complete`), `sector/run` (`seam_index`, `run_session`, `far_look`, `kit_id`; scenarios `a1_golden_path`, `a1_two_seams`), `sector/acolyte` (`acolyte_alive`, `acolyte_detecting`, `acolyte_shots_fired`); scenarios
 `m1_geode_mine` (feathered fire, calm mining; waits on `shards_live`, because Grubs may steal free
 glass), `m1_charge_fire` (dry fire at 0, mine and collect, fly down, fire a Charge: it hits the
 Sepulchre), `m1_charge_intercept` (collect, fire a Charge without flying down first, so

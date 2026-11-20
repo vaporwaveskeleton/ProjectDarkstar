@@ -103,6 +103,9 @@ func test_last_seam_clear_saves_run_end_not_seam_boundary() -> void:
 
 ## Q-T276: the frontier exit is one `run_end` write set, with no `seam_boundary` write before it.
 func test_frontier_exit_writes_run_end_only() -> void:
+	var s := STATS.duplicate() as RunSessionStats
+	s.slice_last_seam = 1
+	core.stats = s
 	core.arrive_at_ruins({})
 	core.start_run(3)
 	core.enter_seam()

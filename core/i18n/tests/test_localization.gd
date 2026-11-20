@@ -46,10 +46,43 @@ static func used_keys() -> Dictionary:
 				continue
 			for m in re.search_all(FileAccess.get_file_as_string(path)):
 				var k := m.get_string(1)
+				if k.ends_with("_"):
+					continue  # a stem of a dynamic key family; see dynamic_key_patterns()
 				for p in KEY_PREFIXES:
 					if k.begins_with(p):
 						used[k] = path
 	return used
+
+
+## Dynamic key families built at runtime: a literal stem ending in "_" (the code appends an index,
+## e.g. "NARR_SABLE_RET_OK_" + str(i)) or a format string with "%d" (e.g. "CAB_BRIEF_A0_%d_1").
+## en.po keys that match one of these count as used.
+static func dynamic_key_patterns() -> Array[RegEx]:
+	var out: Array[RegEx] = []
+	var seen := {}
+	var re := RegEx.create_from_string("\"([A-Z][A-Z0-9_%d]{2,})\"")
+	for root in SCAN_ROOTS:
+		for path in _files(root):
+			if "/tests/" in path:
+				continue
+			for m in re.search_all(FileAccess.get_file_as_string(path)):
+				var k := m.get_string(1)
+				var is_stem := k.ends_with("_")
+				var is_fmt := "%d" in k
+				if not (is_stem or is_fmt) or seen.has(k):
+					continue
+				var prefixed := false
+				for p in KEY_PREFIXES:
+					if k.begins_with(p):
+						prefixed = true
+				if not prefixed:
+					continue
+				seen[k] = true
+				var pat := k.replace("%d", "[0-9]+")
+				if is_stem:
+					pat += "[0-9]+"
+				out.append(RegEx.create_from_string("^" + pat + "$"))
+	return out
 
 
 static func _files(root: String) -> PackedStringArray:
@@ -84,9 +117,17 @@ func test_no_unused_keys() -> void:
 	# dynamic keys: plural ids built by LocFormat.tr_count
 	for k in used.keys():
 		used["%s_PLURAL" % k] = true
+	var patterns := dynamic_key_patterns()
 	var unused: Array[String] = []
 	for k in po_keys():
-		if not used.has(k):
+		if used.has(k):
+			continue
+		var dynamic := false
+		for p in patterns:
+			if p.search(k) != null:
+				dynamic = true
+				break
+		if not dynamic:
 			unused.append(k)
 	assert_array(unused).override_failure_message("unused keys in en.po: %s" % [unused]).is_empty()
 
