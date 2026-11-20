@@ -43,7 +43,7 @@ const SMEAR_W := 16.0                  ## ✱ px, the smear band around the hole
 const DRIFT_HZ := 0.07                 ## ✱ how fast the light behind a patch wanders (slow: never a pulse)
 const DRIFT_R := 0.35                  ## ✱ how far the bright core wanders, as a share of the patch radius
 const EYE_ORDER := -2.0                ## ✱ the eye's patch spreads before every other (patch_k: grow·1.7 − order·0.09)
-const EYE_PATCH_SCALE := 0.9           ## ✱ the eye patch's radius as a share of the printed eye's larger side
+const EYE_PATCH_SCALE := 0.5           ## ✱ the eye patch's radius as a share of the printed eye's larger side: it eats the eye, never traces it
 const SEED := 1983                    ## ✱ fixed: the same patches every time (deterministic captures)
 
 var _glow: Control                     ## additive child: the light itself
@@ -140,7 +140,7 @@ func patches() -> Array[Dictionary]:
 			"c": eye.get_center(),
 			"r": maxf(maxf(eye.size.x, eye.size.y) * EYE_PATCH_SCALE, PATCH_R * 0.45),
 			"order": EYE_ORDER,
-			"stretch": Vector2(1.3, 0.75),
+			"stretch": Vector2(0.8, 1.25),   # taller than wide: never an almond, never an eye shape (N4)
 			"seed": es,
 			"rim": BezelDecay.rim_profile(es, RIM_POINTS),
 		})
