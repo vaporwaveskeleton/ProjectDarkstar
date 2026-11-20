@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3]
+[gd_scene load_steps=22 format=3]
 
 [ext_resource type="Script" path="res://features/aether/aether_backdrop.gd" id="1_bd"]
 [ext_resource type="Script" path="res://features/aether/aether_fog_band.gd" id="2_band"]
@@ -20,6 +20,7 @@
 [ext_resource type="Script" path="res://features/aether/frost_presence.gd" id="18_pres"]
 [ext_resource type="Shader" path="res://shaders/aether/frost_presence.gdshader" id="19_pres"]
 [ext_resource type="Shader" path="res://shaders/aether/aether_edge_split.gdshader" id="20_edge"]
+[ext_resource type="Script" path="res://features/aether/sister_spheres.gd" id="21_sis"]
 
 [node name="AetherBackdrop" type="Node2D"]
 script = ExtResource("1_bd")
@@ -32,6 +33,10 @@ scroll_scale = Vector2(0.04, 0.04)
 unique_name_in_owner = true
 script = ExtResource("2_band")
 shader = ExtResource("10_fog")
+
+[node name="SisterSpheres" type="Node2D" parent="FarLayer"]
+unique_name_in_owner = true
+script = ExtResource("21_sis")
 
 [node name="RibBackLayer" type="Parallax2D" parent="."]
 unique_name_in_owner = true

@@ -43,6 +43,8 @@ func configure(look: AetherLook, quality: AetherQuality = null) -> void:
 	set_param(&"scatter", look.lantern_scatter * (1.0 if far else 1.4))
 	set_param(&"tier", look.tier)
 	set_param(&"missing", look.missing)
+	# Q-T129: the reveal's trace of what is gone is phosphor (truth); its strength is set per frame
+	set_param(&"ghost_col", Pal.PHOS_4)
 
 
 ## Colour uniforms this band holds (tests check the floor).

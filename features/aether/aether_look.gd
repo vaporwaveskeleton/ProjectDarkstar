@@ -188,6 +188,14 @@ extends TunableResource
 @export var rings_broken: int = 0
 ## ✱ how far the Presence has already fled when the look is applied (0 = here, 1 = gone).
 @export_range(0.0, 1.0) var presence_fled: float = 0.0
+## ✱ the other heavens (§16.6h, `SisterSpheres`): far crystal spheres drawn (0 = none) and how many
+## of them the entity has already eaten (most beautiful first; never more than drawn).
+@export_range(0, 5) var sister_spheres: int = 0
+@export_range(0, 5) var sister_spheres_eaten: int = 0
+## ✱ how much of the Presence's lit pattern shows with the lantern UP (0 = a vague mass, as the
+## reveal law; the lantern-down reveal still takes it to 1). The ladder raises it at T2: the Presence
+## is uneasy and its heartbeat shows through the fog, the last bright thing before it flees.
+@export_range(0.0, 1.0) var presence_lit: float = 0.0
 
 @export_group("Warp T1 (WARP-001 §2.2)")
 ## Registry ids of the standing warp effects this look represents as Aether data; tests check each
@@ -210,7 +218,7 @@ func tunable_properties() -> PackedStringArray:
 		"leviathan_cross_s", "leviathan_period_s", "leviathan_phase_s", "camera_drift_px", "base_drain",
 		"star_strength", "value_deep", "glow_band_px", "glow_band_inset", "lantern_scatter", "vast_jelly_count",
 		"reveal_life_count", "rings_stalled", "rings_broken", "presence_fled", "chromatic_edge_px",
-		"missing",
+		"missing", "sister_spheres", "sister_spheres_eaten", "presence_lit",
 	])
 
 

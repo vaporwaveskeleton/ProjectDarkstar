@@ -16,13 +16,16 @@ signal sphere_glinted
 signal leviathan_entered
 signal leviathan_closest
 
-const LAYERS: Array[StringName] = [&"far_fog", &"sky", &"cracks", &"smudge", &"presence", &"set_pieces", &"orrery",
+const LAYERS: Array[StringName] = [&"far_fog", &"sisters", &"sky", &"cracks", &"smudge", &"presence", &"set_pieces", &"orrery",
 	&"reveal", &"mid_fog", &"leviathan", &"shafts", &"life", &"near_fog", &"entity", &"grade", &"edge_split"]
 ## ✱ CH-3 lantern-down reveal: seconds for the far-band life and the Presence's full light pattern to
 ## fade in when the lantern goes down (and out when it is lit again). A monotonic ramp: no flicker.
 const REVEAL_FADE_S := 0.8
 ## ✱ drain above the look's base at which the Presence turns and flees the entity.
 const PRESENCE_FLEE_DRAIN := 0.02
+## ✱ Q-T129 (ZONES-001 §2.3): from this tier the lantern-down reveal also traces where the Aether is
+## already gone (a phosphor engraving inside the missing slice, aether_fog_band.gdshader `ghost`).
+const GHOST_FROM_TIER := 3
 ## ✱ every full-coverage layer rect: oversized so camera drift and parallax never show an edge.
 const COVER := Rect2(-240.0, -200.0, 1120.0, 760.0)
 ## ✱ the main entity's anchor in its layer (top right, so its extent runs off the frame) and its
@@ -93,6 +96,7 @@ var _erasure := false
 @onready var _cracks_copy: BackBufferCopy = %CracksCopy
 @onready var _smudge: StillSmudge = %Smudge
 @onready var _set_pieces: FarSetPieces = %SetPieces
+@onready var _sisters: SisterSpheres = %SisterSpheres
 @onready var _set_pieces_back: FarSetPieces = %SetPiecesBack
 @onready var _ribs: OrreryRibs = %Ribs
 @onready var _far_life: Node2D = %FarLife
@@ -213,6 +217,7 @@ func apply_look(new_look: AetherLook) -> void:
 	_presence.configure(look)
 	_presence.set_param(&"edge_octaves", 3 if q.fog_octave_drop == 0 else 2)
 	_presence.set_steady(reduced_motion or photosensitive)
+	_presence.set_reveal(maxf(reveal, look.presence_lit))
 	_reveal_life.configure(look, look.reveal_life_count if look.life else 0, q.particle_scale)
 	_reveal_life_on = _reveal_life.visible
 	_edge_split.set_param(&"split_px", look.chromatic_edge_px)
@@ -220,6 +225,7 @@ func apply_look(new_look: AetherLook) -> void:
 	_smudge.configure(look)
 	_set_pieces.configure(look)
 	_set_pieces_back.configure(look)
+	_sisters.configure(look)
 	var counts: Array[int] = [look.mote_count if look.motes else 0, look.jelly_count if look.jellies else 0,
 		look.spore_count if look.spores else 0, look.school_count if look.school else 0,
 		look.vast_jelly_count if look.jellies else 0]
@@ -326,7 +332,7 @@ func advance_clock(delta: float) -> void:
 	reveal = move_toward(reveal, target, maxf(delta, 0.0) / REVEAL_FADE_S)
 	step_travel(delta)
 	_presence.step(delta)
-	_presence.set_reveal(reveal)
+	_presence.set_reveal(maxf(reveal, look.presence_lit if look != null else 0.0))
 	_reveal_life.modulate.a = smoothstep(0.0, 1.0, reveal)
 	if look != null:
 		_reveal_life.visible = _layer_active(&"reveal")
@@ -441,6 +447,14 @@ func set_layer_enabled(layer: StringName, on: bool) -> void:
 		apply_look(look)
 
 
+## Q-T129: strength of the reveal's trace of where the Aether is already gone (0 below
+## GHOST_FROM_TIER, with no missing slice, or with the lantern up; follows the reveal's monotonic ramp).
+func ghost_trace() -> float:
+	if look == null or look.tier < GHOST_FROM_TIER or look.missing <= 0.0:
+		return 0.0
+	return smoothstep(0.0, 1.0, reveal)
+
+
 func is_layer_enabled(layer: StringName) -> bool:
 	return bool(_enabled.get(layer, false))
 
@@ -485,6 +499,8 @@ func _layer_active(l: StringName) -> bool:
 			return look.sky_cracks
 		&"smudge":
 			return look.still_smudge
+		&"sisters":
+			return _sisters.any_shown()   # CH-7: the low rung keeps them (cheap vector; they carry the ladder)
 		&"set_pieces":
 			return quality.set_pieces == 1 and _set_pieces.any_shown()
 		&"orrery":
@@ -523,6 +539,7 @@ func _refresh_visibility() -> void:
 	_cracks.visible = _layer_active(&"cracks")
 	_cracks_copy.visible = _cracks.visible
 	_smudge.visible = _layer_active(&"smudge")
+	_sisters.visible = _layer_active(&"sisters")
 	_set_pieces.visible = _layer_active(&"set_pieces")
 	_set_pieces_back.visible = _set_pieces.visible and _set_pieces_back.any_shown()
 	_ribs.visible = _layer_active(&"orrery")
@@ -597,6 +614,7 @@ func refresh() -> void:
 		band.set_param(&"lantern_col", lantern_colour)
 		band.set_param(&"lantern_outer", Pal.GAS_3)
 		band.set_param(&"lantern_energy", lantern_energy * (1.0 - reveal) if look.lantern_light else 0.0)
+		band.set_param(&"ghost", ghost_trace())
 	_sphere.set_param(&"camera_offset", cam_off)
 	_sphere.update_glint(time_s, camera_centre - _sky_layer.position)
 	_cracks.set_param(&"camera_offset", cam_off)
@@ -627,6 +645,7 @@ func refresh() -> void:
 	_ribs.set_time(t)
 	_set_pieces.set_time(t)
 	_set_pieces_back.set_time(t)
+	_sisters.set_state(t, reveal, drain, reduced_motion)
 	_update_life(t, masks[0])
 	var px := get_viewport().get_visible_rect().size
 	var vp := get_viewport()
