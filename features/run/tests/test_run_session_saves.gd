@@ -101,6 +101,29 @@ func test_last_seam_clear_saves_run_end_not_seam_boundary() -> void:
 	assert_array(saver.slots_and_reasons()).is_equal(["run:run_end", "iteration:run_end"])
 
 
+## Q-T276: the frontier exit is one `run_end` write set, with no `seam_boundary` write before it.
+func test_frontier_exit_writes_run_end_only() -> void:
+	core.arrive_at_ruins({})
+	core.start_run(3)
+	core.enter_seam()
+	saver.clear()
+	assert_bool(core.return_from_frontier(_report())).is_true()
+	assert_array(saver.slots_and_reasons()).is_equal(["run:run_end", "iteration:run_end"])
+	assert_int(int(saver.calls[0].payload.seam_index)).is_equal(0)
+	_assert_all_accepted()
+
+
+## Q-T277: Abandon Run mid-Seam writes the same `run_end` set as any abandon.
+func test_abandon_from_seam_writes_run_end() -> void:
+	core.arrive_at_ruins({})
+	core.start_run(3)
+	core.enter_seam()
+	saver.clear()
+	assert_bool(core.abandon_from_seam()).is_true()
+	assert_array(saver.slots_and_reasons()).is_equal(["run:run_end", "iteration:run_end"])
+	_assert_all_accepted()
+
+
 func test_null_saver_never_saves() -> void:
 	var quiet := RunSessionCore.new(STATS, null)
 	quiet.arrive_at_ruins({"act0_vigil_index": 9000})
