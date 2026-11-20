@@ -137,10 +137,17 @@ Owner direction 2026-11-19 ("too narrow, not enough artwork"); built by the PM u
   * ON is phosphor (an honest state) and is always printed as `On` or `Off` too, never shown by colour alone.
   * SIGNAL is never used.
 
+**Restyle (2026-11-20, Fable art-direction review; TECH-001 §2.9b).**
+* Cabinet: every menu word is the cabinet's 5 × 7 pixel font at an integer scale, snapped to the logical pixel grid, with CRT scanlines. The colour bar is the cabinet's 16 colour registers in register order.
+* Brass: a fogged-glass face (slow drift at low contrast, a vignette), an engraved hairline inside the brass, slightly irregular rivets and an engraved-capital title. Body text stays plain.
+* Both: a **preview window** in the lower right shows the focused setting live (text size sample, the motion dart, a dimmed flash sample, the muzzle flash, a lying HUD digit beside the honest Steady Ledger digit, a level meter for each volume slider). It hides at 200 % text. OFF is brighter and the lamps are twice the size.
+* The menu is still an overlay over the cabinet in Act 0 (an in-tube service screen is TECH-001 Q-T271).
+
 **Readability.**
 * All menu text is `VectorLabel` stroke text (`MenuText`), sized by role. Large Text doubles it live.
 * At 200 % the art panels give their room to the text, and the rows scroll inside `FitScrollContainer`. The title and tab rail stay fixed (`also_reserve`).
-* The cabinet cursor blinks. Under Reduced Motion or Photosensitivity it holds still. Nothing else in the menus moves.
+* The cabinet cursor blinks, the brass fog drifts and the Reduced Motion preview dart moves. Under Reduced Motion or Photosensitivity all three hold still. Nothing else in the menus moves.
+* The focused row always scrolls fully into view, including after the description line changes the panel height.
 
 **Tests:** `scenes/tests/test_menu_layout.gd` covers:
 * the rail and page rings, and real `ui_*` input;

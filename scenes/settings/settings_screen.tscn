@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scenes/settings/settings_screen.gd" id="1"]
 [ext_resource type="Script" path="res://core/ui/fit_scroll_container.gd" id="fit"]
@@ -7,6 +7,7 @@
 [ext_resource type="Script" path="res://core/ui/menu_rule.gd" id="rule"]
 [ext_resource type="Script" path="res://core/ui/menu_row.gd" id="row"]
 [ext_resource type="Script" path="res://core/ui/menu_ornament.gd" id="orn"]
+[ext_resource type="Script" path="res://core/ui/menu_preview.gd" id="prev"]
 
 [node name="SettingsScreen" type="Control" node_paths=PackedStringArray("default_focus")]
 process_mode = 3
@@ -348,9 +349,20 @@ style = 3
 layout_mode = 2
 script = ExtResource("rule")
 
-[node name="Desc" type="Control" parent="Center/Panel/Layout/Body/Content"]
+[node name="Foot" type="HBoxContainer" parent="Center/Panel/Layout/Body/Content"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Desc" type="Control" parent="Center/Panel/Layout/Body/Content/Foot"]
 unique_name_in_owner = true
 layout_mode = 2
+size_flags_horizontal = 3
 script = ExtResource("text")
 role = 2
 wrap = true
+
+[node name="Preview" type="Control" parent="Center/Panel/Layout/Body/Content/Foot"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 0
+script = ExtResource("prev")

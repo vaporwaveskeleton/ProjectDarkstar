@@ -164,16 +164,13 @@ func _stacked() -> bool:
 
 func _value_width() -> float:
 	# reserve the wider of ON and OFF so the row never changes width when toggled
-	var f := MenuSkin.face(MenuSkin.Role.VALUE)
-	var g := VectorText.default_glyphs()
-	return maxf(VectorText.measure(MenuSkin.shown(tr(&"SETTINGS_ON"), kind), g, f).x,
-		VectorText.measure(MenuSkin.shown(tr(&"SETTINGS_OFF"), kind), g, f).x) + f.stroke_width
+	return maxf(MenuSkin.measure(tr(&"SETTINGS_ON"), MenuSkin.Role.VALUE, kind).x,
+		MenuSkin.measure(tr(&"SETTINGS_OFF"), MenuSkin.Role.VALUE, kind).x)
 
 
 ## Reserve the width of "100" so the bar never moves as the number changes.
 func _number_width() -> float:
-	var f := MenuSkin.face(MenuSkin.Role.VALUE)
-	return VectorText.measure("100", VectorText.default_glyphs(), f).x + f.stroke_width
+	return MenuSkin.measure("100", MenuSkin.Role.VALUE, kind).x
 
 
 ## At Large Text the bar drops under the label (a wider bar, the number stays on the label line), so
@@ -193,8 +190,12 @@ func slider_rect() -> Rect2:
 	return Rect2(Vector2(x, (size.y - BAR_SIZE.y) * 0.5), BAR_SIZE)
 
 
+## ✱ Lamp radius at 100 % text (doubled from 2.5 after the Fable review, 2026-11-20).
+const LAMP_R := 5.0
+
+
 func _lamp_r() -> float:
-	return 2.5 * MenuSkin.text_scale()
+	return LAMP_R * MenuSkin.text_scale()
 
 
 func _layout() -> void:

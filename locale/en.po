@@ -116,6 +116,22 @@ msgstr "Removes flicker, flashes and strobing. Nothing you need is hidden."
 msgid "SETTINGS_STEADY_LEDGER_DESC"
 msgstr "Keeps the HUD honest: its readouts never lie, and Esc always pauses."
 
+#. Settings preview window, when the focused row has no preview (a tab, Back, a controls row).
+msgid "SETTINGS_PREVIEW_IDLE"
+msgstr "Preview"
+
+#. Settings preview: the sample word shown at 100 % and 200 % text. A glossary word.
+msgid "SETTINGS_PREVIEW_TEXT"
+msgstr "Vigil"
+
+#. Settings preview: caption over the HUD digit that lies under warp (WARP-001 §4.2).
+msgid "SETTINGS_PREVIEW_HUD"
+msgstr "HUD"
+
+#. Settings preview: caption over the Steady Ledger digit, which never lies (WARP-001 §4.4).
+msgid "SETTINGS_PREVIEW_LEDGER"
+msgstr "Ledger"
+
 #. Toggle value: the setting is on.
 msgid "SETTINGS_ON"
 msgstr "On"
