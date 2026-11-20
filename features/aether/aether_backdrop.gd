@@ -17,7 +17,7 @@ signal leviathan_entered
 signal leviathan_closest
 
 const LAYERS: Array[StringName] = [&"far_fog", &"sisters", &"sky", &"cracks", &"smudge", &"presence", &"set_pieces", &"orrery",
-	&"reveal", &"mid_fog", &"leviathan", &"shafts", &"life", &"near_fog", &"entity", &"grade", &"edge_split"]
+	&"reveal", &"mid_fog", &"leviathan", &"vast", &"shafts", &"life", &"near_fog", &"entity", &"grade", &"edge_split"]
 ## ✱ CH-3 lantern-down reveal: seconds for the far-band life and the Presence's full light pattern to
 ## fade in when the lantern goes down (and out when it is lit again). A monotonic ramp: no flicker.
 const REVEAL_FADE_S := 0.8
@@ -110,6 +110,9 @@ var _erasure := false
 @onready var _presence_layer: Parallax2D = %PresenceLayer
 @onready var _presence: FrostPresence = %FrostPresence
 @onready var _reveal_life: AetherLife = %RevealLife
+## Pass 8 (Q-T297..303): the Presence's screen read for its subtraction, and the vast reveal.
+@onready var _presence_copy: BackBufferCopy = %PresenceCopy
+@onready var _vast: RevealVast = %RevealVast
 @onready var _edge_split: AetherShaderRect = %EdgeSplit
 @onready var _edge_copy: BackBufferCopy = %EdgeCopy
 
@@ -148,7 +151,7 @@ func _collect_materials() -> void:
 	_mats.clear()
 	var rects: Array[AetherShaderRect] = []
 	rects.append_array(_bands)
-	rects.append_array([_sphere, _cracks, _leviathan, _presence, _shafts, _grade])
+	rects.append_array([_sphere, _cracks, _leviathan, _presence, _vast, _shafts, _grade])
 	for r in rects:
 		_mats.append(r.ensure_material())
 
@@ -211,6 +214,14 @@ func apply_look(new_look: AetherLook) -> void:
 	_grade.set_param(&"void_lo", Pal.VOID_1)
 	_grade.set_param(&"void_hi", Pal.VOID_4)
 	_grade.set_param(&"subtraction", look.subtraction_amount if look.subtraction else 0.0)
+	# pass 8 (Q-T296): the far layer's atmospheric value cap, every rung (readability is never dropped)
+	_grade.set_param(&"cap_knee", look.far_value_cap)
+	_grade.set_param(&"cap_slope", look.far_cap_slope)
+	_grade.set_param(&"cap_desat", look.far_cap_desat)
+	_grade.set_param(&"cap_veil", look.far_cap_veil)
+	_grade.set_param(&"veil_col", look.fog_deep)
+	_vast.configure(look)
+	_vast.set_steady(reduced_motion or photosensitive)
 	_leviathan.configure(look)
 	_leviathan.set_param(&"edge_octaves", 3 if q.fog_octave_drop == 0 else 2)
 	# the Presence on every rung (low keeps it and its flee: CH-7); only its edge noise thins
@@ -334,8 +345,13 @@ func advance_clock(delta: float) -> void:
 	_presence.step(delta)
 	_presence.set_reveal(maxf(reveal, look.presence_lit if look != null else 0.0))
 	_reveal_life.modulate.a = smoothstep(0.0, 1.0, reveal)
+	# the vast shapes are always there (the light only hides them): they move even while unseen
+	_vast.step(delta, lantern_screen, far_travel.step_travel, reduced_motion)
+	_vast.set_reveal(smoothstep(0.0, 1.0, reveal))
+	_presence.watch(lantern_screen, delta, reduced_motion)
 	if look != null:
 		_reveal_life.visible = _layer_active(&"reveal")
+		_vast.visible = _layer_active(&"vast")
 	if look != null and _presence.visible != _layer_active(&"presence"):
 		_refresh_visibility()
 
@@ -494,7 +510,9 @@ func _layer_active(l: StringName) -> bool:
 		&"far_fog", &"sky":
 			return true
 		&"grade":
-			return look.subtraction or drain > 0.001 or _any_entity()
+			return look.subtraction or drain > 0.001 or _any_entity() or look.far_value_cap > 0.0
+		&"vast":
+			return _vast.count > 0 and reveal > 0.001
 		&"cracks":
 			return look.sky_cracks
 		&"smudge":
@@ -545,7 +563,9 @@ func _refresh_visibility() -> void:
 	_ribs.visible = _layer_active(&"orrery")
 	_leviathan.visible = _layer_active(&"leviathan")
 	_presence.visible = _layer_active(&"presence")
+	_presence_copy.visible = _presence.visible and FrostPresence.subtracts(look)
 	_reveal_life.visible = _layer_active(&"reveal")
+	_vast.visible = _layer_active(&"vast")
 	_edge_split.visible = _layer_active(&"edge_split")
 	_edge_copy.visible = _edge_split.visible
 	_shafts.set_drawn(_layer_active(&"shafts"))
@@ -622,6 +642,7 @@ func refresh() -> void:
 	_grade.set_param(&"lantern_px", lantern_screen)
 	_grade.set_param(&"lantern_r", lantern_radius)
 	_grade.size = screen
+	_vast.size = screen
 	_shafts.size = screen
 	_shafts.set_param(&"source_px", Vector2(screen.x * 0.66, -screen.y * 0.35))
 	if quality.animated_shafts == 0:

@@ -170,7 +170,9 @@ func _build_shape(rng: RandomNumberGenerator) -> void:
 			_glints.append(Vector2.from_angle(rng.randf() * TAU) * radius * rng.randf_range(0.1, 0.55))
 
 
-const FILL_ALPHA := 0.55          ## ✱ drawing: body fill opacity
+const FILL_ALPHA := 0.7           ## ✱ drawing: body fill opacity (pass 8 from 0.55)
+const BACKING_SCALE := 1.35       ## ✱ drawing, pass 8: dark fog pocket radius as a multiple of the body's
+const BACKING_ALPHA := 0.35       ## ✱ drawing, pass 8: dark fog pocket opacity
 const SHIMMER_RATE := 1.7         ## rad/s ✱ drawing: facet glint shimmer
 const RIM_SHARE := 0.4            ## ✱ drawing: fraction of the outline that takes the rim light
 const RIM_DIR := Vector2(-0.6, -0.8)   ## ✱ drawing: light comes from upper left
@@ -194,6 +196,9 @@ func _draw() -> void:
 	var n := pts.size()
 	var still := bool(SettingsService.get_value(&"reduced_motion"))
 	var fill := Pal.AETHER_1 if heat <= 0.3 else Pal.PHOS_1
+	# pass 8 (Q-T304): a pocket of dark fog behind it, so it reads above the far layer
+	for r in 3:   # soft-edged: stacked discs, darkest at the core
+		draw_circle(Vector2.ZERO, radius * BACKING_SCALE * (1.0 - 0.15 * r), Color(Pal.VOID_1, BACKING_ALPHA * 0.45))
 	draw_colored_polygon(pts, Color(fill, FILL_ALPHA))
 	var hub := (RIM_DIR * radius * 0.2).round()
 	for k in range(0, n, 2):

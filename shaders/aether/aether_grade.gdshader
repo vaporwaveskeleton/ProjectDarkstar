@@ -19,6 +19,15 @@ uniform float subtraction : hint_range(0.0, 1.0) = 0.0;
 uniform float drain : hint_range(0.0, 1.0) = 0.0;
 uniform vec2 lantern_px = vec2(320.0, 200.0);
 uniform float lantern_r = 120.0;
+// Pass 8 (ART-001 §16.6k, Q-T296): the far layer's atmospheric value cap, so the play layer reads
+// first. Linear luma above cap_knee is compressed by cap_slope; colour desaturates by cap_desat and a
+// fog veil (veil_col = the look's fog_deep) is mixed in by cap_veil. The lantern pool is spared.
+// cap_knee 0 = off. Never below floor_col; entity pixels stay exact black (above).
+uniform float cap_knee = 0.0;
+uniform float cap_slope = 1.0;
+uniform float cap_desat = 0.0;
+uniform float cap_veil = 0.0;
+uniform vec3 veil_col : source_color = vec3(0.075, 0.078, 0.157);
 
 vec3 cold(vec3 c) {
 	return mix(void_lo, void_hi, clamp(a_luma(c) * 2.4, 0.0, 1.0));
@@ -39,6 +48,15 @@ void fragment() {
 		sub.g = mix(c.g, l, smoothstep(0.33, 0.67, s));
 		sub.b = mix(c.b, l, smoothstep(0.66, 1.0, s));
 		sub = mix(sub, chalk_col * l * 1.6, smoothstep(0.7, 1.0, s) * 0.5);
+		// the atmospheric value cap: the far layer sits behind fog, below the play layer's values
+		if (cap_knee > 0.0) {
+			float keep = 1.0 - spare * 0.85;
+			float l0 = a_luma(sub);
+			float lc = l0 > cap_knee ? cap_knee + (l0 - cap_knee) * cap_slope : l0;
+			sub *= mix(1.0, lc / max(l0, 1e-4), keep);
+			sub = mix(sub, vec3(a_luma(sub)), cap_desat * keep);
+			sub = mix(sub, veil_col, cap_veil * keep);
+		}
 		// drain: a cold VOID cast everywhere except the lantern pool
 		float d = drain * (1.0 - spare * 0.9);
 		sub = mix(sub, cold(sub), d * 0.85);
