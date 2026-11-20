@@ -17,10 +17,10 @@ const EDGE := 2.0                     ## the key-black tube-mask edge above and 
 const COIN_PLATE_LOCAL := Rect2(12, 252, 56, 80)
 
 # --- Column-local art areas (x 0..SIDE, y 0..360). The 2 px nearest the screen is the key-black lip. ---
-const LEFT_ART := Rect2(0, 92, 152, 250)        ## the Vigil illustration and its geodes (full bleed, runs off the outer edge)
+const LEFT_ART := Rect2(0, 0, 152, 342)         ## the hero Vigil and its geodes (full bleed, runs off the top and outer edges)
 const LEFT_HOWTO := Rect2(8, 270, 72, 58)       ## ✱ the small how-to card in the lower outer corner (real-bezel proportions)
-const RIGHT_ART := Rect2(0, 70, 152, 290)       ## the Sepulchre and the Choir crag (full bleed)
-const RIGHT_STICKER := Rect2(3, 222, 74, 26)   ## the die-cut NEW! sticker
+const RIGHT_ART := Rect2(0, 70, 152, 290)       ## the ringed world, the hero Grub and the Choir crag (full bleed)
+const RIGHT_STICKER := Rect2(3, 212, 74, 26)   ## the die-cut NEW! sticker (clear above the coin door's printed cut-out)
 
 
 ## The screen hole in rig (640×360 reference) units: the spec's grid at 1×, centred.

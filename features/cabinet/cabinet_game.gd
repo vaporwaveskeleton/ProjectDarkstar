@@ -299,7 +299,7 @@ func start_stage(i: int, carried: int = -1) -> void:
 	_write_stage_reached()
 
 
-## The stage card (SYS-001 §1.7, UI-001 §10) opens at every stage start, CONTINUE included: the world does
+## The stage card (SYS-001 §1.7, UI-001 §11) opens at every stage start, CONTINUE included: the world does
 ## not tick while it is up. The demo (attract) never shows it.
 func _open_brief(st: CabinetStage) -> void:
 	_brief_t = 0.0
@@ -534,6 +534,8 @@ func _on_timer() -> void:
 func _hold_banner(key: String) -> void:
 	messages.banner(tr(key), MID_SHIFT_HOLD_SECONDS)
 	if haunts != null:
+		if haunts.enabled and decay_tuning.wear_level(stage_index) == haunts.tuning.min_wear_level:
+			haunts.plant_crag_slope()   # the early crag figure, seeded once at a0_3's end (PM 2026-11-20)
 		haunts.moment(CabinetHauntDeck.HOLD)
 	_enter(State.CREDITS, MID_SHIFT_HOLD_SECONDS)
 
@@ -660,7 +662,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		_open_pause()
 
 
-## The stage card's input (UI-001 §10): only a fresh fire_lance press after brief_arm_s dismisses it;
+## The stage card's input (UI-001 §11): only a fresh fire_lance press after brief_arm_s dismisses it;
 ## pause and ui_cancel open the pause overlay, after which the card is still up; nothing else does anything.
 func _brief_input(event: InputEvent) -> void:
 	if not overlays.is_empty() or event.is_echo():

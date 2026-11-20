@@ -99,7 +99,7 @@ extends TunableResource
 @export var acolyte_mine_standoff_px: float = 36.0           ## px ✱ ENGINEERING (not a SYS-001 §1.7 row): a mining Acolyte hovers this far beyond the geode's edge
 @export var unmakings_required: int = 3                         ## Act 0 ends at the third Unmaking (SYS-001 §1.7, Q-T365); = the roster's UNMAKE_ENTITY stages (a test asserts it)
 
-# --- The stage card (SYS-001 §1.7, Q-T371–Q-T374; UI-001 §10; PROPOSED ✱) ---
+# --- The stage card (SYS-001 §1.7, Q-T371–Q-T374; UI-001 §11; PROPOSED ✱) ---
 @export var brief_arm_s: float = 0.35                    ## s ✱ fire_lance is ignored until the card has been up this long (and it needs a fresh press)
 @export var brief_prompt_blink_hz: float = 1.5            ## Hz ✱ PRESS FIRE blinks (under the 3 Hz flash rule); steady under photosensitivity or reduced motion
 @export var brief_ready_after_s: float = 1.5              ## s ✱ the READY card after the press (was 2.5 s)

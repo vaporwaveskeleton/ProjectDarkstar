@@ -563,6 +563,27 @@ PM ruling 2026-11-18 (owner grant), Act 1 vertical slice, amended the same day a
 
 *Resolved 2026-11-18 (TECH-001 §11.1 Q-T102, design calls within the PM ruling):* no hand on the first visit (the chalk writes itself, matching §5.1 and §5.6); the old "first visit" Pact line re-triggered; line 1 in the present tense.
 
+### 5.7a The return chalk (after a run)
+
+PM under owner direction, 2026-11-19 overnight push (TECH-001 Q-T284). A visit that follows a run writes `NARR_SABLE_RETURN_1` and then one more slate line, picked from the pool for the run's outcome (`run_outcome`, TECH-001 §2.1). The pick is deterministic: `RuinsReturnChalk.key_for(outcome, run_seed, runs_ended)`, so the same run reads the same line and repeats are rare across runs. Register: Ruins, sentence case, never a question, never jokey. A `won` outcome has no pool and keeps the plain line.
+
+| Outcome | Voice | Keys (6 each) |
+|---|---|---|
+| `returned` (Seam cleared, exit taken) | quietly proud, uneasy | `NARR_SABLE_RET_OK_1…6` |
+| `died` | the Ruins notice the Vigil's absence; tally marks are `\|` | `NARR_SABLE_RET_DIED_1…6` |
+| `abandoned` | the lamp judges, gently | `NARR_SABLE_RET_QUIT_1…6` |
+| rare, any of the three | after 4 or more ended runs, on one pick in four; hints that the Cabinet has a maker | `NARR_SABLE_RET_RARE_1…2` |
+
+The lines (`locale/en.po` owns the text):
+
+- **Returned:** The way out held. Something let you through. · You carry less dark than you took. Do not ask where it went. · The lamp is lit. I counted twice. · The Seam closed behind you, slowly. · The Seam gave you back. Something there keeps a tally too. · You return clean. The walls notice.
+- **Died:** The Vigil's place by the door sat empty. One more mark. `||||` · The hall noticed the Vigil gone. It keeps the count. `|||` · Dust settled where the Vigil was not. A mark for it. `||` · No one lit the lamp for the Vigil. The wall did not forget. · A gap in the hall, the width of a Vigil. Marked. `|||||` · The Ruins held their breath for the Vigil. They are holding it still. `||`
+- **Abandoned:** The lamp saw you turn back. It does not say what it thinks. · The lamp burns a little lower. Not angry. Attentive. · Turning back is also a choice. The lamp writes it down. · The lamp is steady. It was always going to be. · Some doors are kind to leave. The lamp is not sure this was one. · You left the Seam open. The lamp will wait. It will not mind.
+- **Rare:** The machine on the wall has a maker. The plate is turned to the stone. · Someone built the Cabinet before the light failed. The chalk stops there.
+
+**Reveal stage (§10.3).** The rare lines stay inside S0/S1: the Cabinet is an object with a maker, and nothing more. They never name Theodora Lune (S3), never say what the machine was for (S3) and never mention the plate's text or the honour roll (S3). The "I" in "I counted twice" is the one place Sable speaks of herself; it is a count, not a confession.
+
+
 
 ---
 
@@ -866,7 +887,7 @@ Community rule: Sable is the only character who speaks outside the game (Discord
 | 7 | `CAB_CREDITS_7` | "THANK YOU FOR YOUR SERVICE" |
 
 
-**The stage card** (owner direction 2026-11-19; PM under owner direction, 2026-11-19 overnight push, TECH-001 Q-T373; layout UI-001 §10). Cabinet register: the 1983 machine is bossy, cheerful and sure of itself. Each line is ≤ 30 characters and goes through `tr()` with prefix `CAB_BRIEF_` / `CAB_UNIT_`. The boss is named as the Cabinet knows it, **the Sepulchre** (the owner's "The Presence"; GDD §19). Wording PROPOSED. The first reminder names the stage's trait (SYS-001 §1.7, the zone-trait cycle, Q-T378).
+**The stage card** (owner direction 2026-11-19; PM under owner direction, 2026-11-19 overnight push, TECH-001 Q-T373; layout UI-001 §11). Cabinet register: the 1983 machine is bossy, cheerful and sure of itself. Each line is ≤ 30 characters and goes through `tr()` with prefix `CAB_BRIEF_` / `CAB_UNIT_`. The boss is named as the Cabinet knows it, **the Sepulchre** (the owner's "The Presence"; GDD §19). Wording PROPOSED. The first reminder names the stage's trait (SYS-001 §1.7, the zone-trait cycle, Q-T378).
 
 | Key | Line |
 |---|---|
@@ -1068,7 +1089,7 @@ IDs and classes follow LOOP-001 §8.2 (`cx_<class>_<slug>`; 144 counted entries 
 
 > **cx_place_sky_4 · The Fourth Sky** — Written the first time it went dark. A sky is one layer of every place at once; when it goes out, every biome loses a layer of light and the Ledger Compass loses a row. *The chant lost a voice.*
 
-> **cx_place_act0_3 · Last Normal Day (cabinet stage)** *(the first Ruins visit's stamped page, §5.7)* — Pretence Hall curriculum, stage three, the last of the training rotation. A simulation: in it the Dark Star always lost, by design. Final screen retained as written by the curriculum's author.
+> **cx_place_act0_3 · Last Normal Day (cabinet stage)** *(the first Ruins visit's stamped page, §5.7)* — Pretence Hall curriculum, stage five, the last of the training rotation. A simulation: in it the Dark Star always lost, by design. Final screen retained as written by the curriculum's author.
 
 **The Ruins — `cx_ruins_`** (cast letters; LOOP-001 §8.2: Sable ×4, Ilse ×4, Wick ×4, Cabinet ×3, the Chalk Desk ledger)
 

@@ -1,6 +1,6 @@
 # DARKSTAR — Systems Bible (Numbers)
 
-**Doc ID:** SYS-001 · **Version:** 1.8 · **Status:** Authoritative for all numbers · **Last updated:** 2026-11-19
+**Doc ID:** SYS-001 · **Version:** 1.11 · **Status:** Authoritative for all numbers · **Last updated:** 2026-11-19
 **Owner:** Design (systems) · **Upstream:** `GDD_DARKSTAR_v0.2.md` (GDD-001) · **Downstream:** every other doc in this set
 **Data target:** `docs/04-production/TECH_ARCHITECTURE.md` §6 (data-driven tables) — every table below maps 1:1 to a `.tres`/JSON resource.
 **Rev 1.1 (2026-11-17):** the Anchor field rows in §1.1 (owner decision D-11 of GDD-001 §18); **rev 1.2 (2026-11-17, owner-delegated rulings R-01, R-04, R-10, R-11, R-14):** §1.2 post-hit grace, §9 resolution closed to 640×360, hitbox diameter and entity exception, on-screen caps; §2.2 ninth-sky Hunger as one +2 row, §6 Hourglass budget/death cost/refund, §7.2 Codex stamp note, §7.5 Fragments and Threads (LOOP-001 LR-09…LR-13); the warp-owned numbers WARP-001 asked for in its §8 R-01 to R-05, added to §6, §9 and §10; and the §2.2 eaten-rule pointer corrected from WARP-001 §6 to §3. **No pre-existing number in this doc was changed by that revision.**
@@ -8,8 +8,12 @@
 **Rev 1.4 (2026-11-18, Act 1 vertical slice; PM ruling 2026-11-18 (owner grant)):** §7.1 new row "Act 0 bank (first Ruins visit, once)" (the existing Ember formula applied once; PM-approved 2026-11-18 under owner grant; retune at playtest); §6 Hourglass Clock budget row notes the first-visit start at the first launch (GDD §6.2 exception). **No pre-existing number was changed.** Open: the bank's save reason (TECH-001 §11.1 Q-T101).
 **Rev 1.5 (2026-11-19, M1 slice 3 PR 4; PM under owner autonomy grant 2026-11-19):** §1.4 turn-authority reading (time for a 180° turn), Charge contact radius, trail and hits on target; §2 phase-0 row: "Sepulchre HP per segment 8 ✱" **dropped for phases 0–1** (1 Charge hit = 1 segment; TECH-001 Q-T110), new Sepulchre and sandbox procession rows; §3 Grub flee-while-carrying (never, Q-T112), body/steering and idle-orbit rows. All new values are the Cabinet's or M1 engineering values, ✱.
 **Rev 1.6 (2026-11-19, Act 0 arcade expansion P1, "the shift"; PM (delegated owner authority)):** new §1.6 Act 0 stage table (five stages); §7.1 rows for lives at start, lives cap and the extra-life schedule (schedule approved, built in P2). No Vigil number was changed.
-**Rev 1.8 (2026-11-19, Act 0 "too simple" pass; PM under owner direction, 2026-11-19 overnight push, TECH-001 Q-T365–Q-T377):** new §1.7, all PROPOSED (revised the same night with the PM's pixel measurements of the reference screenshots, Q-T378): three Unmakings, a 65,536 px wrapping field with a travelling neighbourhood, a 48 px HUD band with a local square Ledger Compass, unit proportions, Acolyte mining, and the stage card timings. §1.6's field-size line points at §1.7.
 **Rev 1.7 (2026-11-19, M2 RunSession; PM under owner autonomy grant 2026-11-19, TECH-001 §11.1a Q-T136, Q-T138, Q-T144–Q-T147, Q-T149):** §6 new rows Hourglass Clock rate (1:1), Hourglass Clock pauses, Abandon (costs the death clock cost); §7.1 `Act 0 bank` gains a floor of 40 Ember (`max(floor(VI / 200), 40)`); §7.2 Seam clears pay 40 each **including Seam 5** (won-run row 160 → 200) and in-run Ember banks on a win and on a death; §7.2 Run-Sigil picks timing stated (after Seams 1–3); new §7.7 Lantern Tree node prices by tier and the Run Sigil reroll ladder, moved from LOOP-001 with no value change.
+
+**Rev 1.8 (2026-11-19 overnight, the run's back door; PM under owner direction, TECH-001 Q-T275..Q-T277):** §6 two **proposed** rows, `Seam clear: Sepulchre segments knocked` (3) and `Slice frontier Seam` (1), and a proposed amendment to `Abandon` (mid-Seam Abandon Run at the same price). Owner confirmation: TECH-001 Q-T282.
+**Rev 1.9 (2026-11-19 overnight, the M2 Lantern Tree stub; PM under owner direction, TECH-001 Q-T330):** §7.7 two **proposed** rows, `Lantern Tree tier-2 gate` (2) and `Lantern Tree tiers on sale (M2 slice)` (1). No existing value changed; the tier prices are read from the §7.7 rows as they stand (`ds_lantern_tree.stock.price_tier1`, `ds_lantern_tree.tree.price_tier2`, `ds_lantern_tree.tree.price_codex_gated`).
+**Rev 1.10 (2026-11-19 overnight, race framing and the Codex record; PM under owner direction, TECH-001 Q-T353, Q-T355, Q-T356):** §9 one **proposed** row, `Race fit margin` (24 px); the `Race pull-out zoom` and `Race pull-out max` rows now describe the fitted pull-out (0.8 is its floor; a Charge in flight holds it for the whole flight; never under Reduced Motion). §7.6 `Gating backstop: tier-1 entries` gains its data key and its reading of "run 3" (the profile run count, every outcome). No existing value changed.
+**Rev 1.11 (2026-11-19, Act 0 "too simple" pass; PM under owner direction, 2026-11-19 overnight push, TECH-001 Q-T365–Q-T377):** new §1.7, all PROPOSED (revised the same night with the PM's pixel measurements of the reference screenshots, Q-T378): three Unmakings, a 65,536 px wrapping field with a travelling neighbourhood, a 48 px HUD band with a local square Ledger Compass, unit proportions, Acolyte mining, and the stage card timings. §1.6's field-size line points at §1.7.
 
 ---
 
@@ -275,7 +279,7 @@ Hurt radii follow the drawn size: half the drawn extent minus 1 px ✱. Collisio
 
 **Acolyte entry hold** (Q-T378): `ds_cabinet.tuning.acolyte_enter_hold_s` = 1.0 s ✱. An Acolyte that enters the view holds fire this long before its first tell (the reference's warriors hold fire for about 1 s on entering the screen). The 🔒 tell (0.35 s) and turret lag are unchanged.
 
-**Stage card (Q-T371–Q-T374; UI-001 §10).**
+**Stage card (Q-T371–Q-T374; UI-001 §11).**
 
 | Key | Value | Notes |
 |---|---|---|
@@ -475,10 +479,12 @@ Cosmic horror design rev 3 (PM ruling 2026-11-18 (owner grant)). The rules are Z
 | Hourglass Clock rate (loop-minute to real time) | 1 loop-minute = 1 real minute (1:1). PM under owner grant 2026-11-19 (TECH-001 §11.1a Q-T136) |
 | Hourglass Clock pauses | the clock stops only for: the Codex, scripted cinematics, attract mode, a route curtain or loading, the pause menu, and the Ruins menus (Lantern Tree, Chalk Desk). Slow-motion and hit-stop do **not** pause it. Route curtains/loading and the Ruins menus were added to the GDD §20 Q1 list the same day. PM under owner grant 2026-11-19 (TECH-001 §11.1a Q-T138) |
 | Death clock cost | `10 + 2 × (Seam index − 1)` loop-minutes ✱ (Seam 1 = 10, Seam 5 = 18; GDD §6.2 range) |
-| Abandon | allowed only in the Ruins or at a Seam boundary; costs the `Death clock cost` row. PM under owner grant 2026-11-19 (TECH-001 §11.1a Q-T144) |
+| Abandon | allowed only in the Ruins or at a Seam boundary; costs the `Death clock cost` row. PM under owner grant 2026-11-19 (TECH-001 §11.1a Q-T144). **Proposed amendment (2026-11-19 overnight, TECH-001 Q-T277, owner confirmation Q-T282):** the sector pause's Abandon Run is also allowed mid-Seam, at the same price; in-run Ember banks |
 | Run-won refund | +15 loop-minutes ✱, never above the 120 budget (LOOP-001 LR-09) |
 | Run length target | 25–35 min 🔒 |
 | Seam clear time | 4–6 min ✱ |
+| Seam clear: Sepulchre segments knocked (`ds_sector.exit.knocks_required`) | **3, proposed** (2026-11-19 overnight, TECH-001 Q-T275): a Seam clears when its Sepulchre stands at 0 segments after Charges knocked at least this many off ("the Sepulchre unmade"). Slice stand-in for "kit cleared" until the Waking and kit exit anchors exist (Q-T283) |
+| Slice frontier Seam (`ds_run.session.slice_last_seam`) | **1, proposed** (2026-11-19 overnight, TECH-001 Q-T276, owner confirmation Q-T282): the cleared exit of this Seam ends the run (outcome `returned`: Seam clear and score Ember bank in full; no death cost, no win refund) while later Seams have no content. 0 = off (all 5 Seams). `Seams per run` is unchanged |
 | Seam sealing under **H2** (a warp-eaten rule) | `seam_close_after` = **20 s** ✱ — the seam you crossed seals 20 s after your crossing. While sealed, the boundary refuses the crossing and the Vigil slides along the edge, with no input lock. Seams re-open at the sector boundary; a sealed seam is never a permanent wall. Requested by WARP-001 §8 R-01; the rule itself is WARP-001 §3.2 H2 |
 | Sector size | 3–7 Encounter Kits stitched (1 screen cluster each, ~640×360 base unit) |
 | Biomes | 6 (GDD §8.8; ZONES-001 §2 for the full table) |
@@ -571,7 +577,7 @@ Cosmic horror design rev 3 (PM ruling 2026-11-18 (owner grant)). Unwritten Ink r
 | Field | Value | Notes |
 |---|---|---|
 | Ink-node Ember price | 0 Ember | the node is still bought at the Lantern Tree; it needs its gating entry stamped. PM-approved 2026-11-18 under owner grant; retune at playtest |
-| Gating backstop: tier-1 entries | stamped after run 3 of the Chronicle | backstop (a), tier floor for tier 1. PM-approved 2026-11-18 under owner grant; retune at playtest |
+| Gating backstop: tier-1 entries | stamped after run 3 of the Chronicle | backstop (a), tier floor for tier 1. PM-approved 2026-11-18 under owner grant; retune at playtest. Data key `ds_run.session.codex_backstop_tier1_runs` = 3; "run 3" = the profile's `runs_ended` count, every outcome (TECH-001 Q-T353); stamped at the next Ruins arrival (built 2026-11-19 overnight) |
 | Gating backstop: tier-t entries | stamped at the start of Iteration t | backstop (a), tier floor. PM-approved 2026-11-18 under owner grant; retune at playtest |
 | Gating backstop: per death | 1 entry: the oldest pending gating entry, lowest tier first | backstop (b), "death teaches". PM-approved 2026-11-18 under owner grant; retune at playtest |
 | Gating discovery: dark flight seconds (LANTERN-4) | 5 s | first sustained dark flight (Lantern down, no fire) this long stamps `cx_rule_lantern_dark`. PM-approved 2026-11-18 under owner grant; retune at playtest |
@@ -603,6 +609,8 @@ Moved here from LOOP-001 §3.3 (per-node Cost column) and §4.1 (Reroll row) on 
 | Lantern Tree node price, tier 5 (capstones 17–18) | 900 Ember | every Ember-priced capstone |
 | Codex-gated nodes (27) | 0 Ember at every tier | the §7.6 `Ink-node Ember price` row; the gate is the stamped entry (LOOP-001 §3.7) |
 | Run Sigil reroll, by choice number | 40 / 90 / 160 / 240 Ember | bought in-run (GDD §7.3; LOOP-001 §4.1). SIG-M-07 *Second Thought* halves it; SIG-S-14 lets banked Ember pay (LOOP-001 §4.2) |
+| Lantern Tree tier-2 gate | 2 tier-1 nodes of the same branch | **proposed** (2026-11-19 overnight, the M2 Tree stub; PM approval, TECH-001 Q-T330): the LOOP-001 §3.1 Pity value for T2, moved here like the prices (Q-T149); a T2 node also needs its hard prerequisite. `ds_lantern_tree.tree.tier2_gate`. The T3+ gate waits on Q-T329 (LOOP-001 §3.1 and its §3.3 footnote disagree) |
+| Lantern Tree tiers on sale (M2 slice) | 1 | **proposed** (2026-11-19 overnight; TECH-001 Q-T330): PROD-001 §3 M2 "the slice Tree shows tier 1 only"; the stub's 10 tier-2 nodes hang as dark lamps. `ds_lantern_tree.tree.max_tier_on_sale`; raise to 2 to sell them |
 
 The tree totals (LOOP-001 §3.3 node rollup, 17,480 Ember over 63 Ember nodes) are derived from these rows and the node tiers.
 
@@ -640,8 +648,9 @@ The tree totals (LOOP-001 §3.3 node rollup, 17,480 Ember over 63 Ember nodes) a
 | Race framing reach (`ds_camera.race_reach_px`) | 900 px ⚙ **proposed** | Race points (Charges in flight, Grubs carrying glass, the Sepulchre while either happens) farther than this from the Vigil are ignored by the camera lean. PM under owner autonomy grant 2026-11-19 (sector slice look); retune at playtest |
 | Race framing max lean (`ds_camera.race_lean_max_frac`) | 0.7 of the half view per axis ⚙ **proposed** | Caps the lean so the Vigil never leaves the screen; zoom stays fixed (Z1). PM under owner autonomy grant 2026-11-19; retune at playtest |
 | Race framing lean time (`ds_camera.race_lean_time_s`) | 0.6 s ⚙ **proposed** | Smoothing time of the lean (same critically damped spring as follow). PM under owner autonomy grant 2026-11-19; retune at playtest |
-| Race pull-out zoom (`ds_camera.race_pull_zoom`) | 0.8 ⚙ **proposed** | Zoom the camera eases to (same spring and time as the lean) while the Sepulchre is a race target off the zoom-1 frame (TECH-001 Q-T211). The one context exception to Zoom 1.0; 0 = off. PM under owner autonomy grant 2026-11-19; retune at playtest |
-| Race pull-out max (`ds_camera.race_pull_max_s`) | 2.5 s ⚙ **proposed** | Longest one pull-out lasts; then zoom 1 until the Sepulchre stops being a race target. PM under owner autonomy grant 2026-11-19; retune at playtest |
+| Race pull-out zoom (`ds_camera.race_pull_zoom`) | 0.8 ⚙ **proposed** | Floor of the race pull-out (same spring and time as the lean): while the race in reach does not fit the zoom-1 frame, the camera eases to the zoom that fits it, never below this (TECH-001 Q-T211; fitted since Q-T355, 2026-11-19 overnight). Never under Reduced Motion (Q-T356). The one context exception to Zoom 1.0; 0 = off. PM under owner autonomy grant 2026-11-19; retune at playtest |
+| Race pull-out max (`ds_camera.race_pull_max_s`) | 2.5 s ⚙ **proposed** | Longest one pull-out lasts when no Charge is in flight (a Grub theft); then zoom 1 until the race ends. A Charge in flight holds the pull for its whole flight (its `Charge life` bounds it) and each new Charge re-arms it (Q-T355). PM under owner autonomy grant 2026-11-19; retune at playtest |
+| Race fit margin (`ds_camera.race_fit_margin_px`) | 24 px ⚙ **proposed** | Screen margin the fitted pull-out keeps between the outermost race point (or the Vigil) and the frame edge (TECH-001 Q-T355). PM under owner direction, 2026-11-19 overnight push; retune at playtest |
 | M1 sandbox arena | wrapping torus 1920×720 ✱ | Same source as the Cabinet's torus field (`CabinetStage.field_size`), so M1 matches Act 0; no clear colour shows (a repeating floor covers the view). Real kit bounds come from ZONES-001 later. TECH-001 Q-T58, PM under owner autonomy grant 2026-11-18 |
 | Zoom | 1.0 (T0) → 1.06 (T3) → breathing ±2% over 11 s (T5) | GDD §4.2. Zoom 1.0 = the 640×360 logical frame, the fixed post-Act 0 camera scale (TECH-001 Q-T25 resolved Z1, PM under owner autonomy grant 2026-11-18) |
 | Lie spend window (L6) | 3 s | a HUD lie never concerns the count of a resource the player can spend within this window (WARP-001 §4.2 L6, widened). PM-approved 2026-11-18 under owner grant; retune at playtest |
@@ -808,3 +817,6 @@ These are audio engineering values, not gameplay numbers. AUDIO-001 §12.19 owns
 | Threat | `threat_rise_s`, `threat_fall_s`, `threat_poll_s` | 4 s, 8 s, 0.25 s |
 | Threat | `threat_frayed`, `threat_unmoored`, `threat_hollowed` | 0.35, 0.7, 1.0 (by Composure band) |
 | Threat | `threat_per_carrier`, `threat_carrier_cap`, `threat_sepulchre_weight` | 0.2, 0.6, 0.9 |
+| Player volume | `vol_master`, `vol_music`, `vol_choir`, `vol_entity`, `vol_ui`, `vol_foley` defaults (`SettingsService.DEFAULTS`, not `ds_`) | 70 / 100 / 100 / 100 / 100 / 100 (**Proposed**: Master 70 and Choir "top of the range" are AUDIO-001 §8.4's; the other four are new) |
+| Player volume | floors for `vol_entity`, `vol_foley` | 40 / 40 (**Proposed**: Entity's 40 is AUDIO-001 §8.4's; the Foley floor is new, TECH-001 Q-T391) |
+| Player volume | slider curve exponent, key step, preview delay | amplitude = (value / 100)², 5 points, 0.18 s (**Proposed**, TECH-001 Q-T392) |

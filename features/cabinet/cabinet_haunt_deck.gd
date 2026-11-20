@@ -112,5 +112,12 @@ func draw(moment: StringName) -> StringName:
 	return k
 
 
+## Plant `kind`: the next moment that offers it draws it, whatever the odds (CabinetHaunts.plant_crag_slope).
+## Spent like any draw, so it still happens at most once per deck; the motion settings still filter it.
+func plant(kind: StringName) -> void:
+	if not _used.has(kind):
+		forced = kind
+
+
 func used(kind: StringName) -> bool:
 	return _used.has(kind)

@@ -165,7 +165,7 @@ func block_height(s: String, scale: int) -> float:
 	return PixelText.wrap(s, scale, size.x - 2.0 * MARGIN).size() * float(PixelText.H * scale + 3 * scale)
 
 
-# --- The stage card (SYS-001 §1.7, UI-001 §10) ------------------------------------------------------
+# --- The stage card (SYS-001 §1.7, UI-001 §11) ------------------------------------------------------
 # Drawn in the play view with PixelText and the existing Look.c(Pal.*) registers; never over the marquee
 # (the marquee is a bezel screenprint, outside the screen). One layout for _draw and the tests.
 

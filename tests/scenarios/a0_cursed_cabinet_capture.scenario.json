@@ -325,7 +325,16 @@
 		},
 		{
 			"do": "wait_frames",
-			"frames": 30
+			"frames": 8
+		},
+		{
+			"do": "screenshot",
+			"name": "20_turn_116_last_line",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 22
 		},
 		{
 			"do": "screenshot",

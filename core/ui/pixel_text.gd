@@ -63,6 +63,19 @@ const GLYPHS := {
 	"+": ["00000", "00100", "00100", "11111", "00100", "00100", "00000"],
 	"×": ["00000", "10001", "01010", "00100", "01010", "10001", "00000"],
 	"·": ["00000", "00000", "00000", "00100", "00000", "00000", "00000"],
+	";": ["00000", "01100", "01100", "00000", "01100", "00100", "01000"],
+	"&": ["01100", "10010", "10100", "01000", "10101", "10010", "01101"],
+	"\"": ["01010", "01010", "00000", "00000", "00000", "00000", "00000"],
+	"<": ["00010", "00100", "01000", "10000", "01000", "00100", "00010"],
+	">": ["01000", "00100", "00010", "00001", "00010", "00100", "01000"],
+	"=": ["00000", "00000", "11111", "00000", "11111", "00000", "00000"],
+	"#": ["01010", "01010", "11111", "01010", "11111", "01010", "01010"],
+	"*": ["00000", "10101", "01110", "11111", "01110", "10101", "00000"],
+	"_": ["00000", "00000", "00000", "00000", "00000", "00000", "11111"],
+	"↑": ["00100", "01110", "10101", "00100", "00100", "00100", "00100"],
+	"↓": ["00100", "00100", "00100", "00100", "10101", "01110", "00100"],
+	"←": ["00000", "00100", "01000", "11111", "01000", "00100", "00000"],
+	"→": ["00000", "00100", "00010", "11111", "00010", "00100", "00000"],
 }
 
 static var _cache: Dictionary = {}   # char -> PackedVector2Array of lit pixel offsets
@@ -100,6 +113,38 @@ static func draw(ci: CanvasItem, pos: Vector2, text: String, color: Color, scale
 static func draw_centered(ci: CanvasItem, centre_x: float, y: float, text: String, color: Color, scale: int = 1) -> void:
 	draw(ci, Vector2(roundf(centre_x - width(text, scale) * 0.5), y), text, color, scale)
 
+
+
+## True when every character of `text` has a glyph (space always does).
+static func covers(text: String) -> bool:
+	return missing(text).is_empty()
+
+
+## The characters of `text` with no glyph (drawn as blank cells).
+static func missing(text: String) -> PackedStringArray:
+	var out := PackedStringArray()
+	for ch in text.to_upper():
+		if ch != " " and not GLYPHS.has(ch) and not out.has(ch):
+			out.append(ch)
+	return out
+
+
+## Pixel text with the CRT's scanline treatment: each lit pixel is a full-colour band over its top
+## `1 - scan` and a dim band (`scan_alpha`) under it, so at 3 physical px per logical px the text
+## shows the tube's raster gaps (the overlay menus' service mode, TECH-001 §2.9b). ✱ presentation values.
+static func draw_crt(ci: CanvasItem, pos: Vector2, text: String, color: Color, scale: int = 1,
+		scan: float = 0.34, scan_alpha: float = 0.4) -> void:
+	var s := float(maxi(1, scale))
+	var lit := s * (1.0 - scan)
+	var dim := Color(color, color.a * scan_alpha)
+	var x := roundf(pos.x)
+	var y := roundf(pos.y)
+	for ch in text.to_upper():
+		for p in _pixels(ch):
+			var o := Vector2(x + p.x * s, y + p.y * s)
+			ci.draw_rect(Rect2(o, Vector2(s, lit)), color)
+			ci.draw_rect(Rect2(o + Vector2(0.0, lit), Vector2(s, s - lit)), dim)
+		x += ADVANCE * s
 
 ## Text with a 1-pixel-per-scale drop shadow, for text over busy fields.
 static func draw_shadowed(ci: CanvasItem, pos: Vector2, text: String, color: Color, shadow: Color, scale: int = 1) -> void:

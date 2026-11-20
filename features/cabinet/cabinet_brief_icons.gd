@@ -1,6 +1,6 @@
 class_name CabinetBriefIcons
 extends RefCounted
-## The unit icons on the Act 0 stage card (UI-001 §10): the geode, Grub, Acolyte and Sepulchre drawn small, in the
+## The unit icons on the Act 0 stage card (UI-001 §11): the geode, Grub, Acolyte and Sepulchre drawn small, in the
 ## same line-art and `Pal` registers as their sim layers (GeodeField, GrubFlock, AcolyteSquad, SepulchreRitual).
 ## They are faithful mini copies, not calls into the layers: the layers draw through the live world's camera.
 ## Sizes come from CabinetTuning (SYS-001 §1.7), so the card never disagrees with the field.

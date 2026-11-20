@@ -41,6 +41,8 @@ func _ready() -> void:
 	_mat.set_shader_parameter(&"wall_color", _rgb(surface.backdrop_wall_color))
 	_mat.set_shader_parameter(&"carpet_color", _rgb(surface.backdrop_carpet_color))
 	_mat.set_shader_parameter(&"tungsten_color", _rgb(surface.backdrop_tungsten_color))
+	_mat.set_shader_parameter(&"ceiling_color", _rgb(surface.backdrop_ceiling_color))
+	_mat.set_shader_parameter(&"warmth", surface.backdrop_warmth)
 	var neon := PackedVector3Array()
 	for i in 6:
 		var c := surface.backdrop_neon[i % surface.backdrop_neon.size()] if surface.backdrop_neon.size() > 0 else Color.WHITE

@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## The Act 0 stage card and the three Unmakings (SYS-001 §1.7, UI-001 §10, NARR-001 §7.5; PROPOSED).
+## The Act 0 stage card and the three Unmakings (SYS-001 §1.7, UI-001 §11, NARR-001 §7.5; PROPOSED).
 ## Driven through the real scene: the card opens at every stage start, the world does not tick under it,
 ## only a fresh fire_lance press after brief_arm_s dismisses it, pause and ui_cancel open the pause
 ## overlay and leave the card up, and --autopilot closes it itself.

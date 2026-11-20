@@ -1,0 +1,19 @@
+{
+	"format": "darkstar.scenario",
+	"version": 1,
+	"id": "perf_ruins",
+	"profile": "dev",
+	"args": [],
+	"fixtures": {},
+	"timeout_frames": 1400,
+	"steps": [
+		{"do": "wait_route", "route": "attract", "within": 240},
+		{"do": "goto", "route": "ruins"},
+		{"do": "wait_route", "route": "ruins", "within": 240},
+		{"do": "wait_frames", "frames": 120},
+		{"do": "perf_begin", "name": "ruins"},
+		{"do": "wait_frames", "frames": 600},
+		{"do": "perf_end", "name": "ruins", "budget_ms": 8},
+		{"do": "quit"}
+	]
+}
