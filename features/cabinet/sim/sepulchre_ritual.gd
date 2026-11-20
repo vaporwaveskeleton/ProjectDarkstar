@@ -20,6 +20,7 @@ const SEPULCHRE_RADIUS := 26.0   ## ✱ deposit / Charge contact radius of the a
 var pos := Vector2.ZERO
 var entity_pos := Vector2.ZERO
 var entity_dir := Vector2.RIGHT
+var entity_vel := Vector2.ZERO       ## the awake entity's velocity (eased toward the wanted one, Q-T446); zero while it is stunned or eating
 var radius := SEPULCHRE_RADIUS
 var segments := 0
 var shard_points := 0
@@ -60,6 +61,7 @@ func reset() -> void:
 	_line_said = false
 	cleared = false
 	_arrived = false
+	entity_vel = Vector2.ZERO
 	_true_frames_left = 0
 	_set_phase(_phase_for(segments))
 	world.segments_changed.emit(segments)
@@ -260,23 +262,39 @@ func _rampage(delta: float) -> void:
 	var t := world.tuning
 	_unit_meal_cd = maxf(0.0, _unit_meal_cd - delta)
 	if _staggered > 0.0:
+		entity_vel = Vector2.ZERO                       # a stun stops it dead (the source zeroes the velocity)
 		_staggered -= delta
 		return
 	if _eating > 0.0:
+		entity_vel = Vector2.ZERO
 		_eating -= delta
 		return
 	var v := world.vigil
-	if v.alive:
-		var want := world.torus.delta(entity_pos, v.pos).normalized()
-		var ang := entity_dir.angle_to(want)
-		entity_dir = entity_dir.rotated(clampf(ang, -t.entity_turn_rad_s * delta, t.entity_turn_rad_s * delta))
 	var speed := t.rampage_speed
+	var ease_rate := t.rampage_ease_rate
 	if t.rampage_catchup_px > 0.0 and not _arrived:
 		if world.torus.distance(entity_pos, v.pos) > t.rampage_catchup_px:
 			speed = maxf(speed, t.rampage_catchup_speed)   # F-7: the first approach is a sprint, so a wake far away is felt (Q-T447)
+			ease_rate = t.rampage_catchup_ease_rate
 		else:
 			_arrived = true                                # once it is on you it closes at rampage_speed, so it can still be kited
-	entity_pos = world.torus.wrap(entity_pos + entity_dir * speed * delta)
+	if ease_rate > 0.0:
+		# Q-T446 (the source's table chase): velocity closes on dir × row speed by an exponential ease, no turn cap:
+		# heavy turns, no overshoot jitter, never stops while the Vigil lives. Rows: far (sprint) and near (rampage_speed).
+		var want := entity_dir
+		if v.alive:
+			want = world.torus.delta(entity_pos, v.pos).normalized()
+		entity_vel += (want * speed - entity_vel) * (1.0 - exp(-ease_rate * delta))
+		if entity_vel.length() > 1.0:
+			entity_dir = entity_vel.normalized()
+		entity_pos = world.torus.wrap(entity_pos + entity_vel * delta)
+	else:
+		if v.alive:
+			var want2 := world.torus.delta(entity_pos, v.pos).normalized()
+			var ang := entity_dir.angle_to(want2)
+			entity_dir = entity_dir.rotated(clampf(ang, -t.entity_turn_rad_s * delta, t.entity_turn_rad_s * delta))
+		entity_vel = entity_dir * speed
+		entity_pos = world.torus.wrap(entity_pos + entity_dir * speed * delta)
 	# contact death (SYS-001 §2 phase 5 🔒)
 	if v.alive and world.torus.distance(entity_pos, v.pos) <= BODY_RADIUS - CONTACT_INSET + v.radius:
 		v.kill(entity_pos, world.torus.delta(v.pos, entity_pos).normalized(), BODY_DRAWN_RADIUS)

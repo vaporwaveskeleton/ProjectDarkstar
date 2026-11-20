@@ -17,6 +17,7 @@
 **Rev 1.11 (2026-11-19, Act 0 "too simple" pass; PM under owner direction, 2026-11-19 overnight push, TECH-001 Q-T365–Q-T377):** new §1.7, all PROPOSED (revised the same night with the PM's pixel measurements of the reference screenshots, Q-T378): three Unmakings, a 65,536 px wrapping field with a travelling neighbourhood, a 48 px HUD band with a local square Ledger Compass, unit proportions, Acolyte mining, and the stage card timings. §1.6's field-size line points at §1.7.
 **Rev 1.13 (2026-11-20, Act 0 density and feel pass; PM under owner direction, 2026-11-20 extended push (Q-T381–Q-T384)):** all PROPOSED. §1.6 stage counts raised (geodes 34/40/44/72/14, Grubs 6/14/14/10/6, Sepulchre start segments 20/20/4/6/4; a0_3 bell 16 s, cap 6), `geode_drift_floor` 0.5 → 0.8; §1.7 neighbourhood half 768 → 640, `grub_flee_radius` 110 → 70, new shadow/patrol/hold, prompt-duty and streak keys, measured stage times (Q-T383).
 **Rev 1.14 (2026-11-20, owner playtest F-1…F-4; PM under owner feedback, TECH-001 Q-T440–Q-T443):** all PROPOSED. §2.1 Rampage speed 150 → 380 px/s ✱ (faster than the Vigil, supersedes "always slower"); §1.6 Grub intercept range 150 px and dive speed 220 px/s (rows after Escort distance).
+**Rev 1.15 (2026-11-20, owner playtest F-9; owner opened the §1.1 movement locks for Act 0; TECH-001 Q-T445, Q-T446, Q-T448):** new §1.1 subsection "Act 0 ship handling: Momentum" (the arcade original's one-stick tank; `move_model` data switch, the §1.1 rows below stay as the DIRECT model and the Aether/Act 1 profile); §1.7 chase rows for the awake entity's velocity ease. All new values ✱ PROVISIONAL (the owner tunes by playing). **No pre-existing 🔒 number was changed.**
 
 **Rev 1.15 (2026-11-20, owner playtest round 2, F-6/F-7; PM under owner feedback, TECH-001 Q-T442, Q-T447):** all PROPOSED. §1.6 the waking re-seed row is **removed** (a Sepulchre knocked to 0 now ends the stage on every stage, not only cold ones); new engineering rows `rampage_catchup_px` 640 and `rampage_catchup_speed` 680 (the awake entity sprints on its first approach while the Vigil is farther than this). No pre-existing locked number changed.
 
@@ -64,6 +65,20 @@ This is the **Cabinet profile** (Act 0). Its 🔒 rows are locked for Act 0 only
 | `anchor_freeze` duration | 6.0 s | 8.0 s (HULL-16) | ✱ Choir units inside stop moving, chanting and firing; elites and Heralds freeze for half duration. It never damages: a stall, not a kill, per GDD-001 §8.7. |
 | `anchor_rearm` | 20 s | 14 s (HULL-12) | ✱ the timer starts when the freeze lands, not when the field is raised. |
 | `anchor` exclusions and cap | Sepulchre and The Penitent are never frozen; max 6 units per cast | — | ✱ frozen units still count against §4 spawn budgets and the §9 contact budget (`Simultaneous hostile contacts`). Stopping a deposit is WARD-6's job, not the ring's. |
+
+#### Act 0 ship handling: Momentum ✱ PROVISIONAL (owner F-9, 2026-11-20; TECH-001 Q-T445)
+
+The owner opened the §1.1 movement locks **for Act 0 only** (2026-11-20): the Act 0 arcade is too easy with the direct twin-stick ship; take the movement from the arcade original (`research/sinistar_player_movement.md`). The Cabinet ship now flies `ds_cabinet.tuning.move_model` = **Momentum** by default; `Direct` (the rows above: accel, drag, brake) stays selectable in `data/cabinet/cabinet_tuning.tres` (`move_model = 0`) so the owner can compare by playing. Act 1 and the Aether profile are untouched (the rows above and §1.1a). Input actions are unchanged (GDD §4.1/§4.3): the same `move_*` stick, aim and fire stay twin-stick; the `brake` action does nothing in Momentum (the original has none).
+
+| Field (`ds_cabinet.tuning.*`) | Value | Source ratio | Notes |
+|---|---|---|---|
+| `momentum_max_speed` | 340 px/s ✱ | same cap at any deflection (source: fixed target velocity) | = the Direct model's `max_speed` 🔒, so the ceiling does not move; deflection only sets how fast it is reached |
+| `momentum_ease_rate` | 3.8 /s ✱ | source full stick ≈ 3.6–4.0 /s (velocity gap closes by radius/2048 per 16 ms tick; 95 % in ≈ 0.8 s) | velocity closes on *heading × max*; scales with stick deflection (light stick ≈ 0.4 /s). About 6× lazier than Direct's 0.13 s to full speed |
+| `momentum_turn_rate` | 40 /s ✱ | source ≈ 0.45–0.5 of the heading gap per tick at full stick (≈ 3 ticks to face the stick) | the hull heading closes exponentially on the stick direction; scales with deflection |
+| `momentum_thrust_arc_deg` | 45° ✱ | source thrust only within ±$20 of 256 = ±45° | thrust acts along the hull heading only, never along the stick; outside the arc the hull only turns |
+| drag / brake | none | source: nothing writes the velocity but the ease, collisions and death | the ship coasts forever; a Surgelight excess above the cap eases back at `momentum_ease_rate` |
+
+Aim is independent of the hull heading (twin-stick: mouse or right stick), so firing never needs the ship to face its target; lances still carry half the ship's velocity (`ShotLayer.fire_lance`).
 
 ### 1.1a Aether handling profile ✱ (GDD §4.2a; ruled, PM under owner autonomy grant, 2026-11-19)
 
@@ -234,6 +249,7 @@ Engineering rows (✱, `CabinetTuning`, `ds_cabinet.tuning.*`; PM-accepted 2026-
 | Grub intercept range (`grub_intercept_range`) | 150 px ✱ PROVISIONAL (Q-T440) | a Grub this close to a Charge flying at the not-yet-awake Sepulchre dives in and dies (Sinibomb-intercept analogue) |
 | Grub intercept speed (`grub_intercept_speed`) | 220 px/s ✱ PROVISIONAL (Q-T440) | its dive speed; above the Charge's 210 px/s 🔒 only barely, so it must start near the path |
 | Awake-entity catch-up (`rampage_catchup_px`, `rampage_catchup_speed`) | 640 px, 680 px/s ✱ PROVISIONAL (Q-T447) | on its first approach, while the Vigil is farther than 640 px (the neighbourhood half-size, the Compass edge), the awake entity moves at 680 px/s (2× the Vigil `max_speed` 340); once it has come within 640 px the sprint is spent and it closes at `rampage_speed` 380 (so it can still be kited); a wake 2,560 px away is felt within seconds. The source Sinistar also sprints when far (Q-T446) |
+| Awake-entity chase ease (`rampage_ease_rate`, `rampage_catchup_ease_rate`) | 4.0 /s near row, 2.0 /s far (sprint) row ✱ PROVISIONAL (Q-T446, F-9) | the entity's velocity closes on *toward the Vigil × row speed* by an exponential ease with no turn cap (heavy turns, no snap); the source's table rows use shifts 4 (mid) and 5 (top), ≈ 4 /s and ≈ 2 /s. A stun or a meal stops it dead (the source zeroes the velocity). 0 restores the old fixed-speed, turn-capped chase |
 
 `a0_5` margin (PM 2026-11-19, TECH-001 §11.1 Q-T130): Grubs 5 → 4 and Guard Acolytes 2 → 1; **retune at playtest (Reviewer: a0_5 sits on the 24-shard floor)**. `a0_1` is the old A0-1 stage and `a0_5` the old A0-3 stage (The Last Normal Day); `a0_2`–`a0_4` are new. Vigil rows (§1.1–§1.5) are not touched by the shift (the 340 px/s lock stays).
 

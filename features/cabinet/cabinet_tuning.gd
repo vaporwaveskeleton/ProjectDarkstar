@@ -24,6 +24,14 @@ extends TunableResource
 @export var charge_turn_authority: float = 1.6   ## s 🔒 — time to turn a full half-circle
 @export var charge_life: float = 6.0             ## s ✱ before it gutters out (counts as lost)
 
+# --- Ship handling (owner F-9, Q-T445; PROVISIONAL, retuned by playing; source ratios in research/sinistar_player_movement.md) ---
+enum MoveModel { DIRECT, MOMENTUM }
+@export var move_model: MoveModel = MoveModel.MOMENTUM   ## DIRECT = the old SYS-001 §1.1 twin-stick (accel/drag/brake); MOMENTUM = the arcade original's one-stick tank. Switch in data to compare
+@export var momentum_max_speed: float = 340.0     ## px/s ✱ the same cap at any deflection (source: fixed target speed); = the Vigil's max_speed 🔒, so the ceiling does not move
+@export var momentum_ease_rate: float = 3.8       ## 1/s ✱ full-stick rate at which velocity closes on heading × max (source ≈ 3.6–4.0/s, 95 % in ≈ 0.8 s); scales with deflection
+@export var momentum_turn_rate: float = 40.0      ## 1/s ✱ full-stick rate at which the hull heading closes on the stick (source ≈ 0.45–0.5 of the gap per 16 ms tick, ≈ 3 ticks to face it); scales with deflection
+@export var momentum_thrust_arc_deg: float = 45.0 ## deg ✱ thrust only while the stick is within this angle of the heading (source ±$20 of 256 = ±45°)
+
 # --- Waking lifecycle (SYS-001 §2, §2.1) ---
 @export var segments_total: int = 20             ## 🔒
 @export var shards_per_segment: int = 3          ## ✱ (SYS-001 §2 phase 1)
@@ -37,6 +45,8 @@ extends TunableResource
 @export var entity_turn_rad_s: float = 2.2       ## rad/s ✱ the awake entity's steering: kite-able, never twitchy (was the ENTITY_TURN constant; Q-T444)
 @export var rampage_catchup_px: float = 0.0       ## px ✱ PROVISIONAL (Q-T447): beyond this Vigil↔entity distance the awake entity sprints on its first approach (the source Sinistar sprints when far, Q-T446); 0 = off. Data sets 640 (the neighbourhood half-size, the Compass edge)
 @export var rampage_catchup_speed: float = 0.0    ## px/s ✱ PROVISIONAL (Q-T447): the sprint speed (data: 680 = 2× the Vigil max_speed 340); never below rampage_speed
+@export var rampage_ease_rate: float = 0.0         ## 1/s ✱ PROVISIONAL (Q-T446, owner F-9): the awake entity's velocity closes on (toward the Vigil × speed) at this rate (source `asrd` shift 4 ≈ 4/s); 0 = the old fixed-speed, turn-capped chase (entity_turn_rad_s). Data sets 4.0
+@export var rampage_catchup_ease_rate: float = 0.0 ## 1/s ✱ PROVISIONAL (Q-T446): the same ease on the far sprint row (source top row, shift 5 ≈ 2/s). Data sets 2.0
 @export var eat_geode_time: float = 2.0          ## s the entity stops to eat a geode
 @export var eat_unit_cooldown: float = 6.0       ## s between unit meals (1 restore per 6 s, cap 3)
 @export var eat_restore_cap: int = 3

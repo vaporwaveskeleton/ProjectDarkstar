@@ -85,7 +85,7 @@ func test_each_stage_shows_a_busy_screen_shaped_by_its_trait() -> void:
 	assert_float(_means[0]["actors"]).override_failure_message("a0_1 actors\n%s" % msg).is_greater_equal(3.0)
 	for i in [1, 2, 3]:
 		assert_float(_means[i]["actors"]).override_failure_message("a0_%d actors\n%s" % [i + 1, msg]).is_greater_equal(3.2)
-		assert_float(_means[i]["geodes"]).override_failure_message("a0_%d geodes\n%s" % [i + 1, msg]).is_greater_equal(1.2)
+		assert_float(_means[i]["geodes"]).override_failure_message("a0_%d geodes\n%s" % [i + 1, msg]).is_greater_equal(0.7)   # was 1.2; the Momentum bot (F-9) sees fewer geodes (a0_2 mean 0.91, Direct 1.43); ~80 % of the new mean
 	assert_float(_means[4]["geodes"]).override_failure_message("a0_5 stays sparse\n%s" % msg).is_less_equal(0.6)
 	assert_float(_means[4]["geodes"]).override_failure_message("a0_5 sparser than a0_4\n%s" % msg).is_less_equal(_means[3]["geodes"])
-	assert_float(_means[4]["actors"]).override_failure_message("a0_5 actors\n%s" % msg).is_greater_equal(1.6)
+	assert_float(_means[4]["actors"]).override_failure_message("a0_5 actors\n%s" % msg).is_greater_equal(1.25)   # was 1.6; Momentum bot mean 1.57 (Direct 2.06), F-9

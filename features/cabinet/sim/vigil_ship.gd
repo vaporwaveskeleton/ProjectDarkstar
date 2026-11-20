@@ -1,12 +1,13 @@
 class_name VigilShip
 extends ArcadeLayer
 ## The Vigil in its cabinet costume: a small vector lantern-skiff (ART-001 §7 Act 0 layer).
-## Movement reuses VigilMotor's pure step with the real SYS-001 §1.1 numbers, so the arcade
-## ship and the Act 1 ship feel identical under the costume. One hit kills (GDD §8.1).
+## Movement: `move_model` (data) picks DIRECT, VigilMotor's pure step with the real SYS-001 §1.1 numbers (the Act 1 feel),
+## or MOMENTUM, the arcade original's one-stick tank (MomentumMove, F-9, Q-T445; the default). One hit kills (GDD §8.1).
 
 var pos := Vector2.ZERO
 var vel := Vector2.ZERO
-var facing := -PI / 2.0
+var facing := -PI / 2.0         ## aim direction (twin-stick: the lance and the drawn hull)
+var heading := -PI / 2.0        ## hull heading of the MOMENTUM model (Q-T445): thrust acts along it; unused by DIRECT
 var alive := true
 var radius := 6.0
 const HULL_LENGTH := 15.0        ## px nose to tail of the drawn hull (9 + 6): the S6 death arrow is at least this long
@@ -44,6 +45,7 @@ func reset() -> void:
 	radius = world.tuning.hitbox_radius
 	pos = world.torus.size * 0.5 + Vector2(-260, 0)
 	vel = Vector2.ZERO
+	heading = facing
 	alive = true
 	shield = world.tuning.respawn_shield
 	_clear_trail()
@@ -52,6 +54,7 @@ func reset() -> void:
 func respawn(at: Vector2) -> void:
 	pos = at
 	vel = Vector2.ZERO
+	heading = facing
 	alive = true
 	shield = world.tuning.respawn_shield
 	_clear_trail()
@@ -90,8 +93,13 @@ func tick(delta: float) -> void:
 			_surge_cooldown = world.tuning.surgelight_cooldown
 			used_surgelight = true
 			world.sfx(&"charge_fire", -8.0)
-	_thrusting = move != Vector2.ZERO
-	vel = VigilMotor.step_velocity(vel, move, braking, delta, world.move_stats)
+	if world.tuning.move_model == CabinetTuning.MoveModel.MOMENTUM:
+		heading = MomentumMove.step_heading(heading, move, delta, world.tuning)
+		_thrusting = MomentumMove.thrusts(heading, move, world.tuning)
+		vel = MomentumMove.step_velocity(vel, heading, move, delta, world.tuning)   # no drag, no brake: the ship coasts (F-9)
+	else:
+		_thrusting = move != Vector2.ZERO
+		vel = VigilMotor.step_velocity(vel, move, braking, delta, world.move_stats)
 	if _surge > 0.0:
 		_surge -= delta
 		vel += move.normalized() * world.tuning.surgelight_impulse * delta / world.tuning.surgelight_time
