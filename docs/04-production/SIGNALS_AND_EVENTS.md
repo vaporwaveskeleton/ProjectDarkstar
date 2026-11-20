@@ -50,6 +50,7 @@ Rules: signal names are past tense (`hull_breached`, `save_failed`), payloads ar
 | `CabinetMessages` | `credits_stat_shown` | `index: int` (the stat line's index in the roll; emitted once per stat line as it scrolls into view) | `CabinetGame` (plays AudioService cue `tally_blip`) | built |
 | `ScoreKeeper` | `score_changed`, `lives_changed`, `extra_life_awarded` | `int` / `int` / — | `CabinetGame` → HUD | built |
 | `PretenceReveal` | `finished` | — | `CabinetGame` (save flags, route to the first Unmaking (`&"aether"`), which routes to the Ruins) | built |
+| `CabinetDecay` | `finished` | — | `PretenceReveal` (the Decay reached the dot: open the tear; ART-001 §12.7b, 2026-11-19) | built |
 | `CoinSlot` | `tape_peeled` | — | `AttractMode` (saves `cabinet_tape_peeled`, reason `cabinet_tape`) | built |
 | `CoinSlot` | `credit_inserted` | — | `AttractMode` (enables New Vigil, marquee text, CREDIT counter) | built |
 | `PowerOnTest` | `finished` | — | `AttractMode` (reveals the attract screen) | built |

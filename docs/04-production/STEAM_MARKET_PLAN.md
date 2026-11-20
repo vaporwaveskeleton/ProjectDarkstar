@@ -25,7 +25,7 @@ DARKSTAR's virality is not a marketing layer bolted on afterwards. It is built i
 
 | # | Hook (the sentence a player types to a friend) | System that produces it | Artefact |
 |---|---|---|---|
-| H1 | **"I beat the arcade game and then it ate the universe."** | Act 0 floor-drop (GDD-001 §6.1 A0-5): since 2026-11-19 (PROPOSED) a wordless **Decay** of the arcade skin, not a title card | a 30–45 s clip, and its 15 s core (credits end → the skin wears out → the picture collapses to a dot → light through the tear); the single most important asset we own |
+| H1 | **"I beat the arcade game and then it ate the universe."** | Act 0 floor-drop (GDD-001 §6.1 A0-5): since 2026-11-19 (built) a wordless **Decay** of the arcade skin, not a title card | a 30–45 s clip, and its 15 s core (credits end → the skin wears out → the picture collapses to a dot → light through the tear); the single most important asset we own |
 | H2 | **"The boss is built from the same ore I need."** | the Waking race (GDD-001 §8.4, P1) | a 15 s GIF: Grubs carrying glass, segments clicking into place |
 | H3 | **"The game ate my HUD / my pause menu / my wraparound."** | eaten rules (WARP-001 §3.2), the HUD under warp (WARP-001 §4) | clips that look like bugs until the player realises they are not |
 | H4 | **"It remembered what I did."** | personalised death lines (SYS-001 §8 telemetry keys, AUDIO-001 §4.10) | a screenshot: one big-type line built from the player's own habits |
@@ -177,7 +177,7 @@ Each GIF must be understood muted, with no caption, by someone who has never hea
 | G5 "It wakes" | silence, then the big-type line (AUDIO-001 §4.2) | H1 setup | social teaser |
 | G6 "The HUD lied" | the Ledger Compass shows the entity left; the entity arrives from the right (a tell visible on re-watch, WARP-001 §4.2 L1–L3) | H3 | post-launch only |
 | G7 "Wrap eaten" | the player crosses a torus edge and the way back is gone (H2 rule, WARP-001 §3.2) | H3 | post-launch only |
-| G8 "The skin" (reveal decay, owner direction 2026-11-19; PROPOSED until TECH-001 Q-T180–Q-T185 are ruled) | the credits end; the machine tries to go back to attract; its glow smears, its colours slip, its bulbs die, its print bleaches and shows light behind it; the picture collapses to a dot; the tear lets the Aether in (SYS-001 D1–D4 + 2 s) | H1 | announcement day; native vertical (TATE) cut; the demo's clip moment |
+| G8 "The skin" (reveal decay, owner direction 2026-11-19; ruled by the PM under the owner autonomy grant 2026-11-19 (TECH-001 Q-T180–Q-T185) and built) | the credits end; the machine tries to go back to attract; its glow smears, its colours slip, its bulbs die, its print bleaches and shows light behind it; the picture collapses to a dot; the tear lets the Aether in (SYS-001 D1–D4 + 2 s) | H1 | announcement day; native vertical (TATE) cut; the demo's clip moment |
 
 G6 and G7 are held back until launch week; they are second-week fuel.
 
@@ -189,7 +189,7 @@ G6 and G7 are held back until launch week; they are second-week fuel.
 | 0:03–0:18 | Act 0 gameplay at T0: crisp flight, mining, score chimes, 1UP | bright chiptune | segment B: "this is a great arcade shooter" |
 | 0:18–0:28 | Grubs carrying glass; segments clicking on; the race explained with no text | chiptune with a choir pad creeping in | H2 |
 | 0:28–0:32 | The player kills a complete entity. Score: big number. Credits roll. "THANK YOU FOR PLAYING" | victory jingle | false ending |
-| 0:32–0:41 | **The Decay, cut down** (reveal decay, owner direction 2026-11-19; PROPOSED until TECH-001 Q-T180–Q-T185 are ruled; was 0:34–0:40 "hold on black" and the big-type "THAT WAS A PRETENCE."): the machine goes back to attract; the glow smears, the bulbs die one by one, the print bleaches and light shows through it; the picture collapses to a dot | the attract shell sagging flat, the hum failing, then **1.2 s of total silence** on the dot | the floor drops, with no words |
+| 0:32–0:41 | **The Decay, cut down** (reveal decay, owner direction 2026-11-19; ruled by the PM under the owner autonomy grant 2026-11-19 (TECH-001 Q-T180–Q-T185) and built; was 0:34–0:40 "hold on black" and the big-type "THAT WAS A PRETENCE."): the machine goes back to attract; the glow smears, the bulbs die one by one, the print bleaches and light shows through it; the picture collapses to a dot | the attract shell sagging flat, the hum failing, then **1.2 s of total silence** on the dot | the floor drops, with no words |
 | 0:41–0:44 | The tear opens from the dot; the first Aether colour pours in | a single low tone | H1 |
 | 0:44–1:05 | Rapid cuts across T1→T3: palette splits, Shroud, the Litany Ring, the Ruins, the Lantern Tree, a Pact signed in chalk, the Ledger Compass going wrong | the chiptune decomposing into liturgy (AUDIO-001 §2) | "this game changes"; depth |
 | 1:05–1:15 | The Awakening, the entity's first line, a chase in the dark with the lantern down | the chant, then silence, then the line | the threat |

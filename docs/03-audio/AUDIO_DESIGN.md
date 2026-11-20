@@ -136,7 +136,7 @@ Four stems per biome 🔒 (GDD-001 §12), plus shared state overlays that are bi
 | D Decomposed | silent | — | — | −∞ |
 | extra | cabinet hum (50 Hz ✱ mains buzz), a coin-drop thunk, 1UP chime | attract idle | on start | −26 dB |
 
-**The Decay (owner direction 2026-11-19; PROPOSED until TECH-001 Q-T180–Q-T185 are ruled).** After A0-5's credits the shell restarts as if for attract and then dies: it sags flat, loses its voices and stops, and the hum sags and fails (§12.18; GDD-001 §6.1). Built today: neither the shell loop nor the hum exists as a sound; the cabinet plays one-shots only (§12.18).
+**The Decay (owner direction 2026-11-19; ruled by the PM under the owner autonomy grant 2026-11-19 (TECH-001 Q-T180–Q-T185) and built).** After A0-5's credits the shell restarts as if for attract and then dies: it sags flat, loses its voices and stops, and the hum sags and fails (§12.18; GDD-001 §6.1). Built today: neither the shell loop nor the hum exists as a sound; the cabinet plays one-shots only (§12.18).
 
 **Trigger:** title screen, and the credits roll at the end of A0-1 and again at A0-3 (GDD-001 §6.1). **Loop:** 8 bars at 120 BPM ✱ (≈16 s). **Transition:** input starts New Vigil → one 4-bar outro ✱, then the A0-1 bed. **The A0-2 rule 🔒:** from the second authored level the first chant line is heard *under* the music (GDD-001 §6.1) — one voice of C enters at −22 dB rel. master ✱, at the diegetic radius of SYS-001 §3.1, so a player with music up still hears it as coming from around a corner. **Params:** `silence_spent = 0`, `warp_tier = 0`, `clock_pressure = 0`.
 
@@ -338,7 +338,7 @@ This is the deferral GDD-001 §8.4 makes to this doc: phase 4's Awakening line "
 
 Act 0 has no other entity line. The whole act is a costume (GDD-001 §6.1, §11), and a costume does not speak. The line arrives after the protected 1.2 s silence (GDD-001 §12) at a near-whispered level (§2.10), in full-screen big type (§4.2), and it is never withheld even if the Awakening is staggered (GDD-001 §8.4). Everything the entity says in Acts 1–4 is the costume coming off.
 
-**No line in the reveal (PROPOSED 2026-11-19, TECH-001 Q-T182).** The built reveal (`PretenceReveal`) shows "ONE SKY LESS." in big type inside the Cabinet. That breaks this section's one-line rule (it is §4.5's Act 1 Hollow-sector line), and the Decay that replaces the title card is wordless (NARR-001 §4.5), so the reveal drops it. The line stays in §4.5 for Act 1.
+**No line in the reveal (TECH-001 Q-T182, PM under owner autonomy grant, 2026-11-19; built).** The reveal (`PretenceReveal`) used to show "ONE SKY LESS." in big type inside the Cabinet. That broke this section's one-line rule (it is §4.5's Act 1 Hollow-sector line), and the Decay that replaces the title card is wordless (NARR-001 §4.5), so the reveal drops it. The line stays in §4.5 for Act 1.
 
 ### 4.2 Display rule 🔒 (GDD-001 §10)
 
@@ -1588,9 +1588,9 @@ The reinforcement timings behind `censer_bell` are the Arcade layer's PROPOSED n
 
 **Counts (counted in the data files):** cue ids 74 + 4 = 78 and policy entries 68 + 4 = 72.
 
-### 12.18 The Decay (Act 0 reveal) — owner direction 2026-11-19; PROPOSED until TECH-001 Q-T180–Q-T185 are ruled
+### 12.18 The Decay (Act 0 reveal) — owner direction 2026-11-19; ruled by the PM under the owner autonomy grant 2026-11-19 (TECH-001 Q-T180–Q-T185) and built
 
-**Status: design only, nothing built, nothing rendered.** The Decay replaces the title card (GDD-001 §6.1; WARP-001 W0-07; ART-001 §12.7b). Its sound is the Cabinet's own sound **failing**, not a new sound arriving: no sting, no riser, no hit (§1.4 startle budget; D-15 zero startle). Every number is SYS-001 `ds_cabinet.decay.*` (PROPOSED).
+**Status: built 2026-11-19 (PM under owner autonomy grant, 2026-11-19), runtime only, UNAUDITIONED** (`features/cabinet/cabinet_decay_audio.gd`: the shell lead and bass, the hum and its beating partial, `decay_bulb_tick`, `decay_crt_off`, all synthesised at runtime on the cabinet's own players; no render, no §6.2 cue id, so the cue and policy counts below are unchanged). There is still no attract-shell or hum anywhere else in Act 0, and no stage music, so W0-11's per-level detune has nothing to act on yet (TECH-001 Q-T188). The Decay replaces the title card (GDD-001 §6.1; WARP-001 W0-07; ART-001 §12.7b). Its sound is the Cabinet's own sound **failing**, not a new sound arriving: no sting, no riser, no hit (§1.4 startle budget; D-15 zero startle). Every number is SYS-001 `ds_cabinet.decay.*` (PROPOSED).
 
 | Beat | What is heard | How it is made |
 |---|---|---|
@@ -1660,3 +1660,18 @@ A cue never ducks its own bus. A bus carrying a sounding P0 or P1 cue is never d
 **Deferred:** the Ruins clock period tracking `clock_pressure` and a pitch class per iteration (§2.2 layers C and D; TECH-001 Q-T221); T2+ sector stems; positional audio; LUFS measurement; the owner's audition (Q-T220).
 
 **Counts (counted in the data files):** cue ids 78 + 11 = 89 and policy entries 72 + 3 = 75 (the loops and the places have no policy entry).
+
+**Ruins first-visit one-shots (follow-up, 2026-11-19; hooks fixed by the Ruins onboarding, TECH-001 Q-T194).** Source `audio/src/ruins_cues.cx.js` (built with `--mono`). Every one has a little of the stone-and-brass hall's air, and every peak is at or under −12 dBFS (test-enforced). All are UNAUDITIONED, and LUFS was not measured. The chalk is a soft, low, grainy stroke centred near 1.5 kHz. It is never `lie_tell_chalk` (a dry 0.12 s flick near 5.6 kHz on `BUS-UI`), and a test keeps them apart.
+
+| Id | Doc id | Sound | Length | Peak / RMS dBFS | Policy ✱ |
+|---|---|---|---|---|---|
+| `ruins_chalk_write` | R-01 | one chalk stroke on slate: a soft knock, then a pink-noise scrape | 1.07 s | −13.64 / −35.59 | `BUS-FLY` P5, 2 voices, 60 ms gate, ±80 cents |
+| `ruins_ticket_payout` | R-02 | the Cabinet's ticket feed: the motor, and a ratchet click per ticket, slowing | 2.63 s | −19.77 / −34.57 | `BUS-FLY` P4, 1 voice, 1000 ms |
+| `ruins_tickets_land` | R-03 | tickets settling on the brass tray: a paper flutter and soft slaps | 0.95 s | −19.92 / −39.62 | `BUS-FLY` P5, 1 voice, 300 ms |
+| `ruins_lamp_gutter` | R-04 | the pilot lamp going down: the hiss falls, the mantle ticks as it cools (a short, wet cousin of `unmaking_lamp_out`) | 1.77 s | −18.16 / −36.6 | `BUS-FLY` P4, 1 voice, 500 ms |
+| `ruins_tree_lamp` | R-05 | a Tree lamp catches: a gas whump, then a warm G4/D5 bloom that grows, never strikes | 1.83 s | −19.76 / −31.32 | `BUS-FLY` P4, 2 voices, 200 ms |
+| `ruins_codex_page` | R-06 | a Codex page: the lift, the swish, the lay-down | 1.31 s | −13.76 / −39.13 | `BUS-FLY` P5, 1 voice, 150 ms, ±40 cents |
+| `ruins_dark_chalk` | R-07 | the hidden chalk shows in the dark: a slow, low phosphor bloom with chalk grain under it (0.5 s onset, no sting) | 2.25 s | −19.08 / −32.39 | `BUS-FLY` P3, 1 voice, 1000 ms |
+| `ruins_station_near` | R-08 | a station comes into reach: two small brass taps a fifth apart (C5, G5) | 1.28 s | −18.21 / −34.67 | `BUS-FLY` P5, 1 voice, 400 ms |
+
+Counts after this follow-up: cue ids 89 + 8 = 97 and policy entries 75 + 8 = 83. The flight layers and threat stems now also hold the shutdown drain (`_loops_started`, next to #81's `_chant_started`), because they loop until stopped.
