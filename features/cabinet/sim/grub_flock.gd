@@ -109,7 +109,7 @@ func tick(delta: float) -> void:
 				speed = 90.0
 		var d := world.torus.delta(g.pos, target)
 		var want := d.normalized() * speed if d.length() > 2.0 else Vector2.ZERO
-		g.vel = g.vel.lerp(want, clampf(delta * 5.0, 0.0, 1.0))
+		g.vel = g.vel.lerp(want, clampf(delta * t.grub_ease_rate, 0.0, 1.0))
 		g.pos = world.torus.wrap(g.pos + g.vel * delta)
 		if g.state == State.SEEK and g.shard != null and world.torus.distance(g.pos, g.shard.pos) < radius() + 4.0:
 			g.carrying = true

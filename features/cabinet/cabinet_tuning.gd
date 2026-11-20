@@ -34,6 +34,7 @@ extends TunableResource
 @export var stagger_hits: int = 3                ## 🔒 hits inside it
 @export var awakening_silence: float = 1.2       ## s of silence before the line (GDD §12)
 @export var rampage_speed: float = 150.0         ## px/s ✱ code default; data/cabinet/cabinet_tuning.tres sets the PROVISIONAL awake chase speed 380, FASTER than the Vigil (owner F-4, Q-T441)
+@export var entity_turn_rad_s: float = 2.2       ## rad/s ✱ the awake entity's steering: kite-able, never twitchy (was the ENTITY_TURN constant; Q-T444)
 @export var eat_geode_time: float = 2.0          ## s the entity stops to eat a geode
 @export var eat_unit_cooldown: float = 6.0       ## s between unit meals (1 restore per 6 s, cap 3)
 @export var eat_restore_cap: int = 3
@@ -44,6 +45,7 @@ extends TunableResource
 @export var grub_hp: int = 4
 @export var grub_speed_carry: float = 130.0
 @export var grub_speed_flee: float = 190.0
+@export var grub_ease_rate: float = 5.0           ## 1/s ✱ exponential ease of a Grub's velocity toward its wanted velocity (was a code literal; the reference's `asrdN` shift, larger = snappier; Q-T444)
 @export var grub_flee_radius: float = 70.0        ## px ✱ (flees the Vigil's lamp in Act 0; was 110, which pushed them off a 128 px half-view)
 @export var grub_shadow_radius: float = 100.0     ## px ✱ an idle Grub circles the Vigil at about this distance (the reference's workers wait near the player)
 @export var grub_shadow_band: float = 24.0        ## px ✱ ± spread of that orbit radius, per Grub

@@ -16,7 +16,6 @@ const TRUE_FRAME_LINE: Color = Pal.BONE_3  ## the costume plates' colour
 const TRUE_LENGTH_MULT := 3.5     ## x BODY_DRAWN_RADIUS ✱ S2: the column's length, head to tail
 const CONTACT_INSET := 4.0       ## ✱ SYS-001 §2.1's 16 px inset at the 64 px module scale, ÷4 for the costume
 const SEPULCHRE_RADIUS := 26.0   ## ✱ deposit / Charge contact radius of the altar
-const ENTITY_TURN := 2.2         ## ✱ rad/s steering: kite-able, never twitchy
 
 var pos := Vector2.ZERO
 var entity_pos := Vector2.ZERO
@@ -276,7 +275,7 @@ func _rampage(delta: float) -> void:
 	if v.alive:
 		var want := world.torus.delta(entity_pos, v.pos).normalized()
 		var ang := entity_dir.angle_to(want)
-		entity_dir = entity_dir.rotated(clampf(ang, -ENTITY_TURN * delta, ENTITY_TURN * delta))
+		entity_dir = entity_dir.rotated(clampf(ang, -t.entity_turn_rad_s * delta, t.entity_turn_rad_s * delta))
 	entity_pos = world.torus.wrap(entity_pos + entity_dir * t.rampage_speed * delta)
 	# contact death (SYS-001 §2 phase 5 🔒)
 	if v.alive and world.torus.distance(entity_pos, v.pos) <= BODY_RADIUS - CONTACT_INSET + v.radius:
