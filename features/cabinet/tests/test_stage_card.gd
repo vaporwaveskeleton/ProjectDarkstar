@@ -265,4 +265,4 @@ func test_the_prompt_is_lit_70_percent_of_each_blink_cycle() -> void:
 		messages._t = k * 0.01 / t.brief_prompt_blink_hz
 		if messages.brief_prompt_lit():
 			lit += 1
-	assert_int(lit).is_equal_approx(70, 1)
+	assert_int(absi(lit - 70)).is_less_equal(1)
