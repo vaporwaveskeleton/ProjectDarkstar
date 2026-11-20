@@ -36,3 +36,18 @@ func index_of(stage_id: StringName) -> int:
 		if stages[i] != null and stages[i].id == stage_id:
 			return i
 	return -1
+
+
+## How many Unmakings the shift needs: the stages whose goal is to unmake the entity (SYS-001 §1.7, 3).
+func unmakings_required() -> int:
+	return unmakings_before(stages.size())
+
+
+## Unmaking stages (UNMAKE_ENTITY) strictly before stage index `i`: the Unmakings already done when stage
+## `i` starts (the run-scoped count CabinetGame derives on CONTINUE).
+func unmakings_before(i: int) -> int:
+	var n := 0
+	for k in mini(i, stages.size()):
+		if stages[k] != null and stages[k].goal == CabinetStage.Goal.UNMAKE_ENTITY:
+			n += 1
+	return n

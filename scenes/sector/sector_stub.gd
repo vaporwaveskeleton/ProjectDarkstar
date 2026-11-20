@@ -5,10 +5,12 @@ extends Node2D
 ## The run's back door (Q-T275..Q-T279): SeamExit opens the exit throat when the Sepulchre is unmade;
 ## flying into it reports the Seam (`take_exit`). A hull breach (`die`) and Abandon Run
 ## (`abandon_from_seam`) end the run; every run end routes to the Ruins, never the title.
-## Q-T58: the M1 sandbox is a torus the size of the Cabinet's field. The size has ONE source, the
-## Cabinet stage's `field_size` (`arena_source`); real kit bounds come from ZONES-001 later.
+## Q-T58: the M1 sandbox is a torus of 1,920 × 720 px (SYS-001 §9 sandbox row ✱; it was the Cabinet's field until
+## SYS-001 §1.7 grew Act 0 to 65,536 px, so it is now its own `arena_size`); real kit bounds come from ZONES-001 later.
 
 const PAUSE_SCENE := preload("res://scenes/sector/pause_screen.tscn")
+## ✱ pass 8 b (Q-T310): share of the near depth behind play (DepthBack) faded out at full night.
+const DEPTH_NIGHT_DIM := 0.75
 const EXIT_STATS := preload("res://data/sector/seam_exit.tres")
 ## The slice's Seam kits (`ds_sector.slice`) and the Acolyte (`ds_choir.acolyte`, PM-02 posts).
 const SLICE_KITS := preload("res://data/sector/slice_kits.tres")
@@ -28,7 +30,9 @@ const PARAM_RUN_OUTCOME := "run_outcome"
 ## Which kit each Seam builds (TECH-001 §2.9 SectorKit): Seam 1 PM-01, Seam 2 PM-02. A dev `--kit=<id>` forces one.
 @export var kit_table: SliceKitTable = SLICE_KITS
 @export var acolyte_stats: AcolyteStats = ACOLYTE_STATS
-## Where the arena size comes from: the Cabinet stage resource (its `field_size`, 1920×720 ✱).
+## The sandbox torus size (SYS-001 §9 sandbox row ✱); no longer the Cabinet field (SYS-001 §1.7).
+@export var arena_size: Vector2 = Vector2(1920, 720)
+## Legacy link to a Cabinet stage; the arena size no longer comes from it.
 @export var arena_source: CabinetStage
 ## Stats for the throwaway run core built when no `session` route param is handed in (§4.2a).
 @export var session_stats: RunSessionStats
@@ -236,7 +240,7 @@ var sepulchre_complete: bool:
 
 
 func _ready() -> void:
-	torus = Torus.new(arena_source.field_size)
+	torus = Torus.new(arena_size)
 	_compass.world_rect = Rect2(Vector2.ZERO, torus.size)
 	vigil = vigil_scene.instantiate() as Vigil
 	kit = kit_table.kit_for_launch(OS.get_cmdline_user_args(), LaunchRoute.is_dev_build(), 1)
@@ -339,6 +343,7 @@ func _start_far() -> void:
 	far_centre = _far_last
 	_far.set_field(torus.size)
 	_far.set_camera(far_centre, _camera.zoom.x)
+	_step_lantern(_far_last)
 
 
 func _process(delta: float) -> void:
@@ -366,9 +371,28 @@ func _step_far() -> void:
 	far_centre += torus.delta(_far_last, now)
 	_far_last = now
 	_far.set_camera(far_centre, _camera.zoom.x)
+	_step_lantern(now)
+	# lantern down (Q-T310): the near depth behind play darkens with the far layer's night, so the
+	# vast shapes' silhouettes are not broken up by bright motes (the play layer is untouched)
+	var night := _far.reveal() * (_far.look.lantern_night if _far.look else 0.0)
+	_depth_back.modulate.a = 1.0 - DEPTH_NIGHT_DIM * night
+	# the geodes sink too, keeping a thin facet glint (pass 8 c, Q-T407; drawing only)
+	if _geodes:
+		for g in _geodes.geodes:
+			if is_instance_valid(g):
+				g.set_dark(night)
 	_depth_back.set_camera(far_centre)
 	_depth_front.set_camera(far_centre)
-	_step_lantern()
+
+
+## The Vigil's lantern for the far layer (pass 8, Q-T295; TECH-001 §2.9): its pool follows the ship
+## and lantern down (CH-3) drives the reveal. Position in the far layer's continuous space (the
+## camera's continuous centre plus the shortest camera → Vigil step); radius from the look.
+func _step_lantern(camera_now: Vector2) -> void:
+	if not is_instance_valid(vigil) or vigil.lantern == null or _far.look == null:
+		return
+	var at := far_centre + torus.delta(camera_now, vigil.global_position)
+	_far.set_lantern(at, _far.look.lantern_radius, vigil.lantern.is_up)
 
 
 ## The race this frame (world px): every Charge in flight, every Grub carrying glass, and the
@@ -665,11 +689,4 @@ func _apply_kit_far() -> void:
 		if darkness:
 			darkness.lantern_radius_px = kit.far_look.lantern_radius
 
-
-## The Vigil's lantern in the far layer's space each frame (up = the warm pool; down = the reveal).
-func _step_lantern() -> void:
-	if not is_instance_valid(vigil):
-		return
-	var at := far_centre + torus.delta(_camera.global_position, vigil.global_position)
-	_far.set_lantern(at, _far.look.lantern_radius if _far.look else 120.0, vigil.lantern.is_up)
 

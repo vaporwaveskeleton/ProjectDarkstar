@@ -1,12 +1,12 @@
 class_name CabinetScreenHud
 extends Control
 ## The Act 0 HUD strip (WARP-001 W0-02, GDD §10, owner 2026-11-18 Q-T31): every live readout, lit on
-## the screen's top 40 rows: 1UP and score, spare Vigils and the Ledger Compass on the left and centre,
+## the screen's top 48 rows: 1UP and score, spare Vigils and the Ledger Compass on the left and centre,
 ## HI, the glass lamps and the Sepulchre count on the right. It sits on the HudLayer inside the arcade
 ## screen, under the CRT, so scanlines and curvature touch it. The printed bezel carries no readouts.
 ## Honest at T0. `eaten` 0 → 1 lets the Unmaking swallow the readouts; `peel` drops the maker mark.
 ## The attract screen reuses it (`attract`): 1UP, score 0, HI and the credit count, nothing else.
-## Layout constants are strip coordinates (y 0..40 of the 256×304 grid); the play view is below.
+## Layout constants are strip coordinates (y 0..48 of the 256×304 grid); the play view is below.
 
 const LEFT_X := 4.0                  ## left block text starts here
 const RIGHT_EDGE := 252.0            ## right block is right-aligned to here
@@ -14,19 +14,19 @@ const ONE_UP_BASE := 9.0             ## baselines: PixelText draws up from them
 const SCORE_BASE := 25.0
 const SCORE_MAX_W := 80.0            ## a 2× score must end left of the compass (x ≤ 84)
 const ICON_X := 6.0                  ## left edge of the first spare-Vigil icon
-const ICON_Y := 34.0
+const ICON_Y := 41.0
 const ICON_STEP := 10.0
 const ICON_LIMIT_X := 84.0           ## the icon row stays left of this
-const COMPASS := Rect2(88, 3, 80, 31)
+const SPEC_PATH := "res://data/cabinet/cabinet_screen.tres"   ## the default CabinetScreenSpec (the compass box lives there)
 const HI_BASE := 9.0
 const HI_VALUE_BASE := 19.0
-const LAMP_Y := 29.0
+const LAMP_Y := 33.0
 const LAMP_STEP := 8.0
 const LAMP_END_X := 248.0            ## the last lamp's right edge
 const MAX_LAMPS := 5
-const SEPULCHRE_BASE := 37.0
+const SEPULCHRE_BASE := 44.0
 const SEPULCHRE_END_X := 202.0       ## right-aligned value ends 4 px clear of the first lamp's glow (x ≈ 206.5)
-const SEPARATOR_Y := 39.0
+const SEPARATOR_Y := 47.0
 const TEXT_H := 7.0                  ## PixelText glyph height at 1×
 const CREDIT_ABOVE_FOOT := 22.0      ## the credit line's top, measured up from the grid's bottom
 const MAKER_ABOVE_FOOT := CabinetScreenSpec.MAKER_BAND_PX
@@ -93,7 +93,7 @@ static func readout_boxes(score_text: String, hi_text: String, sepulchre_value: 
 	var n := icon_count(lives_left)
 	if n > 0:
 		add.call("icons", Rect2(ICON_X, ICON_Y - 5.0, ICON_STEP * (n - 1) + 8.0, 9.0))
-	add.call("compass", COMPASS)
+	add.call("compass", compass_box())
 	add.call("hi_label", _text_box(true, RIGHT_EDGE, HI_BASE, "HI", 1))
 	add.call("hi", _text_box(true, RIGHT_EDGE, HI_VALUE_BASE, hi_text, 1))
 	var lc := lamp_count(magazine_size)
@@ -173,31 +173,82 @@ func _draw_right() -> void:
 	PixelText.draw(self, b.position, val, Look.c(Pal.BONE_5))
 
 
-## The Ledger Compass: the whole torus at a glance (the Sinistar scanner homage). Honest at T0.
+static var _default_spec: CabinetScreenSpec
+
+
+## The default screen spec (data/cabinet/cabinet_screen.tres), loaded once: static layout helpers use it.
+static func default_spec() -> CabinetScreenSpec:
+	if _default_spec == null:
+		_default_spec = load(SPEC_PATH) as CabinetScreenSpec
+	return _default_spec
+
+
+## The Ledger Compass box in strip coordinates (CabinetScreenSpec.compass_box, SYS-001 §1.7).
+static func compass_box() -> Rect2:
+	return default_spec().compass_box
+
+
+## A world offset from the Vigil, in Compass pixels from the scanner's centre (honest scale: no clamping).
+static func compass_offset(world_delta: Vector2, px_per_dot: float) -> Vector2:
+	return world_delta / px_per_dot
+
+
+## True when a world offset from the Vigil falls inside the scanner window `inner` at this scale.
+static func compass_in_range(world_delta: Vector2, inner: Rect2, px_per_dot: float) -> bool:
+	var o := compass_offset(world_delta, px_per_dot)
+	return absf(o.x) <= inner.size.x * 0.5 - 1.0 and absf(o.y) <= inner.size.y * 0.5 - 1.0
+
+
+## Where the 3 × 3 edge pip of an out-of-range mark is centred: on the inner edge, along the true bearing
+## from the scanner's centre (so it points at the object). A pip centre sits 1.5 px inside the edge.
+static func compass_edge_pip(world_delta: Vector2, inner: Rect2) -> Vector2:
+	var half := inner.size * 0.5 - Vector2(1.5, 1.5)
+	var d := world_delta.normalized()
+	if d == Vector2.ZERO:
+		return inner.get_center()
+	var kx := half.x / absf(d.x) if absf(d.x) > 0.0001 else INF
+	var ky := half.y / absf(d.y) if absf(d.y) > 0.0001 else INF
+	return inner.get_center() + d * minf(kx, ky)
+
+
+## The Ledger Compass: a local scanner centred on the Vigil (SYS-001 §1.7, Q-T368; the Sinistar scanner
+## homage). Honest at T0. Only what is within range is drawn, except the Sepulchre / entity, which
+## becomes a 3 × 3 pip on the edge along its true bearing.
 func _draw_compass() -> void:
-	var r := COMPASS
-	var tsize := world.torus.size
+	var spec := world.screen_spec if world.screen_spec != null else default_spec()
+	var r := spec.compass_box
+	var inner := spec.compass_inner()
+	var ppd := world.tuning.compass_px_per_dot
+	var v := world.vigil.pos
+	var centre := inner.get_center().round()
 	draw_rect(r, Look.c(Pal.VOID_0))
 	draw_rect(r, Look.c(Pal.BONE_1) if eaten <= 0.0 else Look.c(Pal.BONE_0), false, 1.0)
-	var scale := Vector2((r.size.x - 4.0) / tsize.x, (r.size.y - 4.0) / tsize.y)
-	var o := r.position + Vector2(2, 2)
-	var to_c := func(p: Vector2) -> Vector2: return (o + p * scale).round()
-	# the view window: the play view, in torus units
-	var view := Rect2(to_c.call(world.torus.wrap(world.view_centre - world.view_size * 0.5)), world.view_size * scale)
-	draw_rect(view, Look.c(Pal.VOID_3), false, 1.0)
+	var at := func(p: Vector2) -> Vector2: return (centre + compass_offset(world.torus.delta(v, p), ppd)).round()
+	var near := func(p: Vector2) -> bool: return compass_in_range(world.torus.delta(v, p), inner, ppd)
+	# the view window: the play view, 8 × 8 Compass px, centred
+	draw_rect(Rect2(centre - Vector2(4, 4), Vector2(8, 8)), Look.c(Pal.VOID_3), false, 1.0)
 	for g in world.geodes.items:
-		draw_rect(Rect2(to_c.call(g.pos), Vector2.ONE), Look.c(Pal.BONE_1))
+		if near.call(g.pos):
+			draw_rect(Rect2(at.call(g.pos), Vector2.ONE), Look.c(Pal.BONE_1))
 	for s in world.glass.shards:
-		if s.alive:
-			draw_rect(Rect2(to_c.call(s.pos), Vector2.ONE), Look.c(Pal.PHOS_3))
+		if s.alive and near.call(s.pos):
+			draw_rect(Rect2(at.call(s.pos), Vector2.ONE), Look.c(Pal.PHOS_3))
 	for gr in world.grubs.items:
-		draw_rect(Rect2(to_c.call(gr.pos), Vector2.ONE), Look.c(Pal.CHOIR_4))
+		if near.call(gr.pos):
+			draw_rect(Rect2(at.call(gr.pos), Vector2.ONE), Look.c(Pal.CHOIR_4))
 	for a in world.acolytes.items:
-		draw_rect(Rect2(to_c.call(a.pos), Vector2(2, 2)), Look.c(Pal.CHOIR_5))
+		if near.call(a.pos):
+			draw_rect(Rect2(at.call(a.pos), Vector2(2, 2)), Look.c(Pal.CHOIR_5))
 	var rit := world.ritual
 	if rit.phase != SepulchreRitual.Phase.UNMADE:
-		var ep: Vector2 = to_c.call(rit.entity_pos if rit.awake else rit.pos)
-		draw_rect(Rect2(ep - Vector2(2, 2), Vector2(5, 5)), Look.c(Pal.NULL))
-		draw_rect(Rect2(ep - Vector2(2, 2), Vector2(5, 5)), Look.c(Pal.PHOS_4) if rit.awake else Look.c(Pal.VOID_5), false, 1.0)
+		var target := rit.entity_pos if rit.awake else rit.pos
+		var line := Look.c(Pal.PHOS_4) if rit.awake else Look.c(Pal.VOID_5)
+		if near.call(target):
+			var ep: Vector2 = at.call(target)
+			draw_rect(Rect2(ep - Vector2(2, 2), Vector2(5, 5)), Look.c(Pal.NULL))
+			draw_rect(Rect2(ep - Vector2(2, 2), Vector2(5, 5)), line, false, 1.0)
+		else:
+			var pip := compass_edge_pip(world.torus.delta(v, target), inner).round()
+			draw_rect(Rect2(pip - Vector2(1, 1), Vector2(3, 3)), Look.c(Pal.PHOS_4) if rit.awake else Look.c(Pal.BONE_3))
 	if world.vigil.alive:
-		draw_rect(Rect2(to_c.call(world.vigil.pos) - Vector2(1, 1), Vector2(2, 2)), Look.c(Pal.GAS_5))
+		draw_rect(Rect2(centre - Vector2(1, 1), Vector2(2, 2)), Look.c(Pal.GAS_5))

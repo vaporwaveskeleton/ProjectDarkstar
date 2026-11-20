@@ -327,8 +327,9 @@ func dev_op(op: String, args: Dictionary) -> String:
 			return ""
 		"teleport":
 			var p := _vec_arg(args, "x", "y")
-			if not _in_range(p):
-				return "teleport: x and y must be finite numbers with |v| <= %d" % int(MAX_OFFSET)
+			var limit := _world.torus.size.x + MAX_OFFSET          # absolute field coordinates: the whole torus plus a margin
+			if not _in_range(p, limit):
+				return "teleport: x and y must be finite numbers with |v| <= %d" % int(limit)
 			_world.vigil.pos = _world.torus.wrap(p)
 			_world.vigil.vel = Vector2.ZERO
 			_world.view_centre = _world.vigil.pos
@@ -461,5 +462,5 @@ static func _vec_arg(args: Dictionary, kx: String, ky: String) -> Vector2:
 	return Vector2(float(x), float(y)) if ok else Vector2(INF, INF)
 
 
-static func _in_range(v: Vector2) -> bool:
-	return is_finite(v.x) and is_finite(v.y) and absf(v.x) <= MAX_OFFSET and absf(v.y) <= MAX_OFFSET
+static func _in_range(v: Vector2, limit: float = MAX_OFFSET) -> bool:
+	return is_finite(v.x) and is_finite(v.y) and absf(v.x) <= limit and absf(v.y) <= limit

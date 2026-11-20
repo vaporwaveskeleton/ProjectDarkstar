@@ -35,6 +35,14 @@ const FLEE_TURN := 0.24
 ## the WARP-001 §4.5 flicker cap) and the speed the beat travels along the veins.
 const BEAT_PERIOD_S := 4.0
 const WAVE_PX_S := 150.0
+## ✱ pass 8 (Q-T297..300; pass 8 c Q-T400: an eye no longer, a lightless disc): its centre (local px, ~90 px inside the front, on screen at the top
+## left of the frame), how fast its gaze turns toward the Vigil (rad/s) and how fast its front's reach
+## follows the Vigil along the front (local px/s). Slow: it turns, it never snaps.
+const EYE := Vector2(690.0, 545.0)
+const GAZE_RATE := 0.35
+const REACH_PX_S := 20.0
+## ✱ gaze at rest (local): toward the open fog below its front; reduced motion holds it here.
+const GAZE_REST := PI * 0.5
 
 ## 0 = here … 1 = gone. Rises only after presence_flee() (or a look's presence_fled).
 var flee_progress: float = 0.0
@@ -44,6 +52,9 @@ var home_scale := 1.0
 var fleeing: bool = false
 ## 0 = lantern up (vague mass) … 1 = lantern down (full lit pattern).
 var reveal: float = 0.0
+## Pass 8: the disc's lean (gaze) angle (local radians; PI/2 = out of its front) and the front's reach (local x).
+var gaze_angle: float = GAZE_REST
+var reach_x: float = EYE.x
 var _flee_s := 0.0
 
 
@@ -65,9 +76,41 @@ func configure(look: AetherLook) -> void:
 	set_param(&"frost_col", look.presence_frost)
 	set_param(&"light_col", look.presence_light)
 	set_param(&"floor_col", Pal.VOID_0)
+	set_param(&"void_col", Pal.VOID_1)
+	set_param(&"film_a", Pal.AETHER_3)
+	set_param(&"film_b", Pal.PHOS_4)
+	set_param(&"vein_col", Pal.PHOS_2)
+	set_param(&"drink", look.presence_drink)
+	set_param(&"eye_k", look.presence_eye)
+	set_param(&"eye_px", EYE)
+	set_param(&"breath_px", look.presence_breath_px)
+	set_param(&"subtract", 1.0 if subtracts(look) else 0.0)
 	set_flee_progress(look.presence_fled)
 	home_offset = Vector2(look.presence_offset_x, look.presence_offset_y)
 	home_scale = look.presence_scale
+
+
+## True when the look gives the Presence subtraction or its lightless disc: it then reads the screen behind it
+## (the backdrop shows its PresenceCopy).
+static func subtracts(look: AetherLook) -> bool:
+	return look != null and (look.presence_drink > 0.0 or look.presence_eye > 0.0)
+
+
+## Pass 8: it watches. The disc's lean turns toward `target_screen` (the Vigil's lantern, logical px)
+## at GAZE_RATE and its front's reach follows it along the front at REACH_PX_S. `still` (reduced
+## motion) holds the gaze at rest and the reach where it is.
+func watch(target_screen: Vector2, delta: float, still: bool) -> void:
+	if still or not is_inside_tree():
+		gaze_angle = GAZE_REST
+	else:
+		var xf := get_global_transform_with_canvas()
+		var local_dir := xf.basis_xform_inv(target_screen - xf * EYE)
+		if local_dir.length() > 0.001:
+			gaze_angle = rotate_toward(gaze_angle, local_dir.angle(), GAZE_RATE * maxf(delta, 0.0))
+		var target_local := xf.affine_inverse() * target_screen
+		reach_x = move_toward(reach_x, clampf(target_local.x, 0.0, QUAD.x), REACH_PX_S * maxf(delta, 0.0))
+	set_param(&"gaze", Vector2.from_angle(gaze_angle))
+	set_param(&"reach_x", reach_x)
 
 
 ## It turns and leaves: accelerating away and dimming over FLEE_S. Calling it again changes nothing.
@@ -117,6 +160,7 @@ func place(t: float, drain: float, still: bool) -> void:
 	position = HOME + home_offset - along * mig + off
 	scale = Vector2.ONE * home_scale
 	rotation = HOME_ROT + FLEE_TURN * smoothstep(0.0, 0.6, flee_progress)
+	set_param(&"node_rot", rotation)
 	var p := fade * (1.0 - smoothstep(0.1, 1.0, flee_progress)) * (1.0 - 0.6 * drain)
 	set_param(&"presence", p)
 	set_param(&"drain", drain)

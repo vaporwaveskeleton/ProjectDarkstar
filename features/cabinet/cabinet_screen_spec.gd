@@ -10,12 +10,12 @@ const MAKER_BAND_PX := 10.0
 
 @export var grid: Vector2i = Vector2i(256, 304)   ## texels (width, height) of the arcade screen (owner, 2026-11-18)
 ## Rows at the TOP of the grid taken by the HUD strip (score, Vigils, scanner, readouts); the play
-## view is the grid below it. Owner, 2026-11-18, Q-T31.
-@export var hud_strip_height: int = 40
+## view is the grid below it. Owner, 2026-11-18, Q-T31; 48 since SYS-001 §1.7 (Q-T367), so the play view is 256 × 256.
+@export var hud_strip_height: int = 48
 
 
 func tunable_properties() -> PackedStringArray:
-	return PackedStringArray(["grid", "hud_strip_height"])
+	return PackedStringArray(["grid", "hud_strip_height", "compass_box"])
 
 
 ## The HUD strip, in grid coordinates.
@@ -43,3 +43,11 @@ func play_size() -> Vector2:
 ## Where the Vigil is drawn: the centre of the play view.
 func play_centre() -> Vector2:
 	return play_rect().get_center()
+## ✱ The Ledger Compass box in strip coordinates (SYS-001 §1.7, Q-T368): 44 × 44 at the top centre of the strip.
+## Its inner 40 × 40 is the scanner window; the world scale is `CabinetTuning.compass_px_per_dot`.
+@export var compass_box: Rect2 = Rect2(106, 2, 44, 44)
+
+
+## The scanner window: the compass box minus its 2 px frame, 40 × 40.
+func compass_inner() -> Rect2:
+	return compass_box.grow(-2.0)

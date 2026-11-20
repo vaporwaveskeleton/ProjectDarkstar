@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1")
 ds_namespace = "ds_aether.pm02_pale_marches_t1"
-source_section = "PM-02 Dark Throat (slice Seam 2): the PM-01 sector look with five sister spheres (none eaten), denser life, the Presence overhead and larger; standing T1 Aether effects W1-01, W1-03; every value is an engineering placeholder, not a game number"
+source_section = "PM-02 Dark Throat (slice Seam 2): the PM-01 sector look with five sister spheres (none eaten), thinner lantern-up life (life_density 0.8), the Presence overhead and larger; standing T1 Aether effects W1-01, W1-03; every value is an engineering placeholder, not a game number"
 tier = 1
 biome = "pale_marches"
 fog_deep = Color(0.0745098, 0.0784314, 0.1568627, 1)
@@ -58,3 +58,13 @@ presence_lit = 0.0
 presence_offset_x = 120.0
 presence_offset_y = -260.0
 presence_scale = 1.4
+far_value_cap = 0.075
+far_cap_slope = 0.3
+far_cap_desat = 0.25
+far_cap_veil = 0.12
+presence_drink = 0.75
+presence_eye = 1.0
+presence_breath_px = 10.0
+reveal_vast_count = 3
+lantern_night = 1.0
+far_split_tone = 1.0

@@ -265,7 +265,7 @@ func death_killer_gone(m: DeathMark) -> bool:
 
 ## Drawn radius of the live killer: the entity's body, or the shooting Acolyte.
 func death_killer_radius(m: DeathMark) -> float:
-	return m.killer_radius if death_is_big(m) else AcolyteSquad.DRAWN_RADIUS
+	return m.killer_radius if death_is_big(m) else world.acolytes.drawn_radius()
 
 
 ## Chalk ring radius round the shooter (or entity): drawn silhouette + pad, never closer than MIN_RING_GAP_PX.

@@ -26,3 +26,4 @@ geode_drift_s = 20.0
 grub_pilfer = true
 acolyte_escort = true
 carry_charges_in = true
+acolyte_mine = true

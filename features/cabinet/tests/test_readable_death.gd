@@ -348,7 +348,7 @@ func test_a_shot_death_rings_the_live_on_view_shooter_not_the_spent_shot() -> vo
 	var kp := world.fx.death_killer_pos(m)
 	assert_vector(kp).is_equal(v0 + Vector2(90, 0))
 	var rr := world.fx.death_ring_radius(m)
-	assert_float(rr).is_equal(AcolyteSquad.DRAWN_RADIUS + fx.death_ring_pad_px)
+	assert_float(rr).is_equal(world.acolytes.drawn_radius() + fx.death_ring_pad_px)
 	var segs := world.fx.death_ring_segments(m, 1.0)
 	assert_int(segs.size()).is_greater(3)
 	var centre := world.to_screen(kp).round()
