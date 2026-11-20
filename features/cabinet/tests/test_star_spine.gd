@@ -51,11 +51,13 @@ func test_flag_false_has_no_spine_stars() -> void:
 
 func test_flag_true_has_forty_deterministic_stars_in_bone_2() -> void:
 	_start(true)
+	world.view_centre = Vector2.ZERO     # the tile wrap of a star column depends on the camera: read it at the origin
 	assert_int(stars.spine_star_count()).is_equal(Starfield.SPINE_STARS)
 	var a: Array[Vector2] = []
 	for i in 40:
 		a.append(stars.spine_star_pos(i))
 	_start(true)
+	world.view_centre = Vector2.ZERO
 	for i in 40:
 		assert_vector(stars.spine_star_pos(i)).is_equal(a[i])
 	assert_object(stars.spine_star_color()).is_equal(Look.c(Pal.BONE_2))

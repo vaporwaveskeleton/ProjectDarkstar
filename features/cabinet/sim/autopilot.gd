@@ -29,12 +29,15 @@ const STANDOFF_MINE := 190.0      ## px ✱ mine from here when the glass is for
 const GRUB_ROOM := 90.0           ## px ✱ beyond the Grubs' flee radius the bot keeps clear while the Choir builds
 const FEED_ENOUGH := 3            ## ✱ loose shards that keep the Grubs busy: the bot stops mining for them
 const CULL_RANGE := 600.0         ## px ✱ how far the bot goes to put down a stuck Grub
+const SEPULCHRE_FAR := 1800.0      ## px ✱ farther than this from the Sepulchre the bot heads for it (the field is 65,536 px wide; Grubs would carry glass the whole way)
+const SEPULCHRE_NEAR := 900.0      ## px ✱ …and keeps heading for it until it is this close (hysteresis: no tug-of-war with the geodes)
 
 @export var world: ArcadeWorld
 var enabled := false
 var _launch_cd := 0.0
 var _strafe := 1.0                ## which way the bot circles (flips now and then, deterministically)
 var _strafe_t := 0.0
+var _homing := false              ## heading for a far Sepulchre (hysteresis between SEPULCHRE_FAR and SEPULCHRE_NEAR)
 
 
 func _physics_process(delta: float) -> void:
@@ -96,6 +99,16 @@ func _physics_process(delta: float) -> void:
 			elif threat == Vector2.INF and not hunting:
 				move = to_t.normalized() * clampf((to_t.length() - 120.0) / 60.0, -1.0, 1.0)
 
+	# 2b — far from the Sepulchre: head for it by world knowledge and mine on the way. The Neighbourhood keeps
+	# geodes, glass and Grubs round the Vigil, so working beside the Sepulchre keeps the Grubs' trips short.
+	var to_sep := t.delta(v.pos, r.pos)
+	if hunting or r.phase == SepulchreRitual.Phase.UNMADE or to_sep.length() < SEPULCHRE_NEAR:
+		_homing = false
+	elif to_sep.length() > SEPULCHRE_FAR:
+		_homing = true
+	if _homing and move == Vector2.ZERO:
+		move = to_sep.normalized()
+
 	# 3 — glass on the field, while the magazine has room
 	if move == Vector2.ZERO and not full:
 		var shard := _nearest_free_shard(v.pos)
@@ -116,7 +129,7 @@ func _physics_process(delta: float) -> void:
 			var in_flight := ceili(to_g.length() / world.tuning.lance_speed * world.tuning.lance_rate)
 			# feeding the Choir, or starved after the wake (no Grub competes then), it over-fires on
 			# purpose: a detonation frees 4–6 glass at once, more and sooner than calm mining
-			var hot := not (feed_choir or hunting) and g.recent.size() + in_flight >= world.tuning.overfire_hits - 1
+			var hot := not (feed_choir or hunting) and _recent_hits(g) + in_flight >= world.tuning.overfire_hits - 1
 			fire = not hot and to_g.length() < 280.0
 			if move == Vector2.ZERO:
 				var stand_d := g.radius + (STANDOFF_MINE if feed_choir else 50.0)
@@ -227,10 +240,10 @@ func _line_clear(from: Vector2, to: Vector2) -> bool:
 		if g.alive and _blocks(t.delta(from, g.pos), dir, len, g.radius + GlassField.CHARGE_RADIUS + 2.0):
 			return false
 	for gr in world.grubs.items:
-		if gr.alive and _blocks(t.delta(from, gr.pos), dir, len, GrubFlock.RADIUS + GlassField.CHARGE_RADIUS + 2.0):
+		if gr.alive and _blocks(t.delta(from, gr.pos), dir, len, world.grubs.radius() + GlassField.CHARGE_RADIUS + 2.0):
 			return false
 	for a in world.acolytes.items:
-		if a.alive and _blocks(t.delta(from, a.pos), dir, len, AcolyteSquad.RADIUS + GlassField.CHARGE_RADIUS + 2.0):
+		if a.alive and _blocks(t.delta(from, a.pos), dir, len, world.acolytes.radius() + GlassField.CHARGE_RADIUS + 2.0):
 			return false
 	return true
 
@@ -242,7 +255,7 @@ func _grub_on_line(from: Vector2, dir: Vector2) -> bool:
 	var d := dir.normalized()
 	var reach := world.tuning.lance_speed * world.tuning.lance_life
 	for gr in world.grubs.items:
-		if gr.alive and _blocks(world.torus.delta(from, gr.pos), d, reach, GrubFlock.RADIUS + 6.0):
+		if gr.alive and _blocks(world.torus.delta(from, gr.pos), d, reach, world.grubs.radius() + 6.0):
 			return true
 	return false
 
@@ -303,6 +316,15 @@ func _nearest_geode(from: Vector2, avoid: Vector2 = Vector2.INF, clear: float = 
 			bd = d
 			best = g
 	return best
+
+
+## Hits on `g` still inside the over-fire window (GeodeField only prunes its list on the next hit, so the raw list goes stale).
+func _recent_hits(g: GeodeField.Geode) -> int:
+	var n := 0
+	for x in g.recent:
+		if world.time - x <= world.tuning.overfire_window:
+			n += 1
+	return n
 
 
 ## Where to aim a bolt at a mover: where it will be when the bolt arrives (one look ahead).

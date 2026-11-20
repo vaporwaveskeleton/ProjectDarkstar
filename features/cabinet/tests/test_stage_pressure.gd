@@ -377,6 +377,9 @@ func _escort_setup(escort: bool, acolytes: int) -> GrubFlock.Grub:
 	s.acolyte_escort = escort
 	_start(s, true)
 	var g: GrubFlock.Grub = world.grubs.items[0]
+	# the Acolytes now spawn in the Vigil's box: put them where the old guard-ring spawn was, beside the altar
+	for a in world.acolytes.items:
+		a.pos = world.torus.wrap(world.ritual.pos + Vector2.from_angle(a.slot) * AcolyteSquad.GUARD_ORBIT)
 	_steps_pinned(g, _laden_grub(g), 6.0)
 	return g
 

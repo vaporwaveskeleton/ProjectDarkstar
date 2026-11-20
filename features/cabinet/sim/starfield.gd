@@ -209,7 +209,10 @@ func backdrop_marks() -> Array[Rect2]:
 	for m in out:
 		var c := m.intersection(field)
 		if c.has_area():
-			kept.append(Rect2(c.position.round(), c.size.round().max(Vector2.ONE)))
+			# rounding can nudge a sliver across the playfield edge: clip once more after it
+			var r := Rect2(c.position.round(), c.size.round().max(Vector2.ONE)).intersection(field)
+			if r.has_area():
+				kept.append(r)
 	return kept
 
 

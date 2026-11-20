@@ -45,7 +45,8 @@ var _true_frames_left := 0       ## DRAWN frames of the S2 true-body silhouette 
 
 func reset() -> void:
 	var t := world.tuning
-	pos = world.torus.wrap(world.torus.size * 0.5 + Vector2(520, 40))
+	# SYS-001 §1.7: straight ahead of the Vigil's starting heading (the Vigil resets first, see ArcadeWorld.start)
+	pos = world.torus.wrap(world.vigil.pos + Vector2.from_angle(world.vigil.facing) * t.field_sepulchre_start_px)
 	entity_pos = pos
 	wakes = world.stage.sepulchre_wakes
 	segments = clampi(world.stage.sepulchre_start_segments, 0, t.segments_total)
@@ -219,6 +220,7 @@ func tick(delta: float) -> void:
 	if phase == Phase.QUICKENING and world.rng.randf() < delta * 1.5:
 		_twitch = 0.15
 	_update_chant()
+	_tick_leash(delta)
 	match phase:
 		Phase.AWAKENING:
 			_awaken_t += delta
@@ -236,6 +238,20 @@ func tick(delta: float) -> void:
 				_set_phase(Phase.RAMPAGE)
 		Phase.RAMPAGE:
 			_rampage(delta)
+
+
+## SYS-001 §1.7 leash: a Sepulchre that is not yet awake drifts toward a Vigil farther than
+## field_sepulchre_leash_px at field_sepulchre_drift_px_s (slower than the Vigil: never escaped for good).
+## The forming and awake entity stay put / chase on their own rules.
+func _tick_leash(delta: float) -> void:
+	if awake or phase >= Phase.AWAKENING:
+		return
+	var t := world.tuning
+	var to_v := world.torus.delta(pos, world.vigil.pos)
+	if to_v.length() <= t.field_sepulchre_leash_px:
+		return
+	pos = world.torus.wrap(pos + to_v.normalized() * minf(t.field_sepulchre_drift_px_s * delta, to_v.length()))
+	entity_pos = pos
 
 
 func _rampage(delta: float) -> void:

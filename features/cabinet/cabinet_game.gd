@@ -556,12 +556,12 @@ func _save_hi_score() -> void:
 	SaveService.save_slot(&"profile", _profile, &"cabinet_score")
 
 
-## Far from the entity, the Sepulchre and every Acolyte.
+## Far from the entity, the Sepulchre and every Acolyte, within the Vigil's neighbourhood box.
 func _safe_spawn() -> Vector2:
 	var best := world.vigil.pos
 	var best_score := -1.0
 	for i in 12:
-		var p := world.random_point()
+		var p := world.neighbourhood.random_spot(0.0)   # SYS-001 §1.7: the box round where the Vigil fell, never across the 65,536 px field
 		var d := world.torus.distance(p, world.ritual.entity_pos if world.ritual.awake else world.ritual.pos)
 		for a in world.acolytes.items:
 			d = minf(d, world.torus.distance(p, a.pos) * 1.5)

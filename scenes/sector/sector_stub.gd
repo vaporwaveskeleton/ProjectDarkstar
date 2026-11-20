@@ -2,13 +2,15 @@ extends Node2D
 ## SectorHost stub — owns one sector's lifetime (TECH-001 §2.1): spawn, run, tear down.
 ## Bootstrap scope: one empty wrapping arena, the Vigil, a hull readout and the pause flow.
 ## No kit assembly yet (SeamAssembler is future work).
-## Q-T58: the M1 sandbox is a torus the size of the Cabinet's field. The size has ONE source, the
-## Cabinet stage's `field_size` (`arena_source`); real kit bounds come from ZONES-001 later.
+## Q-T58: the M1 sandbox is a torus of 1,920 × 720 px (SYS-001 §9 sandbox row ✱; it was the Cabinet's field until
+## SYS-001 §1.7 grew Act 0 to 65,536 px, so it is now its own `arena_size`); real kit bounds come from ZONES-001 later.
 
 const PAUSE_SCENE := preload("res://scenes/sector/pause_screen.tscn")
 
 @export var vigil_scene: PackedScene
-## Where the arena size comes from: the Cabinet stage resource (its `field_size`, 1920×720 ✱).
+## The sandbox torus size (SYS-001 §9 sandbox row ✱); no longer the Cabinet field (SYS-001 §1.7).
+@export var arena_size: Vector2 = Vector2(1920, 720)
+## Legacy link to a Cabinet stage; the arena size no longer comes from it.
 @export var arena_source: CabinetStage
 ## Stats for the throwaway run core built when no `session` route param is handed in (§4.2a).
 @export var session_stats: RunSessionStats
@@ -177,7 +179,7 @@ var sepulchre_complete: bool:
 
 
 func _ready() -> void:
-	torus = Torus.new(arena_source.field_size)
+	torus = Torus.new(arena_size)
 	_compass.world_rect = Rect2(Vector2.ZERO, torus.size)
 	vigil = vigil_scene.instantiate() as Vigil
 	vigil.position = _spawn.position

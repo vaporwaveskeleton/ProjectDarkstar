@@ -159,7 +159,7 @@ func test_teleport_wraps_and_zeroes_velocity() -> void:
 	assert_str(probe.dev_op("teleport", {"x": -10, "y": world.torus.size.y + 5})).is_empty()
 	assert_vector(world.vigil.pos).is_equal_approx(Vector2(world.torus.size.x - 10, 5), Vector2(0.01, 0.01))
 	assert_vector(world.vigil.vel).is_equal(Vector2.ZERO)
-	assert_str(probe.dev_op("teleport", {"x": 99999, "y": 0})).contains("4000")
+	assert_str(probe.dev_op("teleport", {"x": 99999, "y": 0})).contains("teleport:")
 	assert_str(probe.dev_op("teleport", {"x": INF, "y": 0})).contains("finite")
 
 

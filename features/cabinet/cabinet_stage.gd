@@ -12,7 +12,7 @@ enum Goal { CLEAR_SEPULCHRE, UNMAKE_ENTITY }
 @export var zone_key: String = ""                   ## zone name line on the READY card; empty = none
 @export var zone_cue: StringName = &""              ## AUDIO-001 jingle under the READY card (unknown id = silent no-op); empty = none
 @export var music: StringName = &""                 ## the stage loop on BUS-MUS (chirp render id; CabinetStageMusic), detuned by W0-11 Wear; empty = none (Q-T188: a0_4, a0_5)
-@export var field_size: Vector2 = Vector2(1920, 720) ## ✱ torus field: 6 kit-screens (SYS-001 §6: 3–7 kits)
+@export var field_size: Vector2 = Vector2(65536, 65536) ## ✱ torus field: 256 × 256 screens (SYS-001 §1.7, Q-T366)
 @export var geodes: int = 10                         ## ≥ 24 shards of supply (SYS-001 §4 lint)
 @export var grubs: int = 4
 @export var acolytes: int = 1
@@ -34,3 +34,4 @@ enum Goal { CLEAR_SEPULCHRE, UNMAKE_ENTITY }
 @export var grub_pilfer: bool = false                ## Grubs snatch nearby loose glass the Vigil's magnet is not pulling
 @export var acolyte_escort: bool = false             ## idle non-guard Acolytes trail laden Grubs instead of mining
 @export var carry_charges_in: bool = false           ## as the next stage of a running shift, start with the Charges held at the last stage's end
+@export var acolyte_mine: bool = false               ## idle Acolytes with no Vigil in range fly to the nearest geode and lance it (SYS-001 §1.7; a0_3–a0_5)

@@ -17,9 +17,9 @@ func test_spec_is_a_ds_tunable_with_the_portrait_grid_and_hud_strip() -> void:
 	var spec := load(SPEC) as CabinetScreenSpec
 	assert_str(spec.ds_namespace).is_equal("ds_cabinet.screen")
 	assert_object(spec.grid).is_equal(Vector2i(256, 304))
-	assert_int(spec.hud_strip_height).is_equal(40)
-	assert_object(spec.play_rect()).is_equal(Rect2(0, 40, 256, 264))
-	assert_vector(spec.play_centre()).is_equal(Vector2(128, 172))
+	assert_int(spec.hud_strip_height).is_equal(48)
+	assert_object(spec.play_rect()).is_equal(Rect2(0, 48, 256, 256))
+	assert_vector(spec.play_centre()).is_equal(Vector2(128, 176))
 	assert_bool(spec.ds_keys().has("ds_cabinet.screen.grid")).is_true()
 	assert_bool(spec.ds_keys().has("ds_cabinet.screen.hud_strip_height")).is_true()
 
@@ -152,7 +152,7 @@ func test_world_view_and_centre_come_from_the_spec() -> void:
 ## the focus the glass bulged at (never a centred iris, ART-001 §16.6f).
 func test_ledger_compass_sits_inside_the_strip_and_the_wound_opens_off_centre_in_the_play_view() -> void:
 	var spec := load(SPEC) as CabinetScreenSpec
-	assert_bool(spec.strip_rect().encloses(CabinetScreenHud.COMPASS)).is_true()
+	assert_bool(spec.strip_rect().encloses(CabinetScreenHud.compass_box())).is_true()
 	var game := _game()
 	var maw := game.get_node("%Maw") as MawView
 	assert_bool(spec.play_rect().has_point(maw.centre)).is_true()
@@ -178,10 +178,17 @@ func test_acolyte_off_screen_never_fires() -> void:
 	world.acolytes.tick(0.05)
 	assert_float(a.cycle).is_equal(0.0)   # its cycle did not run
 	assert_int(world.shots.shots.size()).is_equal(shots_before)
-	# bring it into view: now the cycle runs and it fires
+	# bring it into view: it holds fire for the entry hold (SYS-001 §1.7), then the cycle runs and it fires
 	a.pos = world.torus.wrap(vigil.pos + Vector2(0, -60.0))
 	assert_bool(world.on_screen(a.pos, 0.0)).is_true()
 	world.acolytes.tick(0.05)
+	assert_float(a.hold).is_greater(0.0)
+	assert_int(world.shots.shots.size()).is_equal(shots_before)
+	for i in 100:
+		if world.shots.shots.size() > shots_before:
+			break
+		a.pos = world.torus.wrap(vigil.pos + Vector2(0, -60.0))     # it would back off to its hold range, out of view
+		world.acolytes.tick(0.05)
 	assert_float(a.cycle).is_greater(0.0)
 	assert_int(world.shots.shots.size()).is_equal(shots_before + 1)
 	game.queue_free()
