@@ -585,6 +585,12 @@ The tree totals (LOOP-001 §3.3 node rollup, 17,480 Ember over 63 Ember nodes) a
 | Lie lull radius | 220 px | L9: a lie may start only with no hostile hitbox (any Choir body, contact hazard or the entity) this close to the Vigil; a Deacon phantom never spawns inside it while a HUD lie is live (WARP-001 §4.2). PM-approved 2026-11-18 under owner grant; retune at playtest |
 | Lie lull intercept window | 1.5 s | L9: a lie may start only with no hostile projectile on course to intercept the Vigil within this time. PM-approved 2026-11-18 under owner grant; retune at playtest |
 | Lie audio tell length | 0.25 s | L11: each lie onset cue, one per tell family (AUDIO-001 owns the cues). PM-approved 2026-11-18 under owner grant; retune at playtest |
+| Warp entry quiet (`ds_warp.t1.entry_quiet_s`) | 2.0 s | WARP-001 §1.4 (no effect within the first 2 s of a Seam), copied here as data. PM under owner autonomy grant, 2026-11-19 |
+| Warp T1 seam depth (`ds_warp.t1.seam_depth`) | 0.6 / 0.7 / 0.8 / 0.9 / 1.0 for Seams 1–5 | **Proposed.** Strength of the T1 standing set (mote light, teeth, breath, chant bed) through a run: Act 1 is pinned at T1 (WARP-001 §1.3), so the run escalates inside the tier. PM under owner autonomy grant, 2026-11-19; retune at playtest |
+| Warp T1 breath (`ds_warp.t1.breath_px`, `.breath_period_s`, `.breath_wave_px_s`) | ±1 px, 6.5 s, 240 px/s | **Proposed** (±1 px is WARP-001 W1-02). The breath travels outward from the Vigil as one wave. Views only, never hitboxes. PM under owner autonomy grant, 2026-11-19; retune at playtest |
+| Warp T1 teeth (`ds_warp.t1.teeth_count`, `.teeth_len_px`) | 11 teeth, 5 px | **Proposed.** W1-05 ring per geode (one missing, one doubled). PM under owner autonomy grant, 2026-11-19; retune at playtest |
+| Warp T1 false chant (`ds_warp.t1.false_chant_s`, `.false_chant_distance_px`) | 4.0 s, 400 px | **Proposed.** W1-07 cue length and source distance (inside the 420 px chant audibility row). The rate is SYS-001 §1.5 Frayed (1 per 40 s). PM under owner autonomy grant, 2026-11-19; retune at playtest |
+| Warp T1 HUD deviations (`ds_warp.t1.transient_earliest_s`, `.transient_latest_s`, `.blip_lag_s`, `.blip_smear_s`, `.glyph_s`) | start window 20–90 s; blip lag 0.8 s, smear 8 s; glyph 6 s | **Proposed.** W1-09 / W1-10, one each per sector (WARP-001 §2.2), seeded from the `warp` stream. Steady Ledger on (default) pins both off. PM under owner autonomy grant, 2026-11-19; retune at playtest |
 | Lie death-attribution window | 2.0 s | L12: a lie live this close before the Vigil's death is named on the death screen (WARP-001 §4.2; wording NARR-001). PM-approved 2026-11-18 under owner grant; retune at playtest |
 | Tear silence (no text) | 20 s | after the Decay and the tear (GDD-001 §6.1; was "after THAT WAS A PRETENCE", retired as a title card 2026-11-19, PROPOSED Q-T181), no text of any kind for this long at the opening of the Aether (NARR-001 §4.5). The Decay before it adds no text either (NARR-001 §4.5 *The Decay*). PM-approved 2026-11-18 under owner grant; retune at playtest |
 | Shroud (hazard terrain) | blocks movement, 1 Ward-slice / 1 Surgelight burn to clear, HP 3 | ✱ T2+ terrain |
@@ -704,3 +710,22 @@ Hit-stop does **not** count toward the 1.5 s "Player agency loss" budget above: 
 | 10 | HUD lie laws, hull lamps, Hourglass show threshold | §9, §1.4, §6 |
 
 No GDD number is contradicted here. New numbers are marked `✱` and are all `⚙`. The rev 1.3 rows (cosmic horror design rev 3) are marked "PM-approved 2026-11-18 under owner grant; retune at playtest" instead, and are `⚙` too.
+
+## 12. Audio mix (proposed, engineering ✱)
+
+These are audio engineering values, not gameplay numbers. AUDIO-001 §12.19 owns their meaning; TECH-001 §2.7 lists the `ds_audio.mix` keys and the class (`AudioMixStats`, `data/audio/mix_stats.tres`). All rows: ✱ proposed, UNAUDITIONED, PM under owner autonomy grant, 2026-11-19; the owner retunes after the audition (TECH-001 Q-T220, Q-T222).
+
+| Group | Key (`ds_audio.mix.`) | Value ✱ |
+|---|---|---|
+| Ducking | `duck_db_p0` / `p1` / `p2` / `p3` / `p4` / `p5` | −6 / −5 / −5 / −4 / −3 / −2 dB (P5 is new: AUDIO-001 §7.2 gave no amount) |
+| Ducking | `duck_attack_s`, `duck_release_s` | 0.06 s, 0.4 s |
+| Flight | `flight_floor_db`, `engine_idle_db`, `engine_full_db` | −40, −16, −5 dB |
+| Flight | `engine_pitch_min`, `engine_pitch_max`, `boiler_pitch_lift` | 0.75, 1.3, 0.15 |
+| Flight | `boiler_full_db`, `rigging_full_db`, `rigging_turn_weight` | −6 dB, −6 dB, 0.6 |
+| Flight | `lantern_db`, `lantern_speed_db` | −14 dB, +3 dB |
+| Flight | `flight_attack_s`, `flight_release_s`, `flight_return_s` | 0.08 s, 0.35 s, 0.8 s |
+| Flight | `creak_turn_on`, `creak_turn_off`, `ballast_min_speed` | 0.6, 0.3, 0.25 (fractions) |
+| Threat | `threat_bed_dip_db`, `threat_stem_db` | −3 dB, 0 dB |
+| Threat | `threat_rise_s`, `threat_fall_s`, `threat_poll_s` | 4 s, 8 s, 0.25 s |
+| Threat | `threat_frayed`, `threat_unmoored`, `threat_hollowed` | 0.35, 0.7, 1.0 (by Composure band) |
+| Threat | `threat_per_carrier`, `threat_carrier_cap`, `threat_sepulchre_weight` | 0.2, 0.6, 0.9 |

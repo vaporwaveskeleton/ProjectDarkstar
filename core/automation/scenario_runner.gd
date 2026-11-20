@@ -459,6 +459,9 @@ func _process(_delta: float) -> void:
 		var ms := (now - _last_usec) / 1000.0
 		for w: Dictionary in _perf_open.values():
 			(w.samples as Array).append(ms)
+			if ms > float(w.max_ms):
+				w.max_ms = ms
+				w.max_frame = frames
 	_last_usec = now
 	if _luma_open.is_empty() or DisplayServer.get_name() == "headless":
 		return
@@ -504,7 +507,7 @@ func _perf_begin(n: String) -> bool:
 		return _fail(err)
 	if _perf_open.is_empty():
 		_unthrottle(true)
-	_perf_open[n] = {"start": frames, "samples": []}
+	_perf_open[n] = {"start": frames, "samples": [], "max_ms": 0.0, "max_frame": -1}
 	return true
 
 
@@ -538,6 +541,7 @@ func _close_perf(n: String, budget_ms: float, at_finish: bool) -> void:
 	rec["name"] = n
 	rec["frame_start"] = int(w.start)
 	rec["frame_end"] = frames
+	rec["max_frame"] = int(w.max_frame)
 	rec["headless"] = DisplayServer.get_name() == "headless"
 	rec["luma_active"] = not _luma_open.is_empty()
 	if budget_ms > 0.0:

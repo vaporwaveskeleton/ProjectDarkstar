@@ -141,8 +141,10 @@ func test_catalog_and_validator_agree() -> void:
 ## still be valid scenarios, just not suite-eligible. Each entry is named here on purpose.
 ## a1_golden_path: coin → Act 0 → reveal → the 94 s Unmaking → Ruins → PM-01 (~20600 frames, Act 0
 ## capture switches as args; TECH-001 §9.1). perf_golden_path and a11y_flash_pass: the same path with
-## frame-time windows / flash-rule windows (TECH-001 §8.5, §9.1).
-const LONG_SCENARIOS: Array[String] = ["a1_golden_path.scenario.json", "ruins_onboarding_first_visit.scenario.json", "perf_golden_path.scenario.json", "a11y_flash_pass.scenario.json"]
+## frame-time windows / flash-rule windows (TECH-001 §8.5, §9.1). warp_t1_capture: the T1 warp stills
+## (dev `--warp-showcase` arg, ~1000 frames + margin; TECH-001 §5.1a).
+const LONG_SCENARIOS: Array[String] = ["a1_golden_path.scenario.json", "ruins_onboarding_first_visit.scenario.json", "perf_golden_path.scenario.json", "a11y_flash_pass.scenario.json",
+	"warp_t1_capture.scenario.json"]
 
 
 func test_shipped_scenarios_are_valid_for_the_suite() -> void:
@@ -221,3 +223,30 @@ func test_fail_on_errors_and_allow_errors_types() -> void:
 	var b := _sc()
 	b["allow_errors"] = [1]
 	_expect(b, "allow_errors must be an array of strings")
+
+
+## The golden-path variants must leave the Ruins exactly as a1_golden_path does: the steps from the
+## Ruins onboarding wait to the sector route are copied, and this test makes a1_golden_path the one
+## place a Ruins change is made (the variants then fail here, naming the scenario to update).
+const GOLDEN_VARIANTS: Array[String] = ["perf_golden_path", "a11y_flash_pass"]
+
+
+static func _ruins_block(steps: Array) -> Array:
+	var start := -1
+	for i in steps.size():
+		var s: Dictionary = steps[i]
+		if start < 0 and str(s.get("id", "")).begins_with("ruins/"):
+			start = i
+		if start >= 0 and s.get("do") == "wait_route" and s.get("route") == "sector":
+			return steps.slice(start, i + 1)
+	return []
+
+
+func test_golden_path_variants_share_the_ruins_steps() -> void:
+	var golden: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://tests/scenarios/a1_golden_path.scenario.json"))
+	var want := _ruins_block(golden.steps as Array).filter(func(s: Dictionary) -> bool: return s.get("do") != "assert")
+	assert_bool(want.is_empty()).is_false()
+	for id in GOLDEN_VARIANTS:
+		var d: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://tests/scenarios/%s.scenario.json" % id))
+		var got := _ruins_block(d.steps as Array).filter(func(s: Dictionary) -> bool: return s.get("do") != "assert")
+		assert_str(JSON.stringify(got)).override_failure_message("%s: copy a1_golden_path's Ruins steps" % id).is_equal(JSON.stringify(want))

@@ -35,6 +35,9 @@
 [ext_resource type="Resource" path="res://data/run/run_session.tres" id="29"]
 [ext_resource type="PackedScene" path="res://features/aether/aether_far_layer.tscn" id="30"]
 [ext_resource type="Resource" path="res://data/aether/pm01_pale_marches_t1.tres" id="31"]
+[ext_resource type="Script" path="res://features/warp/warp_composer.gd" id="w1"]
+[ext_resource type="Resource" path="res://data/warp/t1_frayed.tres" id="w2"]
+[ext_resource type="Resource" path="res://data/warp/warp_tier.tres" id="w3"]
 
 [node name="SectorStub" type="Node2D"]
 script = ExtResource("1")
@@ -182,3 +185,9 @@ unique_name_in_owner = true
 process_mode = 3
 layer = 10
 script = ExtResource("3")
+
+[node name="WarpComposer" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("w1")
+warp_set = ExtResource("w2")
+tier_stats = ExtResource("w3")

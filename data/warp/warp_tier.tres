@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="WarpTierStats" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://features/warp/warp_tier_stats.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+ds_namespace = "ds_warp.tier"
+source_section = "WARP-001 §1.3 (act window from GDD §9.1; entropy and hollow terms ✱ of that doc); SYS-001 §1.5 Hollowed"
+act_floor = PackedInt32Array(0, 1, 2, 3, 5)
+act_ceiling = PackedInt32Array(0, 1, 3, 4, 5)
+entropy_step_1 = 4
+entropy_step_2 = 8
+hollow_term = 1
+composure_term = 1
+max_tier = 5
