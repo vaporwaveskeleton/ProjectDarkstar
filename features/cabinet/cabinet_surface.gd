@@ -130,13 +130,13 @@ extends TunableResource
 
 
 # --- Surround pass (owner direction 2026-11-19): the defocused arcade behind the cabinet (ArcadeBackdrop; all ✱) ---
-@export_range(0.0, 1.0) var backdrop_exposure: float = 0.5        ## overall brightness: dim, so it never pulls the eye from the screen
+@export_range(0.0, 1.0) var backdrop_exposure: float = 0.68       ## overall brightness: kept under the bezel's, so it never pulls the eye from the screen
 @export var backdrop_blur: float = 1.0                            ## defocus: 1 = about 3.5 rig units of soft edge (more on the far row)
 @export_range(0.0, 0.2) var backdrop_grain: float = 0.045         ## 35 mm film grain amplitude
 @export var backdrop_grain_fps: float = 12.0                      ## grain refresh per second (0 = frozen; always frozen with photosensitivity on)
-@export_range(0.0, 1.0) var backdrop_desaturate: float = 0.3      ## pulls the neon toward grey
-@export_range(0.0, 1.0) var backdrop_cabinet_shadow: float = 0.6  ## darkening right next to the cabinet
-@export_range(0.0, 1.0) var backdrop_haze: float = 0.5            ## warm smoke veil at head height
+@export_range(0.0, 1.0) var backdrop_desaturate: float = 0.15     ## pulls the neon toward grey
+@export_range(0.0, 1.0) var backdrop_cabinet_shadow: float = 0.5  ## darkening right next to the cabinet
+@export_range(0.0, 1.0) var backdrop_haze: float = 1.0            ## warm smoke veil at head height
 @export var backdrop_wall_color: Color = Color8(0x1A, 0x0F, 0x22) ## dark plum wall and cabinet bodies
 @export var backdrop_carpet_color: Color = Color8(0x4A, 0x0E, 0x1C) ## maroon carpet
 @export var backdrop_tungsten_color: Color = Color8(0xFF, 0xC0, 0x78) ## warm ceiling lights

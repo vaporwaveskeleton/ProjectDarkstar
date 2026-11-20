@@ -70,9 +70,9 @@ void cabinet_row(vec2 rp, float pitch, float phase, float base, float h, float w
 		float mh = hh * 0.065;
 		vec2 mc = vec2(cx, base - hh + mh + 1.0);
 		float md = sd_box(rp - mc, vec2(ww * 0.44, mh));
-		float mk = 0.4 + 0.4 * exp(-pow((rp.x - cx) / (ww * 0.28), 2.0));                 // brightest behind the blurred lettering
+		float mk = 0.55 + 0.45 * exp(-pow((rp.x - cx) / (ww * 0.28), 2.0));                 // brightest behind the blurred lettering
 		col = mix(col, nc * mk, soft(md, b));
-		glow += nc * exp(-max(md, 0.0) / (b * 2.5 + 4.0)) * 0.2;
+		glow += nc * exp(-max(md, 0.0) / (b * 3.0 + 6.0)) * 0.34;
 		// the screen, set back in the cabinet
 		vec2 sp = vec2(cx, base - hh * 0.6);
 		float sd = sd_box(rp - sp, vec2(ww * 0.31, hh * 0.13));
@@ -147,7 +147,8 @@ void fragment() {
 		cabinet_row(rp, 158.0, 61.0, 318.0, 236.0, 88.0, b, 5.3, 0.25, col, glow);
 		// ceiling: tungsten cans as big soft discs, and stray neon bokeh up in the dark
 		glow += bokeh_field(rp, vec2(74.0, 1.0), 10.0, 22.0, 0.8, 5.0, 8.0, 2.2, b, true) * 0.55;
-		glow += bokeh_field(rp, vec2(46.0, 1.0), 40.0, 96.0, 0.45, 2.5, 6.0, 8.4, b * 0.8, false) * 0.3;
+		glow += bokeh_field(rp, vec2(46.0, 1.0), 40.0, 96.0, 0.6, 2.5, 6.0, 8.4, b * 0.8, false) * 0.5;
+		glow += bokeh_field(rp, vec2(58.0, 1.0), 100.0, 200.0, 0.35, 3.0, 7.0, 12.7, b, false) * 0.28;   // more neon bokeh between the rows
 		// a neon tube on the far wall, one segment per stretch of wall
 		float seg = floor(rp.x / 230.0);
 		float hs = hash21(vec2(seg, 4.4));
@@ -164,7 +165,8 @@ void fragment() {
 		}
 		// smoke haze: a slow warm veil at head height
 		float hz = vnoise(vec2(rp.x * 0.012, rp.y * 0.02)) * smoothstep(20.0, 140.0, rp.y) * smoothstep(300.0, 160.0, rp.y);
-		glow += tungsten_color * hz * haze * 0.05;
+		glow += tungsten_color * hz * haze * 0.08;
+		glow += mix(neon[0], neon[2], 0.5) * haze * 0.025 * smoothstep(300.0, 120.0, rp.y);   // a faint warm neon cast in the smoke
 		// our cabinet's own screen light on the floor and walls round it (as the room had it)
 		float far = exp(-ds / 90.0);
 		float lum = 0.14 + 0.86 * cab_screen_light.a;

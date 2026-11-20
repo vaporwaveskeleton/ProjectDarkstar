@@ -135,4 +135,4 @@ func test_the_backdrop_is_generated() -> void:
 	assert_bool(code.contains("res://assets")).is_false()
 	var s := CabinetSurface.default() as CabinetSurface
 	assert_int(s.backdrop_neon.size()).is_equal(6)
-	assert_float(s.backdrop_exposure).is_less_equal(0.6)       # dim: never pulls focus from the screen
+	assert_float(s.backdrop_exposure).is_less_equal(0.75)      # kept under the bezel: never pulls focus from the screen
