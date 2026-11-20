@@ -239,7 +239,7 @@ PM under owner direction, 2026-11-20 push (TECH-001 §11.2, Q-T420–Q-T430). Th
 
 | §1.7 node | PM-02 content | Notes |
 |---|---|---|
-| Entry (Vigil spawn) | top-left, on the lit side | the Sepulchre is **not** visible from the entry (lint item 4; PM-02 has no PM-01-style exception) |
+| Entry (Vigil spawn) | left, on the lit side, beyond the Acolyte's lantern-up detection (vertical wrap counted) | the Sepulchre is **not** visible from the entry (lint item 4; PM-02 has no PM-01-style exception) |
 | `GeodeCluster` (the lit shelf) | 8 geodes on one shelf band in the upper middle of the field | 24 shards: exactly the lint floor (item 1). This is the kit's one lit geode cluster (§5.3: a dark kit is fair only with one) |
 | `LightPocket` × 1 | radius 110 px ✱ over the shelf's lower lip, where the procession route leaves the shelf | must intersect a procession route (§1.4); the shard-steal beat (§6.3) |
 | `UnlitCorridor` × 1 | a 96 px ✱ band along the bottom wrap seam, the full width of the field | lint item 3. "Runs the full seam edge": it crosses the torus seam, so it has no end |

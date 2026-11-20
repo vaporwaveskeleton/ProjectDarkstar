@@ -24,7 +24,8 @@ var _detonated_freed: int = 0   ## detonated geodes whose nodes have already lef
 
 
 ## Spawns the layout. `avoid` is the Vigil spawn (kept clear); `p_reference` is the Vigil.
-func populate(p_torus: Torus, avoid: Vector2, p_reference: Node2D = null) -> void:
+## `positions` (a kit's authored layout) replaces the seeded positions; the size classes still come from the `map` stream.
+func populate(p_torus: Torus, avoid: Vector2, p_reference: Node2D = null, positions: PackedVector2Array = PackedVector2Array()) -> void:
 	torus = p_torus
 	reference = p_reference
 	for g in geodes:
@@ -35,7 +36,10 @@ func populate(p_torus: Torus, avoid: Vector2, p_reference: Node2D = null) -> voi
 	var run_seed := RunSeed.new(stats.run_seed)
 	loot_rng = run_seed.stream(RunSeed.STREAM_LOOT)
 	var vfx_rng := run_seed.stream(RunSeed.STREAM_VFX)
-	for entry in layout(run_seed, stats, geode_stats.class_count(), torus, avoid):
+	var entries := layout(run_seed, stats, geode_stats.class_count(), torus, avoid)
+	if not positions.is_empty():
+		entries = fixed_layout(run_seed, geode_stats.class_count(), torus, positions)
+	for entry in entries:
 		var g := GEODE_SCENE.instantiate() as SectorGeode
 		g.configure(geode_stats, int(entry.size_class), entry.pos as Vector2, torus, shard_field, loot_rng, vfx_rng)
 		add_child(g)
@@ -99,3 +103,12 @@ func place_images() -> void:
 		var at := (ref + torus.delta(ref, g.home)) if has_ref else g.home
 		if g.position != at:
 			g.position = at
+
+
+## Pure layout from authored positions: size classes from the `map` stream, positions wrapped.
+static func fixed_layout(run_seed: RunSeed, class_count: int, p_torus: Torus, positions: PackedVector2Array) -> Array[Dictionary]:
+	var rng := run_seed.stream(RunSeed.STREAM_MAP)
+	var out: Array[Dictionary] = []
+	for p in positions:
+		out.append({"size_class": rng.randi_range(0, class_count - 1), "pos": p_torus.wrap(p)})
+	return out

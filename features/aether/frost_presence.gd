@@ -38,6 +38,9 @@ const WAVE_PX_S := 150.0
 
 ## 0 = here … 1 = gone. Rises only after presence_flee() (or a look's presence_fled).
 var flee_progress: float = 0.0
+## ✱ the look's placement (AetherLook.presence_offset / presence_scale).
+var home_offset := Vector2.ZERO
+var home_scale := 1.0
 var fleeing: bool = false
 ## 0 = lantern up (vague mass) … 1 = lantern down (full lit pattern).
 var reveal: float = 0.0
@@ -63,6 +66,8 @@ func configure(look: AetherLook) -> void:
 	set_param(&"light_col", look.presence_light)
 	set_param(&"floor_col", Pal.VOID_0)
 	set_flee_progress(look.presence_fled)
+	home_offset = Vector2(look.presence_offset_x, look.presence_offset_y)
+	home_scale = look.presence_scale
 
 
 ## It turns and leaves: accelerating away and dimming over FLEE_S. Calling it again changes nothing.
@@ -109,7 +114,8 @@ func place(t: float, drain: float, still: bool) -> void:
 	var edge := MIGRATE_FADE_S / MIGRATE_PERIOD_S
 	var fade := smoothstep(0.0, edge, cyc) * (1.0 - smoothstep(1.0 - edge, 1.0, cyc))
 	var off := Vector2.ZERO if still else FLEE_DIR * 0.5 * FLEE_ACCEL * _flee_s * _flee_s
-	position = HOME - along * mig + off
+	position = HOME + home_offset - along * mig + off
+	scale = Vector2.ONE * home_scale
 	rotation = HOME_ROT + FLEE_TURN * smoothstep(0.0, 0.6, flee_progress)
 	var p := fade * (1.0 - smoothstep(0.1, 1.0, flee_progress)) * (1.0 - 0.6 * drain)
 	set_param(&"presence", p)

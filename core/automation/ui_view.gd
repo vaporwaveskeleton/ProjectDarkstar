@@ -13,7 +13,8 @@ const UI_PROPS: Array[String] = ["visible", "enabled", "focused", "focusable"]
 const STATE_IDS := {
 	"sector/vigil": {"route": "sector", "member": "", "props": ["vigil_x", "vigil_y", "vigil_speed", "hull_max_hp", "camera_x", "compass_markers", "camera_gap", "facing_deg", "aim_x", "aim_y", "composure", "composure_band"]},
 	"sector/field": {"route": "sector", "member": "", "props": ["geodes_alive", "geodes_detonated", "shards_free", "shards_live", "charges", "score", "charges_in_flight", "charges_lost", "charges_hit", "charges_guttered", "dry_fires"]},
-	"sector/run": {"route": "sector", "member": "", "props": ["seam_index", "run_session", "far_look", "seam_cleared", "exit_taken", "throat_dx", "throat_dy"]},
+	"sector/run": {"route": "sector", "member": "", "props": ["seam_index", "run_session", "far_look", "seam_cleared", "exit_taken", "throat_dx", "throat_dy", "kit_id"]},
+	"sector/acolyte": {"route": "sector", "member": "", "props": ["acolyte_alive", "acolyte_detecting", "acolyte_shots_fired"]},
 	"sector/warp": {"route": "sector", "member": "", "props": ["warp_tier", "warp_live", "warp_novel", "warp_cost_ms", "warp_smear", "warp_glyph", "warp_frayed_edge", "warp_false_chant", "warp_teeth"]},
 	"sector/race": {"route": "sector", "member": "", "props": ["race_points", "race_on_screen", "race_markers", "race_unsignposted", "race_pulling", "race_lean", "camera_zoom"]},
 	"sector/choir": {"route": "sector", "member": "", "props": ["grubs_alive", "grubs_carrying", "segments", "segments_knocked", "deposited_shards", "sepulchre_complete"]},

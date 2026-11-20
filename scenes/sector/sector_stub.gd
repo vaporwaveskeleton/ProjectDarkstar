@@ -10,6 +10,10 @@ extends Node2D
 
 const PAUSE_SCENE := preload("res://scenes/sector/pause_screen.tscn")
 const EXIT_STATS := preload("res://data/sector/seam_exit.tres")
+## The slice's Seam kits (`ds_sector.slice`) and the Acolyte (`ds_choir.acolyte`, PM-02 posts).
+const SLICE_KITS := preload("res://data/sector/slice_kits.tres")
+const ACOLYTE_SCENE := preload("res://features/choir/aether_acolyte.tscn")
+const ACOLYTE_STATS := preload("res://data/choir/acolyte.tres")
 ## Race edge marker layout (`ds_hud.race_marks`, Q-T357).
 const RACE_MARKS := preload("res://data/hud/race_edge_markers.tres")
 ## Where a run goes when it ends (Q-T152 (d), Q-T279): the hub, never the title.
@@ -21,6 +25,9 @@ const PARAM_RUN_OUTCOME := "run_outcome"
 @export var vigil_scene: PackedScene
 ## How this Seam clears and is left (Q-T275, Q-T278).
 @export var exit_stats: SeamExitStats = EXIT_STATS
+## Which kit each Seam builds (TECH-001 §2.9 SectorKit): Seam 1 PM-01, Seam 2 PM-02. A dev `--kit=<id>` forces one.
+@export var kit_table: SliceKitTable = SLICE_KITS
+@export var acolyte_stats: AcolyteStats = ACOLYTE_STATS
 ## Where the arena size comes from: the Cabinet stage resource (its `field_size`, 1920×720 ✱).
 @export var arena_source: CabinetStage
 ## Stats for the throwaway run core built when no `session` route param is handed in (§4.2a).
@@ -75,6 +82,10 @@ var flight_voice: VigilFlightVoice
 ## Brass chevrons on the frame for race parts off screen (Q-T357), built in _start_race_marks.
 var race_marks: RaceEdgeMarkers
 var _breached := false
+## The kit this sector is built from, its Acolytes and the dark look (built in `_build_kit_world`).
+var kit: SectorKit
+var acolytes: Array[AetherAcolyte] = []
+var darkness: SectorDarkness
 ## The Seam's clear rule and exit throat (built in _start_exit).
 var seam_exit: SeamExit
 ## Who receives route requests (SceneRouter unless a test injects one): needs go_to(id, params).
@@ -195,7 +206,8 @@ var charges: int:
 ## Shards + Grubs killed + Sepulchre segments knocked off (SYS-001 §7.1).
 var score: int:
 	get: return (_shards.score if _shards else 0) + (_grubs.score if _grubs else 0) \
-		+ (_procession.sepulchre.score if _procession and is_instance_valid(_procession.sepulchre) else 0)
+		+ (_procession.sepulchre.score if _procession and is_instance_valid(_procession.sepulchre) else 0) \
+		+ acolyte_score()
 var charges_in_flight: int:
 	get: return _launcher.in_flight() if _launcher else 0
 ## Charges destroyed by an interceptor (Grub or geode); guttered ones are not counted here.
@@ -227,6 +239,8 @@ func _ready() -> void:
 	torus = Torus.new(arena_source.field_size)
 	_compass.world_rect = Rect2(Vector2.ZERO, torus.size)
 	vigil = vigil_scene.instantiate() as Vigil
+	kit = kit_table.kit_for_launch(OS.get_cmdline_user_args(), LaunchRoute.is_dev_build(), 1)
+	_spawn.position = kit.vigil_spawn
 	vigil.position = _spawn.position
 	_actors.add_child(vigil)
 	# Shots belong to this sector, so they are torn down with it (not parked on Boot/current_scene).
@@ -239,13 +253,11 @@ func _ready() -> void:
 	_shards.setup(torus)
 	_shards.collector = vigil
 	_shards.collector_radius_px = vigil.motor.stats.hitbox_circle_px * 0.5
-	_geodes.populate(torus, _spawn.position, vigil)
 	_compass.torus = torus
-	_procession.populate(torus, _actors, vigil)
+	_build_kit_world()
 	_launcher.torus = torus
 	_launcher.vigil = vigil
 	_launcher.projectile_parent = _actors
-	_launcher.target = _procession.sepulchre.hurtbox
 	_launcher.composure = _composure
 	_framer.anchor = vigil
 	_framer.points = race_points_now
@@ -261,6 +273,7 @@ func _ready() -> void:
 	if router == null:
 		router = get_node_or_null(^"/root/SceneRouter")
 	_use_session(_throwaway_session(), true)
+	_apply_kit_far()
 	_start_far()
 	_bind_warp()
 	_refresh_hud()
@@ -271,6 +284,7 @@ func on_route_entered(params: Dictionary) -> void:
 	for key: Variant in ["session", &"session"]:
 		if params.has(key) and params[key] is RunSessionCore:
 			_use_session(params[key] as RunSessionCore, false)
+			_follow_kit()
 			_apply_bought_nodes()
 			_bind_warp()
 			return
@@ -301,8 +315,7 @@ func _start_exit() -> void:
 	seam_exit.stats = exit_stats
 	var sep: Sepulchre = _procession.sepulchre if _procession else null
 	seam_exit.bind(torus, vigil, sep, _actors, bool(SettingsService.get_value(&"reduced_motion")))
-	if LaunchRoute.is_dev_build():
-		seam_exit.apply_dev_args(OS.get_cmdline_user_args())
+	_bind_kit_exit()
 	seam_exit.throat_entered.connect(take_exit)
 	add_child(seam_exit)
 
@@ -326,8 +339,6 @@ func _start_far() -> void:
 	far_centre = _far_last
 	_far.set_field(torus.size)
 	_far.set_camera(far_centre, _camera.zoom.x)
-	# TODO(M1 lantern API, TECH-001 §2.9): call _far.set_lantern(vigil.lantern_world_pos(),
-	# vigil.lantern_radius, vigil.lantern_lit) each frame once the Vigil exposes them.
 
 
 func _process(delta: float) -> void:
@@ -357,6 +368,7 @@ func _step_far() -> void:
 	_far.set_camera(far_centre, _camera.zoom.x)
 	_depth_back.set_camera(far_centre)
 	_depth_front.set_camera(far_centre)
+	_step_lantern()
 
 
 ## The race this frame (world px): every Charge in flight, every Grub carrying glass, and the
@@ -558,3 +570,106 @@ func _on_hull_breached() -> void:
 	if not throwaway_session and not left and _return_in < 0.0:
 		_return_outcome = RunSessionCore.OUTCOME_DIED
 		_return_in = maxf(0.0, exit_stats.return_hold_s if exit_stats else 0.0)
+
+
+## Read-only scalars for the automation ids `sector/run` (kit) and `sector/acolyte`. Dev/QA reads.
+var kit_id: String:
+	get: return String(kit.kit_id) if kit else ""
+## Acolytes standing, any of them detecting the Vigil, and censer shots fired so far (all Acolytes).
+var acolyte_alive: int:
+	get: return acolytes.filter(func(a: AetherAcolyte) -> bool: return is_instance_valid(a) and not a.dead).size()
+var acolyte_detecting: bool:
+	get: return acolytes.any(func(a: AetherAcolyte) -> bool: return is_instance_valid(a) and a.detecting)
+var acolyte_shots_fired: int:
+	get: return acolytes.reduce(func(n: int, a: AetherAcolyte) -> int: return n + (a.shots_fired if is_instance_valid(a) else 0), 0)
+
+
+## Score of the Acolytes killed (SYS-001-style per-kill score, `ds_choir.acolyte.score`).
+func acolyte_score() -> int:
+	var n := 0
+	for a in acolytes:
+		if is_instance_valid(a) and a.dead:
+			n += acolyte_stats.score
+	return n
+
+
+## Builds the kit's world: geodes, the Sepulchre and its procession (cold or Active, laden carriers,
+## satellite Grubs), the Acolyte posts and the dark look. Safe to call again: every part frees what it
+## built before (a Seam whose kit differs from the throwaway core's rebuilds through `_follow_kit`).
+func _build_kit_world() -> void:
+	_geodes.populate(torus, kit.vigil_spawn, vigil, kit.geodes)
+	_grubs.dark_halo = kit.dark_halo if kit.dark_default else 1.0
+	_grubs.pocket_pos = kit.light_pocket_pos
+	_grubs.pocket_radius_px = kit.light_pocket_radius_px
+	_procession.stats = kit.procession
+	_procession.populate(torus, _actors, vigil, kit.sepulchre_start_segments, kit.start_carriers,
+		kit.satellite_grubs, kit.satellite_spawn)
+	_launcher.target = _procession.sepulchre.hurtbox
+	for a in acolytes:
+		if is_instance_valid(a):
+			a.queue_free()
+	acolytes.clear()
+	var posts := PackedVector2Array() if SliceKitTable.acolytes_off(OS.get_cmdline_user_args(), LaunchRoute.is_dev_build()) else kit.acolyte_posts
+	for i in posts.size():
+		var a := ACOLYTE_SCENE.instantiate() as AetherAcolyte
+		a.configure(acolyte_stats, torus, posts[i], vigil, vigil.lantern, i)
+		a.shot_parent = _actors
+		_actors.add_child(a)
+		acolytes.append(a)
+	if darkness == null:
+		darkness = SectorDarkness.new()
+		darkness.name = "SectorDarkness"
+		darkness.torus = torus
+		darkness.camera = _camera
+		darkness.vigil = vigil
+		darkness.lantern = vigil.lantern
+		darkness.geodes = _geodes
+		darkness.shards = _shards
+		add_child(darkness)
+	darkness.acolytes = acolytes
+	darkness.lantern_radius_px = _far.look.lantern_radius if _far and _far.look else 120.0
+	darkness.apply_kit(kit)
+
+
+## Points the exit at this kit's Sepulchre and anchor (the throat opens at the kit's anchor, else at
+## `ds_sector.exit.throat_pos`), re-applies the dev switches, and re-aims the sound bed.
+func _bind_kit_exit() -> void:
+	seam_exit.set_sepulchre(_procession.sepulchre)
+	seam_exit.set_anchor(kit.exit_anchor if kit.has_exit_anchor else exit_stats.throat_pos)
+	if LaunchRoute.is_dev_build():
+		seam_exit.apply_dev_args(OS.get_cmdline_user_args())
+	if soundscape:
+		soundscape.sepulchre = _procession.sepulchre
+
+
+## A handed-in session may be on a Seam whose kit differs from the one built at `_ready` (the throwaway
+## core is Seam 1): rebuild cleanly for that kit (the Vigil goes to its spawn).
+func _follow_kit() -> void:
+	var want := kit_table.kit_for_seam(session.run().seam_index)
+	if want == null or want == kit:
+		return
+	kit = want
+	_spawn.position = kit.vigil_spawn
+	vigil.global_position = kit.vigil_spawn
+	vigil.velocity = Vector2.ZERO
+	_camera.snap_to_target()
+	_build_kit_world()
+	_bind_kit_exit()
+	_apply_kit_far()
+
+
+## The kit's far look, when it has one and the layer does not already show it.
+func _apply_kit_far() -> void:
+	if _far and kit.far_look != null and _far.look != kit.far_look:
+		_far.apply_look(kit.far_look)
+		if darkness:
+			darkness.lantern_radius_px = kit.far_look.lantern_radius
+
+
+## The Vigil's lantern in the far layer's space each frame (up = the warm pool; down = the reveal).
+func _step_lantern() -> void:
+	if not is_instance_valid(vigil):
+		return
+	var at := far_centre + torus.delta(_camera.global_position, vigil.global_position)
+	_far.set_lantern(at, _far.look.lantern_radius if _far.look else 120.0, vigil.lantern.is_up)
+

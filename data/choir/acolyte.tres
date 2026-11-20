@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="AcolyteStats" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://features/choir/acolyte_stats.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+ds_namespace = "ds_choir.acolyte"
+source_section = "PM-02 Dark Throat ruling: HP 6, detect 110 px (lantern up x2.8, down x0.4), acquisition loss 2.2 s, post leash 40 px, turret lag 0.25 s, range 300 px, tell 0.35 s, cycle 1.8 s, shot 240 px/s, damage 1, score 500; move speed, shot life and radii ✱"
+hp = 6
+detect_radius_px = 110.0
+lantern_up_mult = 2.8
+lantern_down_mult = 0.4
+acquisition_loss_s = 2.2
+post_leash_px = 40.0
+turret_lag_s = 0.25
+range_px = 300.0
+tell_s = 0.35
+cycle_s = 1.8
+shot_speed_px_s = 240.0
+shot_damage = 1
+score = 500
+radius_px = 8.0
+move_speed_px_s = 40.0
+shot_life_s = 1.5
+shot_radius_px = 3.0
+die_s = 0.4

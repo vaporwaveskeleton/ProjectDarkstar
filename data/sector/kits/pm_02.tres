@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="SectorKit" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://features/sector/sector_kit.gd" id="1"]
+[ext_resource type="Resource" path="res://data/sepulchre/procession_pm02.tres" id="2"]
+[ext_resource type="Resource" path="res://data/aether/pm02_pale_marches_t1.tres" id="3"]
+
+[resource]
+script = ExtResource("1")
+ds_namespace = "ds_sector.kit_pm_02"
+source_section = "PM-02 Dark Throat (slice Seam 2): 8 geodes, Active Sepulchre (3 segments), 2 satellite Grubs, 1 Acolyte post, exit anchor, dark kit with a light pocket and an unlit corridor; placement and look ✱"
+kit_id = &"pm_02"
+vigil_spawn = Vector2(320, 330)
+geodes = PackedVector2Array(760, 240, 820, 270, 880, 232, 940, 266, 1000, 236, 1060, 268, 1120, 240, 1176, 262)
+procession = ExtResource("2")
+sepulchre_start_segments = 3
+start_carriers = 3
+acolyte_posts = PackedVector2Array(520, 636)
+has_exit_anchor = true
+exit_anchor = Vector2(420, 672)
+dark_default = true
+dark_ambient = Color(0.5, 0.52, 0.66, 1)
+dark_halo = 0.25
+corridor_dim = 0.7
+light_pocket_pos = Vector2(980, 330)
+light_pocket_radius_px = 110.0
+unlit_corridor = Rect2(0, 624, 1920, 96)
+satellite_grubs = 2
+satellite_spawn = Vector2(1700, 160)
+far_look = ExtResource("3")
