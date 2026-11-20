@@ -15,7 +15,7 @@
 | Loading / transition curtain | brief | built (fade) — `scenes/boot/boot.tscn` |
 | Act 0 cabinet HUD: printed bezel around the 256×304 portrait screen, 1UP/score, Vigils (readouts on the screen's 40 px HUD strip, TECH-001 §2.10), glass-lamp Charge pips, Ledger Compass mini-map; READY card, banners, captions, credits, the entity's big type | WARP-001 W0-01/W0-02/W0-04, ART-001 §11.5 | built — `features/cabinet/` (TECH-001 §2.10) |
 | HUD (diegetic, may lie) | WARP-001 §4 | Act 1+: stub (one honest hull label) |
-| Rebinding, mouse sensitivity, aim assist, colourblind variants, subtitles, audio options (Settings shows bindings read-only on its Controls page; no Audio tab until the sliders exist, TECH-001 Q-T250) | GDD §10, AUDIO-001 §8.4 | planned |
+| Rebinding, mouse sensitivity, aim assist, colourblind variants, subtitles, audio options (Settings shows bindings read-only on its Controls page; no Audio tab until the sliders exist, TECH-001 Q-T270) | GDD §10, AUDIO-001 §8.4 | planned |
 | Death / cause-of-death screen | GDD §6.3, §8.9; AUDIO-001 §4.10 | planned |
 | Ruins first arrival (title, the lit sapling, continue) | GDD §6.4 | stub — `scenes/ruins/` |
 | Ruins hub, Lantern Tree, Chalk Desk, Codex, run summary | GDD §6.4, LOOP-001 §3, §7 | planned |
@@ -111,7 +111,7 @@ Owner direction 2026-11-19 ("too narrow, not enough artwork"); built by the PM u
   * *Accessibility* page: Large Text, Reduced Motion, Photosensitivity Mode, Steady Ledger.
   * *Video* page: Weapon Muzzle Flash.
   * *Controls* page: a read-only table (action, keyboard, gamepad). It reads the live `InputMap` through `InputLabels`, so it always shows the real bindings. At 200 % text each row stacks the label, the keyboard binding and the gamepad binding on three lines, so the table never leaves the frame.
-  * There is no Audio tab until the AUDIO-001 §8.4 sliders are built (M2; TECH-001 Q-T250).
+  * There is no Audio tab until the AUDIO-001 §8.4 sliders are built (M2; TECH-001 Q-T270).
   * The rows read and write `SettingsService` exactly as before. No setting, key, default or saved value changed.
 * **Pause:** an art panel on the left; Resume, Settings and Abandon Run on the right (in the Ruins, Leave for the Title).
 * **Confirm:** the title, a heavy rule, a caution plate beside the body text, then Cancel (default focus) and Confirm.
