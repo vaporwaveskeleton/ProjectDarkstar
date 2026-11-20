@@ -26,23 +26,27 @@ func after_test() -> void:
 	SettingsService.persist = _prev_persist
 
 
-func test_all_suite_scenarios_pass() -> void:
-	var ran := 0
+## One test case per suite-eligible scenario (TECH-001 §9.1): each case gets its own GdUnit timeout,
+## so the sum of all scenarios can no longer hit the 5 min per-case limit (it had reached 4 min 59 s).
+## Scenarios that are not suite-eligible (args, long timeout) are left to the CLI runner.
+static func suite_scenarios() -> Array:
+	var out: Array = []
 	for f in DirAccess.get_files_at(DIR):
 		if not f.ends_with(".scenario.json"):
 			continue
 		var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(DIR + f))
-		if typeof(parsed) != TYPE_DICTIONARY:
-			fail("%s is not a JSON object" % f)
-			continue
-		var sc: Dictionary = parsed
-		var errs := Schema.validate(sc, true)
-		if not errs.is_empty():
-			print("SKIPPED %s (not suite-eligible: %s)" % [f, "; ".join(errs)])
-			continue
-		await _play(f, sc)
-		ran += 1
-	assert_int(ran).is_greater(0)
+		if typeof(parsed) == TYPE_DICTIONARY and Schema.validate(parsed as Dictionary, true).is_empty():
+			out.append([f])
+	return out
+
+
+func test_scenario_passes(file: String, test_parameters := suite_scenarios()) -> void:
+	var sc: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(DIR + file))
+	await _play(file, sc)
+
+
+func test_the_suite_has_scenarios() -> void:
+	assert_int(suite_scenarios().size()).is_greater(20)
 
 
 func _play(file: String, sc: Dictionary) -> void:

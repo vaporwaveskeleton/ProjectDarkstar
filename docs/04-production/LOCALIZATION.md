@@ -27,6 +27,7 @@ English-only does not mean hard-coded text. Every player-visible string is a key
 * Placeholders use `{name}` and are replaced in code. Never concatenate fragments into a sentence.
 * `#.` lines above an entry are **context notes**: where the text shows, length limits, glossary terms.
 * Glossary words (GDD §19) are fixed terms. "DARKSTAR" is a name.
+* Settings Audio page (2026-11-19, UI-001 §10): `SETTINGS_TAB_AUDIO` and `SETTINGS_TAB_AUDIO_DESC`, and per slider `SETTINGS_VOL_MASTER`, `_MUSIC`, `_CHOIR`, `_ENTITY`, `_UI`, `_FOLEY`, each with a `_DESC` key for the line under the page. The labels use AUDIO-001 §8.4's words ("Entity voice", "UI and readouts", "Foley and ambience", "Choir" is a glossary word), never bus ids (AUDIO-001 §12 closing note). The slider's number is a plain integer, not a key.
 * Scenes: put the key in `text` and leave auto-translate on. Labels that show runtime-built text set `auto_translate_mode = Disabled` and call `tr()` / `LocFormat` themselves.
 * Entity lines (big type, ART-001 §11 Litany face) must fit **560 px** wide at 1×.
 

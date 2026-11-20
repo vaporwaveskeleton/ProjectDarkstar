@@ -189,7 +189,7 @@ func _ring(c: Vector2, rim: PackedFloat32Array, r: float) -> PackedVector2Array:
 # --- the eye's absence --------------------------------------------------------------------------------
 
 ## Where the cursed turn's wear-through starts, in rig units, from the bezel art's haunt anchors: `wear_origin`
-## (#101 Fable pass, Q-T295: the ringed world's middle band; the world has no eye, N4), falling back to the old
+## (#101 Fable pass, Q-T410: the ringed world's middle band; the world has no eye, N4), falling back to the old
 ## `eye` anchor when the art predates the rename. Rect2() when the art has neither.
 static func eye_anchor() -> Rect2:
 	var a: Dictionary = BezelArt.haunt_anchors()

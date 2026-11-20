@@ -31,6 +31,18 @@ git clone https://github.com/uilianks/pxl .claude/skills/pxl
 ```
 Then `node .claude/skills/pxl/bin/pxl.js serve art/src/reference.px.js` for the live viewer (http://127.0.0.1:4321), `... lint art/src/<file>.px.js` before calling art done, and `... build art/src/<file>.px.js --out assets/art/generated` to re-render. Only palette colours; never `image()`. Details: ART-001 §14.8.
 
+## Texture tool (loom)
+
+Seamless textures are code too (ART-001 §14.8a). Sources live in `art/src/*.tx.js` (each starts with `include("darkstar_palette.tx.js")` and names colours by Pal role only) and are rendered by [loom](https://github.com/uilianks/loom) into `assets/art/generated/textures/` (albedo, normal, ORM, emissive: committed). To edit textures, install loom once per machine at the pinned commit (Node ≥ 22.18; one runtime dependency, `@resvg/resvg-js`, used only for the preview sheets; no install scripts):
+
+```
+git clone https://github.com/uilianks/loom .claude/skills/loom
+git -C .claude/skills/loom checkout bc0159965033b5a7e3483c13787036eec516b210
+cd .claude/skills/loom && npm ci --omit=dev --ignore-scripts
+```
+
+Then `node .claude/skills/loom/bin/loom.js build art/src/<file>.tx.js --out assets/art/generated/textures` to re-render (read `assets/art/generated/textures/_preview/<name>.png`, then `--import`), and `... serve art/src/<file>.tx.js` for the live viewer (http://127.0.0.1:4350). Never use loom's `image()`. The tool, its `node_modules`, the previews and the unused maps (height, roughness, metallic, AO) are git-ignored.
+
 ## Sound tools (chirp)
 
 Every sound is code (GDD D-14). Authored sounds live in `audio/src/*.cx.js` and are rendered by [chirp](https://github.com/uilianks/chirp) into `assets/audio/generated/` (committed, so playing the game needs nothing extra). To edit sounds you need Node ≥ 22.18 and chirp, installed once per machine as a project Claude Code skill:

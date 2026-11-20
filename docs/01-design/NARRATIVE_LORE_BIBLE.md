@@ -1049,7 +1049,7 @@ IDs and classes follow LOOP-001 §8.2 (`cx_<class>_<slug>`; 144 counted entries 
 
 > **cx_place_sky_4 · The Fourth Sky** — Written the first time it went dark. A sky is one layer of every place at once; when it goes out, every biome loses a layer of light and the Ledger Compass loses a row. *The chant lost a voice.*
 
-> **cx_place_act0_3 · Last Normal Day (cabinet stage)** *(the first Ruins visit's stamped page, §5.7)* — Pretence Hall curriculum, stage three, the last of the training rotation. A simulation: in it the Dark Star always lost, by design. Final screen retained as written by the curriculum's author.
+> **cx_place_act0_3 · Last Normal Day (cabinet stage)** *(the first Ruins visit's stamped page, §5.7)* — Pretence Hall curriculum, stage five, the last of the training rotation. A simulation: in it the Dark Star always lost, by design. Final screen retained as written by the curriculum's author.
 
 **The Ruins — `cx_ruins_`** (cast letters; LOOP-001 §8.2: Sable ×4, Ilse ×4, Wick ×4, Cabinet ×3, the Chalk Desk ledger)
 

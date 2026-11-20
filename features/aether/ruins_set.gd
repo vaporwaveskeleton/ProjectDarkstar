@@ -8,6 +8,9 @@ extends Node2D
 
 ## ✱ the slow orrery ring: seconds per turn.
 const ORRERY_TURN_S := 140.0
+## ✱ the orrery rings: x/y radius, tilt (rad), unused.
+const ORRERY_RINGS: Array[Vector4] = [Vector4(48.0, 12.0, 0.22, 0.0), Vector4(34.0, 21.0, -0.55, 0.0),
+	Vector4(58.0, 7.0, 0.08, 1.0)]
 ## ✱ rubble seed (the heaps are generated, same every run).
 const RUBBLE_SEED := 9171
 
@@ -22,6 +25,9 @@ var brass := Pal.BONE_2
 var brass_hi := Pal.BONE_4
 var brass_shadow := Pal.VOID_3
 var chalk := Pal.BONE_4
+## Perf (Q-T248, Ruins): the set is static and drawn once; only the turning planet lives on this child
+## and redraws each frame.
+var _planet: Node2D
 var _t := 0.0
 var _rubble: Array[PackedVector2Array] = []
 var _rubble_tone: PackedFloat32Array = []
@@ -48,7 +54,14 @@ func set_layout(p_mouth: Rect2, p_floor_y: float, p_hole_c: Vector2, p_hole_r: V
 
 func set_time(t: float) -> void:
 	_t = t
-	queue_redraw()
+	if _planet != null:
+		_planet.queue_redraw()
+
+
+## Redraw everything (layout or colours changed).
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_DRAW and _planet != null:
+		_planet.queue_redraw()
 
 
 func pilaster_xs() -> PackedFloat32Array:
@@ -63,6 +76,10 @@ func in_hole(p: Vector2) -> bool:
 func _ready() -> void:
 	if _rubble.is_empty():
 		_build_rubble()
+	_planet = Node2D.new()
+	_planet.name = "OrreryPlanet"
+	add_child(_planet)
+	_planet.draw.connect(_draw_planet)
 
 
 func _build_rubble() -> void:
@@ -205,9 +222,7 @@ func _draw_orrery() -> void:
 	# a broken orrery hanging from the vault on a rod; one ring still turns (very slowly)
 	var c := orrery_at
 	draw_line(Vector2(c.x, 0.0), c + Vector2(0, -8.0), brass_shadow.lerp(brass, 0.5), 1.5)
-	var turn := TAU * fposmod(_t / ORRERY_TURN_S, 1.0)
-	var rings: Array[Vector4] = [Vector4(48.0, 12.0, 0.22, 0.0), Vector4(34.0, 21.0, -0.55, 0.0),
-		Vector4(58.0, 7.0, 0.08, 1.0)]
+	var rings := ORRERY_RINGS
 	for i in rings.size():
 		var r := rings[i]
 		var start := 0.0
@@ -230,8 +245,10 @@ func _draw_orrery() -> void:
 			# the broken end sags: a short bent length hanging down
 			var e2 := pts[pts.size() - 1]
 			draw_line(e2, e2 + Vector2(3.0, 16.0), brass, 1.2, true)
-		# a planet on each ring (glass; PHOS = glass)
-		var pa := (turn if i == 0 else 1.1 + float(i) * 2.0)
+		# a planet on each ring (glass; PHOS = glass); the turning one is drawn by _draw_planet
+		if i == 0:
+			continue
+		var pa := 1.1 + float(i) * 2.0
 		if i == 1 and fposmod(pa - start, TAU) > span:
 			pa = start + span * 0.5
 		var pp := c + Vector2(cos(pa) * r.x, sin(pa) * r.y).rotated(r.z)
@@ -241,6 +258,15 @@ func _draw_orrery() -> void:
 	# the centre: a dull brass sun, cold (its light is long gone)
 	draw_circle(c, 6.0, brass_shadow.lerp(brass, 0.4))
 	draw_arc(c, 6.0, -2.6, -0.9, 10, brass_hi, 1.0, true)
+
+
+## The one planet that still turns (innermost ring), on its own small canvas item.
+func _draw_planet() -> void:
+	var r := ORRERY_RINGS[0]
+	var pa := TAU * fposmod(_t / ORRERY_TURN_S, 1.0)
+	var pp := orrery_at + Vector2(cos(pa) * r.x, sin(pa) * r.y).rotated(r.z)
+	_planet.draw_circle(pp, 2.6, Pal.PHOS_1)
+	_planet.draw_arc(pp, 2.6, -2.2, -0.6, 6, Pal.PHOS_3, 0.8, true)
 
 
 func _draw_fallen_rib() -> void:
