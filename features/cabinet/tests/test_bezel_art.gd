@@ -5,8 +5,8 @@ extends GdUnitTestSuite
 
 const GAME_SCENE := "res://features/cabinet/cabinet_game.tscn"
 const ATTRACT_SCENE := "res://scenes/attract/attract_mode.tscn"
-const COLUMN := Rect2(0, 0, 80, 360)
-const BLEED := 70.0                         ## art may run this far off a column edge: BezelPrint clips to the 80 x 360 box
+const COLUMN := Rect2(0, 0, CabinetBezel.SIDE, 360)
+const BLEED := 70.0                         ## art may run this far off a column edge: BezelPrint clips to the SIDE x 360 box
 const SCREEN := Rect2(192, 28, 256, 304)    ## the hole in rig units (spec grid 256×304 centred in 640×360)
 
 
@@ -65,7 +65,7 @@ func test_every_piece_has_geometry_inside_its_column() -> void:
 		assert_int(p.points.size()).override_failure_message("%s has no points" % p.id).is_greater(0)
 		var b := _bounds(p)
 		assert_bool(COLUMN.grow(BLEED).encloses(b)) \
-			.override_failure_message("%s %s runs further than the bleed off the 80 x 360 column" % [p.id, b]).is_true()
+			.override_failure_message("%s %s runs further than the bleed off the column" % [p.id, b]).is_true()
 		if p.kind in [BezelPiece.Kind.FILL, BezelPiece.Kind.OUTLINE, BezelPiece.Kind.HALFTONE]:
 			assert_int(p.points.size()).override_failure_message("%s needs 3+ points" % p.id).is_greater(2)
 
@@ -94,7 +94,7 @@ func test_pieces_are_sorted_by_z() -> void:
 			last = p.z
 
 
-## The print clips to its 80 x 360 box (art bleeds off the outer, top and bottom edges), so what reaches the
+## The print clips to its SIDE x 360 box (art bleeds off the outer, top and bottom edges), so what reaches the
 ## window is each piece's bounds clipped to the column: none of that touches the screen.
 func test_no_piece_covers_the_screen() -> void:
 	for p in _both():
@@ -114,21 +114,21 @@ func test_each_column_has_its_screen_lip() -> void:
 		if p.id == &"left_lip":
 			left_lip = p
 	assert_object(left_lip).is_not_null()
-	assert_float(_bounds(left_lip).position.x).is_equal(78.0)
+	assert_float(_bounds(left_lip).position.x).is_equal(CabinetBezel.SIDE - 2.0)
 	for p in BezelArt.build_right():
 		if p.id == &"right_lip":
 			assert_float(_bounds(p).end.x).is_equal(2.0)
 
 
 func test_how_to_play_lines_fit_the_panel_in_vector_text() -> void:
-	var width := CabinetBezel.LEFT_HOWTO.size.x - 2.0
-	var cap := BezelArt.howto_cap(BezelArt.HOWTO_KEYS, BezelArt.INK_W - 6.0, 5.4)
-	assert_float(cap).is_greater(3.0)          # still legible
+	var width := BezelArt.howto_line_width()
+	var cap := BezelArt.howto_cap(BezelArt.HOWTO_KEYS, width, BezelArt.HOWTO_CAP)
+	assert_float(cap).is_greater(3.0)          # still legible (about 9 px at 1080p)
 	for key in BezelArt.HOWTO_KEYS + BezelArt.SHEET_KEYS:
 		var s := tr(key)
 		assert_str(s).override_failure_message("%s has no translation" % key).is_not_equal(key)
 	for key in BezelArt.HOWTO_KEYS:
-		assert_float(BezelText.painted_size(tr(key), cap, cap * 0.2, 0.7).x) \
+		assert_float(BezelText.painted_size(tr(key), cap, cap * 0.2, 0.5).x) \
 			.override_failure_message("%s is wider than the panel" % key).is_less_equal(width)
 		assert_int(tr(key).length()).is_less_equal(12)
 
@@ -152,7 +152,7 @@ func test_every_bezel_string_is_a_tr_key_drawn_with_vector_text() -> void:
 		assert_bool(po.contains("msgid \"%s\"" % p.text_key)).override_failure_message("%s: %s not in en.po" % [p.id, p.text_key]).is_true()
 		assert_float(p.width).override_failure_message("%s has no cap height" % p.id).is_greater(1.0)
 		assert_float(p.stroke_w).is_greater(0.0)
-	assert_int(texts).is_greater(10)
+	assert_int(texts).is_greater(6)
 	for path in ["res://features/cabinet/bezel_print.gd", "res://features/cabinet/bezel_art.gd", "res://features/cabinet/bezel_sticker.gd",
 			"res://features/cabinet/bezel_marquee.gd", "res://features/cabinet/cabinet_bezel.gd", "res://features/cabinet/coin_slot.gd",
 			"res://features/cabinet/cabinet_hud.gd", "res://features/cabinet/bezel_text.gd", "res://scenes/attract/attract_frame.gd"]:
@@ -188,27 +188,30 @@ func test_the_sheet_has_no_floating_cards_and_tones_are_ramps() -> void:
 	assert_int(tones).is_greater(8)
 
 
-## The big logo lives in the left column's upper art (Q-T32) and is the game title.
-func test_the_big_logo_is_the_title_in_the_upper_left_art() -> void:
-	var found := 0
+## The marquee is the only title (Fable review 2026-11-20): the side art prints no GAME_TITLE, and the hero
+## Vigil takes the upper left art.
+func test_the_marquee_is_the_only_title_and_the_vigil_takes_the_upper_left() -> void:
+	for p in BezelArt.build_left() + BezelArt.build_right():
+		assert_str(p.text_key).override_failure_message("%s prints the title" % p.id).is_not_equal("GAME_TITLE")
+	var hull: BezelPiece = null
 	for p in BezelArt.build_left():
-		if String(p.id).begins_with("left_logo_fill"):
-			found += 1
-			assert_str(p.text_key).is_equal("GAME_TITLE")
-			assert_float(p.width).is_greater_equal(14.0)         # big
-			assert_float(p.points[0].y).is_less(70.0)             # upper art
-	assert_int(found).is_equal(2)
+		if p.id == &"left_vigil_hull":
+			hull = p
+	assert_object(hull).is_not_null()
+	var b := _bounds(hull)
+	assert_float(b.size.y).is_greater(80.0)                  # the hero: about as tall as the right panel's Grub
+	assert_float(b.position.y).is_less(120.0)                # it rises into the space the title had
 
 
-## The entity motifs keep the §12.7a rule: exactly one slit eye on the Sepulchre, no mouth and no skull piece.
-func test_entity_motifs_keep_the_one_eye_rule() -> void:
-	var eyes := 0
-	for p in BezelArt.build_right():
+## N4 (ART-001 §12.7a, Fable review 2026-11-20): the entity and its world never have eyes: no eye, lid, pupil,
+## slit, mouth, skull or jaw piece in the side art (the Choir monks' own faces are not the entity).
+func test_the_side_art_has_no_entity_eye_or_face() -> void:
+	for p in BezelArt.build_left() + BezelArt.build_right():
 		var id := String(p.id)
-		if id == "right_sep_eye":
-			eyes += 1
-		assert_bool(id.contains("mouth") or id.contains("skull") or id.contains("jaw")).override_failure_message(id).is_false()
-	assert_int(eyes).is_equal(1)
+		if id.contains("monk"):
+			continue
+		for bad in ["eye", "lid", "pupil", "slit", "mouth", "skull", "jaw"]:
+			assert_bool(id.contains(bad)).override_failure_message(id).is_false()
 
 
 func test_bezel_draws_after_the_screen_and_the_crt_is_the_screens_material() -> void:

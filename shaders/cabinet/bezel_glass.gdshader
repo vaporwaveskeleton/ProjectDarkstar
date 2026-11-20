@@ -20,6 +20,9 @@ uniform float scratch : hint_range(0.0, 1.0) = 0.5;
 uniform float band_lift = 0.42;          // peak alpha of the specular band: a pale veil that lowers contrast and saturation
 uniform float smear_haze = 1.0;          // peak alpha of the thumb-smear when the screen is bright
 uniform float smear_idle = 0.0;          // its share of that when the screen is dark
+uniform sampler2D smudge_mask : repeat_enable, filter_linear_mipmap;   // loom ds_cab_glass_smudge (ART-001 §14.8a)
+uniform float smudge_tile = 90.0;
+uniform float prints : hint_range(0.0, 1.0) = 0.8;
 
 varying vec2 lp;
 
@@ -81,6 +84,15 @@ void fragment() {
 	acc += mix(vec3(0.9, 0.92, 0.94), cab_screen_light.rgb * 1.1 + 0.15, 0.55) * a_sm;
 	asum += a_sm;
 
+	// greasy fingerprints and palm smears (loom ds_cab_glass_smudge): wherever hands go (wear_k: the lower edge,
+	// round the coin door) and in a band beside the screen; always faintly there, a lit sheen in the key light and
+	// the specular band, so the glass reads as a touched surface even when the picture is dark
+	float grease = dot(texture(smudge_mask, rp / max(smudge_tile, 1.0)).rgb, vec3(0.333));
+	float hands = clamp(wear_k(rp) * 1.3 + exp(-max(dh, 0.0) / 30.0) * 0.35, 0.0, 1.0);
+	float a_fp = grease * hands * prints * (0.05 + 0.25 * band + 0.18 * key_l + 0.1 * cab_screen_light.a);
+	acc += mix(vec3(0.82, 0.85, 0.9), key / max(max(key.r, max(key.g, key.b)), 0.05), 0.35) * a_fp;
+	asum += a_fp;
+
 	// a few fine scratches
 	float fa = ridge(vnoise(vec2(rp.x * 0.09 + rp.y * 0.04, rp.y * 1.3 - rp.x * 0.5)), 0.975) * smoothstep(0.4, 0.7, vnoise(rp * 0.05 + 8.0));
 	float fb = ridge(vnoise(vec2(rp.x * 1.2 + rp.y * 0.6, rp.y * 0.08 - rp.x * 0.12)), 0.978) * smoothstep(0.45, 0.75, vnoise(rp * 0.04 + 2.0));
@@ -89,8 +101,8 @@ void fragment() {
 	asum += a_sc;
 
 	// the glass is the cabinet's front only: it fades out into the room beyond the sheet
-	float x0 = cab_hole.x - 80.0;
-	float x1 = cab_hole.x + cab_hole.z + 80.0;
+	float x0 = cab_hole.x - cab_side;
+	float x1 = cab_hole.x + cab_hole.z + cab_side;
 	float in_sheet = smoothstep(x0 - 5.0, x0 + 1.0, rp.x) * (1.0 - smoothstep(x1 - 1.0, x1 + 5.0, rp.x));
 
 	// the coin door sits in front of the glass

@@ -1,6 +1,6 @@
 class_name BezelPiece
 extends RefCounted
-## One piece of the printed bezel art (column-local coordinates, 0..80 × 0..360). The art is a list
+## One piece of the printed bezel art (column-local coordinates, 0..CabinetBezel.SIDE × 0..360). The art is a list
 ## of these, sorted by `z` (then build order). A BezelPrint draws the list once. Because every
 ## piece has an id, a pivot and a z, the later "zoom destruction" (peel, crack, curl, decay) can
 ## move, rotate or drop single pieces without a redraw of the rest: the list is the seam.

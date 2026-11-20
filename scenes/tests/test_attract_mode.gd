@@ -52,7 +52,7 @@ func test_settings_opens_modal_and_ui_cancel_restores_focus() -> void:
 	await runner.simulate_frames(2)
 	var stack: ScreenStack = runner.find_child("Overlays")
 	assert_int(stack.depth()).is_equal(1)
-	assert_str(_focus().name).is_equal("Back")
+	assert_str(_focus().name).is_equal("TabAccessibility")
 	runner.simulate_action_pressed("ui_cancel")
 	await runner.simulate_frames(2)
 	assert_int(stack.depth()).is_equal(0)

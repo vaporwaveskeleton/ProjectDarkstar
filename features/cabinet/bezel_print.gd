@@ -1,8 +1,8 @@
 class_name BezelPrint
 extends Control
-## One printed bezel column (80 × 360, flush against the screen hole) drawn from its BezelPiece list (BezelArt).
+## One printed bezel column (CabinetBezel.SIDE × 360, flush against the screen hole) drawn from its BezelPiece list (BezelArt).
 ## The two columns are the side-panel halves of ONE printed sheet (with BezelField round the opening): the art
-## bleeds off the column's outer, top and bottom edges (the control clips to its 80 × 360 box), and
+## bleeds off the column's outer, top and bottom edges (the control clips to its SIDE × 360 box), and
 ## the inner 2 px is the key-black lip against the opening. The art is drawn once and redrawn only when
 ## the crack or the inks change: there is no per-frame redraw. The costume's peel slides the whole column
 ## sideways by its position (left slides left, right slides right), it never redraws. A Control drawn
@@ -47,6 +47,8 @@ func _ready() -> void:
 	size = Vector2(CabinetBezel.SIDE, 360.0)
 	_surface = CabinetSurface.default() as CabinetSurface
 	_mat = CabinetLighting.print_material(_surface, Vector2.ZERO, false)
+	_mat.set_shader_parameter(&"halftone_cell", _surface.print_art_cell)
+	_mat.set_shader_parameter(&"tone_steps", 1.0 if _surface.print_art_steps else 0.0)
 	material = _mat
 	pieces_rebuild()
 	_build_hardware()
@@ -57,7 +59,7 @@ func _ready() -> void:
 ## right) and, on the right, the die-cut vinyl sticker: real parts over the print, not printed art.
 func _build_hardware() -> void:
 	var x0 := 0.0 if column == &"left" else 2.0
-	var vents: Array[Rect2] = [Rect2(x0, 0, 78, 10), Rect2(x0, 350, 78, 10)]
+	var vents: Array[Rect2] = [Rect2(x0, 0, CabinetBezel.SIDE - 2.0, 10), Rect2(x0, 350, CabinetBezel.SIDE - 2.0, 10)]
 	if column == &"right":
 		vents.append(CabinetBezel.APRON_VENT_LOCAL)
 		_hardware.append(BezelSticker.make(CabinetBezel.RIGHT_STICKER))
@@ -65,6 +67,11 @@ func _build_hardware() -> void:
 		_hardware.append(BezelVent.make(r))
 	for h in _hardware:
 		add_child(h)
+
+
+## The haunt overlays' anchors in rig units (BezelArt.haunt_anchors); the same on both columns.
+func haunt_anchors() -> Dictionary:
+	return BezelArt.haunt_anchors()
 
 
 func pieces() -> Array[BezelPiece]:
@@ -98,13 +105,12 @@ func _draw() -> void:
 		_draw_crack()
 
 
-## The colour plates were never printed in perfect register: each ink is nudged by its own small offset
-## (the key-black plate is the reference). Deterministic, from the ink's name.
+## Misregistration: the key-black plate is the reference and the other screens sat in register but one
+## (CabinetSurface.print_art_misregister_ink), printed 1–2 px off (Fable review 2026-11-20).
 func plate_offset(ink: StringName) -> Vector2:
-	if ink == &"key_black" or _surface == null:
+	if _surface == null or ink != _surface.print_art_misregister_ink:
 		return Vector2.ZERO
-	var h := BezelArt.hash_int(String(ink).hash())
-	return Vector2(float(h % 2001) / 1000.0 - 1.0, float((h / 2001) % 2001) / 1000.0 - 1.0) * _surface.print_misregister
+	return _surface.print_art_misregister
 
 
 func _draw_piece(p: BezelPiece) -> void:

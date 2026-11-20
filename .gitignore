@@ -72,4 +72,12 @@ desktop.ini
 # pxl (pixel art as code): third-party Node tool, installed per machine (README)
 /.claude/skills/pxl/
 /assets/art/generated/_preview/
+# loom (textures as code): third-party Node tool, installed per machine at a pinned commit (README);
+# its renders are committed, except previews and the maps Godot 2D does not read (ART-001 §14.8a).
+/.claude/skills/loom/
+/assets/art/generated/textures/_preview/
+/assets/art/generated/textures/*/*_height.png*
+/assets/art/generated/textures/*/*_roughness.png*
+/assets/art/generated/textures/*/*_metallic.png*
+/assets/art/generated/textures/*/*_ao.png*
 /art/src/out/

@@ -100,6 +100,162 @@ msgstr "Weapon Muzzle Flash"
 msgid "SETTINGS_MUZZLE_FLASH_DESC"
 msgstr "Shows a brief spark at the gun each time you fire. Turn it off if flashes bother you."
 
+#. Settings row description (shown under the page when the row has focus).
+msgid "SETTINGS_LARGE_TEXT_DESC"
+msgstr "Doubles the size of menu text."
+
+#. Settings row description.
+msgid "SETTINGS_REDUCED_MOTION_DESC"
+msgstr "Swaps strong motion, such as shakes and sweeps, for calmer versions."
+
+#. Settings row description. Must stay true: the mode never hides information (GDD §10).
+msgid "SETTINGS_PHOTOSENSITIVITY_DESC"
+msgstr "Removes flicker, flashes and strobing. Nothing you need is hidden."
+
+#. Settings row description. Steady Ledger is a glossary name (WARP-001 §4.4).
+msgid "SETTINGS_STEADY_LEDGER_DESC"
+msgstr "Keeps the HUD honest: its readouts never lie, and Esc always pauses."
+
+#. Settings preview window, when the focused row has no preview (a tab, Back, a controls row).
+msgid "SETTINGS_PREVIEW_IDLE"
+msgstr "Preview"
+
+#. Settings preview: the sample word shown at 100 % and 200 % text. A glossary word.
+msgid "SETTINGS_PREVIEW_TEXT"
+msgstr "Vigil"
+
+#. Settings preview: caption over the HUD digit that lies under warp (WARP-001 §4.2).
+msgid "SETTINGS_PREVIEW_HUD"
+msgstr "HUD"
+
+#. Settings preview: caption over the Steady Ledger digit, which never lies (WARP-001 §4.4).
+msgid "SETTINGS_PREVIEW_LEDGER"
+msgstr "Ledger"
+
+#. Toggle value: the setting is on.
+msgid "SETTINGS_ON"
+msgstr "On"
+
+#. Toggle value: the setting is off.
+msgid "SETTINGS_OFF"
+msgstr "Off"
+
+#. Settings page tab.
+msgid "SETTINGS_TAB_ACCESSIBILITY"
+msgstr "Accessibility"
+
+msgid "SETTINGS_TAB_ACCESSIBILITY_DESC"
+msgstr "Text size, motion, flashes and an honest HUD."
+
+#. Settings page tab.
+msgid "SETTINGS_TAB_VIDEO"
+msgstr "Video"
+
+msgid "SETTINGS_TAB_VIDEO_DESC"
+msgstr "How weapon effects look on screen."
+
+#. Settings page tab: the volume sliders (AUDIO-001 §8.4).
+msgid "SETTINGS_TAB_AUDIO"
+msgstr "Audio"
+
+msgid "SETTINGS_TAB_AUDIO_DESC"
+msgstr "How loud each kind of sound is. Left and right change a slider; Back returns to the tabs."
+
+#. Volume slider: the whole game.
+msgid "SETTINGS_VOL_MASTER"
+msgstr "Master"
+
+msgid "SETTINGS_VOL_MASTER_DESC"
+msgstr "The volume of everything. Left and right change it."
+
+#. Volume slider: music.
+msgid "SETTINGS_VOL_MUSIC"
+msgstr "Music"
+
+msgid "SETTINGS_VOL_MUSIC_DESC"
+msgstr "The volume of the music. Warnings and cues are not on this slider, so turning it down hides nothing."
+
+#. Volume slider: the Choir's chant and keening. Choir is a glossary word.
+msgid "SETTINGS_VOL_CHOIR"
+msgstr "Choir"
+
+msgid "SETTINGS_VOL_CHOIR_DESC"
+msgstr "The volume of the Choir's chant and keening, which tell you where they are."
+
+#. Volume slider: the entity's spoken lines. It cannot be turned fully off.
+msgid "SETTINGS_VOL_ENTITY"
+msgstr "Entity voice"
+
+msgid "SETTINGS_VOL_ENTITY_DESC"
+msgstr "The volume of the entity's spoken lines. It stops short of silence, because the lines tell you what state the run is in."
+
+#. Volume slider: menu and readout sounds.
+msgid "SETTINGS_VOL_UI"
+msgstr "UI and readouts"
+
+msgid "SETTINGS_VOL_UI_DESC"
+msgstr "The volume of menu sounds and the tally, apart from the world around you."
+
+#. Volume slider: the ship's brass, the clock and the ambience. It cannot be turned fully off.
+msgid "SETTINGS_VOL_FOLEY"
+msgstr "Foley and ambience"
+
+msgid "SETTINGS_VOL_FOLEY_DESC"
+msgstr "The volume of the ship's brass, the clock and the background beds. It stops short of silence so a warning chime is never lost."
+
+#. Settings page tab: a read-only reference of the current bindings.
+msgid "SETTINGS_TAB_CONTROLS"
+msgstr "Controls"
+
+msgid "SETTINGS_TAB_CONTROLS_DESC"
+msgstr "What each control does, on keyboard and mouse and on a gamepad."
+
+#. Act 0 only: the cabinet's settings page is its operator service mode (a period arcade term).
+msgid "MENU_SERVICE_MODE"
+msgstr "Service Mode"
+
+#. Controls reference: column headings.
+msgid "CONTROLS_COLUMN_ACTION"
+msgstr "Action"
+
+msgid "CONTROLS_COLUMN_KEYS"
+msgstr "Keyboard"
+
+msgid "CONTROLS_COLUMN_PAD"
+msgstr "Gamepad"
+
+#. Controls reference: an action with no binding on that device.
+msgid "CONTROLS_UNBOUND"
+msgstr "-"
+
+#. Controls reference rows (GDD §4.1 action names; glossary words).
+msgid "CONTROLS_MOVE"
+msgstr "Move"
+
+msgid "CONTROLS_AIM"
+msgstr "Aim"
+
+msgid "CONTROLS_FIRE_LANCE"
+msgstr "Fire Arc-Lance"
+
+msgid "CONTROLS_DEPLOY_CHARGE"
+msgstr "Deploy Charge"
+
+msgid "CONTROLS_SURGELIGHT"
+msgstr "Surgelight"
+
+msgid "CONTROLS_LANTERN"
+msgstr "Lantern"
+
+msgid "CONTROLS_BRAKE"
+msgstr "Brake"
+
+msgid "CONTROLS_CODEX"
+msgstr "Codex"
+
+msgid "CONTROLS_PAUSE"
+msgstr "Pause"
+
 #. HUD readout of the Vigil's remaining hull. {count} is a number.
 msgid "HUD_HULL_COUNT"
 msgid_plural "HUD_HULL_COUNT_PLURAL"
@@ -340,7 +496,7 @@ msgid "CX_PLACE_ACT0_3_TITLE"
 msgstr "Last Normal Day (cabinet stage)"
 
 msgid "CX_PLACE_ACT0_3_BODY"
-msgstr "Pretence Hall curriculum, stage three, the last of the training rotation. A simulation: in it the Dark Star always lost, by design. Final screen retained as written by the curriculum's author."
+msgstr "Pretence Hall curriculum, stage five, the last of the training rotation. A simulation: in it the Dark Star always lost, by design. Final screen retained as written by the curriculum's author."
 
 #. Shown under the title once Act 0 has been finished. The arcade is no longer innocent.
 msgid "ATTRACT_FIRST_SKY_DARK"
@@ -542,7 +698,7 @@ msgstr "RT"
 msgid "CAB_PRESS_NEW_VIGIL"
 msgstr "PRESS NEW VIGIL"
 
-#. Printed on the bezel: the how-to-play card (the Pretence's 1983 marketing art). Each line must fit 72 px at 1x (12 characters).
+#. Printed on the bezel: the small how-to-play card (the Pretence's 1983 marketing art, fine print). Each line must fit the card (12 characters).
 msgid "CAB_HOWTO_TITLE"
 msgstr "HOW TO PLAY"
 
@@ -561,6 +717,10 @@ msgstr "SEPULCHRE"
 #. Printed on the bezel's die-cut sticker (VectorText).
 msgid "CAB_BEZEL_SLOGAN"
 msgstr "NEW!"
+
+#. Printed on the bezel's maker badge, bottom right (VectorText, fine print). The in-world maker (NARR-001, spoiler tier S1).
+msgid "CAB_BEZEL_MAKER"
+msgstr "LANTERN OFFICE"
 
 #. Printed on the bezel's tagline burst, line 1 (VectorText, 1983 marketing print). Keep each line under 12 characters.
 msgid "CAB_BEZEL_TAG_1"

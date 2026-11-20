@@ -24,7 +24,7 @@ func test_the_rocker_never_meets_the_door_the_vents_or_the_hole_at_the_five_size
 	var spec := load("res://data/cabinet/cabinet_screen.tres") as CabinetScreenSpec
 	var rect := CabinetBezel.power_rocker()
 	var right_x := CabinetBezel.right_x()
-	var vents: Array[Rect2] = [Rect2(2.0, 0.0, 78.0, 10.0), CabinetBezel.APRON_VENT_LOCAL, Rect2(2.0, 350.0, 78.0, 10.0)]
+	var vents: Array[Rect2] = [Rect2(2.0, 0.0, CabinetBezel.SIDE - 2.0, 10.0), CabinetBezel.APRON_VENT_LOCAL, Rect2(2.0, 350.0, CabinetBezel.SIDE - 2.0, 10.0)]
 	assert_bool(CabinetBezel.coin_plate().intersects(rect)).override_failure_message("rocker over the coin door").is_false()
 	for v in vents:
 		assert_bool(Rect2(v.position + Vector2(right_x, 0.0), v.size).intersects(rect)).override_failure_message("rocker over vent %s" % v).is_false()
