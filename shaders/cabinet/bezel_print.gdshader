@@ -16,6 +16,7 @@ uniform float mottle : hint_range(0.0, 1.0) = 0.4;
 uniform float halftone : hint_range(0.0, 1.0) = 1.0;
 uniform float halftone_cell = 1.25;
 uniform float dot_gain = 0.22;
+uniform float tone_steps : hint_range(0.0, 1.0) = 0.0;     // 1: tones step to a coarse two-step screen (period side art), no smooth ramps
 uniform float scuff : hint_range(0.0, 1.0) = 0.3;
 uniform float flake : hint_range(0.0, 1.0) = 0.7;
 uniform vec3 backer_color = vec3(0.89, 0.87, 0.82);
@@ -90,7 +91,10 @@ void fragment() {
 	float a = 1.0;
 	float tone = COLOR.a;
 	if (tone < 0.999) {
-		a = halftone > 0.0 ? mix(tone, plate_tone(rp, ink, tone, px), halftone) : tone;
+		if (tone_steps > 0.5) {
+			tone = tone < 0.12 ? 0.0 : (tone < 0.5 ? 0.3 : 0.62);
+		}
+		a = tone <= 0.0 ? 0.0 : halftone > 0.0 ? mix(tone, plate_tone(rp, ink, tone, px), halftone) : tone;
 	}
 	float lum = dot(ink, vec3(0.3, 0.59, 0.11));
 	float w = wear_k(rp);
