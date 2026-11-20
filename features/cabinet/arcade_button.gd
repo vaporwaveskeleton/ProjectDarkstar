@@ -55,6 +55,7 @@ var _mat: ShaderMaterial
 var _down := false
 var _key_hold := 0.0
 var _press_k := 0.0
+var _ghost_hold := 0.0                ## a Haunting (W0-12 ghost press): the cap sinks by itself, silently, and nothing happens
 var _focus_k := 0.0
 var _hover_k := 0.0
 var _t := 0.0
@@ -198,7 +199,9 @@ func _process(delta: float) -> void:
 	_t += delta
 	_update_origin()
 	_key_hold = maxf(_key_hold - delta, 0.0)
-	_press_k = move_toward(_press_k, 1.0 if is_down() and not disabled else 0.0, delta / PRESS_SECONDS)
+	_ghost_hold = maxf(_ghost_hold - delta, 0.0)
+	var sunk := (is_down() and not disabled) or _ghost_hold > 0.0
+	_press_k = move_toward(_press_k, 1.0 if sunk else 0.0, delta / (PRESS_SECONDS * (3.0 if _ghost_hold > 0.0 else 1.0)))
 	_focus_k = move_toward(_focus_k, 1.0 if has_focus() else 0.0, delta / FOCUS_SECONDS)
 	_hover_k = move_toward(_hover_k, 1.0 if is_hovered() and not disabled else 0.0, delta / FOCUS_SECONDS)
 	if _mat != null:
@@ -289,3 +292,14 @@ func caption_visible() -> bool:
 func _draw() -> void:
 	if _cap_k > 0.0:
 		PanelCaption.draw(self, _cache, caption_text(), caption_anchor(), false, _cap_k)
+
+
+## W0-12 Hauntings, the ghost press (TECH-001 Q-T257): the cap sinks slowly for `seconds`, as if an unseen
+## thumb held it, then comes back up. Visual only: no signal, no sound, no focus change, never an action.
+func ghost_press(seconds: float) -> void:
+	_ghost_hold = maxf(seconds, 0.0)
+
+
+## True while a ghost press holds the cap down (tests).
+func is_ghost_pressed() -> bool:
+	return _ghost_hold > 0.0

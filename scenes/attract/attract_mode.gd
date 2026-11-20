@@ -31,6 +31,8 @@ var shift_total := -1           ## the shift's cumulative score handed back with
 var quit_action: Callable = Callable()   ## what POWER does after the collapse; tests inject a stub (default: quit the engine)
 var _powering_off := false
 var _profile: Dictionary = {}
+var hum: CabinetHum                ## the mains hum (AUDIO-001 §2.1)
+var haunts: CabinetHaunts          ## W0-12 Hauntings (TECH-001 Q-T250)
 
 
 func _ready() -> void:
@@ -55,7 +57,46 @@ func _ready() -> void:
 	_wire_focus()
 	_pages.continue_stage = continue_stage
 	_coin.hint_armed = true
+	_build_haunting()
 	super()
+
+
+## The haunted attract (TECH-001 Q-T250–Q-T258): the mains hum is always there; once this cabinet has been
+## played to a0_3 (or finished), each turn of the page loop and each coin may haunt, rarely (CabinetHaunts).
+func _build_haunting() -> void:
+	hum = CabinetHum.new()
+	hum.name = "Hum"
+	add_child(hum)
+	var hs := CabinetHauntScreen.new()
+	hs.name = "HauntScreen"
+	_arcade.viewport.add_child(hs)
+	haunts = CabinetHaunts.new()
+	haunts.name = "Haunts"
+	haunts.hum = hum
+	haunts.screen = hs
+	haunts.pages = _pages
+	haunts.ghost_button = _settings
+	var rig := _coin.get_parent() as Control
+	haunts.rig = rig
+	haunts.marquee = CabinetHaunts.find_marquee(rig)
+	add_child(haunts)
+	haunts.enabled = haunting_unlocked(_profile, haunts.tuning)
+	_pages.hi_score = int(_profile.get("cabinet_hi_score", 0))
+	_pages.cycle_wrapped.connect(func() -> void: haunts.moment(CabinetHauntDeck.ATTRACT))
+	_coin.credit_inserted.connect(func() -> void: haunts.moment(CabinetHauntDeck.COIN))
+	hum.start()
+
+
+## True once the profile has reached `attract_min_stage` (a0_3) or finished Act 0: before that the
+## attract is clean (W0-12 starts where W0-11 Wear starts).
+static func haunting_unlocked(profile: Dictionary, t: CabinetHauntTuning) -> bool:
+	var done: Variant = profile.get("act0_complete", false)
+	if typeof(done) == TYPE_BOOL and bool(done):
+		return true
+	var v: Variant = profile.get(CabinetGame.KEY_STAGE_REACHED, -1)
+	if typeof(v) != TYPE_INT and typeof(v) != TYPE_FLOAT:
+		return false
+	return int(v) >= t.attract_min_stage
 
 
 ## Boot routes the first attract of a launch with {"power_on": true}.
@@ -220,6 +261,11 @@ func power_off() -> void:
 		return
 	_powering_off = true
 	set_buttons_disabled(true)
+	if haunts != null:
+		haunts.stop_all()
+		haunts.enabled = false
+	if hum != null:
+		hum.stop()
 	_coin.hint_armed = false
 	_power_switch.throw_off()
 	var mat := _arcade.crt_material()

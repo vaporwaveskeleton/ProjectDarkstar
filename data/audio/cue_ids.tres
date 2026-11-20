@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="CueIds" load_steps=100 format=3]
+[gd_resource type="Resource" script_class="CueIds" load_steps=105 format=3]
 
 [ext_resource type="Script" path="res://core/audio/cue_ids.gd" id="1"]
 [ext_resource type="Script" path="res://core/audio/cue_id_entry.gd" id="2"]
@@ -876,6 +876,51 @@ has_synth_fallback = false
 is_loop = false
 note = "render only, a Ruins station coming into reach (AUDIO-001 12.19, Q-T194)"
 
+[sub_resource type="Resource" id="e97"]
+script = ExtResource("2")
+id = &"cabinet_hum"
+doc_id = ""
+act0_only = true
+has_synth_fallback = false
+is_loop = true
+note = "loop, the cabinet hum under attract and the shift (AUDIO-001 2.1, 12.19, Q-T264); played by CabinetHum, never set_ambience"
+
+[sub_resource type="Resource" id="e98"]
+script = ExtResource("2")
+id = &"haunt_breath"
+doc_id = ""
+act0_only = true
+has_synth_fallback = false
+is_loop = false
+note = "render only, W0-12 breath: the transformer draws one breath (AUDIO-001 12.19, Q-T255)"
+
+[sub_resource type="Resource" id="e99"]
+script = ExtResource("2")
+id = &"haunt_coin_return"
+doc_id = ""
+act0_only = true
+has_synth_fallback = false
+is_loop = false
+note = "render only, W0-12 warm coin: a second coin drops into the return cup (AUDIO-001 12.19, Q-T256)"
+
+[sub_resource type="Resource" id="e100"]
+script = ExtResource("2")
+id = &"haunt_jingle"
+doc_id = ""
+act0_only = true
+has_synth_fallback = false
+is_loop = false
+note = "render only, W0-12 sour jingle: a tune from a machine with no tune, flat, one note short (AUDIO-001 12.19, Q-T266)"
+
+[sub_resource type="Resource" id="e101"]
+script = ExtResource("2")
+id = &"a0_stage_loop"
+doc_id = ""
+act0_only = true
+has_synth_fallback = false
+is_loop = true
+note = "loop, the a0_4 / a0_5 stage loop on BUS-MUS, detuned by W0-11 Wear (AUDIO-001 12.19, Q-T188, Q-T264); played by CabinetStageMusic"
+
 [resource]
 script = ExtResource("1")
-entries = [SubResource("e0"), SubResource("e1"), SubResource("e2"), SubResource("e3"), SubResource("e4"), SubResource("e5"), SubResource("e6"), SubResource("e7"), SubResource("e8"), SubResource("e9"), SubResource("e10"), SubResource("e11"), SubResource("e12"), SubResource("e13"), SubResource("e14"), SubResource("e15"), SubResource("e16"), SubResource("e17"), SubResource("e18"), SubResource("e19"), SubResource("e20"), SubResource("e21"), SubResource("e22"), SubResource("e23"), SubResource("e24"), SubResource("e25"), SubResource("e26"), SubResource("e27"), SubResource("e28"), SubResource("e29"), SubResource("e30"), SubResource("e31"), SubResource("e32"), SubResource("e33"), SubResource("e34"), SubResource("e35"), SubResource("e36"), SubResource("e37"), SubResource("e38"), SubResource("e39"), SubResource("e40"), SubResource("e41"), SubResource("e42"), SubResource("e43"), SubResource("e44"), SubResource("e45"), SubResource("e46"), SubResource("e47"), SubResource("e48"), SubResource("e49"), SubResource("e50"), SubResource("e51"), SubResource("e52"), SubResource("e53"), SubResource("e54"), SubResource("e55"), SubResource("e56"), SubResource("e57"), SubResource("e58"), SubResource("e59"), SubResource("e60"), SubResource("e61"), SubResource("e62"), SubResource("e63"), SubResource("e64"), SubResource("e65"), SubResource("e66"), SubResource("e67"), SubResource("e68"), SubResource("e69"), SubResource("e70"), SubResource("e71"), SubResource("e72"), SubResource("e73"), SubResource("e74"), SubResource("e75"), SubResource("e76"), SubResource("e77"), SubResource("e78"), SubResource("e79"), SubResource("e80"), SubResource("e81"), SubResource("e82"), SubResource("e83"), SubResource("e84"), SubResource("e85"), SubResource("e86"), SubResource("e87"), SubResource("e88"), SubResource("e89"), SubResource("e90"), SubResource("e91"), SubResource("e92"), SubResource("e93"), SubResource("e94"), SubResource("e95"), SubResource("e96")]
+entries = [SubResource("e0"), SubResource("e1"), SubResource("e2"), SubResource("e3"), SubResource("e4"), SubResource("e5"), SubResource("e6"), SubResource("e7"), SubResource("e8"), SubResource("e9"), SubResource("e10"), SubResource("e11"), SubResource("e12"), SubResource("e13"), SubResource("e14"), SubResource("e15"), SubResource("e16"), SubResource("e17"), SubResource("e18"), SubResource("e19"), SubResource("e20"), SubResource("e21"), SubResource("e22"), SubResource("e23"), SubResource("e24"), SubResource("e25"), SubResource("e26"), SubResource("e27"), SubResource("e28"), SubResource("e29"), SubResource("e30"), SubResource("e31"), SubResource("e32"), SubResource("e33"), SubResource("e34"), SubResource("e35"), SubResource("e36"), SubResource("e37"), SubResource("e38"), SubResource("e39"), SubResource("e40"), SubResource("e41"), SubResource("e42"), SubResource("e43"), SubResource("e44"), SubResource("e45"), SubResource("e46"), SubResource("e47"), SubResource("e48"), SubResource("e49"), SubResource("e50"), SubResource("e51"), SubResource("e52"), SubResource("e53"), SubResource("e54"), SubResource("e55"), SubResource("e56"), SubResource("e57"), SubResource("e58"), SubResource("e59"), SubResource("e60"), SubResource("e61"), SubResource("e62"), SubResource("e63"), SubResource("e64"), SubResource("e65"), SubResource("e66"), SubResource("e67"), SubResource("e68"), SubResource("e69"), SubResource("e70"), SubResource("e71"), SubResource("e72"), SubResource("e73"), SubResource("e74"), SubResource("e75"), SubResource("e76"), SubResource("e77"), SubResource("e78"), SubResource("e79"), SubResource("e80"), SubResource("e81"), SubResource("e82"), SubResource("e83"), SubResource("e84"), SubResource("e85"), SubResource("e86"), SubResource("e87"), SubResource("e88"), SubResource("e89"), SubResource("e90"), SubResource("e91"), SubResource("e92"), SubResource("e93"), SubResource("e94"), SubResource("e95"), SubResource("e96"), SubResource("e97"), SubResource("e98"), SubResource("e99"), SubResource("e100"), SubResource("e101")]

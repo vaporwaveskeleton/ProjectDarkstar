@@ -285,11 +285,11 @@ static func _spine_sides(c: PackedVector2Array, width_scale: float = 1.0) -> Arr
 ## NARR-001 §3.4 no face): a beaded column along the shared curve. Each vertebra is one wide lobe on BOTH
 ## edges, at the same points along the curve (edges in phase), pinched at every gap between vertebrae;
 ## the body narrows toward the tail. Head at `origin`, column along `dir` (unit), `length` px.
-static func spine_silhouette(origin: Vector2, dir: Vector2, length: float) -> PackedVector2Array:
+static func spine_silhouette(origin: Vector2, dir: Vector2, length: float, width_scale: float = 1.0) -> PackedVector2Array:
 	var c := spine_place(spine_points(), origin, dir, length)
 	var b: PackedVector2Array = _spine_frame(c).b
 	var n := c.size()
-	var sides := _spine_sides(c)
+	var sides := _spine_sides(c, width_scale)
 	var side_a: PackedVector2Array = sides[0]
 	var side_b: PackedVector2Array = sides[1]
 	var out := PackedVector2Array()
@@ -313,3 +313,9 @@ static func spine_ladder(origin: Vector2, dir: Vector2, length: float, width_sca
 		out.append(c[i] + nor_c[i] * w)
 		out.append(c[i] - nor_c[i] * w)
 	return out
+
+
+## The reveal's column as one closed outline at rest (no sway): head at `origin`, for a play view `play_h`
+## px tall. The W0-12 after-image burns exactly this shape into the tube before it is ever drawn (Q-T259).
+static func column_outline(origin: Vector2, play_h: float) -> PackedVector2Array:
+	return spine_silhouette(origin, Vector2.DOWN.rotated(COLUMN_LEAN), play_h * COLUMN_LENGTH_FRAC, COLUMN_WIDTH)
