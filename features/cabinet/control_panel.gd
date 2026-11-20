@@ -57,6 +57,12 @@ func _build_slab(panel: Rect2) -> void:
 	_slab_mat.set_shader_parameter(&"contact", surface.panel_contact)
 	_slab_mat.set_shader_parameter(&"palm", surface.panel_palm_polish)
 	_slab_mat.set_shader_parameter(&"grain", surface.panel_grain)
+	CabinetTextures.bind(_slab_mat, CabinetTextures.LAMINATE_ALBEDO, CabinetTextures.LAMINATE_NORMAL,
+			surface.laminate_tile, CabinetTextures.LAMINATE_MEAN, surface.texture_detail)
+	CabinetTextures.bind_trim(_slab_mat, surface.trim_tile)
+	_slab_mat.set_shader_parameter(&"worn_through", surface.panel_worn_through)
+	_slab_mat.set_shader_parameter(&"core_color", surface.panel_core_color)
+	_slab_mat.set_shader_parameter(&"rust_color", surface.panel_rust_color)
 	var start := CabinetBezel.panel_slot(0)
 	_slab_mat.set_shader_parameter(&"palm_c", Vector2(start.get_center().x - panel.position.x + 46.0, 14.0))
 	var centres := PackedVector4Array()
