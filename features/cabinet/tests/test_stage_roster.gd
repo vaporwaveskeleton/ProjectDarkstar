@@ -86,7 +86,7 @@ func test_the_cabinet_game_scene_plays_this_roster() -> void:
 ## PM 2026-11-19: THE LAST NORMAL DAY eased to 4 Grubs and 1 guard Acolyte.
 func test_the_last_normal_day_population() -> void:
 	var st := roster.get_stage(roster.index_of(&"a0_5"))
-	assert_int(st.grubs).is_equal(4)
+	assert_int(st.grubs).is_equal(6)
 	assert_int(st.guard_acolytes).is_equal(1)
 
 
@@ -102,7 +102,7 @@ func test_the_default_roster_is_this_roster_and_counts_five() -> void:
 const PRESSURE := {
 	&"a0_1": [0.0, 0, 0.0, false, false, false, false, true],
 	&"a0_2": [40.0, 2, 20.0, false, true, false, true, true],
-	&"a0_3": [16.0, 5, 20.0, false, true, true, true, false],
+	&"a0_3": [16.0, 5,"a0_3": [16.0, 6, 20.0, false, true, true, true, false],
 	&"a0_4": [25.0, 6, 12.0, true, true, false, true, true],
 	&"a0_5": [0.0, 0, 20.0, true, true, false, true, true],
 }

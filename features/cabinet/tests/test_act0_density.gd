@@ -80,7 +80,12 @@ func test_each_stage_shows_a_busy_screen_shaped_by_its_trait() -> void:
 		_means[i] = _measure(i)
 		lines.append("a0_%d: %.2f geodes, %.2f actors in view (%.2f Grubs)" % [i + 1, _means[i]["geodes"], _means[i]["actors"], _means[i]["grubs"]])
 	print("act0 density (mean over seeds %s, %.0f-%.0f s every %.0f s):\n  %s" % [str(SEEDS), SAMPLE_FROM_S, SAMPLE_TO_S, SAMPLE_EVERY_S, "\n  ".join(lines)])
-	for i in [1, 2, 3]:   # measured means (see the print) are below the 1983 reference's 4-8: the bot kills Acolytes on sight, so the floors are loose
-		assert_float(_means[i]["actors"]).override_failure_message("a0_%d actors\n%s" % [i + 1, "\n".join(lines)]).is_greater_equal(1.5)
-		assert_float(_means[i]["geodes"]).override_failure_message("a0_%d geodes\n%s" % [i + 1, "\n".join(lines)]).is_greater_equal(0.6)
-	assert_float(_means[4]["geodes"]).override_failure_message("a0_5 sparser than a0_4\n%s" % "\n".join(lines)).is_less_equal(_means[3]["geodes"])
+	# floors are about 80 % of the measured means (the bot kills Acolytes on sight, so a human sees more actors)
+	var msg := "\n".join(lines)
+	assert_float(_means[0]["actors"]).override_failure_message("a0_1 actors\n%s" % msg).is_greater_equal(3.0)
+	for i in [1, 2, 3]:
+		assert_float(_means[i]["actors"]).override_failure_message("a0_%d actors\n%s" % [i + 1, msg]).is_greater_equal(3.2)
+		assert_float(_means[i]["geodes"]).override_failure_message("a0_%d geodes\n%s" % [i + 1, msg]).is_greater_equal(1.2)
+	assert_float(_means[4]["geodes"]).override_failure_message("a0_5 stays sparse\n%s" % msg).is_less_equal(0.6)
+	assert_float(_means[4]["geodes"]).override_failure_message("a0_5 sparser than a0_4\n%s" % msg).is_less_equal(_means[3]["geodes"])
+	assert_float(_means[4]["actors"]).override_failure_message("a0_5 actors\n%s" % msg).is_greater_equal(1.6)

@@ -14,10 +14,9 @@ const State := CabinetGame.State
 ## The fixed seeds this suite plays, and the honest floor: at least MIN_REACHED of them clear all
 ## MIN_STAGES stages (the whole shift, a0_1–a0_5) with the default lives. Measured 2026-11-20 on seeds
 ## +0…+19 after the density pass (640 px box, Grubs shadowing the Vigil, more geodes; SYS-001 §1.7, PROPOSED):
-## 20/20 full shifts cleared (19/20 before the bot kept within 250 px of the Sepulchre; +5 stalled in a0_5).
-## Median sim s per stage: a0_1 28, a0_2 31, a0_3 298, a0_4 229, a0_5 274 (a0_3–a0_5 are over §1.7's skilled
-## targets: the Choir takes ~168 Grub deposits to build). The bot presses the stage card the moment it opens.
-## Takes ~4 min headless.
+## 20/20 full shifts cleared on seeds +0…+19 (round 2: 34/40/44/72/14 geodes, 6/14/14/10/6 Grubs).
+## Median sim s per stage: a0_1 38, a0_2 46, a0_3 256, a0_4 207, a0_5 224 (the wake stages stay over §1.7's skilled
+## targets: glass supply, about 168 Grub deposits to build the Choir). Takes ~5 min headless.
 const SEEDS: Array[int] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
 const MIN_STAGES := 5
 const MIN_REACHED := 18
