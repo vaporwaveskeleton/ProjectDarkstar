@@ -1660,3 +1660,18 @@ A cue never ducks its own bus. A bus carrying a sounding P0 or P1 cue is never d
 **Deferred:** the Ruins clock period tracking `clock_pressure` and a pitch class per iteration (§2.2 layers C and D; TECH-001 Q-T221); T2+ sector stems; positional audio; LUFS measurement; the owner's audition (Q-T220).
 
 **Counts (counted in the data files):** cue ids 78 + 11 = 89 and policy entries 72 + 3 = 75 (the loops and the places have no policy entry).
+
+**Ruins first-visit one-shots (follow-up, 2026-11-19; hooks fixed by the Ruins onboarding, TECH-001 Q-T194).** Source `audio/src/ruins_cues.cx.js` (built with `--mono`). Every one has a little of the stone-and-brass hall's air, and every peak is at or under −12 dBFS (test-enforced). All are UNAUDITIONED, and LUFS was not measured. The chalk is a soft, low, grainy stroke centred near 1.5 kHz. It is never `lie_tell_chalk` (a dry 0.12 s flick near 5.6 kHz on `BUS-UI`), and a test keeps them apart.
+
+| Id | Doc id | Sound | Length | Peak / RMS dBFS | Policy ✱ |
+|---|---|---|---|---|---|
+| `ruins_chalk_write` | R-01 | one chalk stroke on slate: a soft knock, then a pink-noise scrape | 1.07 s | −13.64 / −35.59 | `BUS-FLY` P5, 2 voices, 60 ms gate, ±80 cents |
+| `ruins_ticket_payout` | R-02 | the Cabinet's ticket feed: the motor, and a ratchet click per ticket, slowing | 2.63 s | −19.77 / −34.57 | `BUS-FLY` P4, 1 voice, 1000 ms |
+| `ruins_tickets_land` | R-03 | tickets settling on the brass tray: a paper flutter and soft slaps | 0.95 s | −19.92 / −39.62 | `BUS-FLY` P5, 1 voice, 300 ms |
+| `ruins_lamp_gutter` | R-04 | the pilot lamp going down: the hiss falls, the mantle ticks as it cools (a short, wet cousin of `unmaking_lamp_out`) | 1.77 s | −18.16 / −36.6 | `BUS-FLY` P4, 1 voice, 500 ms |
+| `ruins_tree_lamp` | R-05 | a Tree lamp catches: a gas whump, then a warm G4/D5 bloom that grows, never strikes | 1.83 s | −19.76 / −31.32 | `BUS-FLY` P4, 2 voices, 200 ms |
+| `ruins_codex_page` | R-06 | a Codex page: the lift, the swish, the lay-down | 1.31 s | −13.76 / −39.13 | `BUS-FLY` P5, 1 voice, 150 ms, ±40 cents |
+| `ruins_dark_chalk` | R-07 | the hidden chalk shows in the dark: a slow, low phosphor bloom with chalk grain under it (0.5 s onset, no sting) | 2.25 s | −19.08 / −32.39 | `BUS-FLY` P3, 1 voice, 1000 ms |
+| `ruins_station_near` | R-08 | a station comes into reach: two small brass taps a fifth apart (C5, G5) | 1.28 s | −18.21 / −34.67 | `BUS-FLY` P5, 1 voice, 400 ms |
+
+Counts after this follow-up: cue ids 89 + 8 = 97 and policy entries 75 + 8 = 83. The flight layers and threat stems now also hold the shutdown drain (`_loops_started`, next to #81's `_chant_started`), because they loop until stopped.
