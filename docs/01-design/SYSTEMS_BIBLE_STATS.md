@@ -58,6 +58,8 @@ This is the **Cabinet profile** (Act 0). Its 🔒 rows are locked for Act 0 only
 ### 1.1a Aether handling profile ✱ (GDD §4.2a; ruled, PM under owner autonomy grant, 2026-11-19)
 
 > **Status: ruled, PM under owner autonomy grant, 2026-11-19** (TECH-001 Q-T164, Q-T165; queued for the owner's later review). Every value here is ✱: first-pass, retuned at playtest. §1.1 stays the **Cabinet profile** for Act 0.
+>
+> **Built 2026-11-19:** data in `data/vigil/vigil_aether_move.tres` (TECH-001 §3.4). **Not built:** the Choir projectile multiplier (no Choir shots in the sector yet) and the Surgelight Composure cost at Warp ≥ 2.
 
 The Aether profile replaces §1.1 for all flight after THE PRETENCE. The motor is the same as in §1.1 (`VigilMotor.step_velocity`): thrust adds `accel` along the input, capped at `max_speed`; coasting decays by `exp(-drag·t)`; braking removes `brake` per second. The derived figures below come from that model and still have to be checked by a motor test once the numbers are approved.
 

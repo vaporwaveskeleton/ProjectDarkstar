@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="AetherVigilLook" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://features/vigil/aether_vigil_look.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+ds_namespace = "ds_vigil.aether_look"
+source_section = "ART-001 §16.7, ART-002 §4.1 (all engineering values ✱; defaults live in the script)"
