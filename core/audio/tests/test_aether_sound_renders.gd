@@ -82,3 +82,32 @@ static func _peak_dbfs(path: String) -> float:
 			break
 		f.seek(f.get_position() + size + (size & 1))
 	return linear_to_db(maxf(float(peak) / 32768.0, 0.000001))
+
+
+# --- the Ruins first visit, one-shots (Q-T194 hooks in scenes/ruins/ruins.gd CUES) --------------------
+
+func test_every_ruins_hook_has_a_render_a_row_and_a_policy() -> void:
+	var ruins: GDScript = load("res://scenes/ruins/ruins.gd")
+	var hooks: Array = ruins.get_script_constant_map()["CUES"]
+	assert_int(hooks.size()).is_equal(8)
+	var ids: CueIds = load(AudioServiceScript.CUE_IDS_PATH)
+	var pol: CuePolicy = load(AudioServiceScript.CUE_POLICY_PATH)
+	for id: StringName in hooks:
+		assert_bool(ids.has_id(id)).override_failure_message("no cue row %s" % id).is_true()
+		assert_bool(pol.has_entry(id)).override_failure_message("no policy %s" % id).is_true()
+		var s := AudioServiceScript.chirp_stream(id) as AudioStreamWAV
+		assert_object(s).override_failure_message("no render %s" % id).is_not_null()
+		assert_bool(s.stereo).is_false()
+		assert_int(s.loop_mode).is_equal(AudioStreamWAV.LOOP_DISABLED)
+		var peak := _peak_dbfs("%s/%s.wav" % [AudioServiceScript.CHIRP_DIR, id])
+		assert_float(peak).override_failure_message("%s peaks at %.2f dBFS" % [id, peak]).is_less_equal(PEAK_CEILING_DBFS)
+		assert_float(peak).is_greater(-60.0)
+
+
+func test_ruins_chalk_is_its_own_cue() -> void:
+	# the Chalk Desk stroke must never be the lie-tell tick (Q-T194): a different render, a different bus
+	var pol: CuePolicy = load(AudioServiceScript.CUE_POLICY_PATH)
+	assert_str(pol.entry_for(&"ruins_chalk_write").bus).is_not_equal(pol.entry_for(&"lie_tell_chalk").bus)
+	var a := AudioServiceScript.chirp_stream(&"ruins_chalk_write") as AudioStreamWAV
+	var b := AudioServiceScript.chirp_stream(&"lie_tell_chalk") as AudioStreamWAV
+	assert_float(absf(a.get_length() - b.get_length())).is_greater(0.5)

@@ -67,6 +67,7 @@ var _jitter_rng := RandomNumberGenerator.new()   # cosmetic only; never the seed
 var _chant: AudioStreamPlayer
 var _chant_level := 0.0
 var _chant_started := false   # the bed loops until exit, so its playback always needs the shutdown drain
+var _loops_started := false   # same for the flight layers and threat stems (they loop until stopped)
 var _beds: Dictionary = {}             # StringName -> AudioStream (loop cues except the chant; ambience slot only)
 var _amb: Array[AudioStreamPlayer] = []   # A/B crossfade pair on BUS-AMB
 var _amb_fade: Array[float] = [0.0, 0.0]  # per-player fade position 0..1 (equal-power gain = sin(f * PI/2))
@@ -394,6 +395,7 @@ func _step_stems(delta: float) -> void:
 			continue
 		if not p.playing:
 			p.play(bed.get_playback_position())   # locked to the bed: same length, same playhead
+			_loops_started = true
 			_touch()
 		p.volume_db = lerpf(-40.0, AMBIENCE_MAX_DB, _amb_level_cur) + mix.threat_stem_db \
 			+ linear_to_db(maxf(g * bed_gain, 0.0001))
@@ -472,6 +474,7 @@ func _step_flight(delta: float) -> void:
 			continue
 		if not p.playing:
 			p.play()
+			_loops_started = true
 			_touch()
 		p.volume_db = cur
 		p.pitch_scale = clampf(pitch, BED_PITCH_MIN, 4.0)
@@ -587,7 +590,7 @@ func _exit_tree() -> void:
 	# our books lie after silence()/stop_all() zero them while the mixer still holds the playbacks,
 	# so the drain is keyed to the wall-clock time since the last start or stop instead
 	var drain_ms := SHUTDOWN_DRAIN_MS - (Time.get_ticks_msec() - _touch_ms)
-	if _chant_started:
+	if _chant_started or _loops_started:
 		drain_ms = SHUTDOWN_DRAIN_MS   # the looping bed is stopped only here, so wait one mixer tick
 	var players: Array[AudioStreamPlayer] = []
 	players.append_array(_voices)
