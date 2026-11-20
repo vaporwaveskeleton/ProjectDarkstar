@@ -51,7 +51,7 @@ func test_the_numbers_are_sys001s_proposed_rows() -> void:
 	assert_array(Array(t.litany_dips)).is_equal([3, 3, 2])
 	var d := _decay()
 	assert_vector(d.focus_play).is_equal(Vector2(0.7, 0.38))
-	assert_float(d.bulge_max).is_equal(0.6)
+	assert_float(d.bulge_max).is_equal(0.9)
 	assert_float(d.breath_hz).is_equal(0.22)
 
 
@@ -168,10 +168,16 @@ func test_the_after_image_is_the_column_the_reveal_will_empty_and_never_touches_
 	var spec := load(SPEC) as CabinetScreenSpec
 	var hs := CabinetHauntScreen.new()
 	add_child(hs)
-	var want := MawView.column_outline(MawView.focus_point(spec, _decay()), spec.play_rect().size.y)
+	var want := CabinetHauntScreen.burn_outline(spec, _decay())
+	assert_int(want.size()).is_greater(10)
 	assert_array(Array(hs._outline)).is_equal(Array(want))
+	var field := spec.playfield_rect().grow(0.01)
 	for p in want:
-		assert_float(p.y).is_greater_equal(spec.strip_rect().end.y)
+		assert_bool(field.has_point(p)).is_true()   # never the strip, never the maker mark
+	# it is the reveal's own column: its head is at the focus the wound opens from
+	var col := MawView.column_outline(MawView.focus_point(spec, _decay()), spec.play_rect().size.y)
+	assert_bool(Geometry2D.is_point_in_polygon(MawView.focus_point(spec, _decay()) + Vector2(0, 4), want)).is_true()
+	assert_int(col.size()).is_greater(want.size() >> 1)
 	hs.free()
 
 

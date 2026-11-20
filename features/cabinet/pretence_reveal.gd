@@ -116,7 +116,8 @@ func play(game: Node, skippable: bool, clean_hands: bool = false) -> void:
 	# no disc, no eye (Q-T262).
 	maw.visible = true
 	AudioService.play(&"entity_unmade", -6.0)
-	_tween().tween_property(maw, "radius", 96.0, 6.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	# the wound stays small while the body shows (WOUND_BODY_R), so the column of absences reads below it (Q-T262)
+	_tween().tween_property(maw, "radius", MawView.WOUND_BODY_R, 6.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	_tween().tween_property(world.stars, "pull", 1.0, 8.0).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	_tween().tween_property(hud, "eaten", 1.0, 6.0)
 	# the only true black is the entity: it drinks the aether's colour and fog (ART-001 §16.1)

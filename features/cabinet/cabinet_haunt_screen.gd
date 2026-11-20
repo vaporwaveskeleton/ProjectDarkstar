@@ -6,7 +6,7 @@ extends Node2D
 ##   never a face (NARR-001 N4). Attract and demo only. Never under photosensitivity / reduced motion.
 ## - `after_image` (Q-T259): on a READY card the tube holds a dim burn of something it has never drawn: the
 ##   very column that the reveal will empty out of the wound, at the same off-centre place (MawView). It fades
-##   in and out slowly (VOID_2 at most, additive), so it is never a flash, and it keeps under reduced motion.
+##   in and out slowly (VOID_1 at most, additive), so it is never a flash, and it keeps under reduced motion.
 ## Costume only: it lies in the play view, never on the HUD strip, and uses VOID registers only.
 
 @export var spec: CabinetScreenSpec
@@ -27,7 +27,7 @@ func _ready() -> void:
 	if decay_tuning == null:
 		decay_tuning = load("res://data/cabinet/cabinet_decay.tres") as CabinetDecayTuning
 	_play = spec.play_rect()
-	_outline = MawView.column_outline(MawView.focus_point(spec, decay_tuning), _play.size.y)
+	_outline = burn_outline(spec, decay_tuning)
 	var m := CanvasItemMaterial.new()
 	m.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD   # a burn and a glimpse add light; they never black anything out
 	material = m
@@ -72,7 +72,7 @@ func _process(delta: float) -> void:
 func _draw() -> void:
 	var k := after_image_k()
 	if k > 0.0:
-		var c := Pal.VOID_2
+		var c := Pal.VOID_1
 		draw_colored_polygon(_outline, Color(c.r * k, c.g * k, c.b * k, 1.0))
 	if _figure_frames > 0:
 		_figure_frames -= 1
@@ -97,3 +97,16 @@ static func figure_outline(play: Rect2) -> PackedVector2Array:
 	for p: Vector2 in pts:
 		out.append((foot + p * u).round())
 	return out
+
+
+## The after-image's shape: the reveal's column (MawView.column_outline at the focus), clipped to the
+## playfield so it never crosses the maker mark or leaves the play view (the largest piece if it splits).
+static func burn_outline(s: CabinetScreenSpec, d: CabinetDecayTuning) -> PackedVector2Array:
+	var col := MawView.column_outline(MawView.focus_point(s, d), s.play_rect().size.y)
+	var r := s.playfield_rect()
+	var box := PackedVector2Array([r.position, Vector2(r.end.x, r.position.y), r.end, Vector2(r.position.x, r.end.y)])
+	var best := PackedVector2Array()
+	for piece in Geometry2D.intersect_polygons(col, box):
+		if piece.size() > best.size():
+			best = piece
+	return best

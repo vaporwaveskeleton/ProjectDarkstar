@@ -40,8 +40,8 @@ extends TunableResource
 
 # --- The cursed turn (PROPOSED, PM under owner direction 2026-11-19 overnight push, TECH-001 Q-T260–Q-T263) ---
 @export var focus_play: Vector2 = Vector2(0.7, 0.38)  ## where the Cabinet looks back from: fraction of the play view (x, y), off-centre
-@export var bulge_max: float = 0.6                    ## the glass's swell at the end of D3 (0..1)
-@export var bulge_radius: float = 0.2                 ## ✱ the swell's radius, share of the screen height
+@export var bulge_max: float = 0.9                    ## the glass's swell at the end of D3 (0..1)
+@export var bulge_radius: float = 0.3                 ## ✱ the swell's radius, share of the screen height
 @export var breath_hz: float = 0.22                   ## the hum breathes this slowly across D2–D3 (one breath ≈ 4.5 s)
 @export var breath_db: float = 7.0                    ## how far the hum swells on each in-breath
 
