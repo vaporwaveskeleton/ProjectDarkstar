@@ -120,6 +120,20 @@ func prewarmed(route_id: StringName) -> PackedScene:
 	return res
 
 
+func _exit_tree() -> void:
+	release_prewarms()
+
+
+## Takes every threaded load still pending and drops it with the prewarmed scenes. A request that is
+## never collected keeps its loader task alive at quit (Q-T341: one of the "ObjectDB instances were
+## leaked" lines per unfetched Ruins prewarm). Also the way to drop a prewarm that will not be used.
+func release_prewarms() -> void:
+	for route_id: Variant in _prewarm.keys():
+		ResourceLoader.load_threaded_get(str(_prewarm[route_id]))
+	_prewarm.clear()
+	_prewarmed.clear()
+
+
 func _load_scene(route_id: StringName) -> PackedScene:
 	var res := prewarmed(route_id)
 	_prewarmed.erase(route_id)
