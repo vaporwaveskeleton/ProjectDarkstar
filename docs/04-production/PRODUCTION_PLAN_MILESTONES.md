@@ -394,7 +394,7 @@ Never cut: Act 0 and the floor-drop, the Waking race, Steady Ledger and the acce
 | Day | Ritual |
 |---|---|
 | Monday | plan the week against the current milestone's exit criteria; publish the weekly cursed seed once the Discord is live (MARKET-001 §9) |
-| Daily | the CLAUDE.md §6 definition of done for every task: tests pass headless, boot smoke reaches the gameplay scene with no errors, owning docs updated, final report lists files/commands/what was not verified. The per-PR gate is that local suite and smoke, counts in the PR body; CI does not run per PR (TECH-001 §9.2) |
+| Daily | the CLAUDE.md §6 definition of done for every task: tests pass headless, boot smoke reaches the gameplay scene with no errors, owning docs updated, final report lists files/commands/what was not verified. Per PR: the feature's own headless tests and the boot smoke, counts in the PR body; the PM runs one full headless suite per merge batch; windowed captures, perf and accessibility runs wait for the milestone gate (TECH-001 §9.2a) |
 | Wednesday | one playable build, played by someone who did not make it |
 | Friday | milestone burn-down; risk table review; devlog GIF captured (MARKET-001 §9) |
 | Milestone close | every milestone's exit gate includes "tag `milestone/<id>` and CI green" (CI runs only at the tag or by manual dispatch, TECH-001 §9.2; owner, 2026-11-19); exit criteria measured and recorded in this doc's §2 status column; WARP-001 §7.3 manual lint checklist until `warp_lint` is in CI (WARP-001 §6.1 D-11) |
