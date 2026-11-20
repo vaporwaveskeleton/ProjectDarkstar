@@ -9,6 +9,9 @@ signal emptied
 
 ## Screen that sits under the stack (e.g. the attract menu). Gets focus back when the stack empties.
 @export var base_screen: Screen
+## The menus' costume on this stack (MenuSkin.for_node): Auto follows the fidelity ladder (Look.t); the
+## Aether scenes (sector, Ruins) name Brass, so their Pause and Settings wear the brass HUD style.
+@export_enum("Auto", "Cabinet", "Brass") var costume: int = 0
 
 var _screens: Array[Screen] = []
 

@@ -20,6 +20,7 @@
 		{"do": "activate", "id": "attract/ui/ReducedMotion"},
 		{"do": "activate", "id": "attract/ui/Photosensitivity"},
 		{"do": "activate", "id": "attract/ui/SteadyLedger"},
+		{"do": "focus", "id": "attract/ui/TabVideo"},
 		{"do": "activate", "id": "attract/ui/MuzzleFlash"},
 		{"do": "wait_frames", "frames": 20},
 		{"do": "screenshot", "name": "settings_attract_all_toggled", "target": "window"},

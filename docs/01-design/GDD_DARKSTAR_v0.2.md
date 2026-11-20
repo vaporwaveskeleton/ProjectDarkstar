@@ -346,7 +346,7 @@ Six tiers, driven by (a) iteration count, (b) sector consumed, (c) player's Comp
 ### 9.1 Act map (campaign shape)
 | Act | Frame | Length | Warp | Player power | The reveal |
 |---|---|---|---|---|---|
-| **0 — Last Normal Day** | fake cabinet, 3 authored levels | 25 min | T0 | base | The boss you killed was a shadow; the real one wakes; universe is eaten |
+| **0 — Last Normal Day** | fake cabinet, 5 authored stages | 25 min | T0 | base | The boss you killed was a shadow; the real one wakes; universe is eaten |
 | **1 — First Loops** | Ruins tutorial (diegetic, no pop-ups: LOOP-001 §10.5) + 5-Seam runs, generous | 3–6 h | T1 | Tier 1–2 tree | The loop is real; the entity remembers you; the HUD starts lying at night |
 | **2 — The Nine Skies** | full biome rotation, Matrons, Entropy unlocks | 6–14 h | T2–T3 | Tier 2–4 + Pacts | You can *lean into* warp; the Choir's religion becomes sympathetic; the hub changes shape |
 | **3 — Revelations** | entity now patrols the macro map, shown on the Ledger Compass as a *gap* where sectors should be, never an icon; a sector it crossed loads partly subtracted (fewer geodes, more dark); rule-eating begins | 14–22 h | T3–T4 | Tier 4–5 + MADNESS | The game's own rules are the boss's body; the retro shell is revealed as one of nine skins |

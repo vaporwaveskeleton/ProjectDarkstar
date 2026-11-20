@@ -26,3 +26,13 @@ func test_same_seed_same_air() -> void:
 func test_reduced_motion_holds_the_motes_still() -> void:
 	var d := _dust(true)
 	assert_vector(d.mote_at(9, 0.0)).is_equal(d.mote_at(9, 42.0))
+
+
+func test_motes_draw_batched_quads_from_a_generated_dot() -> void:
+	# Q-T248 (Ruins) perf: one textured quad per mote from a shared runtime GradientTexture2D
+	# (no image files, D-13), never a tessellated circle per mote per frame.
+	DustMotes._ensure_dot()
+	assert_object(DustMotes._dot_tex).is_not_null()
+	assert_int(DustMotes._dot_tex.fill).is_equal(GradientTexture2D.FILL_RADIAL)
+	var src := FileAccess.get_file_as_string("res://features/interactions/dust_motes.gd")
+	assert_bool(src.contains("draw_circle(")).is_false()

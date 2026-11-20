@@ -42,6 +42,9 @@ func _ready() -> void:
 	_mat.set_shader_parameter(&"band_lift", surface.glass_band_lift)
 	_mat.set_shader_parameter(&"smear_haze", surface.glass_smear_haze)
 	_mat.set_shader_parameter(&"smear_idle", surface.glass_smear_idle)
+	_mat.set_shader_parameter(&"smudge_mask", CabinetTextures.GLASS_SMUDGE)
+	_mat.set_shader_parameter(&"smudge_tile", surface.smudge_tile)
+	_mat.set_shader_parameter(&"prints", surface.glass_prints * surface.texture_detail)
 	if rig != null:
 		rig.refitted.connect(set_area)
 		set_area(rig.bezel_rect())

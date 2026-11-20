@@ -1,9 +1,9 @@
 class_name CabinetRoom
 extends ColorRect
-## The room round the cabinet: everything in the window outside the printed sheet's width
-## (CabinetBezel.sheet_x(), with the T-molding), dark, with a hint of the cabinet's side panel. On a 21:9
-## or 16:10 window the extra width is this, never the print stretched to the window's edge. Drawn behind the
-## print (it paints nothing inside the sheet's x range).
+## The cabinet's side panel just outside the printed sheet's width (CabinetBezel.sheet_x(), with the
+## T-molding), seen almost edge-on. Beyond it the window shows ArcadeBackdrop (the defocused arcade, drawn
+## behind this), never the print stretched to the window's edge. `room_rects` stays the area outside the
+## molding. Drawn behind the print (it paints nothing inside the sheet's x range).
 
 const SHADER := preload("res://shaders/cabinet/cabinet_room.gdshader")
 
@@ -27,6 +27,8 @@ func _ready() -> void:
 	_mat.set_shader_parameter(&"sheet_x", sx)
 	_mat.set_shader_parameter(&"trim", surface.tmold_width)
 	_mat.set_shader_parameter(&"room_glow", surface.room_glow)
+	CabinetTextures.bind(_mat, CabinetTextures.SIDE_ALBEDO, CabinetTextures.SIDE_NORMAL, surface.side_tile, 1.0,
+			surface.texture_detail)
 	if rig != null:
 		rig.refitted.connect(set_area)
 		set_area(rig.bezel_rect())

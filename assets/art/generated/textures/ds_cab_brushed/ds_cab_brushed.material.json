@@ -1,0 +1,20 @@
+{
+ "name": "ds_cab_brushed",
+ "size": 256,
+ "normal": "gl",
+ "depth": 0.015,
+ "seam": {
+  "worst": 0.82,
+  "map": "rough"
+ },
+ "maps": {
+  "albedo": "ds_cab_brushed_albedo.png",
+  "normal": "ds_cab_brushed_normal.png",
+  "height": "ds_cab_brushed_height.png",
+  "roughness": "ds_cab_brushed_roughness.png",
+  "metallic": "ds_cab_brushed_metallic.png",
+  "ao": "ds_cab_brushed_ao.png",
+  "orm": "ds_cab_brushed_orm.png",
+  "emissive": null
+ }
+}

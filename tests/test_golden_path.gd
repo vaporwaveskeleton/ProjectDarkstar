@@ -15,6 +15,7 @@ class RouterSpy:
 	extends RefCounted
 	var calls: Array = []
 	var accept := true
+	var is_busy := false
 
 	func go_to(id: StringName, params: Dictionary = {}) -> bool:
 		calls.append([id, params])
@@ -91,6 +92,17 @@ func test_a_refused_route_is_not_a_launch() -> void:
 	var ruins := _ruins(RunSessionCore.new(STATS, saver), router)
 	assert_bool(ruins.launch()).is_false()
 	assert_bool(ruins.get("launched")).is_false()
+
+
+func test_a_busy_router_defers_the_launch_until_it_frees() -> void:   # Q-T249
+	var router := RouterSpy.new()
+	router.is_busy = true
+	var ruins := _ruins(RunSessionCore.new(STATS, saver), router)
+	assert_bool(ruins.launch()).is_false()
+	assert_int(router.calls.size()).is_equal(0)
+	router.is_busy = false
+	assert_bool(ruins.launch()).is_true()
+	assert_int(router.calls.size()).is_equal(1)
 
 
 func test_the_sector_shows_pm01_aether_behind_the_play_layer() -> void:

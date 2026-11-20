@@ -43,6 +43,21 @@ func test_hourglass_shows_under_steady_ledger_and_tracks_the_budget() -> void:
 	SettingsService.set_value(&"steady_ledger", was)
 
 
+func test_tier_plate_is_the_steady_ledger_read_and_shows_at_warp_t1() -> void:
+	# WARP-001 §4.1: the Warp Tier read exists only under Steady Ledger (the default). The
+	# warp_t1_capture scenario turns it off on purpose (to show the lies), so no plate there.
+	var h := _hud()
+	var was: Variant = SettingsService.get_value(&"steady_ledger")
+	SettingsService.set_value(&"steady_ledger", true)
+	h.set_values(0, 0, 5, 1, 5, 1, 0, 1, false)
+	assert_bool(h.get_node("LedgerLabel").visible).is_true()
+	assert_str(h.get_node("LedgerLabel").text).contains("1")
+	SettingsService.set_value(&"steady_ledger", false)
+	h.set_values(0, 0, 5, 1, 5, 1, 0, 1, false)
+	assert_bool(h.get_node("LedgerLabel").visible).is_false()
+	SettingsService.set_value(&"steady_ledger", was)
+
+
 func test_handling_plate_hides_without_aether_handling() -> void:
 	var h := _hud()
 	assert_bool(h.handling_shown()).is_false()
