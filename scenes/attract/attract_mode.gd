@@ -85,6 +85,8 @@ func _build_haunting() -> void:
 	_pages.cycle_wrapped.connect(func() -> void: haunts.moment(CabinetHauntDeck.ATTRACT))
 	_coin.credit_inserted.connect(func() -> void: haunts.moment(CabinetHauntDeck.COIN))
 	hum.start()
+	if OS.is_debug_build() and OS.get_cmdline_user_args().has("--haunt-showcase"):
+		_start_showcase.call_deferred()
 
 
 ## True once the profile has reached `attract_min_stage` (a0_3) or finished Act 0: before that the
@@ -133,8 +135,6 @@ func _on_power_on_finished() -> void:
 	_coin.hint_armed = true
 	idle = 0.0
 	focus_entered_screen()
-	if OS.is_debug_build() and OS.get_cmdline_user_args().has("--haunt-showcase"):
-		_haunt_showcase()
 
 
 func _process(delta: float) -> void:
@@ -294,7 +294,15 @@ func _finish_power_off() -> void:
 
 ## Dev captures only (`-- --haunt-showcase`, debug builds): every attract Haunting once, a few seconds apart,
 ## so one short windowed run can photograph them (normally they are rare and minutes apart). The figure is
-## held for 20 fields here so a still can catch it; in play it lasts one (Q-T253). Never in a release build.
+## held for 60 fields here so a still can catch it; in play it lasts one (Q-T253). Never in a release build.
+## Starts once the route has settled: after the power-on test if one runs, else at once.
+func _start_showcase() -> void:
+	if _power.running:
+		_power.finished.connect(_haunt_showcase, CONNECT_ONE_SHOT)
+	else:
+		_haunt_showcase()
+
+
 func _haunt_showcase() -> void:
 	if haunts == null:
 		return
@@ -304,7 +312,7 @@ func _haunt_showcase() -> void:
 			haunts.perform(CabinetHauntDeck.STRANGER)
 			_pages.show_page(AttractPages.Page.ROLL)],
 		[8.0, func() -> void: haunts.perform(CabinetHauntDeck.WARM_COIN)],
-		[11.0, func() -> void: haunts.screen.show_figure(20)],
+		[11.0, func() -> void: haunts.screen.show_figure(60)],
 		[14.0, func() -> void: haunts.perform(CabinetHauntDeck.LITANY)],
 		[14.0, func() -> void: haunts.perform(CabinetHauntDeck.SOUR_JINGLE)],
 	]

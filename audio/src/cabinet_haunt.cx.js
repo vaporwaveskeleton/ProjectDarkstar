@@ -1,4 +1,4 @@
-// DARKSTAR — the haunted Cabinet (W0-12 Hauntings, the cursed turn; AUDIO-001 §12.19; TECH-001 Q-T264–Q-T266).
+// DARKSTAR — the haunted Cabinet (W0-12 Hauntings, the cursed turn; AUDIO-001 §12.20; TECH-001 Q-T264–Q-T266).
 // Build:  node .claude/skills/chirp-game-audio/bin/chirp.js build audio/src/cabinet_haunt.cx.js --out assets/audio/generated
 // PM under owner direction, 2026-11-19 overnight push. UNAUDITIONED. Generated only (D-14): no sample().
 // The Cabinet's own furniture sounds, slightly wrong: a mains hum that can breathe, a coin that comes back,

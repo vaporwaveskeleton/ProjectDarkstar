@@ -130,7 +130,7 @@ func play(game: Node, skippable: bool, clean_hands: bool = false) -> void:
 	if not _running:
 		return
 	# 4 — the dark closes over everything
-	_tween().tween_property(maw, "radius", 420.0, CLOSE_S).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	_tween().tween_property(maw, "radius", MawView.WOUND_CLOSE_R, CLOSE_S).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	await _wait(CLOSE_S)
 	_finish()
 

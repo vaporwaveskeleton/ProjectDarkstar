@@ -28,6 +28,8 @@ const RING := 74.0                   ## ✱ legacy: the old reveal ring radius; 
 const WOUND_REACH := 440.0           ## ✱ largest wound radius asked for (the close covers the 256 × 304 screen from the focus)
 const WOUND_SEED := 2.71             ## ✱ turns the torn outline so its ruled cut and notch point away from the column
 const WOUND_BODY_R := 60.0           ## ✱ px the wound reaches (6 s, sine out) before the close: small enough that the column of absences reads below it
+const WOUND_CLOSE_R := 120.0          ## ✱ px at the hand-off: the far corner keeps the torn, crazed edge and a little fog in frame (as the
+                                      ## Aether half's erasure does), so the cut into route &"aether" stays under the 0.10 whole-field luma step
 const COLUMN_LEAN := 0.42            ## ✱ rad: the column leans down-left from the wound, across the play view, off the frame
 const COLUMN_LENGTH_FRAC := 0.95     ## ✱ column length, fraction of the play view's height (its tail leaves the frame)
 const COLUMN_WIDTH := 1.5            ## ✱ the column's width as a multiple of the S2 silhouette's

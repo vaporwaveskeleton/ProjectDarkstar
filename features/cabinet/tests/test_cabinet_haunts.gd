@@ -1,6 +1,6 @@
 extends GdUnitTestSuite
 ## W0-12 Hauntings and the cursed turn (TECH-001 Q-T250–Q-T266, PM under owner direction 2026-11-19
-## overnight push; WARP-001 W0-07, W0-11, W0-12; ART-001 §12.7b, §12.7c; AUDIO-001 §12.19).
+## overnight push; WARP-001 W0-07, W0-11, W0-12; ART-001 §12.7b, §12.7c; AUDIO-001 §12.20).
 ## Hauntings: seeded and rare, each kind once per visit, costume only, never during play, never a readout,
 ## no flash (the litany stays under 3 dips a second; the figure is one field), and the moving ones are gone
 ## under photosensitivity / reduced motion. The cursed turn: the glass bulges and the picture collapses

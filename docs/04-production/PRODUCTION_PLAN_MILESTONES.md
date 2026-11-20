@@ -318,7 +318,7 @@ The "THAT WAS A PRETENCE." title card is replaced by a wordless Decay of the arc
 7. ✅ Audio: runtime `SfxSynth` voices `attract_shell` and `cabinet_hum`; one-shots `decay_bulb_tick`, `decay_crt_off`; AUDIO-001 §6.2 rows and policy entries. Built as `CabinetDecayAudio` (own runtime PCM, no §6.2 ids yet).
 8. ✅ `PretenceReveal`: steps 1–2 replaced by the Decay; `REVEAL_ONE_SKY_LESS` removed per Q-T182; the maw per Q-T183; `UnmakingTimeline` re-anchored to the tear; one skip covers the Decay and the cinematic.
 9. ✅ Ending 5 screens and the held line; ⏳ the maker's plate in the Ruins and the Ruins-replay ending (Q-T189). (Was: Theodora's screens and the held line before D1 (`REVEAL_PRETENCE` kept for this path only); the maker's plate line in the Ruins art (ART-001 §13); the Ruins-replay ending per Q-T185.)
-10. ✅ W0-11 Wear (bleach); ⏳ the a0_4/a0_5 stage loop for its detune is a follow-up for the Aether sound chat (Q-T188 ruled) at the a0_3–a0_5 stage starts.
+10. ✅ W0-11 Wear (bleach); ✅ the a0_4/a0_5 stage loop for its detune (built 2026-11-19, Q-T264; closes Q-T188; PM under owner direction, overnight push; UNAUDITIONED) at the a0_3–a0_5 stage starts.
 11. ✅ Automation: `a1_golden_path` updated; capture checkpoints `decay_phosphor`, `decay_skin`, `decay_dot`, `tear_first_light` (photosensitivity on and off); ART-004 §7.1 scoring from those captures.
 12. ✅ Locale comment and keys; ⏳ `ach_pretence` trigger (no achievement service yet). (Was: `REVEAL_PRETENCE` comment re-pointed to ending 5; achievement `ach_pretence` trigger moved to the tear (LOOP-001 §11.9).)
 13. ⏳ Marketing captures: G8 "The skin", the trailer's 0:32–0:44 (MARKET-001 §4.6–§4.7), the TATE cut and the browser Cabinet's new end.

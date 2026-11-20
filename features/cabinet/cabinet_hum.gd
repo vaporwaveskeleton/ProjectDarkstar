@@ -1,6 +1,6 @@
 class_name CabinetHum
 extends Node
-## The Cabinet's mains hum (AUDIO-001 §2.1 "extra" row, §12.19; TECH-001 Q-T255, Q-T264): the chirp render
+## The Cabinet's mains hum (AUDIO-001 §2.1 "extra" row, §12.20; TECH-001 Q-T255, Q-T264): the chirp render
 ## `cabinet_hum` on its own quiet player under attract and the shift, so the machine is never quite silent.
 ## W0-11 Wear adds a faint second partial a hair sharp, so the hum starts to beat as the machine ages.
 ## W0-12 `breath`: once, the hum swells and falls like a transformer drawing breath (`haunt_breath` under it).
@@ -8,6 +8,7 @@ extends Node
 
 const ID := &"cabinet_hum"
 const BEAT_DETUNE := 1.008            ## ✱ the Wear partial runs this much sharp: a slow beat (≈ 0.4 Hz at 50 Hz)
+const DRAIN_MS := 25                  ## ✱ one mixer tick (≈ 12 ms at 44.1 kHz, 512 frames) with margin: short enough not to hitch a route change
 
 @export var tuning: CabinetHauntTuning
 var base_db := -30.0                  ## ✱ AUDIO-001 §2.1: under everything, felt more than heard
@@ -15,6 +16,7 @@ var wear_level := 0
 var _hum: AudioStreamPlayer
 var _beat: AudioStreamPlayer
 var _breath_t := -1.0                 ## s into the current breath; < 0 = none
+var _started := false                ## the loop was ever played: drain the mixer at teardown
 
 
 func _ready() -> void:
@@ -39,6 +41,7 @@ func start() -> void:
 		return
 	if not _hum.playing:
 		_hum.play()
+		_started = true
 		_beat.play()
 	_apply()
 
@@ -89,10 +92,10 @@ func _apply() -> void:
 ## Release the loop at teardown: a playback still mixing at exit outlives the engine (TECH-001 Q-T79), so
 ## stop, drop the stream and give the mixer one tick (AudioService does the same for its own loops).
 func _exit_tree() -> void:
-	var was := (_hum != null and _hum.playing) or (_beat != null and _beat.playing)
+	var was := _started   # children leave the tree first, so .playing is already false here
 	for p: AudioStreamPlayer in [_hum, _beat]:
 		if p != null:
 			p.stop()
 			p.stream = null
 	if was:
-		OS.delay_msec(AudioService.SHUTDOWN_DRAIN_MS)
+		OS.delay_msec(DRAIN_MS)

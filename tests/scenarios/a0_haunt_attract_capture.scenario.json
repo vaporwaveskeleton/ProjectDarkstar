@@ -23,7 +23,7 @@
 		},
 		{
 			"do": "key",
-			"keycode": "Space",
+			"keycode": "F10",
 			"frames": 2
 		},
 		{
@@ -68,7 +68,7 @@
 		},
 		{
 			"do": "wait_frames",
-			"frames": 160
+			"frames": 127
 		},
 		{
 			"do": "screenshot",
@@ -77,7 +77,7 @@
 		},
 		{
 			"do": "wait_frames",
-			"frames": 172
+			"frames": 184
 		},
 		{
 			"do": "screenshot",

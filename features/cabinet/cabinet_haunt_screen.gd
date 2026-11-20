@@ -2,7 +2,7 @@ class_name CabinetHauntScreen
 extends Node2D
 ## W0-12 Hauntings drawn on the arcade screen itself (layer one, through the CRT pass and the registers):
 ## - `field_figure` (Q-T253): for one field a tall, thin standing figure at the right edge of the play view,
-##   dim (VOID_3), as if someone stood behind the glass. A person's outline, no features: not the entity,
+##   dim (VOID_2), as if someone stood behind the glass. A person's outline, no features: not the entity,
 ##   never a face (NARR-001 N4). Attract and demo only. Never under photosensitivity / reduced motion.
 ## - `after_image` (Q-T259): on a READY card the tube holds a dim burn of something it has never drawn: the
 ##   very column that the reveal will empty out of the wound, at the same off-centre place (MawView). It fades
@@ -76,7 +76,7 @@ func _draw() -> void:
 		draw_colored_polygon(_outline, Color(c.r * k, c.g * k, c.b * k, 1.0))
 	if _figure_frames > 0:
 		_figure_frames -= 1
-		draw_colored_polygon(figure_outline(_play), Pal.VOID_3)
+		draw_colored_polygon(figure_outline(_play), Pal.VOID_2)
 		if _figure_frames == 0:
 			queue_redraw.call_deferred()   # the next frame draws nothing: exactly figure_frames fields
 

@@ -883,7 +883,7 @@ doc_id = ""
 act0_only = true
 has_synth_fallback = false
 is_loop = true
-note = "loop, the cabinet hum under attract and the shift (AUDIO-001 2.1, 12.19, Q-T264); played by CabinetHum, never set_ambience"
+note = "loop, the cabinet hum under attract and the shift (AUDIO-001 2.1, 12.20, Q-T264); played by CabinetHum, never set_ambience"
 
 [sub_resource type="Resource" id="e98"]
 script = ExtResource("2")
@@ -892,7 +892,7 @@ doc_id = ""
 act0_only = true
 has_synth_fallback = false
 is_loop = false
-note = "render only, W0-12 breath: the transformer draws one breath (AUDIO-001 12.19, Q-T255)"
+note = "render only, W0-12 breath: the transformer draws one breath (AUDIO-001 12.20, Q-T255)"
 
 [sub_resource type="Resource" id="e99"]
 script = ExtResource("2")
@@ -901,7 +901,7 @@ doc_id = ""
 act0_only = true
 has_synth_fallback = false
 is_loop = false
-note = "render only, W0-12 warm coin: a second coin drops into the return cup (AUDIO-001 12.19, Q-T256)"
+note = "render only, W0-12 warm coin: a second coin drops into the return cup (AUDIO-001 12.20, Q-T256)"
 
 [sub_resource type="Resource" id="e100"]
 script = ExtResource("2")
@@ -910,7 +910,7 @@ doc_id = ""
 act0_only = true
 has_synth_fallback = false
 is_loop = false
-note = "render only, W0-12 sour jingle: a tune from a machine with no tune, flat, one note short (AUDIO-001 12.19, Q-T266)"
+note = "render only, W0-12 sour jingle: a tune from a machine with no tune, flat, one note short (AUDIO-001 12.20, Q-T266)"
 
 [sub_resource type="Resource" id="e101"]
 script = ExtResource("2")
@@ -919,7 +919,7 @@ doc_id = ""
 act0_only = true
 has_synth_fallback = false
 is_loop = true
-note = "loop, the a0_4 / a0_5 stage loop on BUS-MUS, detuned by W0-11 Wear (AUDIO-001 12.19, Q-T188, Q-T264); played by CabinetStageMusic"
+note = "loop, the a0_4 / a0_5 stage loop on BUS-MUS, detuned by W0-11 Wear (AUDIO-001 12.20, Q-T188, Q-T264); played by CabinetStageMusic"
 
 [resource]
 script = ExtResource("1")

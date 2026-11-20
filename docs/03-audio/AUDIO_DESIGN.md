@@ -136,7 +136,7 @@ Four stems per biome 🔒 (GDD-001 §12), plus shared state overlays that are bi
 | D Decomposed | silent | — | — | −∞ |
 | extra | cabinet hum (50 Hz ✱ mains buzz), a coin-drop thunk, 1UP chime | attract idle | on start | −26 dB |
 
-**The Decay (owner direction 2026-11-19; ruled by the PM under the owner autonomy grant 2026-11-19 (TECH-001 Q-T180–Q-T185) and built).** After A0-5's credits the shell restarts as if for attract and then dies: it sags flat, loses its voices and stops, and the hum sags and fails (§12.18; GDD-001 §6.1). Built today: neither the shell loop nor the hum exists as a sound; the cabinet plays one-shots only (§12.18).
+**The Decay (owner direction 2026-11-19; ruled by the PM under the owner autonomy grant 2026-11-19 (TECH-001 Q-T180–Q-T185) and built).** After A0-5's credits the shell restarts as if for attract and then dies: it sags flat, loses its voices and stops, and the hum sags and fails (§12.18; GDD-001 §6.1). Built today (updated 2026-11-19, PM under owner direction, overnight push; TECH-001 Q-T264): the attract shell loop still does not exist as a sound, but the cabinet hum (`cabinet_hum`, always on under attract and the shift) and the a0_4/a0_5 stage loop (`a0_stage_loop`) are built renders (§12.20, UNAUDITIONED); the Decay's own shell and hum stay runtime (§12.18).
 
 **Trigger:** title screen, and the credits roll at the end of A0-1 and again at A0-3 (GDD-001 §6.1). **Loop:** 8 bars at 120 BPM ✱ (≈16 s). **Transition:** input starts New Vigil → one 4-bar outro ✱, then the A0-1 bed. **The A0-2 rule 🔒:** from the second authored level the first chant line is heard *under* the music (GDD-001 §6.1) — one voice of C enters at −22 dB rel. master ✱, at the diegetic radius of SYS-001 §3.1, so a player with music up still hears it as coming from around a corner. **Params:** `silence_spent = 0`, `warp_tier = 0`, `clock_pressure = 0`.
 
@@ -1590,7 +1590,7 @@ The reinforcement timings behind `censer_bell` are the Arcade layer's PROPOSED n
 
 ### 12.18 The Decay (Act 0 reveal) — owner direction 2026-11-19; ruled by the PM under the owner autonomy grant 2026-11-19 (TECH-001 Q-T180–Q-T185) and built
 
-**Status: built 2026-11-19 (PM under owner autonomy grant, 2026-11-19), runtime only, UNAUDITIONED** (`features/cabinet/cabinet_decay_audio.gd`: the shell lead and bass, the hum and its beating partial, `decay_bulb_tick`, `decay_crt_off`, all synthesised at runtime on the cabinet's own players; no render, no §6.2 cue id, so the cue and policy counts below are unchanged). There is still no attract-shell or hum anywhere else in Act 0, and no stage music, so W0-11's per-level detune has nothing to act on yet (TECH-001 Q-T188). The Decay replaces the title card (GDD-001 §6.1; WARP-001 W0-07; ART-001 §12.7b). Its sound is the Cabinet's own sound **failing**, not a new sound arriving: no sting, no riser, no hit (§1.4 startle budget; D-15 zero startle). Every number is SYS-001 `ds_cabinet.decay.*` (PROPOSED).
+**Status: built 2026-11-19 (PM under owner autonomy grant, 2026-11-19), runtime only, UNAUDITIONED** (`features/cabinet/cabinet_decay_audio.gd`: the shell lead and bass, the hum and its beating partial, `decay_bulb_tick`, `decay_crt_off`, all synthesised at runtime on the cabinet's own players; no render, no §6.2 cue id, so the cue and policy counts below are unchanged). **Updated 2026-11-19 (PM under owner direction, overnight push; TECH-001 Q-T264, Q-T265, built, UNAUDITIONED):** the sentence "no hum and no stage music anywhere else in Act 0" is outdated. The always-on `cabinet_hum` (with W0-11's beating partial) and the a0_4/a0_5 `a0_stage_loop` (Wear-detuned) now exist (§12.20), which closes Q-T188; the Decay's hum now also **breathes** across D2–D3 (`ds_cabinet.decay.breath_hz` 0.22 Hz, `breath_db` +7 dB, sin², PROPOSED; Q-T265), still the Decay's own runtime hum. There is still no attract shell outside the Decay. The Decay replaces the title card (GDD-001 §6.1; WARP-001 W0-07; ART-001 §12.7b). Its sound is the Cabinet's own sound **failing**, not a new sound arriving: no sting, no riser, no hit (§1.4 startle budget; D-15 zero startle). Every number is SYS-001 `ds_cabinet.decay.*` (PROPOSED).
 
 | Beat | What is heard | How it is made |
 |---|---|---|
@@ -1602,7 +1602,7 @@ The reinforcement timings behind `censer_bell` are the Arcade layer's PROPOSED n
 
 Ending 5: Theodora's screens and the held line (NARR-001 §9.5) play over the hum only (no shell), then D1 starts. The Decay draws nothing from the Awakening silence budget (GDD-001 §12): Act 0 is not a run.
 
-Proposed new cue ids: `decay_bulb_tick`, `decay_crt_off` (one-shots) and the runtime voices `cabinet_hum` and `attract_shell`. They get §6.2 rows and policy entries when the owner approves (PROD-001 §4.2); the counts above are unchanged until then.
+Proposed new cue ids: `decay_bulb_tick`, `decay_crt_off` (one-shots) and the runtime voices `cabinet_hum` and `attract_shell` (note: `cabinet_hum` has since been built as a rendered loop for attract and the shift, §12.20; the Decay still drives its own runtime hum). They get §6.2 rows and policy entries when the owner approves (PROD-001 §4.2); the counts above are unchanged until then.
 
 ### 12.19 The Aether heard: flight, places, ducking (PM-directed 2026-11-19, under the owner autonomy grant)
 
@@ -1675,3 +1675,23 @@ A cue never ducks its own bus. A bus carrying a sounding P0 or P1 cue is never d
 | `ruins_station_near` | R-08 | a station comes into reach: two small brass taps a fifth apart (C5, G5) | 1.28 s | −18.21 / −34.67 | `BUS-FLY` P5, 1 voice, 400 ms |
 
 Counts after this follow-up: cue ids 89 + 8 = 97 and policy entries 75 + 8 = 83. The flight layers and threat stems now also hold the shutdown drain (`_loops_started`, next to #81's `_chant_started`), because they loop until stopped.
+
+### 12.20 The haunted Cabinet (W0-12 Hauntings, the cursed turn, the a0_4/a0_5 stage loop)
+
+**Status: built 2026-11-19 (PM under owner direction, overnight push; TECH-001 Q-T250–Q-T269, owner reviews later), UNAUDITIONED; peak/RMS levels and LUFS not measured by this doc's author.** Source `audio/src/cabinet_haunt.cx.js`, rendered to `assets/audio/generated/sfx`; rows in `data/audio/cue_ids.tres` (all `act0_only`, no synth fallback) and `cue_policy.tres`. All levels below are PROPOSED ✱. Code: `CabinetHum`, `CabinetStageMusic`, `CabinetHaunts` (`features/cabinet/`). The renders are the Cabinet's own furniture sounding slightly wrong; none is a sting, riser or hit (§1.4 startle budget; D-15 zero startle).
+
+| Cue id | What is heard | How it is made | Bus, level ✱ |
+|---|---|---|---|
+| `cabinet_hum` | 50 Hz mains through an old transformer: fundamental, 2nd and 3rd harmonics, a faint rattle band. Always on under attract and the shift | chirp loop, 4 s, whole cycles (loops clean); no policy row (loop) | `BUS-AMB`, base −30 dB |
+| `haunt_breath` | the transformer draws one breath: the buzz opens as a low-pass rises, holds, lets go; a sub octave and a little air under it. No onset (every voice fades in over ≥ 1 s) | chirp one-shot, 4.5 s; plays under the hum's own swell (`ds_cabinet.haunt.breath_s` 4.5, `breath_db` +6, sin²) | `BUS-AMB` P4, 1 voice, 4500 ms gate |
+| `haunt_coin_return` | after a credit counts, a second coin from nowhere: two dull clinks on steel, a short roll, it settles. Quieter and lower than the credit, no beep | chirp one-shot | `BUS-FLY` P3, 1 voice, 1000 ms gate |
+| `haunt_jingle` | the Cabinet's only attract tune, once: the litany's foot (the zone cards' three notes) as a 3.3 s coin-op fanfare about 60 cents flat and sagging (−60 cents ✱), lead a hair flatter than the bass so they beat, the last note missing (always one short, NARR-001 §2.1) | chirp one-shot | `BUS-MUS` P3, 1 voice, 4000 ms gate |
+| `a0_stage_loop` | minimal cabinet chiptune in D minor: a triangle bass pulse, a sparse square figure on the litany's foot (A, F, D), a very quiet off-beat tick; quiet so the chant (D drone, §5.1) sits on top | chirp loop, 8 s = 4 bars at 120 BPM (bit-crushed, limited); no policy row (loop) | `BUS-MUS`, −20 dB; plays at a0_4 and a0_5 (`CabinetStage.music`) |
+
+**Wear, motion and stops (Q-T264).** The stage loop is detuned by W0-11 Wear (`ds_cabinet.wear.detune_cents_per_level`: −4 cents at a0_4, −6 at a0_5, SYS-001 §9) and bent with slow motion. It stops at the stage end, at GAME OVER and at the reveal. The hum carries W0-11's faint beating partial (about 0.4 Hz beat, louder per wear level), which WARP-001 W0-11 promised.
+
+**The Decay's breathing hum (Q-T265).** Across D2–D3 the Decay's own runtime hum (§12.18) swells and falls at 0.22 Hz, +7 dB, sin² (`ds_cabinet.decay.breath_hz`, `breath_db`, PROPOSED). It is not a new sound; `CabinetDecayAudio` drives it.
+
+**No-startle notes.** Every Haunting sound fades in over ≥ 1 s or is a quiet, dull one-shot; none is a sting, a riser or a hit, none ducks the game, and Hauntings happen only at moments when nothing is played (WARP-001 W0-12). The breath, warm coin and sour jingle are kept under photosensitivity and reduced motion (they are sound, not motion; TECH-001 Q-T267).
+
+**Counts.** Five new cue ids (`cabinet_hum`, `haunt_breath`, `haunt_coin_return`, `haunt_jingle`, `a0_stage_loop`) and three new policy entries (the two loops have none). The totals above (cue ids 97, policy entries 83) were not re-counted in the data files for this edit. The §6.2 master list carries Aether-era ids only, not Act 0 render ids, so no §6.2 rows were added.
