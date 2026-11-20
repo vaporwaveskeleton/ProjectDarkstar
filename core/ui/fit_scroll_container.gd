@@ -8,6 +8,8 @@ extends ScrollContainer
 @export var safe_margin: float = 16.0
 ## Extra vertical space taken by the parent panel's own margins/borders.
 @export var chrome: float = 14.0
+## In a VBoxContainer the siblings (a fixed header such as the panel title) are kept on screen and
+## their height is taken off the limit, so 200 % text scrolls the rows, never the title (Q-T244).
 
 
 func _ready() -> void:
@@ -17,7 +19,21 @@ func _ready() -> void:
 	for c in get_children():
 		if c is Control:
 			(c as Control).minimum_size_changed.connect(refit)
+	for s in _header_siblings():
+		s.minimum_size_changed.connect(refit)
 	refit.call_deferred()
+
+
+## Visible Control siblings when the parent is a VBoxContainer (fixed headers above or below).
+func _header_siblings() -> Array[Control]:
+	var out: Array[Control] = []
+	var box := get_parent() as VBoxContainer
+	if box == null:
+		return out
+	for c in box.get_children():
+		if c != self and c is Control and (c as Control).visible:
+			out.append(c as Control)
+	return out
 
 
 func refit() -> void:
@@ -30,5 +46,9 @@ func refit() -> void:
 			var m := (c as Control).get_combined_minimum_size()
 			content = maxf(content, m.y)
 			width = maxf(width, m.x)
-	var limit := get_viewport_rect().size.y - safe_margin * 2.0 - chrome
+	var header := 0.0
+	var box := get_parent() as VBoxContainer
+	for s in _header_siblings():
+		header += s.get_combined_minimum_size().y + float(box.get_theme_constant(&"separation"))
+	var limit := get_viewport_rect().size.y - safe_margin * 2.0 - chrome - header
 	custom_minimum_size = Vector2(width, minf(content, limit))
