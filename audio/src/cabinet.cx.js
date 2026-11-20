@@ -41,9 +41,12 @@ sfx("charge_lost", { vol: 0.42 },
   tone({ wave: "sine", freq: 2400, dur: 0.03, env: [0.001, 0.2, 0, 0.1], vol: 0.25 }),
   at(0.12, tone({ wave: "triangle", freq: "C#4", to: "C4", slide: 0.3, dur: 0.35, env: [0.04, 0.1, 0.5, 0.2], vol: 0.35, vibrato: { rate: 5, depth: 0.2 } })))
 
-// B04 Charge on the entity: a struck bell, detuned downward, no impact thud
-sfx("charge_hit", { vol: 0.6, fx: [reverb({ size: 0.5, mix: 0.2 })] },
-  tone({ wave: "fm", fm: { ratio: 3.5, index: 5, decay: 0.6 }, freq: "D4", to: "C#4", slide: 1.0, dur: 0.9, env: [0.001, 0.8, 0.2, 0.6] }),
+// B04 Charge on the entity: a struck bell, detuned downward, no impact thud.
+// Owner playtest F-8 (2026-11-20): was too loud and sharp (peak -4.4 dBFS, 1 ms attack, FM index 5);
+// now level with the neighbouring Act 0 cues (geode_break, acolyte_die peak -8.3 dBFS): vol 0.6 -> 0.4,
+// FM index 5 -> 3, a 6 ms attack and a 3.2 kHz lowpass on the bell.
+sfx("charge_hit", { vol: 0.4, fx: [reverb({ size: 0.5, mix: 0.2 })] },
+  tone({ wave: "fm", fm: { ratio: 3.5, index: 3, decay: 0.6 }, freq: "D4", to: "C#4", slide: 1.0, dur: 0.9, env: [0.006, 0.8, 0.2, 0.6], filter: { type: "lp", cutoff: 3200 } }),
   tone({ wave: "sine", freq: 73, to: 55, dur: 0.6, env: [0.001, 0.5, 0.2, 0.3], vol: 0.5 }))
 
 // --- The Sepulchre and the build (AUDIO-001 G-family) -------------------------------------------
@@ -53,10 +56,12 @@ sfx("segment_deposit", { vol: 0.55 },
   tone({ wave: "sine", freq: 70, to: 40, dur: 0.3, env: [0.002, 0.2, 0.2, 0.15] }),
   noise({ color: "brown", dur: 0.08, env: [0.001, 0.06, 0, 0.04], filter: { type: "lp", cutoff: 400 }, vol: 0.5 }))
 
-// a module knocked off: bone cracking away
-sfx("segment_knocked", { vol: 0.5, fx: [crush({ bits: 9 })] },
+// a module knocked off: bone cracking away. Plays together with charge_hit (-4 dB) when a Charge
+// lands on the Sepulchre; owner playtest F-8 (2026-11-20): peak -7.1 dBFS and white noise from 4 kHz
+// made the pair too loud and sharp. Now vol 0.5 -> 0.34, noise lowpass 4000 -> 2400 Hz start.
+sfx("segment_knocked", { vol: 0.34, fx: [crush({ bits: 9 })] },
   tone({ wave: "square", freq: 330, to: 110, dur: 0.25, duty: 0.4, env: [0.001, 0.15, 0.2, 0.1] }),
-  noise({ color: "white", dur: 0.18, env: [0.001, 0.1, 0.1, 0.08], filter: { type: "lp", from: 4000, to: 600 }, vol: 0.5 }))
+  noise({ color: "white", dur: 0.18, env: [0.001, 0.1, 0.1, 0.08], filter: { type: "lp", from: 2400, to: 600 }, vol: 0.5 }))
 
 // --- The Choir (AUDIO-001 F-family, §5) -------------------------------------------------------
 

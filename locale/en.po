@@ -1248,6 +1248,3 @@ msgstr "GRUB INTERCEPTED A CHARGE"
 msgid "CAB_CAPTION_BEWARE"
 msgstr "BEWARE. THE SEPULCHRE IS COMPLETE"
 
-#. Caption: a knocked-down waking Sepulchre is rebuilding (owner F-1).
-msgid "CAB_CAPTION_REBUILDS"
-msgstr "THE SEPULCHRE REBUILDS"

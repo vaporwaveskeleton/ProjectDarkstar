@@ -1,6 +1,6 @@
 extends GdUnitTestSuite
-## Owner playtest 2026-11-20 (research/owner_playtest_feedback_2026-11-20.md): F-1 a waking stage must
-## not strand a human who knocks the Sepulchre down; F-2 no floating numbers on the arcade screen;
+## Owner playtest 2026-11-20 (research/owner_playtest_feedback_2026-11-20.md): F-1/F-6 knocking a Sepulchre down ends the
+## stage on every stage (round 2: it replaced the re-seed); F-7 a built Sepulchre comes for the Vigil; F-2 no floating numbers on the arcade screen;
 ## F-3 Grubs die to intercept Charges; F-4 the awake entity out-runs the Vigil and is warned of first.
 
 const SCENE := preload("res://features/cabinet/cabinet_game.tscn")
@@ -48,31 +48,75 @@ func _steps(seconds: float) -> void:
 		world.step(DT)
 
 
-# --- F-1 -------------------------------------------------------------------------------------
+# --- F-1 / F-6 / F-7 (round 2: knock-downs end the stage; a built Sepulchre comes for the Vigil) ---
 
-## Cause: the autopilot never throws Charges at a waking stage's unbuilt Sepulchre, a human does. Four
-## knocks took a0_3's Sepulchre (4 segments) to 0; its goal is UNMAKE_ENTITY, which needs the Sepulchre
-## built to 20 and woken, and nothing re-seeded it, so the stage sat on an empty altar (no Grubs left
-## to carry glass in the worst case). The fix re-seeds a knocked-down waking Sepulchre.
-func test_a_human_who_knocks_a_waking_sepulchre_to_nothing_does_not_strand_the_stage() -> void:
-	world.start(_stage(4))
-	var captions: Array[String] = []
-	world.caption.connect(func(k: String) -> void: captions.append(k))
+## A human at the controls: real held input (the Vigil reads Input, not scripted moves) and Charges thrown
+## the way the deploy_charge action throws them (GlassField.launch from the Vigil along its aim).
+func _human_start(stage_i: int) -> void:
+	game.start_stage(stage_i)
+	game.dismiss_brief()
+	world.paused_sim = true          # the test steps the sim itself
+	game._on_timer()                 # READY card done: PLAY
+	world.vigil.use_scripted = false
+	world.vigil.input_enabled = true
+	# a quiet field: Grubs dive into Charges (F-3), Acolytes shoot, geodes take Charges; each would only add noise here
+	world.grubs.items.clear()
+	world.acolytes.items.clear()
+	world.geodes.items.clear()
+
+
+func _throw_at_sepulchre() -> void:
 	world.vigil.pos = world.torus.wrap(world.ritual.pos + Vector2(-120, 0))
-	for i in 6:
+	world.vigil.vel = Vector2.ZERO
+	world.glass.set_charges(1)
+	world.glass.launch(world.vigil.pos, Vector2.RIGHT)
+	_steps(2.0)
+
+
+## F-6 cause: only a cold stage (goal CLEAR_SEPULCHRE) listened for the Sepulchre going down; on a0_3-a0_5
+## (goal UNMAKE_ENTITY) the knock-downs reached 0 segments and nothing ended the stage (#120 then re-seeded
+## it after 8 s, which made three knock-downs three rebuilds). A human throws at an unbuilt Sepulchre; the
+## autopilot never does, so no scenario saw it. Now 0 segments clears the stage, whatever the goal.
+func test_knocking_a_waking_stages_sepulchre_to_nothing_ends_the_stage() -> void:
+	_human_start(2)                                   # a0_3: goal UNMAKE_ENTITY, Sepulchre starts at 4 segments
+	assert_int(world.stage.goal).is_equal(CabinetStage.Goal.UNMAKE_ENTITY)
+	var cleared := [0]
+	world.sepulchre_cleared.connect(func() -> void: cleared[0] += 1)
+	for i in 8:
 		if world.ritual.segments <= 0:
 			break
-		world.glass.set_charges(1)
-		world.glass.launch(world.vigil.pos, Vector2.RIGHT)
-		_steps(2.0)
+		_throw_at_sepulchre()
 	assert_int(world.ritual.segments).is_equal(0)
-	assert_bool(captions.has("CAB_CAPTION_REBUILDS")).is_true()
-	_steps(t.waking_reseed_s + 0.5)
-	assert_int(world.ritual.segments).override_failure_message("stage stays on an empty altar").is_equal(t.waking_reseed_segments)
-	assert_int(world.ritual.phase).is_not_equal(SepulchreRitual.Phase.SEED)
+	assert_int(cleared[0]).override_failure_message("the stage must end exactly once").is_equal(1)
+	assert_int(game.state).is_equal(game.State.CLEARED)
+	assert_bool(world.vigil.input_enabled).is_false()
+	game._on_timer()                                  # banner holds ...
+	game._on_timer()                                  # ... then the next stage opens on its card
+	assert_int(game.stage_index).is_equal(3)
 
 
-func test_a_cold_stage_is_not_reseeded_it_clears() -> void:
+func test_three_knock_downs_in_a_row_progress_the_shift() -> void:
+	for stage_i in [2, 3, 4]:
+		game.stage_index = stage_i
+		_human_start(stage_i)
+		for i in 12:
+			if game.state != game.State.PLAY:
+				break
+			_throw_at_sepulchre()
+		assert_int(game.state).override_failure_message("stage %d did not end" % stage_i).is_equal(game.State.CLEARED)
+
+
+func test_a_cleared_sepulchre_takes_no_more_glass_and_never_wakes() -> void:
+	_human_start(2)
+	while world.ritual.segments > 0:
+		_throw_at_sepulchre()
+	assert_bool(world.ritual.accepts_deposits()).is_false()
+	_steps(t.awakening_silence + t.stagger_window + 1.0)
+	assert_bool(world.ritual.awake).is_false()
+	assert_int(world.ritual.segments).is_equal(0)
+
+
+func test_a_cold_stage_still_clears() -> void:
 	var s := _stage(1)
 	s.sepulchre_wakes = false
 	s.goal = CabinetStage.Goal.CLEAR_SEPULCHRE
@@ -82,9 +126,60 @@ func test_a_cold_stage_is_not_reseeded_it_clears() -> void:
 	world.vigil.pos = world.torus.wrap(world.ritual.pos + Vector2(-120, 0))
 	world.glass.set_charges(1)
 	world.glass.launch(world.vigil.pos, Vector2.RIGHT)
-	_steps(t.waking_reseed_s + 3.0)
+	_steps(3.0)
 	assert_bool(cleared[0]).is_true()
 	assert_int(world.ritual.segments).is_equal(0)
+
+
+## F-7 cause: a human is almost never near the Sepulchre when it completes (Grubs carry glass while the
+## Vigil mines elsewhere; it starts 2,560 px out and the view is 256 px wide), and the awake entity chased at
+## 380 px/s against the Vigil's 340: closing 40 px/s, over a minute to arrive, and nothing on screen. It
+## woke, it just never came. Now it sprints while the Vigil is far (rampage_catchup_*), as the source
+## Sinistar does (Q-T446), then closes at rampage_speed. Real held input, the Vigil fleeing flat out.
+func test_a_completed_sepulchre_reaches_a_fleeing_human_vigil() -> void:
+	_human_start(2)
+	world.vigil.pos = world.torus.wrap(world.ritual.pos + Vector2(t.field_sepulchre_start_px, 0))
+	world.vigil.vel = Vector2.ZERO
+	world.ritual.segments = t.segments_total - 1
+	world.ritual.shard_points = t.shards_per_segment - 1
+	world.ritual.deposit()                            # the last piece: BEWARE, the silence, then it wakes
+	assert_int(world.ritual.phase).is_equal(SepulchreRitual.Phase.AWAKENING)
+	world.vigil.shield = 1000.0                       # an Acolyte shot must not end the run early; contact is measured, not suffered
+	Input.action_press(&"move_right")                 # flee flat out, directly away
+	var woke_at := -1.0
+	var caught_at := -1.0
+	for i in roundi(60.0 / DT):
+		world.step(DT)
+		if woke_at < 0.0 and world.ritual.awake:
+			woke_at = i * DT
+		if world.torus.distance(world.ritual.entity_pos, world.vigil.pos) <= SepulchreRitual.BODY_RADIUS + world.vigil.radius:
+			caught_at = i * DT
+			break
+	Input.action_release(&"move_right")
+	assert_float(woke_at).override_failure_message("it must wake").is_greater(0.0)
+	assert_float(caught_at).override_failure_message("a fleeing Vigil must be caught inside 40 s of the wake").is_between(0.1, woke_at + 40.0)
+
+
+func test_the_sprint_only_applies_while_the_vigil_is_far() -> void:
+	world.start(_stage(t.segments_total))
+	_steps(t.awakening_silence + t.stagger_window + 0.1)
+	world.vigil.shield = 100.0
+	var r := world.ritual
+	var dir := Vector2.RIGHT
+	r.entity_dir = dir
+	r.entity_pos = world.torus.wrap(world.vigil.pos - dir * (t.rampage_catchup_px + 200.0))
+	var p0 := r.entity_pos
+	r._rampage(DT)
+	assert_float(world.torus.distance(p0, r.entity_pos)).is_equal_approx(t.rampage_catchup_speed * DT, 0.01)
+	r.entity_pos = world.torus.wrap(world.vigil.pos - dir * 200.0)
+	p0 = r.entity_pos
+	r._rampage(DT)
+	assert_float(world.torus.distance(p0, r.entity_pos)).is_equal_approx(t.rampage_speed * DT, 0.01)
+	# the sprint is spent once it has arrived: a Vigil that kites it out again is not sprinted after
+	r.entity_pos = world.torus.wrap(world.vigil.pos - dir * (t.rampage_catchup_px + 200.0))
+	p0 = r.entity_pos
+	r._rampage(DT)
+	assert_float(world.torus.distance(p0, r.entity_pos)).is_equal_approx(t.rampage_speed * DT, 0.01)
 
 
 # --- F-2 -------------------------------------------------------------------------------------
