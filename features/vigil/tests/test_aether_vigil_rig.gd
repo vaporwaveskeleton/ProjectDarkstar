@@ -144,3 +144,20 @@ func test_brass_plating_is_textured_lamp_lit_and_turns_with_the_hull() -> void:
 	_pose(r, Vector2.ZERO, false, false)
 	_run(r, 2.0)
 	assert_float(mat.get_shader_parameter(&"lamp_energy") as float).is_less(lit * 0.5)
+
+
+## Art review 2026-11-20: the hull is the player's brass (GASLIGHT, as on the HUD), silver only on the prow
+## fittings, the lamp's glow held at the orb cage, and the simple read (no close-up detail) at gameplay scale.
+func test_brass_is_gaslight_prow_is_silver_and_gameplay_scale_is_simple() -> void:
+	var look := load(LOOK_PATH) as AetherVigilLook
+	var gas: Array[Color] = [Pal.GAS_0, Pal.GAS_1, Pal.GAS_2, Pal.GAS_3]
+	for c in [look.brass_dark, look.brass_mid, look.brass_high, look.rivet]:
+		assert_bool(gas.any(func(g: Color) -> bool: return g.is_equal_approx(c as Color))).is_true()
+	assert_float(look.brass_gleam.get_luminance()).is_less(Pal.GAS_5.get_luminance())
+	for c in [look.prow_dark, look.prow_metal, look.prow_gleam]:
+		assert_float(absf((c as Color).r - (c as Color).b)).is_less(0.1)
+	assert_float(look.lamp_glow_radius).is_less_equal(look.gimbal_radius + 5.0)
+	var r := _rig()
+	assert_bool(r.close_up()).is_false()
+	r.scale = Vector2(2.0, 2.0)
+	assert_bool(r.close_up()).is_true()

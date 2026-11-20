@@ -21,6 +21,9 @@ uniform float palm : hint_range(0.0, 1.0) = 0.8;
 uniform float grain : hint_range(0.0, 1.0) = 0.5;
 uniform float worn_through : hint_range(0.0, 1.0) = 0.8;   // laminate rubbed through to the core where hands rest
 uniform vec4 core_color : source_color = vec4(0.54, 0.45, 0.33, 1.0);
+uniform vec4 rust_color : source_color = vec4(0.42, 0.2, 0.09, 1.0);   // rust bleeding from the corner screws
+uniform float screw_inset = 7.0;              // panel-local: the two lower corner screws sit this far in from the side, 9 up from the bottom
+uniform float rust_radius = 6.5;
 uniform vec2 palm_c = vec2(86.0, 15.0);       // panel-local: the polished patch beside START
 uniform vec2 palm_r = vec2(20.0, 8.0);
 uniform int btn_n = 0;
@@ -46,15 +49,31 @@ void fragment() {
 	vec3 n = normalize(vec3(0.0, -0.34, 1.0));
 	n = normalize(n + vec3(detail_tilt(rp, 1.6 * wearing), 0.0));
 
-	// worn THROUGH the laminate to the core where hands rest: along the front edge (wrists) and round the palm
-	// patch, ragged by the laminate texture; a pale chipped rim where the laminate's edge is exposed
-	float yb0 = panel_size.y - p.y;
-	float wrist = 1.0 - smoothstep(2.5, 9.0, yb0);
-	float rub = wrist * 0.7 + polish * 0.75 + (detail_luma(rp) - detail_mean) * 2.2 + (fbm(p * 0.6 + 17.0, 0.5, px) - 0.5) * 0.5;
-	float thru = smoothstep(0.62, 0.72, rub) * worn_through * detail_gain;
-	float rim = smoothstep(0.55, 0.62, rub) * (1.0 - thru) * worn_through * detail_gain;
+	// wear gathered into three patches, not a line of flecks (art review 2026-11-20): worn THROUGH to the core in
+	// the palm patch, and rust bleeding from the two lower corner screws, run down toward the corner, with a
+	// stained halo round it; all ragged by the laminate texture
+	float rn = (detail_luma(rp) - detail_mean) * 2.2 + (fbm(p * 0.6 + 17.0, 0.5, px) - 0.5) * 0.5;
+	float rub = polish * 0.85 + rn;
+	float thru = smoothstep(0.62, 0.72, rub) * step(0.2, polish) * worn_through * detail_gain;
+	float rim = smoothstep(0.55, 0.62, rub) * step(0.2, polish) * (1.0 - thru) * worn_through * detail_gain;
 	base = mix(base, core_color.rgb * (0.75 + 0.5 * fbm(p * 2.0 + 9.0, 1.2, px)), thru);
 	base = mix(base, base * 1.9 + 0.03, rim * 0.6);
+	vec2 s0 = vec2(screw_inset, panel_size.y - 9.0);
+	vec2 s1 = vec2(panel_size.x - screw_inset, panel_size.y - 9.0);
+	vec2 sc = length(p - s0) < length(p - s1) ? s0 : s1;
+	float run = vnoise(vec2(p.x * 0.9, 3.0)) - 0.5;                                  // streaks running down from the screw
+	float rpatch = 1.0 - length((p - sc - vec2(run * 2.0, 3.5)) / vec2(rust_radius * 0.75, rust_radius * 1.5)) + rn * 0.9;
+	float rust = smoothstep(0.35, 0.6, rpatch) * worn_through * detail_gain;
+	float stain = smoothstep(-0.7, 0.4, rpatch) * (1.0 - rust) * worn_through * detail_gain;
+	base = mix(base, base * vec3(0.6, 0.46, 0.33), stain * 0.85);
+	base = mix(base, rust_color.rgb * (0.55 + 0.8 * fbm(p * 2.3 + 4.0, 1.4, px)), rust * 0.85);
+	// the screw heads themselves: dull zinc domes, rusted at the slot
+	float sd = length(p - sc);
+	float m_scr = 1.0 - smoothstep(1.2, 1.6, sd);
+	vec2 sl = rot2(p - sc, 0.6 + 2.1 * step(sc.x, panel_size.x * 0.5));
+	float slot = (1.0 - smoothstep(0.2, 0.45, abs(sl.y))) * step(abs(sl.x), 1.1);
+	base = mix(base, mix(vec3(0.42, 0.41, 0.39), rust_color.rgb, 0.35) * (1.0 - 0.75 * slot), m_scr);
+	n = normalize(n + vec3((p - sc) / 1.6 * 0.8 * m_scr, 0.0));
 
 	// the lip: a bright bevel on the top edge, a dark seam just beneath it where the slab meets the bezel
 	float yt = p.y - 0.0;

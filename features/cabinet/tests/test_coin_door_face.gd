@@ -20,7 +20,7 @@ const KEYS := [
 	"panel_lip", "panel_lip_width", "panel_front_shadow", "panel_front_width", "panel_contact", "panel_palm_polish", "panel_grain", "panel_color", "start_decal_rub", "decal_rub",
 	"caption_cap", "caption_stroke", "caption_tracking", "caption_pad", "tape_sheen", "tape_misregister", "tape_lift", "tape_dirt", "tape_crease", "tape_yellow", "tape_black", "rocker_lamp_color",
 	"texture_detail", "laminate_tile", "side_tile", "steel_tile", "trim_tile", "smudge_tile", "glass_prints", "panel_worn_through",
-	"panel_core_color", "door_edge_grime",
+	"panel_core_color", "door_edge_grime", "panel_rust_color", "door_slot_polish", "door_lock_scratches", "door_low_grime",
 ]
 
 

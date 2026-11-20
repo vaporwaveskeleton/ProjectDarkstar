@@ -1,18 +1,26 @@
 class_name AetherVigilLook
 extends TunableResource
 ## Engineering tunables (✱) and palette picks for the Aether Vigil rig (ART-001 §16.7, ART-002 §4.1).
-## Brass is a BONE/VOID mix; GAS only in flames, glass and light; no CHOIR, no SIGNAL, PHOS not used
-## here (the Charge lamps and ring belong to the HUD-truth work). Edit the .tres, not the rig.
+## The hull is the player's brass: GASLIGHT GAS-0..GAS-3 (ART-001 §4, the HUD's brass), dark tarnish from VOID/GAS
+## mixes, pale-gold gleams below GAS-5 (the lantern core stays the brightest warm pixel). Silver (BONE) only on the
+## prow fittings. No CHOIR, no SIGNAL, PHOS not used here (the Charge lamps and ring belong to the HUD-truth work).
+## Edit the .tres, not the rig.
 
-@export_group("Brass (BONE/VOID mixes only)")
-@export var brass_shadow: Color = Pal.VOID_1.lerp(Pal.BONE_0, 0.5)
-@export var brass_dark: Color = Pal.BONE_0
-@export var brass_mid: Color = Pal.BONE_1
-@export var brass_light: Color = Pal.BONE_2
-@export var brass_high: Color = Pal.BONE_3
-@export var brass_gleam: Color = Pal.BONE_4
-@export var engraving: Color = Pal.VOID_2.lerp(Pal.BONE_0, 0.5)
-@export var rivet: Color = Pal.BONE_3
+@export_group("Brass (the player's GASLIGHT; art review 2026-11-20)")
+@export var brass_shadow: Color = Pal.GAS_0.lerp(Pal.VOID_1, 0.45)
+@export var brass_dark: Color = Pal.GAS_1
+@export var brass_mid: Color = Pal.GAS_2
+@export var brass_light: Color = Pal.GAS_2.lerp(Pal.GAS_3, 0.5)
+@export var brass_high: Color = Pal.GAS_3
+@export var brass_gleam: Color = Pal.GAS_4.lerp(Pal.BONE_4, 0.45)
+@export var engraving: Color = Pal.VOID_1.lerp(Pal.GAS_0, 0.4)
+@export var rivet: Color = Pal.GAS_3
+@export var hull_outline: Color = Pal.VOID_0.lerp(Pal.GAS_0, 0.3)
+
+@export_group("Prow fittings (silver: BONE)")
+@export var prow_dark: Color = Pal.BONE_1
+@export var prow_metal: Color = Pal.BONE_3
+@export var prow_gleam: Color = Pal.BONE_4
 
 @export_group("Light and glass (GAS: flames, glass, light only)")
 @export var lamp_core: Color = Pal.GAS_5
@@ -72,15 +80,20 @@ extends TunableResource
 @export var plating_sky_dir: Vector2 = Vector2(-0.6, -0.8)   ## the Aether sky key, world direction toward the light
 @export var plating_sky_color: Color = Pal.BONE_5
 @export var plating_sky_gain: float = 0.35
-@export var plating_ambient: float = 0.9 
+@export var plating_ambient: float = 0.55                ## low, so the lantern does the lighting and Lantern Down leaves a dark brass shape
 @export var plating_normal_strength: float = 1.6
-@export var plating_diffuse_gain: float = 0.75
+@export var plating_diffuse_gain: float = 1.1
 @export var plating_spec_gain: float = 1.2
 @export var plating_spec_power: float = 22.0
 
+@export_group("Detail level ✱ (art review 2026-11-20)")
+@export var close_detail_zoom: float = 1.75            ## canvas scale at or above which the hull draws its close-up detail (filigree, edge rivets, all ribs)
+@export var rim_light_alpha: float = 0.9               ## the light rim along the hull's lit side (sky key), gameplay read
+
 @export_group("Glow ✱")
-@export var lamp_glow_radius: float = 26.0
-@export var lamp_glow_alpha: float = 0.45
+@export var lamp_glow_radius: float = 13.0             ## held inside the orb cage (gimbal_radius 9): the lamp lights the hull, it does not wash it out
+@export var lamp_glow_alpha: float = 0.5
+@export var window_glow_radius: float = 6.0
 @export var flue_glow_radius: float = 16.0
 @export var surge_glow_radius: float = 44.0
 @export var run_lamp_glow_radius: float = 7.0

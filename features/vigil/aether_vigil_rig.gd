@@ -429,8 +429,8 @@ func _draw_keel(ci: CanvasItem) -> void:
 	ci.draw_line(Vector2(-s + 3.0, -0.5), Vector2(n - 2.0, -0.5), _tint(lk.brass_gleam), 1.0)
 	if has_part(&"keelBlade"):
 		ci.draw_colored_polygon(PackedVector2Array([Vector2(n - 6.0, -2.5), Vector2(n + 6.0, 0.0), Vector2(n - 6.0, 2.5)]),
-				_tint(lk.brass_high))
-		ci.draw_line(Vector2(n - 5.0, 0), Vector2(n + 5.0, 0), _tint(lk.brass_gleam), 1.0)
+				_tint(lk.prow_metal))
+		ci.draw_line(Vector2(n - 5.0, 0), Vector2(n + 5.0, 0), _tint(lk.prow_gleam), 1.0)
 	if has_part(&"keelLamp"):
 		var p := Vector2(lk.hull_nose_x * 0.55, 0.0)
 		ci.draw_circle(p, 2.2, _tint(lk.brass_dark))
@@ -439,15 +439,27 @@ func _draw_keel(ci: CanvasItem) -> void:
 			_add_glow(p.rotated(_heading), 9.0, lk.lamp_glass, 0.35 * _lamp)
 
 
+## True when the hull is drawn large enough for its close-up detail (filigree, the edge rivet row, every rib).
+## At gameplay scale it draws the simple read instead: a few big shapes (art review 2026-11-20).
+func close_up() -> bool:
+	if not is_inside_tree():
+		return false
+	return get_global_transform_with_canvas().get_scale().x >= _look().close_detail_zoom
+
+
 ## The hull's brass plates: every band wears the hammered brass (band colour x albedo, lit by vigil_plating).
+## Gameplay scale: two broad bands (dark rim, lit centre); close-up: three.
 func _draw_hull_plates(ci: CanvasItem) -> void:
 	var lk := _look()
 	var out := _outline()
 	ci.draw_colored_polygon(out, _tint(lk.brass_dark), _brass_uv(out), _brass_tex)
 	# Plate bands: nested, lighter toward the lit centre (cheap brass gradient).
-	var bands: Array[Color] = [lk.brass_mid, lk.brass_light, lk.brass_high]
+	var close: bool = close_up()
+	var bands: Array[Color] = [lk.brass_mid, lk.brass_high]
+	if close:
+		bands = [lk.brass_mid, lk.brass_light, lk.brass_high]
 	for i in bands.size():
-		var sc: float = 0.88 - 0.22 * float(i)
+		var sc: float = (0.88 - 0.22 * float(i)) if close else (0.8 - 0.3 * float(i))
 		var inner := PackedVector2Array()
 		for p in out:
 			inner.append(Vector2(p.x * lerpf(1.0, 0.92, float(i) * 0.4), p.y * sc))
@@ -462,28 +474,63 @@ func _rivet(ci: CanvasItem, p: Vector2, r: float, lamp_hull: Vector2, dark: Colo
 	ci.draw_circle(p + to_lamp * r * 0.2, r * 0.72, lit)
 
 
-## Seams, ribs, rivet heads, filigree and the cockpit window, over the plates.
+## Ribs, rivet heads, the cockpit window, a 1 px dark outline and a light rim on the lit side, over the plates.
+## Close-up only: the edge rivet row, the in-between ribs and the engraved filigree.
 func _draw_hull(ci: CanvasItem, lamp: float) -> void:
 	var lk := _look()
 	var out := _outline()
-	ci.draw_polyline(_close(out), _tint(lk.brass_shadow), 1.5)
+	var close: bool = close_up()
 	var lamp_hull: Vector2 = _gimbal.rotated(-_heading)
 	var r_dark: Color = _tint(lk.brass_shadow)
 	var r_lit: Color = _tint(lk.rivet.lerp(lk.brass_gleam, 0.5).lerp(lk.lamp_glass_hi, 0.3 * lamp))
-	# A rivet row just inside the hull's edge, where the skin plates overlap.
-	for i in range(1, out.size(), 2):
-		var q: Vector2 = out[i]
-		if absf(q.y) > 2.5:
-			_rivet(ci, Vector2(q.x * 0.97, q.y * 0.8), lk.rivet_radius * 0.8, lamp_hull, r_dark, r_lit)
-	# Ribs and rivets.
-	var rib_x: Array[float] = [-23.0, -15.0, -7.0, 1.0, 9.0, 17.0, 25.0]
+	if close:
+		# A rivet row just inside the hull's edge, where the skin plates overlap.
+		for i in range(1, out.size(), 2):
+			var q: Vector2 = out[i]
+			if absf(q.y) > 2.5:
+				_rivet(ci, Vector2(q.x * 0.97, q.y * 0.8), lk.rivet_radius * 0.8, lamp_hull, r_dark, r_lit)
+	# Ribs and rivets: three bold ribs at gameplay scale (a shadow line with a lit edge), all seven close up.
+	var rib_x: Array[float] = [-15.0, 1.0, 17.0]
+	if close:
+		rib_x = [-23.0, -15.0, -7.0, 1.0, 9.0, 17.0, 25.0]
 	for x in rib_x:
 		var h: float = _hw(x)
 		if h > 1.0:
-			ci.draw_line(Vector2(x, -h + 0.5), Vector2(x, h - 0.5), _tint(lk.engraving), 1.0)
+			if close:
+				ci.draw_line(Vector2(x, -h + 0.5), Vector2(x, h - 0.5), _tint(lk.engraving), 1.0)
+			else:
+				ci.draw_line(Vector2(x, -h + 0.5), Vector2(x, h - 0.5), _tint(lk.brass_shadow), 2.0)
+				ci.draw_line(Vector2(x + 1.0, -h + 1.0), Vector2(x + 1.0, h - 1.0), _tint(lk.brass_gleam), 1.0)
 			for sgn in [-1.0, 1.0]:
 				_rivet(ci, Vector2(x + 1.5, (h - 1.8) * (sgn as float)), lk.rivet_radius, lamp_hull, r_dark, r_lit)
-	# Engraved filigree: two mirrored scrolls along the flanks.
+	_draw_hull_edge(ci, out)
+	if close:
+		_draw_filigree(ci)
+	_draw_window(ci, lamp)
+
+
+## The 1 px dark outline, and a light rim just inside it on the side the sky key lights (it slides as the hull turns).
+func _draw_hull_edge(ci: CanvasItem, out: PackedVector2Array) -> void:
+	var lk := _look()
+	ci.draw_polyline(_close(out), _tint(lk.hull_outline), 1.0)
+	var sky: Vector2 = lk.plating_sky_dir.normalized().rotated(-_heading)
+	var rim := PackedVector2Array()
+	var cols := PackedColorArray()
+	var m: int = out.size()
+	for i in m + 1:
+		var a: Vector2 = out[(i - 1 + m) % m]
+		var b: Vector2 = out[(i + 1) % m]
+		var t: Vector2 = (b - a).normalized()
+		var nrm := Vector2(t.y, -t.x)
+		rim.append(out[i % m] - nrm * 0.9)
+		var k: float = clampf(nrm.dot(sky) * 1.4, 0.0, 1.0) * lk.rim_light_alpha
+		cols.append(Color(_tint(lk.brass_gleam), k))
+	ci.draw_polyline_colors(rim, cols, 1.0)
+
+
+## Engraved filigree (close-up only): two mirrored scrolls along the flanks.
+func _draw_filigree(ci: CanvasItem) -> void:
+	var lk := _look()
 	for sgn in [-1.0, 1.0]:
 		var sg: float = sgn as float
 		var pts := PackedVector2Array()
@@ -493,7 +540,11 @@ func _draw_hull(ci: CanvasItem, lamp: float) -> void:
 		ci.draw_polyline(pts, _tint(lk.engraving), 1.0)
 		ci.draw_arc(Vector2(-16.0, sg * 5.0), 2.2, 0.0, TAU, 12, _tint(lk.engraving), 1.0)
 		ci.draw_arc(Vector2(14.0, sg * 4.0), 1.8, 0.0, TAU, 10, _tint(lk.engraving), 1.0)
-	# Cockpit window with a warm glow that follows the lamp.
+
+
+## The cockpit window, with a small warm glow that follows the lamp.
+func _draw_window(ci: CanvasItem, lamp: float) -> void:
+	var lk := _look()
 	var win := PackedVector2Array()
 	for i in 14:
 		var a: float = TAU * float(i) / 14.0
@@ -506,7 +557,7 @@ func _draw_hull(ci: CanvasItem, lamp: float) -> void:
 	ci.draw_colored_polygon(inner_win, _tint(glass))
 	ci.draw_line(Vector2(9.0, -1.0), Vector2(13.0, -1.2), _tint(lk.lamp_glass_hi.lerp(lk.lamp_ember, 1.0 - lamp)), 1.0)
 	if lamp > 0.1:
-		_add_glow(Vector2(12.0, 0.0).rotated(_heading), 11.0, lk.window_glass, 0.4 * lamp)
+		_add_glow(Vector2(12.0, 0.0).rotated(_heading), lk.window_glow_radius, lk.window_glass, 0.3 * lamp)
 
 
 func _draw_plate() -> void:
@@ -637,15 +688,15 @@ func _draw_bow() -> void:
 	var lk := _look()
 	var nx: float = lk.hull_nose_x
 	if has_part(&"anchorRing"):
-		draw_arc(Vector2(nx - 2.0, 0.0), 3.2, 0.0, TAU, 14, _tint(lk.brass_high), 1.5)
-		draw_circle(Vector2(nx - 2.0, 0.0), 0.8, _tint(lk.brass_gleam))
+		draw_arc(Vector2(nx - 2.0, 0.0), 3.2, 0.0, TAU, 14, _tint(lk.prow_metal), 1.5)
+		draw_circle(Vector2(nx - 2.0, 0.0), 0.8, _tint(lk.prow_gleam))
 	if has_part(&"hookReel"):
 		var r := Vector2(nx - 12.0, 5.0)
-		draw_circle(r, 3.0, _tint(lk.brass_dark))
-		draw_circle(r, 2.2, _tint(lk.brass_light))
+		draw_circle(r, 3.0, _tint(lk.prow_dark))
+		draw_circle(r, 2.2, _tint(lk.prow_metal))
 		draw_circle(r, 0.8, _tint(lk.brass_shadow))
-		draw_line(r, r + Vector2(2.0, 0.0), _tint(lk.brass_gleam), 1.0)
-		draw_line(r + Vector2(0.0, 3.0), r + Vector2(5.0, 6.0), _tint(lk.brass_high), 1.0)
+		draw_line(r, r + Vector2(2.0, 0.0), _tint(lk.prow_gleam), 1.0)
+		draw_line(r + Vector2(0.0, 3.0), r + Vector2(5.0, 6.0), _tint(lk.prow_metal), 1.0)
 
 
 func _draw_turret() -> void:

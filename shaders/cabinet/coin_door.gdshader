@@ -30,6 +30,9 @@ uniform float finger_halo : hint_range(0.0, 1.0) = 0.85;
 uniform float thumb_wear : hint_range(0.0, 1.0) = 0.85;
 uniform float micro_texture : hint_range(0.0, 1.0) = 0.55;
 uniform float door_edge_grime : hint_range(0.0, 1.0) = 0.85;
+uniform float slot_polish : hint_range(0.0, 1.0) = 0.8;     // the entry plate rubbed bright round the slot by fingers feeding coins
+uniform float lock_scratches : hint_range(0.0, 1.0) = 0.8;  // bright key scratches in a ring round the lock
+uniform float low_grime : hint_range(0.0, 1.0) = 0.7;       // grime thickening toward the bottom of the door (feet, mop water)
 uniform float lamp_spill = 0.6;
 uniform float lamp_spill_radius = 13.0;
 uniform vec2 slot_c = vec2(28.0, 20.0);
@@ -339,6 +342,9 @@ void fragment() {
 		vec3 lit = mix(diffuse + keyc * spec * spec_gain * 0.4, metal_col, metal);
 		// the polished lip is the bright place: it catches the key hard
 		lit += m_lip * keyc * (0.5 + 1.2 * pow(max(dot(n, Hh), 0.0), 18.0)) * lip_color.rgb;
+		// finger-polished: a bright band on the entry plate round the slot, widest below it where thumbs push coins in
+		float fpol = smoothstep(3.8, 0.9, dsl + jit * 0.6 - max(p.y - slot_c.y, 0.0) * 0.15) * (1.0 - m_lip) * (1.0 - dark) * m_ent * slot_polish;
+		lit += lip_color.rgb * keyc * fpol * (0.35 + 0.9 * pow(max(dot(n, Hh), 0.0), 8.0));
 		// the satin paint's faint clear sheen
 		lit += (1.0 - metal) * keyc * pow(max(dot(n, Hh), 0.0), 7.0) * 0.03 * (1.0 - rough * 0.5) * (1.0 - dark);
 		lit *= 1.0 - 0.6 * cav * (1.0 - m_lens);
@@ -369,6 +375,14 @@ void fragment() {
 		float catch_light = smoothstep(1.0, 0.0, length(p - (sc + to_plate * 0.9))) * m_screw;
 		lit += lens_color.rgb * catch_light * sc_spill * 2.2;
 
+		// key scratches: a ring of bright arcs round the lock where the key missed, on the collar and the paint
+		float dlk = length(p - LOCK_C);
+		float kring = smoothstep(1.6, 2.6, dlk) * (1.0 - smoothstep(6.5, 9.5, dlk));
+		float ks = scratches(p, LOCK_C, vec2(1.0), 30.0, 7.0, px, lxy) * kring * (1.0 - dark);
+		lit = mix(lit, max(lit, lip_color.rgb * (keyc * 1.2 + 0.25)), clamp(ks * 3.0, 0.0, 1.0) * lock_scratches);
+		// grime thickening toward the bottom: a gradient of dirt from the door's middle to its foot
+		float lowg = smoothstep(plate_size.y * 0.45, plate_size.y, p.y) * (0.7 + 0.6 * nz1);
+		lit = mix(lit, lit * vec3(0.38, 0.34, 0.3), clamp(lowg, 0.0, 1.0) * low_grime * (1.0 - 0.6 * m_lens));
 		// dirt packed along the door's edge and into its corners (thickest at the bottom, where feet scuff),
 		// ragged by the steel texture's own low spots
 		float edge_in = 1.0 - smoothstep(0.0, 5.5, -dd);

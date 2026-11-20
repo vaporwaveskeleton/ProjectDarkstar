@@ -139,6 +139,10 @@ extends TunableResource
 @export_range(0.0, 1.0) var panel_worn_through: float = 0.8       ## laminate rubbed through to the core along the front edge and round the palm patch
 @export var panel_core_color: Color = Color8(0x8A, 0x73, 0x54)     ## the particleboard core under the laminate
 @export_range(0.0, 1.0) var door_edge_grime: float = 0.85         ## dirt packed along the coin door's edge and corners
+@export var panel_rust_color: Color = Color8(0x6B, 0x33, 0x17)     ## rust bleeding from the control panel's two lower corner screws
+@export_range(0.0, 1.0) var door_slot_polish: float = 0.8          ## the coin entry plate rubbed bright round the slot by fingers
+@export_range(0.0, 1.0) var door_lock_scratches: float = 0.8       ## bright key scratches in a ring round the lock
+@export_range(0.0, 1.0) var door_low_grime: float = 0.7            ## grime thickening toward the bottom of the coin door
 
 const _DEFAULT_PATH := "res://data/cabinet/cabinet_surface.tres"
 

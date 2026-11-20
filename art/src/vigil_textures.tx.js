@@ -3,7 +3,7 @@ include("darkstar_palette.tx.js")
 // hollows and seams, for a CanvasTexture (albedo + normal) the Plating shader lights with the skiff's lantern.
 // Build:
 //   node .claude/skills/loom/bin/loom.js build art/src/vigil_textures.tx.js --out assets/art/generated/textures
-// The brass colour itself stays AetherVigilLook's plate bands (BONE ramp; GAS is the lamp's alone, ART-001 §4):
+// The brass colour itself is AetherVigilLook's plate bands (GAS-0..GAS-3, the player's brass, ART-001 §4, §16.7):
 // this albedo is a luminance map the band colour multiplies (tarnish dark, polished crowns bright). Sized so one
 // hammer blow is about 4 px of hull at 640×360 (owner 2026-11-19: dents must read at 1280×720).
 
