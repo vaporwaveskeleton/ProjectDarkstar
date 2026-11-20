@@ -307,6 +307,71 @@ msgstr "Counted: {n}."
 msgid "NARR_SABLE_RETURN_1"
 msgstr "You return. What you carried is counted."
 
+#. Return chalk (NARR-001 §5.7a; Q-T284): the slate's second line after a run. One pool per outcome,
+#. picked from the run seed. Returned: quietly proud, uneasy.
+msgid "NARR_SABLE_RET_OK_1"
+msgstr "The way out held. Something let you through."
+
+msgid "NARR_SABLE_RET_OK_2"
+msgstr "You carry less dark than you took. Do not ask where it went."
+
+msgid "NARR_SABLE_RET_OK_3"
+msgstr "The lamp is lit. I counted twice."
+
+msgid "NARR_SABLE_RET_OK_4"
+msgstr "The Seam closed behind you, slowly."
+
+msgid "NARR_SABLE_RET_OK_5"
+msgstr "Well done. The hall is quieter for it."
+
+msgid "NARR_SABLE_RET_OK_6"
+msgstr "You return clean. The walls notice."
+
+#. Return chalk, died: the Ruins notice the Vigil's absence. Tally marks are `|`.
+msgid "NARR_SABLE_RET_DIED_1"
+msgstr "The Vigil's place by the door sat empty. One more mark. ||||"
+
+msgid "NARR_SABLE_RET_DIED_2"
+msgstr "The hall noticed the Vigil gone. It keeps the count. |||"
+
+msgid "NARR_SABLE_RET_DIED_3"
+msgstr "Dust settled where the Vigil was not. A mark for it. ||"
+
+msgid "NARR_SABLE_RET_DIED_4"
+msgstr "No one lit the lamp for the Vigil. The wall did not forget."
+
+msgid "NARR_SABLE_RET_DIED_5"
+msgstr "A gap in the hall, the width of a Vigil. Marked. |||||"
+
+msgid "NARR_SABLE_RET_DIED_6"
+msgstr "The Ruins held their breath for the Vigil. They are holding it still. ||"
+
+#. Return chalk, abandoned: the lamp judges, gently.
+msgid "NARR_SABLE_RET_QUIT_1"
+msgstr "The lamp saw you turn back. It does not say what it thinks."
+
+msgid "NARR_SABLE_RET_QUIT_2"
+msgstr "The lamp burns a little lower. Not angry. Attentive."
+
+msgid "NARR_SABLE_RET_QUIT_3"
+msgstr "Turning back is also a choice. The lamp writes it down."
+
+msgid "NARR_SABLE_RET_QUIT_4"
+msgstr "The lamp is steady. It was always going to be."
+
+msgid "NARR_SABLE_RET_QUIT_5"
+msgstr "Some doors are kind to leave. The lamp is not sure this was one."
+
+msgid "NARR_SABLE_RET_QUIT_6"
+msgstr "You left the Seam open. The lamp will wait. It will not mind."
+
+#. Return chalk, rare (after several runs; stage S1: the Cabinet has a maker, no name).
+msgid "NARR_SABLE_RET_RARE_1"
+msgstr "The machine on the wall has a maker. The plate is turned to the stone."
+
+msgid "NARR_SABLE_RET_RARE_2"
+msgstr "Someone built the Cabinet before the light failed. The chalk stops there."
+
 #. Chalk on the floor under the Lantern Tree (first visit).
 msgid "NARR_SABLE_TREE"
 msgstr "Light one. The dark is long."

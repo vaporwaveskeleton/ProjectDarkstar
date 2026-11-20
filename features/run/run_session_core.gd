@@ -75,6 +75,9 @@ var _pauses: Dictionary = {}
 var _in_seam := false
 ## The Vigil Index the last arrival banked (−1 = none): the Ruins chalks it as a tally (LOOP-001 §10.5).
 var act0_vi_banked := -1
+## The seed of the run that ended last (−1 = none this boot): the Ruins pick the return chalk from it
+## (NARR-001 §5.7a; Q-T284). In memory only.
+var last_run_seed := -1
 ## False when the profile on disk could not be read: never overwrite it (no data loss).
 var _profile_writable := true
 
@@ -331,6 +334,8 @@ func abandon_from_seam() -> bool:
 func _end_run(outcome: StringName) -> void:
 	if outcome != OUTCOME_NINTH_SKY:
 		_profile.ember_banked += _run.ember_in_run
+		last_run_seed = _run.seed_value
+		_profile.extra["runs_ended"] = runs_ended() + 1
 	# TODO(Q-T143): the ninth-sky bank is deferred (outside the slice); a ninth-sky end banks nothing.
 	_run = RunState.new()
 	_in_seam = false
@@ -402,6 +407,12 @@ func _on_ninth_sky() -> void:
 
 
 # --- reads (callers never mutate the returned objects) ---------------------------------------------
+
+## How many runs have ended on this profile (a plain `extra` key `runs_ended`, saved with the profile).
+func runs_ended() -> int:
+	var v: Variant = _profile.extra.get("runs_ended", 0)
+	return int(v) if typeof(v) == TYPE_INT or typeof(v) == TYPE_FLOAT else 0
+
 
 func run() -> RunState:
 	return _run
