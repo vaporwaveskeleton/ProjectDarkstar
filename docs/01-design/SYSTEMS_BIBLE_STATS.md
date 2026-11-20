@@ -1,6 +1,6 @@
 # DARKSTAR — Systems Bible (Numbers)
 
-**Doc ID:** SYS-001 · **Version:** 1.7 · **Status:** Authoritative for all numbers · **Last updated:** 2026-11-19
+**Doc ID:** SYS-001 · **Version:** 1.9 (proposed) · **Status:** Authoritative for all numbers · **Last updated:** 2026-11-19
 **Owner:** Design (systems) · **Upstream:** `GDD_DARKSTAR_v0.2.md` (GDD-001) · **Downstream:** every other doc in this set
 **Data target:** `docs/04-production/TECH_ARCHITECTURE.md` §6 (data-driven tables) — every table below maps 1:1 to a `.tres`/JSON resource.
 **Rev 1.1 (2026-11-17):** the Anchor field rows in §1.1 (owner decision D-11 of GDD-001 §18); **rev 1.2 (2026-11-17, owner-delegated rulings R-01, R-04, R-10, R-11, R-14):** §1.2 post-hit grace, §9 resolution closed to 640×360, hitbox diameter and entity exception, on-screen caps; §2.2 ninth-sky Hunger as one +2 row, §6 Hourglass budget/death cost/refund, §7.2 Codex stamp note, §7.5 Fragments and Threads (LOOP-001 LR-09…LR-13); the warp-owned numbers WARP-001 asked for in its §8 R-01 to R-05, added to §6, §9 and §10; and the §2.2 eaten-rule pointer corrected from WARP-001 §6 to §3. **No pre-existing number in this doc was changed by that revision.**
@@ -9,6 +9,7 @@
 **Rev 1.5 (2026-11-19, M1 slice 3 PR 4; PM under owner autonomy grant 2026-11-19):** §1.4 turn-authority reading (time for a 180° turn), Charge contact radius, trail and hits on target; §2 phase-0 row: "Sepulchre HP per segment 8 ✱" **dropped for phases 0–1** (1 Charge hit = 1 segment; TECH-001 Q-T110), new Sepulchre and sandbox procession rows; §3 Grub flee-while-carrying (never, Q-T112), body/steering and idle-orbit rows. All new values are the Cabinet's or M1 engineering values, ✱.
 **Rev 1.6 (2026-11-19, Act 0 arcade expansion P1, "the shift"; PM (delegated owner authority)):** new §1.6 Act 0 stage table (five stages); §7.1 rows for lives at start, lives cap and the extra-life schedule (schedule approved, built in P2). No Vigil number was changed.
 **Rev 1.7 (2026-11-19, M2 RunSession; PM under owner autonomy grant 2026-11-19, TECH-001 §11.1a Q-T136, Q-T138, Q-T144–Q-T147, Q-T149):** §6 new rows Hourglass Clock rate (1:1), Hourglass Clock pauses, Abandon (costs the death clock cost); §7.1 `Act 0 bank` gains a floor of 40 Ember (`max(floor(VI / 200), 40)`); §7.2 Seam clears pay 40 each **including Seam 5** (won-run row 160 → 200) and in-run Ember banks on a win and on a death; §7.2 Run-Sigil picks timing stated (after Seams 1–3); new §7.7 Lantern Tree node prices by tier and the Run Sigil reroll ladder, moved from LOOP-001 with no value change.
+**Rev 1.9 (2026-11-20, the slice's second Seam, PM-02; PM under owner direction, 2026-11-20 push, TECH-001 Q-T420–Q-T430; all rows proposed):** §2 `PM-02 Sepulchre start segments`; §3 `Choir base detection radius`, `Acolyte engagement range`, `Acolyte post leash`; §6 `Slice frontier Seam` = 2 (a two-Seam slice: the Seam 1 exit continues into PM-02; it supersedes the value 1 proposed in rev 1.8, which arrives with PR #103; merge note in TECH-001 Q-T420); §9 `PM-02 slice layout`. No pre-existing number was changed. Rev 1.8 (PR #103, the run's back door) is not on main yet.
 
 ---
 
@@ -246,6 +247,7 @@ Sepulchre numbers for phases 0–1 as built in M1 (`ds_sepulchre.*`, TECH-001 §
 | Sepulchre hurt radius | 26 px ✱ | Charges hit it inside this radius; the lance leaves a chalk tick and does no damage; the Cabinet value. PM-accepted 2026-11-19 (PM under owner autonomy grant 2026-11-19) |
 | Deposit pulse (presentation) | 0.3 s ✱ | how long the deposit ring shows. PM-accepted 2026-11-19 (PM under owner autonomy grant 2026-11-19) |
 | M1 sandbox procession layout | Sepulchre at (1100, 560); one route (760, 440) → (900, 520) → (1010, 580); Grubs start on a 60 px ring round the Sepulchre ✱ | torus positions in the 1920×720 sandbox (TECH-001 Q-T58); 4 Grubs (§4, the PM's M1 count); the ring is the Cabinet's 60. Replaced by kit anchors later (ZONES-001 §6.1). PM-accepted 2026-11-19 (PM under owner autonomy grant 2026-11-19) |
+| PM-02 Sepulchre start segments (`ds_sector.kit.sepulchre_start_segments`, data `data/sector/kits/pm_02.tres`) | **3, proposed** (2026-11-20, TECH-001 Q-T423) | ZONES-001 §3.1a: PM-02's Sepulchre is **Active**. It starts at this many segments, with no vigil wait, and Grubs deposit from the first second. The clear needs it at 0 with at least `Seam clear: Sepulchre segments knocked` knocked off (§6). PM-01 keeps 0 (Cold). PM under owner direction, 2026-11-20 push; retune at playtest |
 
 ### 2.1 Entity stats
 
@@ -317,6 +319,14 @@ Oubliette Grub AI numbers (the Cabinet values, so M1 matches Act 0; closes that 
 | Grub flee while carrying | never ✱ | a Grub carrying glass does not flee the lantern ("devotion beats fear", the Cabinet rule). PM under owner autonomy grant 2026-11-19 (TECH-001 Q-T112) |
 | Grub body and steering (engineering) | radius 6 px; pickup margin 4 px; steer 5 /s; arrive 2 px; flee step 80 px; waypoint reach 12 px; a dying carrier drops its shard with 0.3 of its velocity ✱ | the Cabinet's literals, mirrored in M1 (`ds_choir.grub.*`, TECH-001 §3.4); waypoint reach is new in M1. PM-accepted 2026-11-19 (PM under owner autonomy grant 2026-11-19) |
 | Grub idle orbit (no free glass) | 90 px round the Sepulchre at 70 px/s, orbit point turning 0.3 rad/s ✱ | the Cabinet's literals. PM-accepted 2026-11-19 (PM under owner autonomy grant 2026-11-19) |
+
+Acolyte (Censer Knight) at Aether tier, first built in PM-02 (ZONES-001 §3.1a; TECH-001 Q-T424). The stat line is the §3 table row above, unchanged. These rows add only what the Aether sector needs. All **proposed** (PM under owner direction, 2026-11-20 push; retune at playtest):
+
+| Field | Value | Notes |
+|---|---|---|
+| Choir base detection radius (`ds_choir.acolyte.detect_radius_px`) | **110 px, proposed** | The radius the §1.2 lantern rows modify: lantern up +180% → 308 px, lantern down −60% → 44 px (`Dark Lantern` −75% → 27.5 px). 110 px is the Grub flee radius, so the Choir share one base. Applied to the Acolyte in the slice; the Grub flee radius is **not** scaled by the lantern yet (TECH-001 Q-T433) |
+| Acolyte engagement range (`ds_choir.acolyte.range_px`) | **300 px ✱, proposed** | The Cabinet's `acolyte_range`, kept, so Act 0 and the Aether match. It fires only at a detected Vigil inside this range (torus distance) |
+| Acolyte post leash (`ds_choir.acolyte.post_leash_px`) | **40 px ✱, proposed** | A posted Acolyte (PM-02 throat, PM-04 spur) never moves further than this from its post. It turns in place to face the Vigil, and leading its body still beats the turret (§3 table) |
 
 ### 3.1 Faction laws that are numbers, not mood 🔒
 
@@ -416,6 +426,7 @@ Cosmic horror design rev 3 (PM ruling 2026-11-18 (owner grant)). The rules are Z
 | Run-won refund | +15 loop-minutes ✱, never above the 120 budget (LOOP-001 LR-09) |
 | Run length target | 25–35 min 🔒 |
 | Seam clear time | 4–6 min ✱ |
+| Slice frontier Seam (`ds_run.session.slice_last_seam`) | **2, proposed** (2026-11-20, TECH-001 Q-T420; resolves PR #103's owner question Q-T282 for the frontier): the run continues from Seam 1 (PM-01) into Seam 2 (PM-02). The cleared exit of Seam 2 ends the run with outcome `returned` (Seam clear and score Ember bank in full; no death cost, no win refund). 1 = the one-Seam slice; 0 = off (all 5 Seams, once Seams 3–5 have content). `Seams per run` 5 🔒 is unchanged. Data switch; PR #103 proposed 1 (rev 1.8), and this row supersedes it on merge |
 | Seam sealing under **H2** (a warp-eaten rule) | `seam_close_after` = **20 s** ✱ — the seam you crossed seals 20 s after your crossing. While sealed, the boundary refuses the crossing and the Vigil slides along the edge, with no input lock. Seams re-open at the sector boundary; a sealed seam is never a permanent wall. Requested by WARP-001 §8 R-01; the rule itself is WARP-001 §3.2 H2 |
 | Sector size | 3–7 Encounter Kits stitched (1 screen cluster each, ~640×360 base unit) |
 | Biomes | 6 (GDD §8.8; ZONES-001 §2 for the full table) |
@@ -580,6 +591,7 @@ The tree totals (LOOP-001 §3.3 node rollup, 17,480 Ember over 63 Ember nodes) a
 | Race pull-out zoom (`ds_camera.race_pull_zoom`) | 0.8 ⚙ **proposed** | Zoom the camera eases to (same spring and time as the lean) while the Sepulchre is a race target off the zoom-1 frame (TECH-001 Q-T211). The one context exception to Zoom 1.0; 0 = off. PM under owner autonomy grant 2026-11-19; retune at playtest |
 | Race pull-out max (`ds_camera.race_pull_max_s`) | 2.5 s ⚙ **proposed** | Longest one pull-out lasts; then zoom 1 until the Sepulchre stops being a race target. PM under owner autonomy grant 2026-11-19; retune at playtest |
 | M1 sandbox arena | wrapping torus 1920×720 ✱ | Same source as the Cabinet's torus field (`CabinetStage.field_size`), so M1 matches Act 0; no clear colour shows (a repeating floor covers the view). Real kit bounds come from ZONES-001 later. TECH-001 Q-T58, PM under owner autonomy grant 2026-11-18 |
+| PM-02 slice layout | entry (Vigil spawn) (320, 180); 8 geodes on the shelf band at (760, 240), (820, 270), (880, 232), (940, 266), (1000, 236), (1060, 268), (1120, 240), (1176, 262); light pocket centre (980, 330), radius 110 px; unlit corridor y 624–720 (96 px, along the bottom wrap seam, full width); route (980, 300) → (980, 430) → (1160, 672) → (1500, 672) → Sepulchre (1620, 600); exit anchor (420, 672); Acolyte post (520, 636); satellite Grub pair from (1700, 160) ✱ | Torus positions in the 1920×720 slice field (`M1 sandbox arena`), the PM-02 twin of `M1 sandbox procession layout`. Entry-to-Sepulchre torus distance is 620 px across, so lint item 4 holds without an exception. Replaced by kit-scene anchors (ZONES-001 §1.7) later. PM under owner direction, 2026-11-20 push (TECH-001 Q-T423) |
 | Zoom | 1.0 (T0) → 1.06 (T3) → breathing ±2% over 11 s (T5) | GDD §4.2. Zoom 1.0 = the 640×360 logical frame, the fixed post-Act 0 camera scale (TECH-001 Q-T25 resolved Z1, PM under owner autonomy grant 2026-11-18) |
 | Lie spend window (L6) | 3 s | a HUD lie never concerns the count of a resource the player can spend within this window (WARP-001 §4.2 L6, widened). PM-approved 2026-11-18 under owner grant; retune at playtest |
 | Lie lull radius | 220 px | L9: a lie may start only with no hostile hitbox (any Choir body, contact hazard or the entity) this close to the Vigil; a Deacon phantom never spawns inside it while a HUD lie is live (WARP-001 §4.2). PM-approved 2026-11-18 under owner grant; retune at playtest |

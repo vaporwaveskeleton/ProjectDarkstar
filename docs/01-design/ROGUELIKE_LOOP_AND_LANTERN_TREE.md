@@ -649,6 +649,13 @@ Five Seams, two gates, three cards, three rare boundary Sigils, one clock (SYS-0
 - Score never buys power inside a run (GDD-001 §3 anti-pillar). Ember is banked at the run's end: `Ember = floor(score / 200)` plus milestone bonuses (SYS-001 §7.1). The run's whole economy is *spend on the build now, bank the rest later*.
 - Death inside a run is not the run's end unless it is final: Second Vigil (HULL-6) and REL-13 both spend a survival, and the entity's memory of your most-used tool survives either way (SYS-001 §2.2, GDD-001 §6.3).
 
+**The two-Seam slice (PM under owner direction, 2026-11-20 push; TECH-001 Q-T420, Q-T422, Q-T430).** Until Seams 3–5 have content, the slice's run is **Ruins → Seam 1 (PM-01 First Vigil) → Seam 2 (PM-02 Dark Throat) → Ruins**:
+- **Seam 1's exit continues.** Clearing PM-01 and flying into its exit throat banks the Seam clear through `RunSession` (`end_seam`: Seam clear Ember, write-back of Composure and Charges), then enters Seam 2. There is no run end and no Ruins visit between the two Seams. Carry between Seams applies (Q-T140): Composure and Charges cross the boundary.
+- **Seam 2's exit is the slice frontier.** Clearing PM-02 (ZONES-001 §3.1a) and flying into its throat ends the run with outcome `returned` and goes back to the Ruins. This is the same frontier rule PR #103 built for Seam 1 (its Q-T276), moved one Seam on by the data row SYS-001 §6 `Slice frontier Seam` (**2, proposed**; 1 = the old one-Seam slice; 0 = all five Seams). The banking is unchanged: Seam clear and score Ember bank in full, with no death cost and no win refund.
+- **A death in either Seam** ends the run `died` and returns to the Ruins at that Seam's death price (SYS-001 §6 `Death clock cost`: 10 in Seam 1, 12 in Seam 2).
+- **The Seam 2 boundary gifts** in the table above (a Run Sigil and the first rare Sigil) are not built in the slice yet (the Run Sigil pick at the exit is beat 16, still open), so for now the boundary between the two Seams is the exit throat and a route curtain.
+- **Which kit plays which Seam** is a hand-picked slice table (`ds_sector.slice`, TECH-001 Q-T430) until the Seam assembler (ZONES-001 §4) exists.
+
 ### 6.2 Seeds, and what a seed fixes
 
 | Seed kind | Who sets it | Fixed by the seed | Notes |
