@@ -16,6 +16,7 @@
 **Rev 1.10 (2026-11-19 overnight, race framing and the Codex record; PM under owner direction, TECH-001 Q-T353, Q-T355, Q-T356):** §9 one **proposed** row, `Race fit margin` (24 px); the `Race pull-out zoom` and `Race pull-out max` rows now describe the fitted pull-out (0.8 is its floor; a Charge in flight holds it for the whole flight; never under Reduced Motion). §7.6 `Gating backstop: tier-1 entries` gains its data key and its reading of "run 3" (the profile run count, every outcome). No existing value changed.
 **Rev 1.11 (2026-11-19, Act 0 "too simple" pass; PM under owner direction, 2026-11-19 overnight push, TECH-001 Q-T365–Q-T377):** new §1.7, all PROPOSED (revised the same night with the PM's pixel measurements of the reference screenshots, Q-T378): three Unmakings, a 65,536 px wrapping field with a travelling neighbourhood, a 48 px HUD band with a local square Ledger Compass, unit proportions, Acolyte mining, and the stage card timings. §1.6's field-size line points at §1.7.
 **Rev 1.13 (2026-11-20, Act 0 density and feel pass; PM under owner direction, 2026-11-20 extended push (Q-T381–Q-T384)):** all PROPOSED. §1.6 stage counts raised (geodes 34/40/44/72/14, Grubs 6/14/14/10/6, Sepulchre start segments 20/20/4/6/4; a0_3 bell 16 s, cap 6), `geode_drift_floor` 0.5 → 0.8; §1.7 neighbourhood half 768 → 640, `grub_flee_radius` 110 → 70, new shadow/patrol/hold, prompt-duty and streak keys, measured stage times (Q-T383).
+**Rev 1.14 (2026-11-20, owner playtest F-1…F-4; PM under owner feedback, TECH-001 Q-T440–Q-T443):** all PROPOSED. §2.1 Rampage speed 150 → 380 px/s ✱ (faster than the Vigil, supersedes "always slower"); §1.6 Grub intercept range 150 px and dive speed 220 px/s, waking re-seed 4 segments after 8 s (rows after Escort distance).
 
 ---
 
@@ -228,6 +229,9 @@ Engineering rows (✱, `CabinetTuning`, `ds_cabinet.tuning.*`; PM-accepted 2026-
 | Drift clearance (`geode_drift_clear_px`) | 160 px ✱ | a drift-in geode is off view and at least this far from the Vigil |
 | Pilfer radius (`grub_pilfer_radius`) | 160 px ✱ | how far a pilfering Grub looks for loose glass |
 | Escort distance (`escort_distance`) | 60 px ✱ | an escorting Acolyte trails its Grub at this distance |
+| Grub intercept range (`grub_intercept_range`) | 150 px ✱ PROVISIONAL (Q-T440) | a Grub this close to a Charge flying at the not-yet-awake Sepulchre dives in and dies (Sinibomb-intercept analogue) |
+| Grub intercept speed (`grub_intercept_speed`) | 220 px/s ✱ PROVISIONAL (Q-T440) | its dive speed; above the Charge's 210 px/s 🔒 only barely, so it must start near the path |
+| Waking re-seed (`waking_reseed_segments`, `waking_reseed_s`) | 4 segments, 8 s ✱ PROVISIONAL (Q-T442) | a waking-stage Sepulchre knocked to 0 rebuilds this much after this long, so a human cannot strand the stage |
 
 `a0_5` margin (PM 2026-11-19, TECH-001 §11.1 Q-T130): Grubs 5 → 4 and Guard Acolytes 2 → 1; **retune at playtest (Reviewer: a0_5 sits on the 24-shard floor)**. `a0_1` is the old A0-1 stage and `a0_5` the old A0-3 stage (The Last Normal Day); `a0_2`–`a0_4` are new. Vigil rows (§1.1–§1.5) are not touched by the shift (the 340 px/s lock stays).
 
@@ -328,7 +332,7 @@ Sepulchre numbers for phases 0–1 as built in M1 (`ds_sepulchre.*`, TECH-001 §
 | Unravel hits (complete) | 13 🔒 | +1 per 3 Hunger after H=6 | the player's count, not HP |
 | Body geometry | 20 modules, 64×64 each | — | 20 × 64×64 = the assembled silhouette (ART-002 §3) |
 | Contact hitbox | 16 px inset from sprite ✱ | — | fairness: the visible edge kills, never a hidden one |
-| Rampage speed | 150 px/s | +12 px/s per Hunger, cap 260 | always **slower** than `max_speed` 340 🔒 — the danger is enclosure, not outrunning |
+| Rampage speed | **380 px/s ✱ PROPOSED (Q-T441, owner playtest F-4)**; was 150 | +12 px/s per Hunger, cap 260 (to be re-based on 380, open) | now **faster** than `max_speed` 340 🔒: fleeing does not work (Sinistar reference); the player survives by dodging (its turn rate is 2.2 rad/s) and by enough Charges. Supersedes "always slower" |
 | Repair (eats a geode) | +2 segment-equivalents | — | takes 2.0 s |
 | Eats a Choir unit | +1 Unravel hit restored | 1 restore per 6 s, cap 3 per rampage | ✱ keeps healing legible |
 | Eats a Shrine | +1 Unravel hit restored, Corruption −1 | — | the entity does not share; this is a claw-back tool |

@@ -135,7 +135,13 @@ func _tick_charges(delta: float) -> void:
 		if c.trail.size() > 10:
 			c.trail.remove_at(0)
 		# interception (SYS-001 §1.4: Grubs, Acolytes and geodes take a Charge)
-		if world.grubs.hit_test(c.pos, CHARGE_RADIUS) != null or world.acolytes.hit_test(c.pos, CHARGE_RADIUS) != null \
+		var hit_grub := world.grubs.hit_test(c.pos, CHARGE_RADIUS)
+		if hit_grub != null and target != null and not world.ritual.awake \
+				and world.ritual.phase < SepulchreRitual.Phase.AWAKENING:
+			world.grubs.sacrifice(hit_grub)    # F-3: it died for the Sepulchre
+			_lose(c, true)
+			continue
+		if hit_grub != null or world.acolytes.hit_test(c.pos, CHARGE_RADIUS) != null \
 				or world.geodes.hit_test(c.pos, CHARGE_RADIUS) != null:
 			_lose(c, true)
 			continue

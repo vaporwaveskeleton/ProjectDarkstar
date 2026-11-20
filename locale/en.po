@@ -1239,3 +1239,15 @@ msgstr "While Frayed, phantoms die to one lance hit."
 #. The Pale Marches grief story (ZONES-001 §2.4): an Office recruitment sign, frosted over and still lit, in PM-02's far fog.
 msgid "NARR_PM_SIGN_KEEP_THE_VIGIL"
 msgstr "KEEP THE VIGIL"
+
+#. Caption: a Grub flew into a Charge that was heading for the Sepulchre (owner F-3; Sinibomb-intercepted analogue).
+msgid "CAB_CAPTION_GRUB_INTERCEPT"
+msgstr "GRUB INTERCEPTED A CHARGE"
+
+#. Caption: the Sepulchre is complete; the last warning before it wakes (owner F-4; "Beware, I live" analogue).
+msgid "CAB_CAPTION_BEWARE"
+msgstr "BEWARE. THE SEPULCHRE IS COMPLETE"
+
+#. Caption: a knocked-down waking Sepulchre is rebuilding (owner F-1).
+msgid "CAB_CAPTION_REBUILDS"
+msgstr "THE SEPULCHRE REBUILDS"

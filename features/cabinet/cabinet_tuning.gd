@@ -33,7 +33,7 @@ extends TunableResource
 @export var stagger_window: float = 3.0          ## s, Awakening stagger window
 @export var stagger_hits: int = 3                ## 🔒 hits inside it
 @export var awakening_silence: float = 1.2       ## s of silence before the line (GDD §12)
-@export var rampage_speed: float = 150.0         ## px/s at Hunger 0 (always slower than the Vigil)
+@export var rampage_speed: float = 150.0         ## px/s ✱ code default; data/cabinet/cabinet_tuning.tres sets the PROVISIONAL awake chase speed 380, FASTER than the Vigil (owner F-4, Q-T441)
 @export var eat_geode_time: float = 2.0          ## s the entity stops to eat a geode
 @export var eat_unit_cooldown: float = 6.0       ## s between unit meals (1 restore per 6 s, cap 3)
 @export var eat_restore_cap: int = 3
@@ -52,6 +52,10 @@ extends TunableResource
 @export var acolyte_patrol_max_px: float = 220.0  ## px ✱ … to this one
 @export var grub_respawn: float = 6.0            ## s ✱ the Sepulchre births a replacement
 @export var acolyte_hp: int = 6
+@export var grub_intercept_range: float = 150.0   ## px ✱ PROVISIONAL (Q-T440): a Grub this close to a Charge flying at the Sepulchre dives into its path and dies (Sinibomb-intercept analogue)
+@export var grub_intercept_speed: float = 220.0   ## px/s ✱ PROVISIONAL (Q-T440): the Grub's dive speed
+@export var waking_reseed_segments: int = 4       ## ✱ PROVISIONAL (Q-T442): a waking-stage Sepulchre knocked to 0 re-seeds with this many segments …
+@export var waking_reseed_s: float = 8.0          ## s ✱ PROVISIONAL (Q-T442): … after this long, so a human can never strand the stage
 @export var acolyte_speed: float = 150.0
 @export var acolyte_shot_speed: float = 240.0
 @export var acolyte_cycle: float = 1.8           ## s between shots

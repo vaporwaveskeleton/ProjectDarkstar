@@ -14,7 +14,6 @@ const BODY_DRAWN_RADIUS := BODY_RADIUS + 4.0   ## px ✱ body ring + vertebra pl
 const TRUE_FRAME_FILL: Color = Pal.NULL    ## the costume disc's colour
 const TRUE_FRAME_LINE: Color = Pal.BONE_3  ## the costume plates' colour
 const TRUE_LENGTH_MULT := 3.5     ## x BODY_DRAWN_RADIUS ✱ S2: the column's length, head to tail
-const TRUE_POPUP_GAP := 3.0      ## px ✱ S2: clearance between the silhouette and the hit's score popup
 const CONTACT_INSET := 4.0       ## ✱ SYS-001 §2.1's 16 px inset at the 64 px module scale, ÷4 for the costume
 const SEPULCHRE_RADIUS := 26.0   ## ✱ deposit / Charge contact radius of the altar
 const ENTITY_TURN := 2.2         ## ✱ rad/s steering: kite-able, never twitchy
@@ -39,6 +38,7 @@ var _restores := 0
 var _twitch := 0.0
 var _rot := 0.0
 var _line_said := false
+var _reseed_t := -1.0               ## s until a knocked-down waking Sepulchre re-seeds (F-1); < 0 = not pending
 var _true_dir := Vector2.DOWN        ## which way the S2 column trails, fixed at the hit
 var _true_frames_left := 0       ## DRAWN frames of the S2 true-body silhouette still to show (counts in _draw, so it survives hit-stop)
 
@@ -58,6 +58,7 @@ func reset() -> void:
 	_staggered = 0.0
 	_restores = 0
 	_line_said = false
+	_reseed_t = -1.0
 	_true_frames_left = 0
 	_set_phase(_phase_for(segments))
 	world.segments_changed.emit(segments)
@@ -117,6 +118,7 @@ func _begin_awakening() -> void:
 	_awaken_t = 0.0
 	_stagger_hits = 0
 	AudioService.silence(world.tuning.awakening_silence)    # the scare chord is silence (GDD §12)
+	world.caption.emit("CAB_CAPTION_BEWARE")             # F-4: the last warning before it wakes
 
 
 ## Where a flying Charge should home, or null when there is nothing to hit.
@@ -159,6 +161,9 @@ func _knock_modules(at: Vector2) -> void:
 	world.shake(world.fx_tuning.modules_knocked_shake_amp, world.fx_tuning.modules_knocked_shake_dur)
 	world.hitstop(world.fx_tuning.hitstop_modules_knocked_frames, &"modules_knocked")
 	_set_phase(_phase_for(segments))
+	if segments <= 0 and wakes and world.stage.goal == CabinetStage.Goal.UNMAKE_ENTITY and world.tuning.waking_reseed_segments > 0:
+		_reseed_t = world.tuning.waking_reseed_s       # F-1: a human can knock a waking Sepulchre to nothing; it must not strand the stage
+		world.caption.emit("CAB_CAPTION_REBUILDS")
 	if segments <= 0 and world.stage.goal == CabinetStage.Goal.CLEAR_SEPULCHRE:
 		world.sepulchre_cleared.emit()
 
@@ -169,9 +174,7 @@ func _hit_entity(at: Vector2) -> void:
 	world.end_slowmo()                                   # scale must be exactly 1.0 when hit-stop starts
 	var head := world.to_screen(entity_pos).round()
 	_true_dir = true_frame_dir_for(head)
-	world.award(t.score_module, entity_pos)              # a piece of the entity (SYS-001 §7.1)
-	var popup := true_frame_popup_pos(head, str(t.score_module))
-	world.fx.place_last_text(entity_pos + (popup - head))   # S2: the popup stays out of the silhouette
+	world.award(t.score_module, entity_pos)              # a piece of the entity (SYS-001 §7.1); score only, no popup number (F-2)
 	world.sfx(&"charge_hit")
 	world.fx.burst(at, Look.c(Pal.BONE_4), world.fx_tuning.entity_hit_burst_count, world.fx_tuning.entity_hit_burst_speed)
 	world.fx.ring(at, Look.c(Pal.PHOS_5), world.fx_tuning.entity_hit_ring_radius)
@@ -221,6 +224,12 @@ func tick(delta: float) -> void:
 		_twitch = 0.15
 	_update_chant()
 	_tick_leash(delta)
+	if _reseed_t >= 0.0:
+		_reseed_t -= delta
+		if _reseed_t < 0.0 and segments <= 0 and phase == Phase.SEED:
+			segments = clampi(t.waking_reseed_segments, 0, t.segments_total)
+			world.segments_changed.emit(segments)
+			_set_phase(_phase_for(segments))
 	match phase:
 		Phase.AWAKENING:
 			_awaken_t += delta
@@ -364,29 +373,6 @@ func true_frame_box(c: Vector2) -> Rect2:
 	for q in poly:
 		r = r.expand(q)
 	return r.grow(1.0)
-
-
-## Screen rect a score popup placed at screen point `p` covers (FxLayer draws it at p + (-w/2, -12)).
-func popup_rect(p: Vector2, text: String) -> Rect2:
-	return Rect2(p + Vector2(-PixelText.width(text) * 0.5, -12.0), Vector2(PixelText.width(text), PixelText.H))
-
-
-## The hit's "500" must not sit inside the silhouette: put it just past the head (or, if that is off
-## screen, beside the column). Returns a screen point; deterministic, no rng.
-func true_frame_popup_pos(c: Vector2, text: String) -> Vector2:
-	var box := true_frame_box(c).grow(TRUE_POPUP_GAP)
-	var w := float(PixelText.width(text))
-	var cands: Array[Vector2] = []
-	if _true_dir.y > 0.0:
-		cands.append(Vector2(c.x, box.position.y + 12.0 - float(PixelText.H)))
-	else:
-		cands.append(Vector2(c.x, box.end.y + 12.0))
-	cands.append(Vector2(box.end.x + w * 0.5, c.y))
-	cands.append(Vector2(box.position.x - w * 0.5, c.y))
-	for p in cands:
-		if world.view_rect.encloses(popup_rect(p, text)):
-			return p
-	return cands[0]
 
 
 func _draw_sepulchre() -> void:
