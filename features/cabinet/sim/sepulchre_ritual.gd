@@ -37,7 +37,8 @@ var _restores := 0
 var _twitch := 0.0
 var _rot := 0.0
 var _line_said := false
-var _reseed_t := -1.0               ## s until a knocked-down waking Sepulchre re-seeds (F-1); < 0 = not pending
+var _arrived := false               ## the awake entity has come within rampage_catchup_px of the Vigil once: the sprint is spent (F-7)
+var cleared := false                ## knocked down to nothing: the stage is over (F-6); the altar takes no more glass
 var _true_dir := Vector2.DOWN        ## which way the S2 column trails, fixed at the hit
 var _true_frames_left := 0       ## DRAWN frames of the S2 true-body silhouette still to show (counts in _draw, so it survives hit-stop)
 
@@ -57,7 +58,8 @@ func reset() -> void:
 	_staggered = 0.0
 	_restores = 0
 	_line_said = false
-	_reseed_t = -1.0
+	cleared = false
+	_arrived = false
 	_true_frames_left = 0
 	_set_phase(_phase_for(segments))
 	world.segments_changed.emit(segments)
@@ -89,7 +91,7 @@ func _set_phase(p: int) -> void:
 
 
 func accepts_deposits() -> bool:
-	return not awake and phase < Phase.AWAKENING
+	return not awake and not cleared and phase < Phase.AWAKENING
 
 
 ## A Grub delivered one shard (SYS-001 §2 phase 1: one segment point).
@@ -160,10 +162,8 @@ func _knock_modules(at: Vector2) -> void:
 	world.shake(world.fx_tuning.modules_knocked_shake_amp, world.fx_tuning.modules_knocked_shake_dur)
 	world.hitstop(world.fx_tuning.hitstop_modules_knocked_frames, &"modules_knocked")
 	_set_phase(_phase_for(segments))
-	if segments <= 0 and wakes and world.stage.goal == CabinetStage.Goal.UNMAKE_ENTITY and world.tuning.waking_reseed_segments > 0:
-		_reseed_t = world.tuning.waking_reseed_s       # F-1: a human can knock a waking Sepulchre to nothing; it must not strand the stage
-		world.caption.emit("CAB_CAPTION_REBUILDS")
-	if segments <= 0 and world.stage.goal == CabinetStage.Goal.CLEAR_SEPULCHRE:
+	if segments <= 0 and not cleared:
+		cleared = true                                  # F-6: destroying the Sepulchre ends the stage, whatever its goal (SYS-001 §1.6)
 		world.sepulchre_cleared.emit()
 
 
@@ -223,12 +223,6 @@ func tick(delta: float) -> void:
 		_twitch = 0.15
 	_update_chant()
 	_tick_leash(delta)
-	if _reseed_t >= 0.0:
-		_reseed_t -= delta
-		if _reseed_t < 0.0 and segments <= 0 and phase == Phase.SEED:
-			segments = clampi(t.waking_reseed_segments, 0, t.segments_total)
-			world.segments_changed.emit(segments)
-			_set_phase(_phase_for(segments))
 	match phase:
 		Phase.AWAKENING:
 			_awaken_t += delta
@@ -276,7 +270,13 @@ func _rampage(delta: float) -> void:
 		var want := world.torus.delta(entity_pos, v.pos).normalized()
 		var ang := entity_dir.angle_to(want)
 		entity_dir = entity_dir.rotated(clampf(ang, -t.entity_turn_rad_s * delta, t.entity_turn_rad_s * delta))
-	entity_pos = world.torus.wrap(entity_pos + entity_dir * t.rampage_speed * delta)
+	var speed := t.rampage_speed
+	if t.rampage_catchup_px > 0.0 and not _arrived:
+		if world.torus.distance(entity_pos, v.pos) > t.rampage_catchup_px:
+			speed = maxf(speed, t.rampage_catchup_speed)   # F-7: the first approach is a sprint, so a wake far away is felt (Q-T447)
+		else:
+			_arrived = true                                # once it is on you it closes at rampage_speed, so it can still be kited
+	entity_pos = world.torus.wrap(entity_pos + entity_dir * speed * delta)
 	# contact death (SYS-001 §2 phase 5 🔒)
 	if v.alive and world.torus.distance(entity_pos, v.pos) <= BODY_RADIUS - CONTACT_INSET + v.radius:
 		v.kill(entity_pos, world.torus.delta(v.pos, entity_pos).normalized(), BODY_DRAWN_RADIUS)

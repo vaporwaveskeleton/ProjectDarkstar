@@ -21,6 +21,8 @@ func before_test() -> void:
 	world = game.get_node("%World")
 	world.paused_sim = true
 	fx = world.fx_tuning
+	world.tuning = world.tuning.duplicate() as CabinetTuning
+	world.tuning.rampage_catchup_px = 0.0        # these tests place the entity by hand; the F-7 sprint (Q-T447) is tested in test_owner_playtest_f
 	world.start(_stage())
 	for i in roundi((world.tuning.awakening_silence + world.tuning.stagger_window + 0.1) / DT):
 		world.step(DT)
