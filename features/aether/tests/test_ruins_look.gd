@@ -118,7 +118,7 @@ func test_no_pure_black_colour_source() -> void:
 			for k: Variant in cols.keys():
 				if U.is_black(cols[k] as Color):
 					bad.append("%s.%s" % [n.name, k])
-	for o: Object in [look.get_node("%Set"), look.get_node("%Foreground"), look.get_node("%Placeholders")]:
+	for o: Object in [look.get_node("%Set"), look.get_node("%Foreground"), look.get_node("%Placeholders"), look.get_node("%Objects")]:
 		for prop: Dictionary in o.get_property_list():
 			if int(prop.get("type", 0)) == TYPE_COLOR and U.is_black(o.get(str(prop.name)) as Color):
 				bad.append("%s.%s" % [(o as Node).name, prop.name])
@@ -377,3 +377,63 @@ func test_set_first_visit() -> void:
 	await get_tree().process_frame
 	assert_float(later.hall_lantern.level).is_equal(1.0)
 	assert_float(later.mouth_light()).is_equal(0.0)
+
+
+# --- Q-T193: the Ruins objects as lamp-lit vector art (ART-001 §16.6j) ---------------------------------
+
+func test_objects_show_with_the_placeholders_and_take_the_markers() -> void:
+	var look := _make(false)
+	await get_tree().process_frame
+	var o := look.objects()
+	assert_bool(o.visible).is_false()
+	look.show_placeholders = true
+	assert_bool(o.visible).is_true()
+	var rects := o.object_rects()
+	var markers := {&"chalk_desk": look.chalk_desk_pos, &"cabinet": look.cabinet_pos,
+		&"codex_desk": look.codex_desk_pos, &"hourglass": look.hourglass_pos}
+	var frame := Rect2(Vector2.ZERO, Vector2(640, 360))
+	for id: StringName in markers.keys():
+		var r: Rect2 = rects[id]
+		var m: Vector2 = markers[id]
+		assert_bool(r.grow(0.5).has_point(m)).override_failure_message("%s not at its marker" % id).is_true()
+		assert_bool(frame.encloses(r)).override_failure_message("%s leaves the frame" % id).is_true()
+		# clear of the hangar mouth (the gate frames it; nothing stands in it)
+		assert_bool(r.intersects(look.hangar_mouth_rect)).override_failure_message("%s in the mouth" % id).is_false()
+	var ids: Array = rects.keys()
+	for i in ids.size():
+		for j in range(i + 1, ids.size()):
+			assert_bool((rects[ids[i]] as Rect2).intersects(rects[ids[j]] as Rect2)).override_failure_message(
+				"%s overlaps %s" % [ids[i], ids[j]]).is_false()
+
+
+func test_objects_use_pal_roles_only_and_no_lantern_or_faction_hues() -> void:
+	var look := _make(false)
+	await get_tree().process_frame
+	for c in look.objects().colours_used():
+		assert_bool(U.is_black(c)).is_false()
+		var name := U.pal_name(c)
+		assert_str(name).override_failure_message("%s is not a Pal entry" % c).is_not_empty()
+		for bad in ["SIGNAL", "NULL", "GAS-", "CHOIR-"]:
+			assert_bool(name.begins_with(bad)).override_failure_message(name).is_false()
+
+
+func test_set_sand_drives_the_hourglass() -> void:
+	var look := _make(false)
+	await get_tree().process_frame
+	look.set_sand(0.25, true)
+	assert_float(look.objects().sand).is_equal(0.25)
+	assert_bool(look.objects().sand_falling).is_true()
+	look.set_sand(2.0, false)
+	assert_float(look.objects().sand).is_equal(1.0)
+	assert_bool(look.objects().sand_falling).is_false()
+
+
+func test_objects_hold_still_under_reduced_motion() -> void:
+	var o := RuinsObjects.new()
+	o.still = true
+	o.set_time(12.0)
+	assert_float(o._t).is_equal(0.0)
+	o.still = false
+	o.set_time(12.0)
+	assert_float(o._t).is_equal(12.0)
+	o.free()

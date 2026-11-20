@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=14 format=3]
 
 [ext_resource type="Script" path="res://features/aether/ruins_look.gd" id="1_look"]
 [ext_resource type="PackedScene" path="res://features/aether/aether_view.tscn" id="2_view"]
@@ -10,6 +10,7 @@
 [ext_resource type="Shader" path="res://shaders/aether/ruins_haze.gdshader" id="8_haze"]
 [ext_resource type="Resource" path="res://data/aether/ruins/ruins_look.tres" id="9_data"]
 [ext_resource type="Script" path="res://features/aether/ruins_foreground.gd" id="10_fg"]
+[ext_resource type="Script" path="res://features/aether/ruins_objects.gd" id="11_obj"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_hall"]
 resource_local_to_scene = true
@@ -47,6 +48,11 @@ mouse_filter = 2
 [node name="Set" type="Node2D" parent="View/World/Hall"]
 unique_name_in_owner = true
 script = ExtResource("4_set")
+
+[node name="Objects" type="Node2D" parent="View/World/Hall"]
+unique_name_in_owner = true
+visible = false
+script = ExtResource("11_obj")
 
 [node name="Placeholders" type="Node2D" parent="View/World/Hall"]
 unique_name_in_owner = true
