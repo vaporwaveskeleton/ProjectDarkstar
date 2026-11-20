@@ -29,6 +29,13 @@ var last_kind := &""
 var _litany_t := -1.0
 var _ember: _Ember
 var _crag: _CragFigure
+var crag_spot := SUMMIT                 ## where the next crag figure stands (the planted early one: SLOPE, once)
+
+const SUMMIT := &"summit"
+const SLOPE := &"slope"
+## The early crag figure's printed place (PM 2026-11-20, Fable review item 10): right column, column-local, a gap
+## in the Choir's procession on the crag's rim (between the 4th and 5th monk), feet on the rect's bottom edge.
+const CRAG_SLOPE_STAND := Rect2(105.0, 196.0, 10.0, 22.0)
 
 
 func _ready() -> void:
@@ -182,29 +189,47 @@ static func find_backdrop(root: Node) -> CanvasItem:
 	return null
 
 
-## Where the crag figure stands, in rig units: the bezel art's `figure` anchor (#101), feet on its bottom edge.
-## Rect2() when the art has no such anchor (then the Haunting does nothing).
-static func crag_anchor() -> Rect2:
+## Where the crag figure stands, in rig units, feet on the bottom edge: SUMMIT is the bezel art's `figure` anchor
+## (#101); SLOPE is the early, planted place in the procession. Rect2() when the art has no `figure` anchor (then
+## the Haunting does nothing, at either place).
+static func crag_anchor(spot: StringName = SUMMIT) -> Rect2:
 	var a: Dictionary = BezelArt.haunt_anchors()
 	var v: Variant = a.get(&"figure", Rect2())
-	return v as Rect2 if v is Rect2 else Rect2()
+	var summit := v as Rect2 if v is Rect2 else Rect2()
+	if spot == SLOPE and summit.size.y > 0.0:
+		return CabinetBezel.to_screen(BezelArt.R, CRAG_SLOPE_STAND)
+	return summit
 
 
-func _crag_figure(frames: int = -1) -> void:
-	if rig == null or crag_anchor().size.y <= 0.0:
+## Plant the early crag figure (PM 2026-11-20): the next moment that offers the crag figure shows it, at the
+## SLOPE, whatever the odds. Once: the deck spends the kind, so a later crag figure in this visit never comes,
+## and the summit one is left to the rare attract draw. Under photosensitivity / reduced motion nothing happens
+## (the deck never offers a moving kind).
+func plant_crag_slope() -> void:
+	if deck == null or deck.still or deck.used(CabinetHauntDeck.CRAG_FIGURE):
+		return
+	crag_spot = SLOPE
+	deck.plant(CabinetHauntDeck.CRAG_FIGURE)
+
+
+func _crag_figure(frames: int = -1, spot: StringName = &"") -> void:
+	var at := crag_spot if spot == &"" else spot
+	crag_spot = SUMMIT                   # the slope is planted once; after it, only ever the summit
+	if rig == null or crag_anchor(at).size.y <= 0.0:
 		return
 	if _crag == null:
 		_crag = _CragFigure.new()
 		_crag.name = "CragFigure"
 		_crag.tuning = tuning
 		rig.add_child(_crag)
+	_crag.spot = at
 	_crag.frames = tuning.figure_frames if frames < 0 else frames
 	_crag.queue_redraw()
 
 
 ## Dev captures only (AttractMode showcase): hold the crag figure for `frames` fields so a still can catch it.
-func show_crag_for_still(frames: int) -> void:
-	_crag_figure(frames)
+func show_crag_for_still(frames: int, spot: StringName = SUMMIT) -> void:
+	_crag_figure(frames, spot)
 
 
 ## W0-12 crag_figure (TECH-001 Q-T261, PM ruling 2026-11-19 overnight push): for ONE field the side art has one
@@ -214,6 +239,7 @@ func show_crag_for_still(frames: int) -> void:
 class _CragFigure extends Control:
 	var tuning: CabinetHauntTuning
 	var frames := 0
+	var spot := CabinetHaunts.SUMMIT
 
 	func _ready() -> void:
 		mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -229,7 +255,7 @@ class _CragFigure extends Control:
 		if frames <= 0:
 			return
 		frames -= 1
-		var r := CabinetHaunts.crag_anchor()
+		var r := CabinetHaunts.crag_anchor(spot)
 		var inks := BezelInks.default() as BezelInks
 		var c := inks.key_black
 		c.a *= 0.92

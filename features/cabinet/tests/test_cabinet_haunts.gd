@@ -400,25 +400,126 @@ func test_the_guttering_letter_dips_slowly_and_holds_still_under_reduced_motion(
 		assert_float(w.gutter_level()).is_equal(0.5)               # still: a plain fade, no dips
 
 
-func test_the_printed_eye_wears_through_first_and_never_before_the_decay() -> void:
+func test_the_printed_eye_goes_first_as_a_fixed_black_absence_off_its_slit() -> void:
 	var eye := BezelDecay.eye_anchor()
 	assert_float(eye.size.x).is_greater(0.0)
+	var e := BezelDecay.eye_hole()
+	assert_bool(e.is_empty()).is_false()
+	assert_bool((e["c"] as Vector2).is_equal_approx(eye.get_center())).is_false()   # never concentric with the slit (N4)
 	var bd := BezelDecay.new()
 	add_child(bd)
-	var ps := bd.patches()
-	var eye_p: Dictionary = {}
-	for p in ps:
-		if float(p["order"]) == BezelDecay.EYE_ORDER:
-			eye_p = p
-	assert_bool(eye_p.is_empty()).is_false()
-	assert_vector(eye_p["c"] as Vector2).is_equal(eye.get_center())
 	bd.grow = 0.0
-	for p in ps:
-		assert_float(bd.patch_k(p)).is_equal(0.0)                 # Wear never opens a patch
-	bd.grow = 0.05
-	for p in ps:
-		assert_float(bd.patch_k(eye_p)).is_greater_equal(bd.patch_k(p))
+	assert_float(bd.eye_k()).is_equal(0.0)                         # Wear never opens it
+	var shape := bd.eye_points()
+	for g: float in [0.05, 0.2, 0.6, 1.0]:
+		bd.grow = g
+		assert_array(Array(bd.eye_points())).is_equal(Array(shape))  # no lid: the shape never changes, only its darkness
+		for s in bd.sites():
+			assert_float(bd.eye_k()).is_greater_equal(bd.site_k(s))   # the eye leads
 	bd.free()
+
+
+func test_the_damage_is_three_clustered_sites_sized_four_to_one_growing_out_from_the_screen() -> void:
+	var bd := BezelDecay.new()
+	add_child(bd)
+	var ss := bd.sites()
+	assert_int(ss.size()).is_equal(3)
+	var big := 0.0
+	var small := INF
+	for s in ss:
+		big = maxf(big, float(s["r0"]))
+		small = minf(small, float(s["r0"]))
+	assert_float(big / small).is_equal_approx(4.0, 0.001)
+	var hole := bd.hole_rect()
+	bd.grow = 1.0
+	for s in ss:
+		var o: Vector2 = s["origin"]
+		var n: Vector2 = s["n"]
+		var vs: Array[Dictionary] = []
+		vs.assign(s["voids"])
+		var prev := -INF
+		for k: float in [0.25, 0.5, 0.75, 1.0]:
+			for v in vs:
+				for p in bd.void_points(s, v, k, 1.1):              # even the torn edge stays off the tube
+					assert_bool(hole.has_point(p)).is_false()
+			var reach := (bd.void_centre(s, vs[0], k) - o).dot(n)
+			assert_float(reach).is_greater(prev)                    # it spreads outward from the screen's edge
+			prev = reach
+	bd.grow = 0.0
+	for s in ss:
+		assert_float(bd.site_k(s)).is_equal(0.0)                     # nothing before the Decay
+	bd.free()
+
+
+func test_the_last_line_throws_one_brief_bar_and_none_under_reduced_motion() -> void:
+	var dec := CabinetDecay.new()
+	dec.tuning = _decay()
+	var at := dec.last_line_at()
+	var m := dec.tuning.marks()
+	assert_float(at).is_between(m[3], m[4])
+	assert_float(dec.last_line_k(at)).is_equal(1.0)
+	var lit := 0
+	var rises := 0
+	var prev := 0.0
+	for f in 600:
+		var k := dec.last_line_k(m[3] - 1.0 + f / 60.0)
+		assert_float(k).is_between(0.0, 1.0)
+		if k > 0.0:
+			lit += 1
+		if k > 0.0 and prev == 0.0:
+			rises += 1
+		prev = k
+	assert_int(rises).is_equal(1)                                    # one bar, never repeated
+	assert_int(lit).is_less_equal(int(0.4 * 60.0))                   # brief
+	dec.still = true
+	assert_float(dec.last_line_k(at)).is_equal(0.0)
+	dec.free()
+
+
+func test_the_marquee_backlight_fails_to_half_with_slow_dips_and_fades_plainly_when_still() -> void:
+	var w := CabinetMarqueeWear.new()
+	assert_float(CabinetMarqueeWear.BACKLIGHT_DIP_HZ).is_less_equal(3.0)
+	w.set_state(0.0, 0.0, 0.0, 0.0, 0.0, 1.0)
+	assert_float(w.backlight_level()).is_equal_approx(0.5, 0.0001)
+	w.set_state(0.0, 0.0, 0.0, 0.0, 0.0, 0.5)
+	var seen := {}
+	for f in 240:
+		w.time_s = f / 60.0
+		seen[snappedf(w.backlight_level(), 0.001)] = true
+		assert_float(w.backlight_level()).is_between(0.5, 1.0)
+	assert_int(seen.size()).is_greater(1)                            # it flickers
+	w.still = true
+	for f in 240:
+		w.time_s = f / 60.0
+		assert_float(w.backlight_level()).is_equal_approx(0.75, 0.0001)   # still: a plain fade
+
+
+func test_the_early_crag_figure_is_planted_once_in_another_printed_place() -> void:
+	var summit := CabinetHaunts.crag_anchor(CabinetHaunts.SUMMIT)
+	var slope := CabinetHaunts.crag_anchor(CabinetHaunts.SLOPE)
+	assert_float(slope.size.y).is_greater(0.0)
+	assert_bool(slope.intersects(summit)).is_false()                 # a different place in the print
+	var rig := Control.new()
+	add_child(rig)
+	var h := CabinetHaunts.new()
+	h.rig = rig
+	h.deck = CabinetHauntDeck.new(_t(), 1)
+	h.enabled = true
+	add_child(h)
+	h.plant_crag_slope()
+	assert_str(str(h.moment(CabinetHauntDeck.HOLD))).is_equal("crag_figure")   # planted: whatever the odds
+	var crag: Control = rig.get_node("CragFigure")
+	assert_str(str(crag.get(&"spot"))).is_equal("slope")
+	assert_str(str(h.crag_spot)).is_equal("summit")                  # only once
+	h.plant_crag_slope()
+	assert_str(str(h.moment(CabinetHauntDeck.HOLD))).is_not_equal("crag_figure")
+	h.free()
+	rig.free()
+	var still_h := CabinetHaunts.new()
+	still_h.deck = CabinetHauntDeck.new(_t(), 1, true)
+	still_h.plant_crag_slope()
+	assert_str(str(still_h.crag_spot)).is_equal("summit")            # reduced motion: never planted
+	still_h.free()
 
 
 func test_the_arcade_goes_dark_one_way_from_d2_to_the_tear() -> void:
