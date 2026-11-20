@@ -12,14 +12,15 @@ const STAGE_LIMIT_S := 420.0       ## sim seconds a stage may take before the ru
 const State := CabinetGame.State
 
 ## The fixed seeds this suite plays, and the honest floor: at least MIN_REACHED of them clear all
-## MIN_STAGES stages (the whole shift, a0_1–a0_5) with the default lives. Measured 2026-11-19 on seeds
-## +0…+19 at the Act 0 scale (65,536 px field, 1,536 px Vigil neighbourhood; SYS-001 §1.7, PROPOSED):
-## 17/20 full shifts cleared, 0 games lost; +9, +15 and +17 stall in a0_2. Typical stage sim times (s):
-## a0_1 20–60, a0_2 20–130, a0_3 230–380, a0_4 160–330 (slower than §1.7's skilled targets). At the old
-## 1,920 px field it was 19/20. The bot presses the stage card the moment it opens. Takes ~5 min headless.
+## MIN_STAGES stages (the whole shift, a0_1–a0_5) with the default lives. Measured 2026-11-20 on seeds
+## +0…+19 after the density pass (640 px box, Grubs shadowing the Vigil, more geodes; SYS-001 §1.7, PROPOSED):
+## 20/20 full shifts cleared (19/20 before the bot kept within 250 px of the Sepulchre; +5 stalled in a0_5).
+## Median sim s per stage: a0_1 28, a0_2 31, a0_3 298, a0_4 229, a0_5 274 (a0_3–a0_5 are over §1.7's skilled
+## targets: the Choir takes ~168 Grub deposits to build). The bot presses the stage card the moment it opens.
+## Takes ~4 min headless.
 const SEEDS: Array[int] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
 const MIN_STAGES := 5
-const MIN_REACHED := 16
+const MIN_REACHED := 18
 
 
 func before_test() -> void:
