@@ -369,13 +369,15 @@ func test_the_marquee_letters_never_move_fall_or_reorder_they_only_wear() -> voi
 	assert_str(sign.lettering_override).is_equal(before)          # the printed title is never replaced
 	assert_str(tr(BezelMarquee.KEY)).is_equal("DARKSTAR")
 	var surf := CabinetSurface.default() as CabinetSurface
-	var r := BezelMarquee.lettering_rect()
-	var at_rest := CabinetMarqueeWear.letter_boxes("DARKSTAR", r, surf.marquee_lettering, surf.marquee_stroke, surf.marquee_tracking)
+	var anchor := sign.lettering_anchor()
+	var at_rest := CabinetMarqueeWear.letter_boxes("DARKSTAR", anchor, surf.marquee_lettering, surf.marquee_stroke, surf.marquee_tracking)
 	var prev := -INF
 	for box in at_rest:
 		assert_float(box.position.x).is_greater(prev)                 # D-A-R-K-S-T-A-R, left to right, in place
-		assert_float(box.position.y).is_equal(r.position.y)
+		assert_float(box.position.y).is_equal(anchor.y)
 		prev = box.position.x
+	# centred on the print's own anchor, exactly as BezelMarquee centres it
+	assert_float((at_rest[0].position.x + at_rest[7].end.x) * 0.5).is_equal_approx(anchor.x, 0.75)
 	var code := FileAccess.get_file_as_string("res://features/cabinet/cabinet_marquee_wear.gd")
 	assert_bool(code.contains("lettering_override =")).is_false()  # no code path rewrites the print
 	assert_bool(ResourceLoader.exists("res://features/cabinet/cabinet_marquee_drift.gd")).is_false()

@@ -29,6 +29,7 @@ var glow_k := 0.0                     ## 0..1 the Aether glow through the worn i
 var crack_k := 0.0                    ## 0..1 the crack across the plexi
 var time_s := 0.0                     ## for the guttering dips
 var _glow: Control
+var _cache: Dictionary = {}
 
 
 func attach(m: BezelMarquee) -> void:
@@ -70,12 +71,15 @@ func gutter_level() -> float:
 
 
 ## Pure: each printed letter's box, from the printed layout (read only: nothing here ever moves a letter).
-static func letter_boxes(title: String, rect: Rect2, cap: float, st: float, trk: float) -> Array[Rect2]:
+## `anchor` is BezelMarquee.lettering_anchor() (centre x, cap top), exactly where the print is centred.
+static func letter_boxes(title: String, anchor: Vector2, cap: float, st: float, trk: float) -> Array[Rect2]:
 	var out: Array[Rect2] = []
+	var left := anchor.x - BezelText.measure(title, cap, st, trk).x * 0.5
 	for i in title.length():
-		var x := BezelText.measure(title.substr(0, i), cap, st, trk).x if i > 0 else 0.0
+		# measure() is the INK extent: up to and including letter i, minus letter i's own ink, is where it starts
 		var w := BezelText.measure(title.substr(i, 1), cap, st, trk).x
-		out.append(Rect2(rect.position.x + x, rect.position.y, w, rect.size.y))
+		var x := BezelText.measure(title.substr(0, i + 1), cap, st, trk).x - w
+		out.append(Rect2(left + x, anchor.y, w, cap))
 	return out
 
 
@@ -83,20 +87,33 @@ static func _h(i: int, salt: float) -> float:
 	return fposmod(sin(float(i) * 12.9898 + salt) * 43758.5453, 1.0)
 
 
-func _boxes(rect: Rect2) -> Array[Rect2]:
+func _boxes() -> Array[Rect2]:
 	var s := marquee.surface
-	return letter_boxes(TranslationServer.translate(BezelMarquee.KEY), rect, s.marquee_lettering, s.marquee_stroke, s.marquee_tracking)
+	return letter_boxes(TranslationServer.translate(BezelMarquee.KEY), marquee.lettering_anchor(), s.marquee_lettering, s.marquee_stroke, s.marquee_tracking)
+
+
+## A soft-edged band: `layers` nested rects, so the edge fades instead of cutting a hard box.
+static func _soft_rect(ci: CanvasItem, r: Rect2, col: Color, feather: float, layers: int = 5) -> void:
+	for l in layers:
+		var g := feather * (1.0 - float(l) / float(layers))
+		ci.draw_rect(r.grow(g), Color(col.r, col.g, col.b, col.a / float(layers)))
 
 
 ## The ink hook (drawn on the print layer, after the lettering).
 func draw(ci: CanvasItem, rect: Rect2) -> void:
 	if marquee == null:
 		return
-	var boxes := _boxes(rect)
-	# sun-bleach: each letter washed toward the lens by its own amount (the sunny end most)
+	var boxes := _boxes()
+	var title := TranslationServer.translate(BezelMarquee.KEY)
+	var surf := marquee.surface
+	# sun-bleach: each letter's INK washed toward the lens by its own amount (the glyph itself, re-inked in the
+	# lens colour on top: only the ink fades, the sign around it does not)
 	for i in boxes.size():
+		var ch := title.substr(i, 1)
+		if ch == " ":
+			continue
 		var a := fade_k * BLEACH_MAX * (0.35 + 0.65 * _h(i, 3.1)) * (0.7 + 0.3 * float(i) / maxf(boxes.size() - 1, 1))
-		ci.draw_rect(boxes[i].grow(0.6), Color(LENS.r, LENS.g, LENS.b, a))
+		BezelText.draw(ci, _cache, ch, boxes[i].position, false, surf.marquee_lettering, surf.marquee_stroke, surf.marquee_tracking, Color(LENS.r, LENS.g, LENS.b, a))
 	# pitting and flaking: specks of bare lens in the ink, appearing as the print wears
 	for f in FLAKES:
 		if _h(f, 7.7) > fade_k:
@@ -106,11 +123,12 @@ func draw(ci: CanvasItem, rect: Rect2) -> void:
 		ci.draw_rect(Rect2(p, Vector2(sz, sz * (0.6 + 0.8 * _h(f, 2.2)))), Color(LENS.r, LENS.g, LENS.b, 0.85))
 	# the browning tube section: a warm cast over the right end of the sign
 	var bx := rect.position.x + rect.size.x * BROWN_FROM
-	ci.draw_rect(Rect2(bx, rect.position.y - 2.0, rect.end.x - bx + 2.0, rect.size.y + 4.0), Color(0.36, 0.21, 0.08, 0.28 * fade_k))
+	_soft_rect(ci, Rect2(bx + 3.0, rect.position.y - 1.0, rect.end.x - bx - 1.0, rect.size.y + 2.0), Color(0.36, 0.21, 0.08, 0.3 * fade_k), 3.0)
 	# the one letter whose backlight gutters out: dark, in place, still printed
 	var g := gutter_level()
 	if g > 0.0 and GUTTER < boxes.size():
-		ci.draw_rect(boxes[GUTTER].grow(1.5), Color(0.02, 0.015, 0.02, 0.78 * g))
+		var gb := boxes[GUTTER]
+		_soft_rect(ci, Rect2(gb.position.x + 0.5, rect.position.y - 1.0, gb.size.x - 1.0, rect.size.y + 2.0), Color(0.02, 0.015, 0.02, 0.85 * g), 2.5)
 	# the crack across the plexi, with its lit edge
 	if crack_k > 0.0:
 		var pts := crack_points(rect, crack_k)
@@ -139,9 +157,7 @@ static func crack_points(rect: Rect2, k: float) -> PackedVector2Array:
 func _draw_glow() -> void:
 	if marquee == null or glow_k <= 0.0:
 		return
-	var r := BezelMarquee.lettering_rect()
-	var local := Rect2(r.position - marquee.position, r.size)
-	var boxes := _boxes(local)
+	var boxes := _boxes()
 	for i in GLOW_LETTERS:
 		if i >= boxes.size():
 			continue
