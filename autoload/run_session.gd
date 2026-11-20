@@ -27,6 +27,10 @@ var seam_index: int:
 	get: return core.run().seam_index if core else 0
 var clock_paused: bool:
 	get: return core.is_clock_paused() if core else false
+var run_active: bool:
+	get: return core.run().is_active() if core else false
+var tree_owned: int:
+	get: return core.profile().tree_nodes.size() if core else 0
 
 
 func _ready() -> void:

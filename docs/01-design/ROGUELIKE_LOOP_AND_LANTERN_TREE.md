@@ -649,6 +649,12 @@ Five Seams, two gates, three cards, three rare boundary Sigils, one clock (SYS-0
 - Score never buys power inside a run (GDD-001 §3 anti-pillar). Ember is banked at the run's end: `Ember = floor(score / 200)` plus milestone bonuses (SYS-001 §7.1). The run's whole economy is *spend on the build now, bank the rest later*.
 - Death inside a run is not the run's end unless it is final: Second Vigil (HULL-6) and REL-13 both spend a survival, and the entity's memory of your most-used tool survives either way (SYS-001 §2.2, GDD-001 §6.3).
 
+**Leaving a Seam, as built for the slice (PM under owner direction, 2026-11-19 overnight push; TECH-001 Q-T275..Q-T279).**
+- **Clear.** A Seam's kit is cleared when its Sepulchre is *unmade*: knocked back to cold (0 segments) after at least the SYS-001 §6 `Seam clear: Sepulchre segments knocked` row (proposed) came off. The exit throat then opens in the world (no text) and the Vigil leaves by flying into it. This is the slice's stand-in until the Waking and per-kit exit anchors exist (TECH-001 Q-T283).
+- **The slice frontier.** With only PM-01 built, the Seam 1 throat ends the run and returns to the Ruins (outcome `returned`; SYS-001 §6 `Slice frontier Seam`, proposed): the Seam clear and score Ember bank in full (§9.2), no death cost, no refund. Setting the row to 0 sends the throat into the next Seam instead.
+- **Every run end returns to the Ruins** (a clear, a death after the breach plays, or Abandon Run, which mid-Seam costs the death price and banks like a death). The later-visit Ruins state follows (§10.5): the clock runs, the Tree sells, the lit mouth relaunches. Saves: only at the run end (`run_end`) and hub entry (`ruins_entry`), plus a Tree purchase in the hub (§2 cadence).
+- Owner confirmation pending on the frontier outcome and the mid-Seam abandon (TECH-001 Q-T282).
+
 ### 6.2 Seeds, and what a seed fixes
 
 | Seed kind | Who sets it | Fixed by the seed | Notes |

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="SeamExitStats" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://features/sector/seam_exit_stats.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+ds_namespace = "ds_sector.exit"
+source_section = "SYS-001 §6 Seam clear: Sepulchre segments knocked (proposed, Q-T275); throat placement, size, open time and the breach hold ✱ (TECH-001 §2.9, Q-T278)"
+knocks_required = 3
+throat_pos = Vector2(0, 360)
+throat_radius_px = 40.0
+throat_open_s = 1.2
+return_hold_s = 2.5
