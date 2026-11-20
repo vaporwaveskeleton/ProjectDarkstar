@@ -11,8 +11,9 @@ extends Node
 ##   beat 6 the last light — the front reaches the stand-in lamp (LastLamp, not the Vigil), it dims,
 ##          then black with one phosphor ember fading across the full 10 s, in silence; then
 ##          SceneRouter.go_to(&"ruins", …) exactly once.
-## First frame: no fade-in and no tween on entry (the caller routes here with `skip_curtain`, so Act
-## 0's last frame is followed directly by this scene's first); on_route_entered pushes everything the
+## First frame: no curtain and no tween on entry (the caller routes here with `skip_curtain`, so Act
+## 0's last frame is followed directly by this scene's first), only a 0.3 s veil up from VOID dark (ENTRY_VEIL_S,
+## Q-T267) so the cut is never one large luma step; on_route_entered pushes everything the
 ## first drawn frame needs. No class_name: reached only by route id. Saves nothing (no saves mid-run):
 ## whether the cinematic was seen is the caller's (RunSession / M1), passed in as `can_skip`.
 ##
@@ -31,6 +32,9 @@ const RUINS_ROUTE := &"ruins"
 const OWN_KEYS: Array[String] = ["skip_curtain", "aether_time_s", "tier", "camera_centre", "camera_zoom", "can_skip"]
 ## ✱ seconds ui_cancel or ui_accept must be held to skip (only when can_skip).
 const SKIP_HOLD_S := 0.6
+## ✱ the hand-off veil (cursed-cabinet, TECH-001 Q-T267): this scene fades up from VOID dark over this long, so the cut
+## from the reveal's last frame is never one whole-field luma step ≥ 0.10 (a11y luma rule, Q-T240). 18 frames at 60 Hz.
+const ENTRY_VEIL_S := 0.3
 ## ✱ look-only tilt: camera offset (logical px) at full mouse / stick deflection, the smoothing time
 ## constant (s) and the stick deadzone.
 const TILT_PX := 6.0
@@ -76,6 +80,7 @@ var _front := false
 var _lamp_out := false
 var _lamp_starving := false
 var _calm := false
+var _veil: ColorRect                  ## the entry veil (ENTRY_VEIL_S): Act 0's last frame into this one, never a hard cut
 var _prev_time_scale := -1.0
 var _hold_at := -1.0
 var _measure_n := 0
@@ -122,6 +127,7 @@ func on_route_entered(params: Dictionary) -> void:
 	can_skip = _bool_param(params, "can_skip", false)
 	forward_params = ruins_params(params)
 	cine_s = 0.0
+	_apply_entry_veil()
 	routed = false
 	tilt = Vector2.ZERO
 	_look_target = Vector2.ZERO
@@ -179,6 +185,7 @@ func advance(delta: float) -> void:
 	delta = maxf(delta, 0.0)
 	time_s += delta
 	cine_s = _hold_at if _hold_at >= 0.0 else cine_s + delta
+	_apply_entry_veil()
 	_backdrop.set_time(time_s)
 	if _hold_at >= 0.0:
 		_dev_measure()
@@ -345,3 +352,28 @@ static func _vector2_param(params: Dictionary, key: String, fallback: Vector2) -
 		return fallback
 	var out: Vector2 = v
 	return out
+
+
+## The entry veil (Q-T267): a VOID-dark layer over everything that clears over ENTRY_VEIL_S of cinematic time
+## (smoothstep), so the reveal's dark last frame never jumps to the bright Aether in one frame. Built on demand.
+func _apply_entry_veil() -> void:
+	var a := 1.0 - smoothstep(0.0, ENTRY_VEIL_S, cine_s)
+	if _veil == null:
+		if a <= 0.0 or not is_inside_tree():
+			return
+		var layer := CanvasLayer.new()
+		layer.name = "EntryVeil"
+		layer.layer = 100
+		add_child(layer)
+		_veil = ColorRect.new()
+		_veil.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_veil.set_anchors_preset(Control.PRESET_FULL_RECT)
+		layer.add_child(_veil)
+	var c := Pal.VOID_0
+	_veil.color = Color(c.r, c.g, c.b, a)
+	_veil.visible = a > 0.0
+
+
+## The entry veil's opacity now (tests).
+func entry_veil() -> float:
+	return _veil.color.a if _veil != null and _veil.visible else 0.0

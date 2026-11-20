@@ -76,6 +76,12 @@ var decay_tuning: CabinetDecayTuning = preload("res://data/cabinet/cabinet_decay
 ## Ending 5 (LOOP-001 §11.6): no Surgelight used this shift (Act 0 has no Ward Pulse). Run-scoped, like the
 ## shift total. Autopilot shifts (dev/QA) never count; `--clean-hands` (dev) forces it for captures.
 var clean_hands := true
+## The haunted costume (W0-11 hum and stage loop, W0-12 Hauntings; TECH-001 Q-T250–Q-T264). Built in _ready.
+var hum: CabinetHum
+var music: CabinetStageMusic
+var haunts: CabinetHaunts
+var haunt_screen: CabinetHauntScreen
+var _demo_haunt_t := -1.0          ## s until the demo asks for its one Haunting (the figure); < 0 = none
 
 
 func _ready() -> void:
@@ -97,7 +103,10 @@ func _ready() -> void:
 	world.vigil_destroyed.connect(_on_vigil_destroyed)
 	world.sepulchre_cleared.connect(_on_sepulchre_cleared)
 	world.entity_unmade.connect(_on_entity_unmade)
-	world.slowmo_changed.connect(func(s: float) -> void: AudioService.set_bed_pitch_scale(s))
+	world.slowmo_changed.connect(func(s: float) -> void:
+		AudioService.set_bed_pitch_scale(s)
+		if music != null:
+			music.set_slowmo(s))
 	world.entity_line.connect(func(key: String) -> void: messages.entity_line(tr(key)))
 	world.caption.connect(func(key: String) -> void: messages.caption(tr(key)))
 	messages.credits_stat_shown.connect(func(_i: int) -> void: AudioService.play(&"tally_blip"))   # cue owned by AUDIO-001 (unknown id = silent no-op)
@@ -108,6 +117,7 @@ func _ready() -> void:
 	bezel_decay.rig = hud.get_parent() as ScreenRig
 	hud.get_parent().add_child(bezel_decay)
 	hud.get_parent().move_child(bezel_decay, hud.get_index() + 1)
+	_build_haunting()
 	world.stars.maw = reveal.maw        # S8: the star spine reads the live vertebra positions
 	reveal.maw.stars = world.stars      # ... and the maw draws the arrived stars on its own layer
 	autopilot.enabled = OS.get_cmdline_user_args().has("--autopilot")
@@ -139,6 +149,10 @@ func on_route_entered(params: Dictionary) -> void:
 		_demo_t = DEMO_SECONDS
 		autopilot.enabled = true
 		messages.demo = true
+		# W0-12: the demo may show the figure once, if this cabinet has been played to a0_3 (Q-T253)
+		if haunts != null and (int(_profile.get(KEY_STAGE_REACHED, -1)) >= haunts.tuning.attract_min_stage or bool(_profile.get("act0_complete", false))):
+			haunts.enabled = true
+			_demo_haunt_t = DEMO_SECONDS * 0.4
 		return
 	var cont := continue_stage_of(params, stages.size())
 	if cont >= 0:
@@ -277,6 +291,7 @@ func start_stage(i: int, carried: int = -1) -> void:
 		AudioService.play(st.zone_cue)   # AUDIO-001 zone jingle (≤ READY_SECONDS); unknown id = silent no-op
 	_enter(State.INTRO, READY_SECONDS)
 	_apply_wear()
+	_apply_haunting()
 	stage_record_start = record_values()
 	_write_stage_reached()
 
@@ -290,6 +305,41 @@ func _apply_wear() -> void:
 	bezel_decay.bleach = decay_tuning.wear_bleach_per_level * float(lvl)
 	bezel_decay.smear = 0.0
 	bezel_decay.light = 0.0
+
+
+## The haunted costume (TECH-001 Q-T250–Q-T259, Q-T264): the mains hum, the stage loop, and the Hauntings
+## with their layer on the arcade screen and the marquee they dim. Built once, in _ready.
+func _build_haunting() -> void:
+	hum = CabinetHum.new()
+	hum.name = "Hum"
+	add_child(hum)
+	music = CabinetStageMusic.new()
+	music.name = "StageMusic"
+	add_child(music)
+	haunt_screen = CabinetHauntScreen.new()
+	haunt_screen.name = "HauntScreen"
+	screen.viewport.add_child(haunt_screen)
+	screen.viewport.move_child(haunt_screen, world.get_index() + 1)   # over the field, under the HUD strip and the messages
+	haunts = CabinetHaunts.new()
+	haunts.name = "Haunts"
+	haunts.hum = hum
+	haunts.screen = haunt_screen
+	haunts.marquee = CabinetHaunts.find_marquee(hud.get_parent())
+	haunts.rig = hud.get_parent() as Control
+	add_child(haunts)
+	hum.start()
+
+
+## W0-11 Wear and W0-12 Hauntings at a stage start: the hum beats, the stage loop is detuned, and from a0_3
+## the READY card may haunt (costume only; never during play).
+func _apply_haunting() -> void:
+	if haunts == null:
+		return
+	var lvl := decay_tuning.wear_level(stage_index)
+	hum.set_wear(lvl)
+	music.play_stage(stages[stage_index].music, lvl)
+	haunts.enabled = not demo and lvl >= haunts.tuning.min_wear_level
+	haunts.moment(CabinetHauntDeck.READY)
 
 
 ## Clean hands so far: any Surgelight, or the autopilot flying, spoils it (dev `--clean-hands` forces it).
@@ -357,6 +407,10 @@ func _process(delta: float) -> void:
 			demo = false
 			SceneRouter.go_to(&"attract")
 			return
+	if _demo_haunt_t > 0.0:
+		_demo_haunt_t -= delta
+		if _demo_haunt_t <= 0.0:
+			haunts.moment(CabinetHauntDeck.DEMO)
 	if _timer > 0.0:
 		_timer -= delta
 		if _timer <= 0.0:
@@ -377,6 +431,7 @@ func _on_timer() -> void:
 				messages.banner(tr("CAB_GAME_OVER"), 3.5)
 				_save_hi_score()
 				_enter(State.GAME_OVER, 3.5)
+				music.stop()
 		State.GAME_OVER:
 			SceneRouter.go_to(&"attract", _game_over_params())
 		State.CLEARED:
@@ -394,6 +449,7 @@ func _on_timer() -> void:
 				start_stage(next, _end_charges if _end_charges >= 0 else world.glass.charges)
 			else:
 				_enter(State.REVEAL)
+				_end_haunting()
 				_reveal_seen_before = bool(_profile.get("pretence_seen", false))
 				reveal.play(self, _reveal_seen_before, clean_hands and not demo)
 				SceneRouter.prewarm(UNMAKING_ROUTE)   # Q-T243: load the Unmaking while the reveal plays
@@ -404,6 +460,10 @@ func _on_timer() -> void:
 ## a0_5's full roll is the first credits of the shift.
 func _hold_banner(key: String) -> void:
 	messages.banner(tr(key), MID_SHIFT_HOLD_SECONDS)
+	if haunts != null:
+		if haunts.enabled and decay_tuning.wear_level(stage_index) == haunts.tuning.min_wear_level:
+			haunts.plant_crag_slope()   # the early crag figure, seeded once at a0_3's end (PM 2026-11-20)
+		haunts.moment(CabinetHauntDeck.HOLD)
 	_enter(State.CREDITS, MID_SHIFT_HOLD_SECONDS)
 
 
@@ -426,6 +486,8 @@ func _on_vigil_destroyed() -> void:
 
 
 func _on_sepulchre_cleared() -> void:
+	if music != null:
+		music.stop()
 	if state != State.PLAY:
 		return
 	world.vigil.input_enabled = false
@@ -436,6 +498,8 @@ func _on_sepulchre_cleared() -> void:
 
 
 func _on_entity_unmade() -> void:
+	if music != null:
+		music.stop()
 	world.vigil.input_enabled = false
 	_end_charges = world.glass.charges
 	messages.banner(tr("CAB_ENTITY_DOWN"), UNMADE_SECONDS)
@@ -524,3 +588,15 @@ func _unhandled_input(event: InputEvent) -> void:
 			get_tree().paused = false
 			SceneRouter.go_to(&"attract"))
 		overlays.push(pause)
+
+
+## THE PRETENCE begins: the Hauntings stop and the hum, the stage loop and the marquee go quiet, so the
+## Decay's own failing hum and shell are the only Cabinet sound (AUDIO-001 §12.18; the Decay is not haunted).
+func _end_haunting() -> void:
+	if haunts != null:
+		haunts.stop_all()
+		haunts.enabled = false
+	if hum != null:
+		hum.stop()
+	if music != null:
+		music.stop()

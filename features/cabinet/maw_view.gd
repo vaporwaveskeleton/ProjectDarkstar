@@ -1,65 +1,100 @@
 class_name MawView
 extends Node2D
-## The hole where a star should be (NARR-001 §1.2): a NULL disc that opens at the centre of the
-## screen during THE PRETENCE. As `reveal` rises the true body assembles inside it, vertebra by
-## vertebra. It is the same 20-segment ring the cabinet drew as outlines, now drawn as it really is:
-## filled, shaded down the bone ramp, breathing, veined with phosphor, and watching.
-## Fully generated (GDD-001 D-13, ART-001 §14): no image is loaded. Entity palette only —
-## VOID, BONE, PHOS, NULL; never GASLIGHT (palette law 1).
+## The hole where a star should be (NARR-001 §1.2), as the cabinet half of the reveal draws it after the
+## cursed turn (TECH-001 Q-T262, PM under owner direction 2026-11-19 overnight push; Reviewer v3 gap 3).
+## It is NOT a centred disc and has no teeth, no eye and no ring (NARR-001 N3/N4, ART-001 §16.6c/§16.6f):
+## - the WOUND is the same torn NULL erasure the Aether half uses (EntityPresence, entity_presence.gdshader),
+##   opened off-centre at the point where the Cabinet looked back (CabinetDecayTuning.focus_play: the glass
+##   bulged there and the picture collapsed to its dot there), and grown by `radius`;
+## - the TRUE BODY is seen only by what it removes (N3): the twenty spine stars of THE LAST NORMAL DAY settle
+##   onto a column that runs out of the wound and off the frame, and as `reveal` rises each pair goes out and
+##   leaves a NULL vertebra where it was: a constellation turning into an absence, head first.
+## Fully generated (D-13, ART-001 §14): no image is loaded. Entity palette only: NULL (and the wound's VOID
+## crazing, which is the world's, not the entity's); never GASLIGHT (palette law 1). `centre` keeps its name:
+## it is the wound's origin, and the sky drains into it (Starfield.pull_target).
+
+const WOUND_SHADER := preload("res://shaders/aether/entity_presence.gdshader")
 
 @export var spec: CabinetScreenSpec
-var centre := Vector2.ZERO          ## the centre of the play view (from the screen spec)
+@export var tuning: CabinetDecayTuning
+var centre := Vector2.ZERO:          ## the wound's origin: the off-centre focus, in screen px
+	set(v):
+		centre = v
+		if _wound != null:
+			_wound.centre = v
+		queue_redraw()
 const SEGMENTS := 20                 ## the entity's 20 modules (SYS-001 §2.1)
-const RING := 74.0                   ## ✱ vertebra ring radius in the reveal
-const TEETH := 14                    ## ✱ inner ring
+const RING := 74.0                   ## ✱ legacy: the old reveal ring radius; only vertebra_radius() (S2 frame maths) uses it
+const WOUND_REACH := 440.0           ## ✱ largest wound radius asked for (the close covers the 256 × 304 screen from the focus)
+const WOUND_SEED := 2.71             ## ✱ turns the torn outline so its ruled cut and notch point away from the column
+const WOUND_BODY_R := 60.0           ## ✱ px the wound reaches (6 s, sine out) before the close: small enough that the column of absences reads below it
+const WOUND_CLOSE_R := 120.0          ## ✱ px at the hand-off: the far corner keeps the torn, crazed edge and a little fog in frame (as the
+                                      ## Aether half's erasure does), so the cut into route &"aether" stays under the 0.10 whole-field luma step
+const COLUMN_LEAN := 0.42            ## ✱ rad: the column leans down-left from the wound, across the play view, off the frame
+const COLUMN_LENGTH_FRAC := 0.95     ## ✱ column length, fraction of the play view's height (its tail leaves the frame)
+const COLUMN_WIDTH := 1.5            ## ✱ the column's width as a multiple of the S2 silhouette's
+const SWAY_PX := 1.5                 ## ✱ the column's slow sway (px), never a pulse
+const SWAY_HZ := 0.09                ## ✱
 
 var radius := 0.0:
 	set(v):
 		radius = v
+		if _wound != null:
+			_wound.radius = v
+			_wound.set_growth(clampf(v / 96.0, 0.0, 1.0))
 		queue_redraw()
 var reveal := 0.0:
 	set(v):
 		reveal = v
 		queue_redraw()
 var _t := 0.0
+var _wound: EntityPresence
+var _play := Rect2()
 var stars: Starfield                 ## wired by CabinetGame: S8 hand-off, the arrived spine stars are drawn here
 
 
 func _ready() -> void:
 	var s := spec if spec != null else (load("res://data/cabinet/cabinet_screen.tres") as CabinetScreenSpec)
-	centre = s.play_centre()
+	var tun := tuning if tuning != null else (load("res://data/cabinet/cabinet_decay.tres") as CabinetDecayTuning)
+	_play = s.play_rect()
+	_wound = EntityPresence.new()
+	_wound.name = "Wound"
+	_wound.shader = WOUND_SHADER
+	_wound.max_radius = WOUND_REACH
+	_wound.seed = WOUND_SEED
+	add_child(_wound)
+	centre = focus_point(s, tun)
+	radius = radius
+
+
+## The off-centre focus in screen px: the same point the CRT bulges at and collapses to (CabinetDecay).
+static func focus_point(s: CabinetScreenSpec, tun: CabinetDecayTuning) -> Vector2:
+	var play_top := s.strip_rect().end.y / float(s.grid.y)
+	return tun.focus_uv(play_top) * Vector2(s.grid)
 
 
 func _process(delta: float) -> void:
 	_t += delta
 	if visible:
+		if _wound != null:
+			_wound.set_time(_t)
 		queue_redraw()
 
 
 func _draw() -> void:
-	if radius <= 0.0:
-		return
-	draw_circle(centre, radius, Pal.NULL)
-	# veins of phosphor reaching out of the hole: the truth-telling colour (palette law 2)
-	for k in 9:
-		var a := TAU * k / 9.0 + _t * 0.05
-		var p0 := centre + Vector2.from_angle(a) * radius
-		var p1 := centre + Vector2.from_angle(a + 0.12) * (radius + 10.0 + 6.0 * sin(_t * 2.0 + k))
-		draw_line(p0.round(), p1.round(), Pal.PHOS_2, 1.0)
-	draw_arc(centre, radius, 0.0, TAU, 64, Pal.VOID_5, 1.0)
 	_draw_arrived_spine_stars()
-	if reveal > 0.0 and radius > 40.0:
-		_draw_true_body(clampf(reveal, 0.0, 1.0))
+	if reveal > 0.0:
+		_draw_absences(clampf(reveal, 0.0, 1.0))
 
 
-## S8 hand-off: the starfield's spine stars sit on MawView's own layer once they have arrived (so the
-## maw's disc cannot occlude them), each at its own vertebra slot, until that vertebra is revealed.
+## S8 hand-off: the starfield's spine stars sit on MawView's own layer once they have arrived, each pair at
+## its own vertebra slot on the column, until that vertebra goes out.
 func _draw_arrived_spine_stars() -> void:
 	for r in spine_star_rects():
 		draw_rect(r, Pal.BONE_5)
 
 
-## The 2x2 dots MawView draws for arrived spine stars: a pair per vertebra not yet revealed, side by side
+## The 2x2 dots MawView draws for arrived spine stars: a pair per vertebra not yet gone out, side by side
 ## at that vertebra's own slot. Empty until the stars have arrived.
 func spine_star_rects() -> Array[Rect2]:
 	var out: Array[Rect2] = []
@@ -71,71 +106,48 @@ func spine_star_rects() -> Array[Rect2]:
 	return out
 
 
-## Vertebrae below this index are drawn (their star has become them).
+## Vertebrae below this index have gone out (their star has become an absence).
 func spine_stars_hidden_from() -> int:
 	return ceili(clampf(reveal, 0.0, 1.0) * SEGMENTS)
 
 
-## The entity as it is: generated from the same parameters as the costume, with the horror dial up.
-func _draw_true_body(k: float) -> void:
-	var breathe := _breathe(_t)
-	var spin := _spin(_t)
-	# inner veins: from the core out between the vertebrae
-	for i in SEGMENTS:
-		var a := spin + TAU * (i + 0.5) / SEGMENTS
-		var wob := sin(_t * 2.0 + i * 1.7) * 0.06
-		var pts := PackedVector2Array()
-		for s in 6:
-			var r := lerpf(26.0, RING * breathe, s / 5.0)
-			pts.append((centre + Vector2.from_angle(a + wob * s) * r).round())
-		draw_polyline(pts, Pal.PHOS_1 if i % 2 == 0 else Pal.PHOS_2, 1.0)
-	# the teeth: a ring of bone pointing inward
-	for i in TEETH:
-		var a := -spin * 1.5 + TAU * i / TEETH
-		var base_l := centre + Vector2.from_angle(a - 0.12) * 44.0 * breathe
-		var base_r := centre + Vector2.from_angle(a + 0.12) * 44.0 * breathe
-		var tip := centre + Vector2.from_angle(a) * (31.0 + 2.0 * sin(_t * 3.0 + i))
-		var tooth := PackedVector2Array([base_l.round(), tip.round(), base_r.round()])
-		draw_colored_polygon(tooth, Pal.BONE_2)
-		draw_line(base_l.round(), tip.round(), Pal.BONE_4)
-	# the vertebrae: they assemble one by one as `reveal` rises, like deposits, then never stop moving
-	var shown := int(ceil(k * SEGMENTS))
-	for i in shown:
-		var a := vertebra_angle(i, _t)
-		var r := vertebra_radius(i, _t)
-		_draw_vertebra(centre + Vector2.from_angle(a) * r, a, i)
-	# the core and the eye
-	draw_circle(centre, 26.0, Pal.NULL)
-	var look := Vector2.from_angle(_t * 0.7) * 6.0 + Vector2(sin(_t * 2.3), cos(_t * 1.9)) * 2.0
-	var eye := (centre + look).round()
-	draw_circle(eye, 9.0, Pal.PHOS_1)
-	draw_circle(eye, 6.0, Pal.PHOS_3)
-	draw_circle(eye, 3.0, Pal.PHOS_5)
-	var slit := Vector2(0, 5)
-	draw_line((eye - slit).round(), (eye + slit).round(), Pal.NULL, 2.0)
+## The true body, seen only by what it removes: one NULL lobe per gone-out vertebra, head first.
+func _draw_absences(k: float) -> void:
+	var shown := ceili(k * SEGMENTS)
+	if shown <= 0:
+		return
+	var sides := _spine_sides(column_points(), COLUMN_WIDTH)
+	var a: PackedVector2Array = sides[0]
+	var b: PackedVector2Array = sides[1]
+	var per := SPINE_LOBE_Q.size() + 1
+	for i in mini(shown, SEGMENTS):
+		var lobe := PackedVector2Array()
+		for j in range(i * per, mini((i + 1) * per + 1, a.size())):
+			lobe.append(a[j].round())
+		for j in range(mini((i + 1) * per, b.size() - 1), i * per - 1, -1):
+			lobe.append(b[j].round())
+		if lobe.size() >= 3:
+			draw_colored_polygon(lobe, Pal.NULL)
 
 
-## One vertebra: a shaded bone block (dark side, mid, lit edge) with a spinous process outward.
-func _draw_vertebra(c: Vector2, a: float, i: int) -> void:
-	var out := Vector2.from_angle(a)
-	var side := out.orthogonal()
-	var w := 9.0 + float(i % 3)
-	var h := 7.0
-	var body := PackedVector2Array([
-		(c + side * w + out * h * 0.6).round(), (c - side * w + out * h * 0.6).round(),
-		(c - side * (w - 2.0) - out * h).round(), (c + side * (w - 2.0) - out * h).round()])
-	draw_colored_polygon(body, Pal.BONE_1)
-	var lit := PackedVector2Array([body[0], body[1], ((body[1] + body[2]) * 0.5).round(), ((body[0] + body[3]) * 0.5).round()])
-	draw_colored_polygon(lit, Pal.BONE_3)
-	draw_line(body[0], body[1], Pal.BONE_5)
-	var spine := PackedVector2Array([(c + side * 3.0 + out * h * 0.6).round(), (c + out * (h + 9.0)).round(),
-		(c - side * 3.0 + out * h * 0.6).round()])
-	draw_colored_polygon(spine, Pal.BONE_2)
-	draw_line(spine[0], spine[1], Pal.BONE_4)
-	draw_polyline(PackedVector2Array([body[0], body[1], body[2], body[3], body[0]]), Pal.BONE_0, 1.0)
+## The column's twenty points on screen right now: the shared S curve, head at the wound, leaning down-left,
+## swaying slowly. Pure function of `centre`, the play view and MawView's clock.
+func column_points() -> PackedVector2Array:
+	var length := maxf(_play.size.y, 1.0) * COLUMN_LENGTH_FRAC
+	var dir := Vector2.DOWN.rotated(COLUMN_LEAN)
+	var sway := dir.orthogonal() * sin(TAU * SWAY_HZ * _t) * SWAY_PX
+	return spine_place(spine_points(), centre + sway, dir, length)
 
 
-# --- the true body's vertebra placement, shared by the reveal, the S2 impact frame and the S8 star spine ---
+## The column's unit normal at vertebra `i` (the S8 star pairs straddle the curve along it).
+func column_normal(i: int) -> Vector2:
+	var c := column_points()
+	var f := _spine_frame(c)
+	var nor: PackedVector2Array = f.nor_c
+	return nor[clampi(i, 0, nor.size() - 1)]
+
+
+# --- the vertebra placement, shared by the reveal, the S2 impact frame and the S8 star spine ---
 
 static func _breathe(t: float) -> float:
 	return 1.0 + 0.03 * sin(t * 1.3)
@@ -145,28 +157,26 @@ static func _spin(t: float) -> float:
 	return t * 0.08
 
 
-## Angle of vertebra `i` of the true ring at time `t`.
+## Legacy ring maths (the S2 impact frame's tests pin it); the reveal no longer draws a ring.
 static func vertebra_angle(i: int, t: float) -> float:
 	return _spin(t) + TAU * i / SEGMENTS
 
 
-## Distance of vertebra `i` from the centre at time `t`.
 static func vertebra_radius(i: int, t: float) -> float:
 	return RING * _breathe(t) + sin(t * 1.7 + i * 0.9) * 2.0
 
 
-## Where vertebra `i` is on screen right now (MawView's own clock and centre), so the star spine (S8)
-## can meet it exactly.
+## Where vertebra `i` is on screen right now: point i of the column, so the star spine (S8) meets it exactly.
 func vertebra_screen_pos(i: int) -> Vector2:
-	return centre + Vector2.from_angle(vertebra_angle(i, _t)) * vertebra_radius(i, _t)
+	return column_points()[clampi(i, 0, SEGMENTS - 1)]
 
 
-# --- the entity's spine: ONE curve shared by the S2 impact frame and the S8 star constellation ---
+# --- the entity's spine: ONE curve shared by the S2 impact frame, the S8 star constellation and the reveal ---
 
-## Where star `side` (0 or 1) of pair `i` rests at vertebra i's slot: side by side across the ring tangent.
+## Where star `side` (0 or 1) of pair `i` rests at vertebra i's slot: side by side across the column.
 func vertebra_star_pos(i: int, side: int) -> Vector2:
-	var tangent := Vector2.from_angle(vertebra_angle(i, _t) + PI * 0.5)
-	return vertebra_screen_pos(i) + tangent * (SPINE_PAIR_GAP if side == 0 else -SPINE_PAIR_GAP)
+	var n := column_normal(i)
+	return vertebra_screen_pos(i) + n * (SPINE_PAIR_GAP if side == 0 else -SPINE_PAIR_GAP)
 
 
 const SPINE_SWAY := 0.075         ## ✱ S-curve amplitude, fraction of the column length
@@ -238,12 +248,9 @@ static func spine_pinch_width(j: int, n: int = SEGMENTS) -> float:
 	return SPINE_PINCH * minf(lo, hi)
 
 
-## S2: the entity's true body as one closed, simple polygon (no interior detail: GDD §20 silhouette only,
-## NARR-001 §3.4 no face): a beaded column along the shared curve. Each vertebra is one wide lobe on BOTH
-## edges, at the same points along the curve (edges in phase), pinched at every gap between vertebrae;
-## the body narrows toward the tail. Head at `origin`, column along `dir` (unit), `length` px.
-static func spine_silhouette(origin: Vector2, dir: Vector2, length: float) -> PackedVector2Array:
-	var c := spine_place(spine_points(), origin, dir, length)
+## Both edges of the beaded column along `c` (widths × `width_scale`): [side_a, side_b], each with
+## (SPINE_LOBE_Q.size() + 1) points per vertebra, in order, then the last gap's point.
+static func _spine_sides(c: PackedVector2Array, width_scale: float = 1.0) -> Array[PackedVector2Array]:
 	var n := c.size()
 	var f := _spine_frame(c)
 	var b: PackedVector2Array = f.b
@@ -252,9 +259,9 @@ static func spine_silhouette(origin: Vector2, dir: Vector2, length: float) -> Pa
 	var side_a := PackedVector2Array()
 	var side_b := PackedVector2Array()
 	for i in n:
-		var w_peak := spine_half_width(i, n)
-		var w0 := spine_pinch_width(i, n)
-		var w1 := spine_pinch_width(i + 1, n)
+		var w_peak := spine_half_width(i, n) * width_scale
+		var w0 := spine_pinch_width(i, n) * width_scale
+		var w1 := spine_pinch_width(i + 1, n) * width_scale
 		var q_all: Array = [0.0]
 		q_all.append_array(SPINE_LOBE_Q)
 		for q: float in q_all:
@@ -270,9 +277,24 @@ static func spine_silhouette(origin: Vector2, dir: Vector2, length: float) -> Pa
 			var w := base + (w_peak - base) * pow(sin(PI * q), SPINE_BULGE)
 			side_a.append(pos + nor * w)
 			side_b.append(pos - nor * w)
-	var w_end := spine_pinch_width(n, n)
+	var w_end := spine_pinch_width(n, n) * width_scale
 	side_a.append(b[n] + nor_b[n] * w_end)
 	side_b.append(b[n] - nor_b[n] * w_end)
+	var out: Array[PackedVector2Array] = [side_a, side_b]
+	return out
+
+
+## S2: the entity's true body as one closed, simple polygon (no interior detail: GDD §20 silhouette only,
+## NARR-001 §3.4 no face): a beaded column along the shared curve. Each vertebra is one wide lobe on BOTH
+## edges, at the same points along the curve (edges in phase), pinched at every gap between vertebrae;
+## the body narrows toward the tail. Head at `origin`, column along `dir` (unit), `length` px.
+static func spine_silhouette(origin: Vector2, dir: Vector2, length: float, width_scale: float = 1.0) -> PackedVector2Array:
+	var c := spine_place(spine_points(), origin, dir, length)
+	var b: PackedVector2Array = _spine_frame(c).b
+	var n := c.size()
+	var sides := _spine_sides(c, width_scale)
+	var side_a: PackedVector2Array = sides[0]
+	var side_b: PackedVector2Array = sides[1]
 	var out := PackedVector2Array()
 	out.append_array(side_a)
 	out.append(b[n] + (b[n] - b[n - 1]) * SPINE_CAP)
@@ -294,3 +316,9 @@ static func spine_ladder(origin: Vector2, dir: Vector2, length: float, width_sca
 		out.append(c[i] + nor_c[i] * w)
 		out.append(c[i] - nor_c[i] * w)
 	return out
+
+
+## The reveal's column as one closed outline at rest (no sway): head at `origin`, for a play view `play_h`
+## px tall. The W0-12 after-image burns exactly this shape into the tube before it is ever drawn (Q-T259).
+static func column_outline(origin: Vector2, play_h: float) -> PackedVector2Array:
+	return spine_silhouette(origin, Vector2.DOWN.rotated(COLUMN_LEAN), play_h * COLUMN_LENGTH_FRAC, COLUMN_WIDTH)

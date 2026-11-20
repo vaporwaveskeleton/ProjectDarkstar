@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="CabinetHauntTuning" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://features/cabinet/cabinet_haunt_tuning.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+ds_namespace = "ds_cabinet.haunt"
+source_section = "SYS-001 §9 ds_cabinet.haunt.* (PROPOSED, PM under owner direction 2026-11-19 overnight push, TECH-001 Q-T250–Q-T259)"

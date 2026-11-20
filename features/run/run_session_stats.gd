@@ -28,6 +28,14 @@ extends TunableResource
 ## Q-T140 (PM 2026-11-19): Composure and Charges carry between Seams unchanged. Off = each Seam
 ## starts from the sector defaults.
 @export var carry_between_seams: bool = true
+## SYS-001 §6 `Slice frontier Seam` (proposed, Q-T276): the Seam whose cleared exit throat returns to
+## the Ruins and ends the run (`returned`) while later Seams have no content. 0 = off: every exit
+## leads into the next Seam and the fifth clear wins.
+@export var slice_last_seam: int = 0
+## SYS-001 §7.6 `Gating backstop: tier-1 entries` (stamped after run 3 of the Chronicle): the Ruins
+## stamps every tier-1 Codex gating entry once this many runs have ended (LOOP-001 §3.7 backstop (a);
+## Q-T353). 0 = off.
+@export var codex_backstop_tier1_runs: int = 0
 ## ✱ engineering: seed of the throwaway run a sector builds when no session is handed in (dev route,
 ## M1 sandboxes, tests). Never saved.
 @export var dev_seed: int = 0
@@ -40,7 +48,7 @@ func tunable_properties() -> PackedStringArray:
 		"iteration_budget_loop_min", "skies", "loop_min_per_real_min", "death_cost_base_loop_min",
 		"death_cost_per_seam_loop_min", "win_refund_loop_min", "show_threshold_loop_min",
 		"seams_per_run", "seam_clear_ember", "score_per_ember", "act0_bank_floor_ember",
-		"carry_between_seams", "dev_seed",
+		"carry_between_seams", "slice_last_seam", "codex_backstop_tier1_runs", "dev_seed",
 	])
 
 

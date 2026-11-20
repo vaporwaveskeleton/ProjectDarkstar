@@ -69,12 +69,26 @@ func apply(t: float) -> void:
 	_hum.pitch_scale = hz / tuning.hum_hz_start
 	_hum_beat.pitch_scale = _hum.pitch_scale * (1.0 + BEAT_DETUNE)
 	_hum_beat.volume_db = lerpf(-60.0, tuning.hum_db - 4.0, tuning.phosphor_k(t))
+	# the cursed turn: the hum breathes (TECH-001 Q-T265) — a slow swell and fall, like a transformer drawing breath
+	var b := breath_db(tuning, t)
+	_hum.volume_db = tuning.hum_db + b
+	_hum_beat.volume_db += b
 	var sk := tuning.skin_k(t)
 	# the melody goes first, then the harmony; the bass keeps a bar that never resolves, then stops
 	_lead.volume_db = lerpf(tuning.shell_db, -60.0, clampf(sk / 0.4, 0.0, 1.0))
 	_bass.volume_db = lerpf(tuning.shell_db - 3.0, -60.0, clampf((sk - 0.6) / 0.4, 0.0, 1.0))
 	if t >= m[3]:
 		_stop_loops()
+
+
+## dB added to the hum at decay time `t`: 0 outside D2–D3; inside, in-breaths of `breath_db` at `breath_hz`,
+## the first one starting at D2 (a smooth sin² swell: no onset, §1.4).
+static func breath_db(tun: CabinetDecayTuning, t: float) -> float:
+	var m := tun.marks()
+	if t < m[1] or t >= m[3]:
+		return 0.0
+	var s := sin(PI * tun.breath_hz * (t - m[1]))
+	return tun.breath_db * s * s
 
 
 func bulb_tick() -> void:

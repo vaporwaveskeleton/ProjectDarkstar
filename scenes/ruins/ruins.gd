@@ -24,13 +24,15 @@ extends Control
 ## entry; AudioService ignores an id it has no bed for), and the one-shot cues in `CUES`, played only
 ## when the cue exists. Chalk has its own cue, never `lie_tell_chalk`.
 ##
-## Lantern Tree station (Q-T191, built for the tier-1 handling nodes): using the Tree buys the next
-## unbought node of `tree_stock` at the SYS-001 §7.7 tier-1 price (RunSessionCore.buy_tree_node, one
-## `tree_purchase` profile write) and lights that node's lamp (`look.light_lamp`). Nothing affordable
-## buys nothing and lights nothing. The gate rule (`RuinsOnboarding.gate_open`) stays: a lamp burns.
+## Lantern Tree station (Q-T191; the M2 30-node stub, Q-T325/Q-T326): on the first visit a use lights
+## the suggested lamp with no menu (the noun budget); on later visits it opens the
+## LanternTreeScreen on the overlay stack (the clock holds, `ruins_menu`, as for the pause screen).
+## A confirmed lamp is bought by RunSessionCore.buy_tree_node_id (its SYS-001 §7.7 price, one
+## `tree_purchase` profile write), reported to RuinsOnboarding (`note_tree_bought`) and lit in the
+## hall (`look.light_lamp`). The gate rule (`RuinsOnboarding.gate_open`) stays: a lamp burns.
 
 const STATS := preload("res://data/interactions/ruins_onboarding.tres")
-const TREE_STOCK := preload("res://data/lantern_tree/tier1_stock.tres")
+const TREE_DATA := preload("res://data/lantern_tree/m2_tree.tres")
 const SECTOR_ROUTE := &"sector"
 const TITLE_ROUTE := &"attract"
 ## The Ruins room tone (AUDIO-001 §2.2 layer B, §12.19). No Choir chant in the hub: the chant means a
@@ -70,8 +72,8 @@ var launched := false
 ## The Ruins look (features/aether/ruins_look.tscn). Null = the dimmed-aether stand-in.
 @export var look_scene: PackedScene
 @export var stats: RuinsOnboardingStats = STATS
-## The nodes the Tree station sells, in order, and their price (data/lantern_tree/tier1_stock.tres).
-@export var tree_stock: LanternTreeStock = TREE_STOCK
+## The tree the station shows and sells (data/lantern_tree/m2_tree.tres).
+@export var tree_data: LanternTreeData = TREE_DATA
 ## The instanced look, or null.
 var look: RuinsLook
 ## The rules of this visit (built on arrival).
@@ -126,6 +128,20 @@ var paid_ember: int:
 	get: return paid
 var dark_revealed: bool:
 	get: return onboarding.dark_revealed if onboarding else false
+## The outcome of the run this visit returned from (`RunSessionCore.OUTCOME_*` id), "" when the
+## visit did not follow a run (route param `run_outcome`, set by the sector; Q-T279).
+var return_outcome: String:
+	get: return _string_param(_params, "run_outcome")
+## The Lantern Tree screen is open (its confirmation plate included).
+var tree_open: bool:
+	get: return _overlays != null and _tree_screen() != null
+
+
+func _tree_screen() -> LanternTreeScreen:
+	for c in _overlays.get_children():
+		if c is LanternTreeScreen and not c.is_queued_for_deletion():
+			return c as LanternTreeScreen
+	return null
 
 
 func _ready() -> void:
@@ -161,13 +177,22 @@ static func _bool_param(params: Dictionary, key: String) -> bool:
 	return false
 
 
+static func _string_param(params: Dictionary, key: String) -> String:
+	for k: Variant in [key, StringName(key)]:
+		if params.has(k):
+			var v: Variant = params[k]
+			if typeof(v) == TYPE_STRING or typeof(v) == TYPE_STRING_NAME:
+				return str(v)
+	return ""
+
+
 func _arrive() -> void:
 	if _arrived:
 		return
 	_arrived = true
 	var vi := -1
 	if session != null:
-		paid = session.arrive_at_ruins(_params)
+		paid = session.arrive_at_ruins(_params, tree_data)
 		if paid > 0:
 			vi = session.act0_vi_banked
 	var first := _bool_param(_params, "first_visit") or paid > 0
@@ -197,7 +222,18 @@ func _lines(first: bool, vi: int) -> PackedStringArray:
 			out.append(tr("NARR_SABLE_TALLY").format({"n": vi}))
 	else:
 		out.append(tr("NARR_SABLE_RETURN_1"))
+		var key := return_chalk_key()
+		if key != &"":
+			out.append(tr(key))
 	return out
+
+
+## The key of the slate's second line after a run (NARR-001 §5.7a; Q-T284), &"" when this visit did
+## not follow a run or the outcome has no pool. Deterministic in the run's seed and run count.
+func return_chalk_key() -> StringName:
+	if session == null:
+		return &""
+	return RuinsReturnChalk.key_for(StringName(return_outcome), session.last_run_seed, session.runs_ended())
 
 
 func _stations() -> Dictionary:
@@ -416,6 +452,8 @@ func _react(events: Array[StringName]) -> void:
 				_light_tree(false)
 			RuinsOnboarding.EV_CODEX_OPEN:
 				_set_codex_paused(true)
+				if session != null:
+					session.read_codex(CodexRecord.ACT0_PAGE)
 				_cue(&"ruins_codex_page")
 			RuinsOnboarding.EV_CODEX_CLOSED:
 				_set_codex_paused(false)
@@ -431,9 +469,42 @@ func _cue(id: StringName) -> void:
 		AudioService.play(id)
 
 
-## The Tree station's purchase (RuinsOnboarding.tree_buyer): the node bought, or &"".
+## The Tree station (RuinsOnboarding.tree_buyer). The first visit has no menu and names nothing
+## (LOOP-001 §10.5.3 noun budget): a use lights the suggested lamp directly (beat 9c) and returns it.
+## Later visits open the Tree screen and buy nothing here; a purchase arrives through
+## `_on_tree_purchase` (Q-T326).
 func _buy_tree() -> StringName:
-	return session.buy_tree_node(tree_stock) if session != null else &""
+	if session == null or tree_data == null:
+		return &""
+	if onboarding != null and onboarding.first_visit:
+		var p := session.profile()
+		var id := LanternTreeRules.suggested(tree_data, p.tree_nodes, p.ember_banked, p.codex_known)
+		return id if session.buy_tree_node_id(tree_data, id) else &""
+	open_tree()
+	return &""
+
+
+## The Lantern Tree screen over the hall, or null when another overlay is open or there is no
+## session. The tree and the clock hold while it is open (SYS-001 §6 `Hourglass Clock pauses`).
+func open_tree() -> LanternTreeScreen:
+	if _overlays == null or not _overlays.is_empty() or session == null or tree_data == null:
+		return null
+	_hold_menu()
+	var p := session.profile()
+	var screen := LanternTreeScreen.create(tree_data, p.tree_nodes, p.ember_banked)
+	screen.known = p.codex_known.duplicate()
+	screen.purchase_confirmed.connect(_on_tree_purchase.bind(screen))
+	return _overlays.push(screen) as LanternTreeScreen
+
+
+## A confirmed lamp: buy it, light the gate and the hall, and show the screen the new values.
+func _on_tree_purchase(id: StringName, screen: LanternTreeScreen) -> void:
+	if session == null or not session.buy_tree_node_id(tree_data, id):
+		return
+	if onboarding != null:
+		_react(onboarding.note_tree_bought(id))
+	if is_instance_valid(screen):
+		screen.show_state(session.profile().tree_nodes, session.profile().ember_banked)
 
 
 ## Lights the Tree's lamps: every owned node's lamp on arrival (`instant`), the new one on a purchase.
@@ -579,14 +650,19 @@ func _draw() -> void:
 func open_pause() -> Screen:
 	if _overlays == null or not _overlays.is_empty():
 		return null
-	get_tree().paused = true
-	if session != null and not _menu_paused:
-		session.pause_clock(RunSessionCore.PAUSE_RUINS_MENU)
-		_menu_paused = true
+	_hold_menu()
 	var pause: Screen = PAUSE_SCENE.instantiate()
 	pause.set("leave_to_title", true)
 	pause.connect(&"title_requested", _on_title_requested)
 	return _overlays.push(pause)
+
+
+## A Ruins menu is open (pause or Tree): the scene tree pauses and the clock holds (`ruins_menu`).
+func _hold_menu() -> void:
+	get_tree().paused = true
+	if session != null and not _menu_paused:
+		session.pause_clock(RunSessionCore.PAUSE_RUINS_MENU)
+		_menu_paused = true
 
 
 func _on_overlays_emptied() -> void:

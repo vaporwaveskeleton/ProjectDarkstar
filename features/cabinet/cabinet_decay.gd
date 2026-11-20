@@ -9,11 +9,17 @@ extends Node
 ## - subtract, never write: the only text is the honour-roll page the player already knows, losing glyphs;
 ## - the costume only: the HUD strip is never touched; only registers 1–6 drift, one RGB332 step each;
 ## - no flicker: every value moves one way; photosensitivity / reduced motion use a fade, not a squeeze.
+## - the cursed turn (TECH-001 Q-T260): the machine looks back without a face. From D2 the glass swells toward
+##   the player round an off-centre focus, and the picture collapses to a dot there, not at the middle; the
+##   tear then opens from that dot (PretenceReveal). A lens on the existing picture, never a new shape.
 ## `apply(t)` is a pure function of decay time t, so captures and tests can seek.
 
 signal finished
 
 const COLLAPSE_HOLD := 0.72            ## ✱ CRT `collapse` value where the dot is held (crt.gdshader: before its fade)
+const LINE_END := 0.55                 ## ✱ crt.gdshader LINE_END: the share of `collapse` spent squeezing to the line
+const LAST_LINE_RISE_S := 0.05         ## ✱ the last line's white bar on the bezel: rise, then fall (one bar, never repeated)
+const LAST_LINE_FALL_S := 0.3
 
 var tuning: CabinetDecayTuning
 var messages: CabinetMessages
@@ -21,6 +27,8 @@ var crt: ShaderMaterial
 var registers: VideoRegisters
 var bezel: BezelDecay
 var audio: CabinetDecayAudio
+var marquee_wear: CabinetMarqueeWear    ## the marquee screenprint wearing out in place (owner 2026-11-19: never moves, falls or reorders)
+var backdrop: CanvasItem                ## the arcade behind the cabinet (#101): its other machines go dark one by one (Q-T294)
 var still := false                      ## photosensitivity or reduced motion (ArcadeButton.is_still)
 var play_top := 0.0                     ## UV y of the HUD strip's bottom: the Decay never wears above it (WARP-001 §4.2)
 
@@ -58,8 +66,13 @@ func begin(hi: int, score: int) -> void:
 	if crt != null:
 		crt.set_shader_parameter(&"collapse_fade", 1.0 if still else 0.0)
 		crt.set_shader_parameter(&"play_top", play_top)
+		crt.set_shader_parameter(&"focus", tuning.focus_uv(play_top))
+		crt.set_shader_parameter(&"bulge_radius", tuning.bulge_radius)
 	if bezel != null:
 		bezel.still = still
+		bezel.line_uv = tuning.focus_uv(play_top).y   # the line lands at the collapse focus (crt.gdshader `focus`)
+	if marquee_wear != null:
+		marquee_wear.still = still
 	if audio != null:
 		audio.start()
 	apply(0.0)
@@ -87,6 +100,8 @@ func apply(at: float) -> void:
 		crt.set_shader_parameter(&"ghost", tuning.persistence_max * pk)
 		crt.set_shader_parameter(&"bleed", tuning.bloom_bleed_px_max * sk)
 		crt.set_shader_parameter(&"sag", 0.0 if still else tuning.raster_shrink_max * sk)
+		# the cursed turn: the glass leans out toward the player, off-centre (reduced motion: no swell)
+		crt.set_shader_parameter(&"bulge", 0.0 if still else tuning.bulge_max * tuning.bulge_k(at))
 		var ck := tuning.collapse_k(at)
 		crt.set_shader_parameter(&"collapse", ck if still else ck * COLLAPSE_HOLD)
 	# --- the registers: VOID and BONE only, one step each, round-robin ---
@@ -116,6 +131,12 @@ func apply(at: float) -> void:
 		bezel.bleach = tuning.print_bleach_max * sk
 		bezel.light = tuning.worn_through_light_max * sk
 		bezel.grow = sk
+		bezel.flash = last_line_k(at)
+	# --- the cursed turn beyond the screen: the marquee print wears (letters stay put), the arcade goes dark round you ---
+	if marquee_wear != null:
+		marquee_wear.set_state(0.3 * pk + 0.7 * sk, clampf((sk - 0.35) / 0.5, 0.0, 1.0), sk, clampf((sk - 0.15) / 0.6, 0.0, 1.0), at, sk)
+	if backdrop != null and backdrop.material is ShaderMaterial:
+		(backdrop.material as ShaderMaterial).set_shader_parameter(&"dark", backdrop_dark(at))
 	# --- the sound ---
 	if audio != null:
 		audio.apply(at)
@@ -211,3 +232,30 @@ static func _count_glyphs(msg: CabinetMessages) -> int:
 	for s in all:
 		n += s.replace(" ", "").length()
 	return n
+
+
+## 0..1 how many of the arcade's other machines have gone dark at `at` (Q-T294): none before D2, all by the
+## tear, one by one in the backdrop's fixed per-cabinet order. A fade per machine, never a flicker.
+func backdrop_dark(at: float) -> float:
+	var m := tuning.marks()
+	return clampf((at - m[1]) / (m[4] - m[1]), 0.0, 1.0)
+
+
+## Decay time when the picture has squeezed to its line (crt.gdshader LINE_END of the held collapse).
+func last_line_at() -> float:
+	return tuning.marks()[3] + tuning.collapse_squeeze_s * minf(LINE_END / COLLAPSE_HOLD, 1.0)
+
+
+## 0..1 the last line's white bar thrown across the bezel's inner edges and the control strip: one quick rise
+## and a short fall at the line (PM 2026-11-20). Zero under photosensitivity / reduced motion (no line there:
+## the picture fades instead), so it can never add a flash for a player who asked for none.
+func last_line_k(at: float) -> float:
+	if still:
+		return 0.0
+	var d := at - last_line_at()
+	if d < -LAST_LINE_RISE_S or d > LAST_LINE_FALL_S:
+		return 0.0
+	if d < 0.0:
+		return 1.0 + d / LAST_LINE_RISE_S
+	var u := 1.0 - d / LAST_LINE_FALL_S
+	return u * u
