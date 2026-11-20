@@ -1,0 +1,515 @@
+{
+	"format": "darkstar.scenario",
+	"version": 1,
+	"id": "a0_cursed_cabinet_capture",
+	"profile": "dev",
+	"args": [
+		"--segments=20",
+		"--hits=1",
+		"--haunt=after_image"
+	],
+	"fixtures": {},
+	"fail_on_errors": true,
+	"timeout_frames": 60000,
+	"steps": [
+		{
+			"do": "wait_route",
+			"route": "attract",
+			"within": 240
+		},
+		{
+			"do": "coin"
+		},
+		{
+			"do": "wait_until",
+			"id": "attract/ui/NewVigil",
+			"prop": "enabled",
+			"eq": true,
+			"within": 240
+		},
+		{
+			"do": "activate",
+			"id": "attract/ui/NewVigil"
+		},
+		{
+			"do": "wait_route",
+			"route": "cabinet",
+			"within": 240
+		},
+		{
+			"do": "wait_until",
+			"id": "cabinet/game",
+			"prop": "state",
+			"eq": "play",
+			"within": 600
+		},
+		{
+			"do": "set_stage",
+			"index": 2
+		},
+		{
+			"do": "wait_until",
+			"id": "cabinet/game",
+			"prop": "stage_index",
+			"eq": 2,
+			"within": 10
+		},
+		{
+			"do": "wait_frames",
+			"frames": 36
+		},
+		{
+			"do": "screenshot",
+			"name": "10_a0_3_after_image",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 24
+		},
+		{
+			"do": "screenshot",
+			"name": "11_a0_3_after_image_arcade",
+			"target": "arcade"
+		},
+		{
+			"do": "set_stage",
+			"index": 4
+		},
+		{
+			"do": "wait_until",
+			"id": "cabinet/game",
+			"prop": "stage_index",
+			"eq": 4,
+			"within": 10
+		},
+		{
+			"do": "wait_frames",
+			"frames": 20
+		},
+		{
+			"do": "screenshot",
+			"name": "12_a0_5_ready_wear3",
+			"target": "window"
+		},
+		{
+			"do": "autopilot",
+			"on": true
+		},
+		{
+			"do": "set_lives",
+			"lives": 9
+		},
+		{
+			"do": "wait_until",
+			"id": "cabinet/game",
+			"prop": "state",
+			"eq": "reveal",
+			"within": 40000
+		},
+		{
+			"do": "luma_begin",
+			"name": "cursed_turn"
+		},
+		{
+			"do": "screenshot",
+			"name": "20_turn_000",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "screenshot",
+			"name": "20_turn_005",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "screenshot",
+			"name": "20_turn_010",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "screenshot",
+			"name": "20_turn_015",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "screenshot",
+			"name": "20_turn_020",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "screenshot",
+			"name": "20_turn_025",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "screenshot",
+			"name": "20_turn_030",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "screenshot",
+			"name": "20_turn_035",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "screenshot",
+			"name": "20_turn_040",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "screenshot",
+			"name": "20_turn_045",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "screenshot",
+			"name": "20_turn_050",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "screenshot",
+			"name": "20_turn_055",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "screenshot",
+			"name": "20_turn_060",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "screenshot",
+			"name": "20_turn_065",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "screenshot",
+			"name": "20_turn_070",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "screenshot",
+			"name": "20_turn_075",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "screenshot",
+			"name": "20_turn_080",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "screenshot",
+			"name": "20_turn_085",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "screenshot",
+			"name": "20_turn_090",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "screenshot",
+			"name": "20_turn_095",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "screenshot",
+			"name": "20_turn_100",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "screenshot",
+			"name": "20_turn_105",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "screenshot",
+			"name": "20_turn_110",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "screenshot",
+			"name": "20_turn_115",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "screenshot",
+			"name": "20_turn_120",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "screenshot",
+			"name": "20_turn_125",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "screenshot",
+			"name": "20_turn_130",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "screenshot",
+			"name": "20_turn_135",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "screenshot",
+			"name": "20_turn_140",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "screenshot",
+			"name": "20_turn_145",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "screenshot",
+			"name": "20_turn_150",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "screenshot",
+			"name": "20_turn_155",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "screenshot",
+			"name": "20_turn_160",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "screenshot",
+			"name": "20_turn_165",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "screenshot",
+			"name": "20_turn_170",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "screenshot",
+			"name": "20_turn_175",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "screenshot",
+			"name": "20_turn_180",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "screenshot",
+			"name": "20_turn_185",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "screenshot",
+			"name": "20_turn_190",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "screenshot",
+			"name": "20_turn_195",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "screenshot",
+			"name": "20_turn_200",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "screenshot",
+			"name": "20_turn_205",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "screenshot",
+			"name": "20_turn_210",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "luma_end",
+			"name": "cursed_turn",
+			"report_only": true
+		},
+		{
+			"do": "wait_route",
+			"route": "aether",
+			"within": 2400
+		},
+		{
+			"do": "quit"
+		}
+	]
+}

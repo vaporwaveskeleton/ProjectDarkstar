@@ -1,0 +1,109 @@
+{
+	"format": "darkstar.scenario",
+	"version": 1,
+	"id": "a0_haunt_attract_capture",
+	"profile": "dev",
+	"args": [
+		"--haunt-showcase"
+	],
+	"fixtures": {
+		"profile": "profile_act0_done"
+	},
+	"fail_on_errors": true,
+	"timeout_frames": 6000,
+	"steps": [
+		{
+			"do": "wait_route",
+			"route": "attract",
+			"within": 240
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "key",
+			"keycode": "F10",
+			"frames": 2
+		},
+		{
+			"do": "luma_begin",
+			"name": "attract_haunts"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 80
+		},
+		{
+			"do": "screenshot",
+			"name": "30_ghost_press",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 140
+		},
+		{
+			"do": "screenshot",
+			"name": "31_roll_stranger",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 10
+		},
+		{
+			"do": "screenshot",
+			"name": "31_roll_stranger_window",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 280
+		},
+		{
+			"do": "screenshot",
+			"name": "32_warm_coin",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 127
+		},
+		{
+			"do": "screenshot",
+			"name": "33_figure_held_for_still",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 184
+		},
+		{
+			"do": "screenshot",
+			"name": "34_litany_dip",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 203
+		},
+		{
+			"do": "screenshot",
+			"name": "35_crag_figure",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 60
+		},
+		{
+			"do": "luma_end",
+			"name": "attract_haunts",
+			"report_only": true
+		},
+		{
+			"do": "quit"
+		}
+	]
+}

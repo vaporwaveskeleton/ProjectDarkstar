@@ -9,6 +9,7 @@ title_key = "CAB_STAGE_A0_4"
 subtitle_key = "CAB_STAGE_A0_4_SUB"
 zone_key = "CAB_ZONE_SHOAL"
 zone_cue = &"zone_shoal"
+music = &"a0_stage_loop"
 geodes = 26
 grubs = 6
 acolytes = 2

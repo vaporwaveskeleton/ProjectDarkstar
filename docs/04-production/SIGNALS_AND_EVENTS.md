@@ -51,6 +51,8 @@ Rules: signal names are past tense (`hull_breached`, `save_failed`), payloads ar
 | `ScoreKeeper` | `score_changed`, `lives_changed`, `extra_life_awarded` | `int` / `int` / — | `CabinetGame` → HUD | built |
 | `PretenceReveal` | `finished` | — | `CabinetGame` (save flags, route to the first Unmaking (`&"aether"`), which routes to the Ruins) | built |
 | `CabinetDecay` | `finished` | — | `PretenceReveal` (the Decay reached the dot: open the tear; ART-001 §12.7b, 2026-11-19) | built |
+| `CabinetHaunts` | `haunted` | `kind: StringName` (the Haunting that fired; ids, never text; W0-12, TECH-001 Q-T250/Q-T268) | none in game code (automation, captures and tests only; the presentation is driven by the Haunts' own callbacks); PROPOSED, PM under owner direction, 2026-11-19 overnight push | built |
+| `AttractPages` | `cycle_wrapped` | — (the attract page loop returned to its first page; each wrap is one Haunting moment, Q-T251/Q-T268) | `AttractMode` (rolls `CabinetHaunts` for the attract moment); PROPOSED, PM under owner direction, 2026-11-19 overnight push | built |
 | `CoinSlot` | `tape_peeled` | — | `AttractMode` (saves `cabinet_tape_peeled`, reason `cabinet_tape`) | built |
 | `CoinSlot` | `credit_inserted` | — | `AttractMode` (enables New Vigil, marquee text, CREDIT counter) | built |
 | `PowerOnTest` | `finished` | — | `AttractMode` (reveals the attract screen) | built |

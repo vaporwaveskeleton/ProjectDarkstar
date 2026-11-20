@@ -738,6 +738,10 @@ msgstr "HONOUR ROLL"
 msgid "CAB_ROLL_PLAYER"
 msgstr "PLAYER 1"
 
+#. W0-12 Hauntings (TECH-001 Q-T254): a row on the attract honour roll that is not yours, tied with your best, shown once and never explained. Theodora Lune's initials (NARR-001 §5.4). Keep the dots.
+msgid "CAB_ROLL_STRANGER"
+msgstr "T.L."
+
 #. Ending 5, Theodora Lune's message, screen 1 of 10 (NARR-001 §9.5). Held until a button is pressed.
 msgid "CAB_E5_SCREEN_01"
 msgstr "THANK YOU FOR PLAYING."

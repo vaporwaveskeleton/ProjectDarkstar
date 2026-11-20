@@ -42,7 +42,9 @@ const RIM_POINTS := 56                 ## ✱ vertices round a patch edge (fibro
 const SMEAR_W := 16.0                  ## ✱ px, the smear band around the hole
 const DRIFT_HZ := 0.07                 ## ✱ how fast the light behind a patch wanders (slow: never a pulse)
 const DRIFT_R := 0.35                  ## ✱ how far the bright core wanders, as a share of the patch radius
-const SEED := 1983                     ## ✱ fixed: the same patches every time (deterministic captures)
+const EYE_ORDER := -2.0                ## ✱ the eye's patch spreads before every other (patch_k: grow·1.7 − order·0.09)
+const EYE_PATCH_SCALE := 0.5           ## ✱ the eye patch's radius as a share of the printed eye's larger side: it eats the eye, never traces it
+const SEED := 1983                    ## ✱ fixed: the same patches every time (deterministic captures)
 
 var _glow: Control                     ## additive child: the light itself
 var _patches: Array[Dictionary] = []   ## {c: Vector2, r: float, order: float, stretch: Vector2, seed: int, rim: PackedFloat32Array}
@@ -128,7 +130,30 @@ func patches() -> Array[Dictionary]:
 			"seed": seed,
 			"rim": BezelDecay.rim_profile(seed, RIM_POINTS),
 		})
+	# The cursed turn (TECH-001 Q-T261 revised): the printed slit eye on the right column wears through FIRST,
+	# so the one painted eye in the costume becomes a window of Aether light: an absence, never a gaze (N4).
+	# Placed from the bezel art's own anchor (BezelArt.haunt_anchors, #101); no anchor, no patch.
+	var eye := eye_anchor()
+	if eye.size.x > 0.0:
+		var es := SEED + 997
+		_patches.append({
+			"c": eye.get_center(),
+			"r": maxf(maxf(eye.size.x, eye.size.y) * EYE_PATCH_SCALE, PATCH_R * 0.45),
+			"order": EYE_ORDER,
+			"stretch": Vector2(0.8, 1.25),   # taller than wide: never an almond, never an eye shape (N4)
+			"seed": es,
+			"rim": BezelDecay.rim_profile(es, RIM_POINTS),
+		})
 	return _patches
+
+
+## Where the cursed turn's wear-through starts, in rig units, from the bezel art's haunt anchors: `wear_origin`
+## (#101 Fable pass, Q-T410: the ringed world's middle band; the world has no eye, N4), falling back to the old
+## `eye` anchor when the art predates the rename. Rect2() when the art has neither.
+static func eye_anchor() -> Rect2:
+	var a: Dictionary = BezelArt.haunt_anchors()
+	var v: Variant = a.get(&"wear_origin", a.get(&"eye", Rect2()))
+	return v as Rect2 if v is Rect2 else Rect2()
 
 
 ## A patch edge as radius factors round the circle: low-frequency noise for the overall shape, high-frequency
@@ -153,6 +178,8 @@ static func rim_profile(seed: int, n: int) -> PackedFloat32Array:
 
 ## How far patch `p` has spread (0..1) for the current `grow`.
 func patch_k(p: Dictionary) -> float:
+	if grow <= 0.0:
+		return 0.0   # nothing has worn through before the Decay (Wear only bleaches; the eye patch leads, never precedes)
 	return clampf(grow * 1.7 - float(p["order"]) * 0.09, 0.0, 1.0)
 
 
