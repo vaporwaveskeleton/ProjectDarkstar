@@ -9,9 +9,9 @@ extends RefCounted
 ## (the throwaway core a sector builds when no session is handed in).
 ##
 ## Saves happen only here, only at these call sites (§4.2a, §7.2, Q-T139):
-##   arrive_at_ruins → profile + iteration, `ruins_entry`
+##   arrive_at_ruins → profile + iteration, `ruins_entry` (carries Codex stamps, reads and the run count)
 ##   end_seam (not the last) → run, `seam_boundary`
-##   die / win / abandon → run + iteration, `run_end`
+##   die / win / abandon / return_from_frontier → run + iteration, `run_end`
 ## Never from tick, enter_seam, a sky or any mid-Seam moment.
 
 signal iteration_started()
@@ -21,6 +21,9 @@ signal seam_cleared(seam_index: int)
 signal run_ended(outcome: StringName)
 signal sky_darkened(skies_dark: int)
 signal iteration_ended()
+## A Codex entry was stamped (CodexRecord; Q-T350). In memory; the profile carries it to disk at the
+## next allowed write (`ruins_entry`, `tree_purchase`). EVT-001.
+signal codex_stamped(entry_id: StringName)
 
 const SLOT_PROFILE := &"profile"
 const SLOT_ITERATION := &"iteration"
@@ -34,6 +37,9 @@ const OUTCOME_DIED := &"died"
 const OUTCOME_WON := &"won"
 const OUTCOME_ABANDONED := &"abandoned"
 const OUTCOME_NINTH_SKY := &"ninth_sky"
+## Q-T276 (PM 2026-11-19 overnight): the run ends at the slice frontier through the cleared Seam's
+## exit throat (`return_from_frontier`). Banks like a win; costs and refunds no clock.
+const OUTCOME_RETURNED := &"returned"
 
 ## Clock pause reasons (Q-T138). Others may be added by callers; any active reason stops the clock.
 const PAUSE_MENU := &"pause"
@@ -113,14 +119,18 @@ func _load(slot: StringName) -> Dictionary:
 # --- the Ruins and the Act 0 bank ------------------------------------------------------------------
 
 ## The player arrives in the Ruins (TECH-001 §4.2a): Act 0 bank, begin the Iteration if needed,
-## then one profile and one iteration write (`ruins_entry`). Returns the Ember banked from Act 0.
-func arrive_at_ruins(params: Dictionary = {}) -> int:
+## the Codex (the Act 0 page; the tier-1 backstop when `tree` is given and the run count is due), then
+## one profile and one iteration write (`ruins_entry`). Returns the Ember banked from Act 0.
+func arrive_at_ruins(params: Dictionary = {}, tree: LanternTreeData = null) -> int:
 	_refresh_profile()
 	var paid := _bank_act0(params)
 	# Reaching the Ruins means Act 0 is done (the Ruins stub set these before Q-T142).
 	_profile.act0_complete = true
 	_profile.pretence_seen = true
 	begin_iteration_if_needed()
+	# The Codex (Q-T350): the Act 0 page the desk shows (Q-T352), then the tier-1 backstop (Q-T353).
+	stamp_codex(CodexRecord.ACT0_PAGE)
+	apply_codex_backstop(tree)
 	_save(SLOT_PROFILE, REASON_RUINS_ENTRY)
 	_save(SLOT_ITERATION, REASON_RUINS_ENTRY)
 	return paid
@@ -142,6 +152,21 @@ func buy_tree_node(stock: LanternTreeStock) -> StringName:
 	_profile.tree_nodes.append(id)
 	_save(SLOT_PROFILE, REASON_TREE_PURCHASE)
 	return id
+
+
+## Buys one chosen node of `tree` (the Tree station screen, Q-T326) when LanternTreeRules says it is
+## buyable: its SYS-001 §7.7 price from the banked Ember, the id into the profile, one profile write
+## with reason `tree_purchase`. Only in the Ruins (never mid-run). A Codex-gated node needs its entry
+## in the profile's Codex record (`codex_known`, Q-T350). True when bought.
+func buy_tree_node_id(tree: LanternTreeData, id: StringName) -> bool:
+	if tree == null or _run.is_active() or not _profile_writable:
+		return false
+	if not LanternTreeRules.can_buy(tree, id, _profile.tree_nodes, _profile.ember_banked, _profile.codex_known):
+		return false
+	_profile.ember_banked -= tree.price_of(tree.get_node_def(id))
+	_profile.tree_nodes.append(id)
+	_save(SLOT_PROFILE, REASON_TREE_PURCHASE)
+	return true
 
 
 ## The Cabinet or attract mode may have written the profile since boot: take their keys, keep ours.
@@ -231,8 +256,42 @@ func enter_seam() -> Dictionary:
 ## Seam clear: the one write-back from a sector. Composure and Charges carry unchanged (Q-T140),
 ## Ember +report +Seam clear (SYS-001 §7.2). The last Seam's clear wins the run.
 func end_seam(report: SeamReport) -> bool:
+	if not _write_back(report):
+		return false
+	var cleared := _run.seam_index
+	seam_cleared.emit(cleared)
+	if cleared >= stats.seams_per_run:
+		return win()
+	_run.seam_index += 1
+	_save(SLOT_RUN, REASON_SEAM_BOUNDARY)
+	return true
+
+
+## True when the live run's current Seam is the slice frontier (Q-T276): its exit throat leads back
+## to the Ruins instead of into the next Seam. `slice_last_seam` 0 = no frontier (all five Seams).
+func at_frontier() -> bool:
+	return _run.is_active() and stats.slice_last_seam > 0 \
+		and _run.seam_index >= stats.slice_last_seam and _run.seam_index < stats.seams_per_run
+
+
+## The cleared Seam's exit throat at the slice frontier (Q-T276): write back and pay the Seam clear
+## exactly as `end_seam` (Q-T145), then end the run as `returned`. In-run Ember banks in full; no
+## death lump and no win refund. One write set, `run_end` (no `seam_boundary` write first).
+## Outside the frontier this is `end_seam`.
+func return_from_frontier(report: SeamReport) -> bool:
+	if not at_frontier():
+		return end_seam(report)
+	if not _write_back(report):
+		return false
+	seam_cleared.emit(_run.seam_index)
+	_end_run(OUTCOME_RETURNED)
+	_save_run_end()
+	return true
+
+
+func _write_back(report: SeamReport) -> bool:
 	if not _run.is_active() or not _in_seam or report == null:
-		push_warning("RunSession: end_seam outside a Seam")
+		push_warning("RunSession: Seam write-back outside a Seam")
 		return false
 	_in_seam = false
 	if stats.carry_between_seams:
@@ -242,12 +301,6 @@ func end_seam(report: SeamReport) -> bool:
 		_run.composure = -1.0
 		_run.charges = 0
 	_run.ember_in_run += maxi(0, report.ember_earned) + stats.seam_clear_ember
-	var cleared := _run.seam_index
-	seam_cleared.emit(cleared)
-	if cleared >= stats.seams_per_run:
-		return win()
-	_run.seam_index += 1
-	_save(SLOT_RUN, REASON_SEAM_BOUNDARY)
 	return true
 
 
@@ -287,10 +340,23 @@ func abandon() -> bool:
 	return true
 
 
+## Abandon Run from the sector's pause menu, mid-Seam (Q-T277, amends Q-T144 "refused mid-Seam"):
+## the Seam ends unwon and the run is abandoned at the death price; in-run Ember banks (Q-T152 (a)).
+## The Seam's own score is not reported, so it pays nothing. Saves `run_end`, as any abandon.
+func abandon_from_seam() -> bool:
+	if not _run.is_active():
+		return false
+	_in_seam = false
+	return abandon()
+
+
 func _end_run(outcome: StringName) -> void:
 	if outcome != OUTCOME_NINTH_SKY:
 		_profile.ember_banked += _run.ember_in_run
 	# TODO(Q-T143): the ninth-sky bank is deferred (outside the slice); a ninth-sky end banks nothing.
+	# The Chronicle run count (Q-T353): every run end counts, a ninth-sky end too. Written with the
+	# profile at the next `ruins_entry`, as the banked Ember is.
+	_profile.runs_ended += 1
 	_run = RunState.new()
 	_in_seam = false
 	run_ended.emit(outcome)
@@ -299,6 +365,47 @@ func _end_run(outcome: StringName) -> void:
 func _save_run_end() -> void:
 	_save(SLOT_RUN, REASON_RUN_END)
 	_save(SLOT_ITERATION, REASON_RUN_END)
+
+
+# --- the Codex record (Q-T350; LOOP-001 §8, §3.7) --------------------------------------------------
+
+## Stamps a Codex entry into the profile's record (in memory; never saves: the next `ruins_entry` or
+## `tree_purchase` write carries it). Emits `codex_stamped` when the entry is new. A stamp is never
+## undone (LOOP-001 §8.1). True when newly stamped.
+func stamp_codex(entry_id: StringName) -> bool:
+	if not CodexRecord.stamp(_profile.codex_known, entry_id):
+		return false
+	codex_stamped.emit(entry_id)
+	return true
+
+
+## The player opened a stamped entry (the Ruins Codex desk). In memory; never saves. True when it was
+## unread before.
+func read_codex(entry_id: StringName) -> bool:
+	return CodexRecord.mark_read(_profile.codex_known, _profile.codex_read, entry_id)
+
+
+## LOOP-001 §3.7 backstop (a), tier 1 (SYS-001 §7.6, `ds_run.session.codex_backstop_tier1_runs`): once
+## the Chronicle's run count reaches it, every tier-1 gating entry of `tree` is stamped. Idempotent.
+## Returns how many entries were newly stamped. Never saves (arrive_at_ruins writes after it).
+func apply_codex_backstop(tree: LanternTreeData) -> int:
+	if tree == null or not CodexRecord.tier1_backstop_due(_profile.runs_ended, stats.codex_backstop_tier1_runs):
+		return 0
+	var n := 0
+	for id in CodexRecord.gating_ids(tree, 1):
+		if stamp_codex(id):
+			n += 1
+	return n
+
+
+## Stamped Codex entry ids (callers never mutate it).
+func codex_known() -> Array[StringName]:
+	return _profile.codex_known
+
+
+## How many runs have ended on this profile (the Chronicle run count; Q-T353).
+func runs_ended() -> int:
+	return _profile.runs_ended
 
 
 # --- the Hourglass Clock ---------------------------------------------------------------------------

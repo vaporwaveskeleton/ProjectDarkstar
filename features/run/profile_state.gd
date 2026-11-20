@@ -7,13 +7,20 @@ extends RefCounted
 ## a RunSession write must never erase another writer's key.
 
 ## Keys RunSession owns: its in-memory value wins over what is on disk (`merge_foreign`).
-const OWNED_KEYS := ["ember_banked", "act0_banked", "tree_nodes"]
+const OWNED_KEYS := ["ember_banked", "act0_banked", "tree_nodes", "codex_known", "codex_read", "runs_ended"]
 ## Keys other writers own (TECH-001 §7.2 Act 0 keys; `act0_pending_vi` is Q-T141).
 const FOREIGN_KEYS := ["cabinet_hi_score", "act0_complete", "pretence_seen", "cabinet_tape_peeled", "act0_pending_vi"]
 
 var ember_banked: int = 0
 ## Lantern Tree node ids bought (Q-T191), in purchase order; ids only (TECH-001 §7).
 var tree_nodes: Array[StringName] = []
+## The Codex record (CodexRecord; Q-T350): stamped entry ids in stamp order, and those opened. Ids only.
+var codex_known: Array[StringName] = []
+var codex_read: Array[StringName] = []
+## Runs ended on this profile, any outcome (the Chronicle run count, LOOP-001 §2; the §3.7 tier-1
+## backstop counts it, Q-T353). Same key as PR #104's `extra.runs_ended`, but an owned field, so the
+## profile refresh at Ruins arrival (`merge_foreign`, which replaces `extra`) cannot reset it.
+var runs_ended: int = 0
 ## Q-T101: the Act 0 bank has been paid (once per profile, ever).
 var act0_banked: bool = false
 var cabinet_hi_score: int = 0
@@ -39,6 +46,12 @@ func to_payload() -> Dictionary:
 		d["tree_nodes"] = RunPayload.ids_out(tree_nodes)
 	if act0_pending_vi >= 0:
 		d["act0_pending_vi"] = act0_pending_vi
+	if not codex_known.is_empty():
+		d["codex_known"] = RunPayload.ids_out(codex_known)
+	if not codex_read.is_empty():
+		d["codex_read"] = RunPayload.ids_out(codex_read)
+	if runs_ended > 0:
+		d["runs_ended"] = runs_ended
 	return d
 
 
@@ -54,6 +67,9 @@ static func from_payload(d: Dictionary) -> ProfileState:
 	p.cabinet_tape_peeled = RunPayload.read_bool(d, "cabinet_tape_peeled", false, errors)
 	p.tree_nodes = RunPayload.read_ids(d, "tree_nodes", errors)
 	p.act0_pending_vi = RunPayload.read_int(d, "act0_pending_vi", -1, errors)
+	p.codex_known = RunPayload.read_ids(d, "codex_known", errors)
+	p.codex_read = RunPayload.read_ids(d, "codex_read", errors)
+	p.runs_ended = maxi(0, RunPayload.read_int(d, "runs_ended", 0, errors))
 	var known := PackedStringArray(OWNED_KEYS + FOREIGN_KEYS)
 	for k in RunPayload.unknown_keys(d, known):
 		var v: Variant = d[k]

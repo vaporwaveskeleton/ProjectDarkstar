@@ -14,6 +14,7 @@ const GLOBAL := &"cab_screen_light"
 static func apply(mat: ShaderMaterial, s: CabinetSurface) -> void:
 	var h := CabinetBezel.hole()
 	mat.set_shader_parameter(&"cab_hole", Vector4(h.position.x, h.position.y, h.size.x, h.size.y))
+	mat.set_shader_parameter(&"cab_side", CabinetBezel.SIDE)
 	mat.set_shader_parameter(&"cab_warm_color", Vector3(s.warm_color.r, s.warm_color.g, s.warm_color.b))
 	mat.set_shader_parameter(&"cab_fill_color", Vector3(s.fill_color.r, s.fill_color.g, s.fill_color.b))
 	mat.set_shader_parameter(&"cab_warm_gain", s.warm_gain)
