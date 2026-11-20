@@ -13,13 +13,8 @@ const SHADOW_SOFT := 0.03
 
 @export var surface: CabinetSurface
 
-## Runtime lettering for the haunt (cursed turn): when not empty it is printed instead of tr("GAME_TITLE"),
-## e.g. the title's letters rearranged. Setting it redraws the ink once.
-var lettering_override := "":
-	set(v):
-		lettering_override = v
-		if _ink != null:
-			_ink.queue_redraw()
+## The marquee is a screenprint (owner rule): its letters may fade or wear, never move, fall off or reorder,
+## so the title text is always tr("GAME_TITLE") and there is no runtime lettering override.
 ## Additive draw hook: when valid it is called after the lettering as hook.call(ink_canvas, lettering_rect_local),
 ## drawing on the ink layer (through the lens print material). Call refresh_ink() after changing what it draws.
 var ink_hook: Callable = Callable()
@@ -64,7 +59,7 @@ func _ready() -> void:
 func shadow_params(r: Rect2) -> Vector4:
 	return Vector4(r.position.x + r.size.x * SHADOW_FROM, r.position.x + r.size.x * SHADOW_TO, surface.marquee_shadow_depth, r.size.x * SHADOW_SOFT)
 
-## Redraw the lettering (for a driven lettering_override or ink_hook).
+## Redraw the lettering (for a driven ink_hook).
 func refresh_ink() -> void:
 	if _ink != null:
 		_ink.queue_redraw()
@@ -91,7 +86,7 @@ func lettering_size() -> Vector2:
 
 func _draw_ink() -> void:
 	var inks := BezelInks.default() as BezelInks
-	var s := lettering_override if lettering_override != "" else tr(KEY)
+	var s := tr(KEY)
 	var at := lettering_anchor()
 	var cap := surface.marquee_lettering
 	var st := surface.marquee_stroke

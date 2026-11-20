@@ -67,13 +67,12 @@ func test_haunt_anchors_name_the_eye_figure_marquee_and_card() -> void:
 	print_node.free()
 
 
-func test_the_marquee_takes_a_lettering_override_and_an_ink_hook() -> void:
+func test_the_marquee_takes_an_ink_hook() -> void:
 	var sign := BezelMarquee.new()
 	add_child(sign)
 	auto_free(sign)
 	var seen: Array[Rect2] = []
 	sign.ink_hook = func(_ci: CanvasItem, r: Rect2) -> void: seen.append(r)
-	sign.lettering_override = "RAKDSTAR"
 	sign.refresh_ink()
 	await get_tree().process_frame
 	await get_tree().process_frame
