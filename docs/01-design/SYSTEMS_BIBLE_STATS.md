@@ -8,7 +8,7 @@
 **Rev 1.4 (2026-11-18, Act 1 vertical slice; PM ruling 2026-11-18 (owner grant)):** §7.1 new row "Act 0 bank (first Ruins visit, once)" (the existing Ember formula applied once; PM-approved 2026-11-18 under owner grant; retune at playtest); §6 Hourglass Clock budget row notes the first-visit start at the first launch (GDD §6.2 exception). **No pre-existing number was changed.** Open: the bank's save reason (TECH-001 §11.1 Q-T101).
 **Rev 1.5 (2026-11-19, M1 slice 3 PR 4; PM under owner autonomy grant 2026-11-19):** §1.4 turn-authority reading (time for a 180° turn), Charge contact radius, trail and hits on target; §2 phase-0 row: "Sepulchre HP per segment 8 ✱" **dropped for phases 0–1** (1 Charge hit = 1 segment; TECH-001 Q-T110), new Sepulchre and sandbox procession rows; §3 Grub flee-while-carrying (never, Q-T112), body/steering and idle-orbit rows. All new values are the Cabinet's or M1 engineering values, ✱.
 **Rev 1.6 (2026-11-19, Act 0 arcade expansion P1, "the shift"; PM (delegated owner authority)):** new §1.6 Act 0 stage table (five stages); §7.1 rows for lives at start, lives cap and the extra-life schedule (schedule approved, built in P2). No Vigil number was changed.
-**Rev 1.8 (2026-11-19, Act 0 "too simple" pass; PM under owner direction, 2026-11-19 overnight push, TECH-001 Q-T365–Q-T377):** new §1.7, all PROPOSED: three Unmakings, a 65,536 px wrapping field with a travelling neighbourhood, a 48 px HUD band with a local square Ledger Compass, unit proportions, Acolyte mining, and the stage card timings. §1.6's field-size line points at §1.7.
+**Rev 1.8 (2026-11-19, Act 0 "too simple" pass; PM under owner direction, 2026-11-19 overnight push, TECH-001 Q-T365–Q-T377):** new §1.7, all PROPOSED (revised the same night with the PM's pixel measurements of the reference screenshots, Q-T378): three Unmakings, a 65,536 px wrapping field with a travelling neighbourhood, a 48 px HUD band with a local square Ledger Compass, unit proportions, Acolyte mining, and the stage card timings. §1.6's field-size line points at §1.7.
 **Rev 1.7 (2026-11-19, M2 RunSession; PM under owner autonomy grant 2026-11-19, TECH-001 §11.1a Q-T136, Q-T138, Q-T144–Q-T147, Q-T149):** §6 new rows Hourglass Clock rate (1:1), Hourglass Clock pauses, Abandon (costs the death clock cost); §7.1 `Act 0 bank` gains a floor of 40 Ember (`max(floor(VI / 200), 40)`); §7.2 Seam clears pay 40 each **including Seam 5** (won-run row 160 → 200) and in-run Ember banks on a win and on a death; §7.2 Run-Sigil picks timing stated (after Seams 1–3); new §7.7 Lantern Tree node prices by tier and the Run Sigil reroll ladder, moved from LOOP-001 with no value change.
 
 ---
@@ -242,8 +242,8 @@ Owner direction 2026-11-19 ("Act 0 is too simple"), measured against the 1983 re
 |---|---|---|
 | `ds_cabinet.field.size` | **65,536 × 65,536 px**, wrapping | 256 × 256 screens of 256 px. Owner: matches the reference's 16-bit field. 65,536 ÷ 340 px/s (Vigil top speed, §1.1) ≈ **193 s to cross** |
 | `ds_cabinet.field.neighbourhood_half_px` | 1,024 px ✱ | The units live in a 2,048 × 2,048 box centred on the Vigil (8 × 8 screens). A geode, an empty-handed Grub, an idle Acolyte or loose glass that leaves the box on one axis re-enters on the opposite edge of the box (a local wrap round the Vigil). It is never placed inside the view. Laden Grubs, their escorts, the Sepulchre and the awake entity are never moved |
-| `ds_cabinet.field.sepulchre_start_px` | 640 px ✱ | The Sepulchre is placed this far from the Vigil's start, in a random direction: inside the scanner, off the view |
-| `ds_cabinet.field.sepulchre_leash_px` | 3,072 px ✱ | While the Vigil is farther than this from the Sepulchre (12 screens), the Sepulchre drifts toward it… |
+| `ds_cabinet.field.sepulchre_start_px` | 2,560 px ✱ | The Sepulchre is placed this far from the Vigil's start, **straight ahead** of its starting heading: two scanner widths, so it begins just off the Compass, and the edge pip points the way (the 1983 game starts each zone with the boss "about two scanner widths away", straight ahead) |
+| `ds_cabinet.field.sepulchre_leash_px` | 4,096 px ✱ | While the Vigil is farther than this from the Sepulchre (16 screens), the Sepulchre drifts toward it… |
 | `ds_cabinet.field.sepulchre_drift_px_s` | 90 px/s ✱ | …at this speed: always slower than the Vigil, so the Sepulchre can never be escaped for good, and never catches you up |
 
 **Screen split (Q-T367).** The HUD band is **48 px** (was 40) and the play view is **256 × 256** px (was 256 × 264). The screen stays 256 × 304 (TECH-001 §1.1).
@@ -270,6 +270,10 @@ Owner direction 2026-11-19 ("Act 0 is too simple"), measured against the 1983 re
 Hurt radii follow the drawn size: half the drawn extent minus 1 px ✱. Collision stays separate from drawing (CLAUDE.md §3).
 
 **Mix (Q-T370).** New `CabinetStage` switch `acolyte_mine` (default off): an Acolyte with no Vigil inside `acolyte_range` and no escort job lances the nearest geode at its normal fire cycle. The glass it breaks is loose, and anyone can take it. **On for a0_3, a0_4 and a0_5.** The §1.6 counts are unchanged; they now mean "live in the neighbourhood".
+
+**Stage identities follow the 1983 zone-trait cycle** (Q-T378). The reference cycles worker-heavy → warrior-heavy → planetoid-heavy → void (few planetoids, hardest). §1.6 already maps onto it, so no count changes: a0_1 soft open (cold), **a0_2 Drift = Grub-heavy**, **a0_3 Censer Watch = Acolyte-heavy**, **a0_4 Shoal = geode-rich**, **a0_5 Stillwater = the void** (geode-scarce, last). Each stage card names its trait in the first reminder line.
+
+**Acolyte entry hold** (Q-T378): `ds_cabinet.tuning.acolyte_enter_hold_s` = 1.0 s ✱. An Acolyte that enters the view holds fire this long before its first tell (the reference's warriors hold fire for about 1 s on entering the screen). The 🔒 tell (0.35 s) and turret lag are unchanged.
 
 **Stage card (Q-T371–Q-T374; UI-001 §10).**
 

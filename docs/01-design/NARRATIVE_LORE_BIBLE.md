@@ -864,7 +864,7 @@ Community rule: Sable is the only character who speaks outside the game (Discord
 | 7 | `CAB_CREDITS_7` | "THANK YOU FOR YOUR SERVICE" |
 
 
-**The stage card** (owner direction 2026-11-19; PM under owner direction, 2026-11-19 overnight push, TECH-001 Q-T373; layout UI-001 §10). Cabinet register: the 1983 machine is bossy, cheerful and sure of itself. Each line is ≤ 30 characters and goes through `tr()` with prefix `CAB_BRIEF_` / `CAB_UNIT_`. The boss is named as the Cabinet knows it, **the Sepulchre** (the owner's "The Presence"; GDD §19). Wording PROPOSED.
+**The stage card** (owner direction 2026-11-19; PM under owner direction, 2026-11-19 overnight push, TECH-001 Q-T373; layout UI-001 §10). Cabinet register: the 1983 machine is bossy, cheerful and sure of itself. Each line is ≤ 30 characters and goes through `tr()` with prefix `CAB_BRIEF_` / `CAB_UNIT_`. The boss is named as the Cabinet knows it, **the Sepulchre** (the owner's "The Presence"; GDD §19). Wording PROPOSED. The first reminder names the stage's trait (SYS-001 §1.7, the zone-trait cycle, Q-T378).
 
 | Key | Line |
 |---|---|
@@ -876,8 +876,8 @@ Community rule: Sable is the only character who speaks outside the game (Discord
 | `CAB_UNIT_GEODE` / `_GRUB` / `_ACOLYTE` / `_SEPULCHRE` | "GEODE" / "GRUB" / "ACOLYTE" / "SEPULCHRE" |
 | `CAB_BRIEF_A0_1_1` / `_2` | "SHOOT GEODES. CATCH THE GLASS." / "CHARGES BREAK THE SEPULCHRE." |
 | `CAB_BRIEF_A0_2_1` / `_2` | "GRUBS STEAL GLASS. SHOOT THEM." / "WATCH THE COMPASS." |
-| `CAB_BRIEF_A0_3_1` / `_2` | "WHOLE, IT WAKES." / "{n} CHARGES UNMAKE IT." ({n} = 13 from data) |
-| `CAB_BRIEF_A0_4_1` / `_2` | "ACOLYTES MINE FOR GRUBS." / "IT EATS GEODES TO HEAL." |
+| `CAB_BRIEF_A0_3_1` / `_2` | "ACOLYTES SWARM HERE." / "{n} CHARGES UNMAKE WHAT WAKES." ({n} = 13 from data) |
+| `CAB_BRIEF_A0_4_1` / `_2` | "GEODES ARE RICH HERE." / "ACOLYTES MINE FOR GRUBS." |
 | `CAB_BRIEF_A0_5_1` / `_2` | "GLASS IS SCARCE." / "LAST ONE. UNMAKE IT." |
 
 The A0-5 card is the last honest thing the Cabinet says. Nothing on any card hints at the Pretence.
