@@ -84,3 +84,15 @@ func _apply() -> void:
 		return
 	_hum.volume_db = level_db()
 	_beat.volume_db = -80.0 if wear_level <= 0 else level_db() - 14.0 + 2.0 * float(wear_level)
+
+
+## Release the loop at teardown: a playback still mixing at exit outlives the engine (TECH-001 Q-T79), so
+## stop, drop the stream and give the mixer one tick (AudioService does the same for its own loops).
+func _exit_tree() -> void:
+	var was := (_hum != null and _hum.playing) or (_beat != null and _beat.playing)
+	for p: AudioStreamPlayer in [_hum, _beat]:
+		if p != null:
+			p.stop()
+			p.stream = null
+	if was:
+		OS.delay_msec(AudioService.SHUTDOWN_DRAIN_MS)

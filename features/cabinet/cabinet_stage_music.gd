@@ -62,3 +62,13 @@ func pitch_scale() -> float:
 func _apply_pitch() -> void:
 	if _player != null:
 		_player.pitch_scale = maxf(pitch_scale(), 0.05)
+
+
+## Release the loop at teardown (see CabinetHum._exit_tree; TECH-001 Q-T79).
+func _exit_tree() -> void:
+	var was := _player != null and _player.playing
+	if _player != null:
+		_player.stop()
+		_player.stream = null
+	if was:
+		OS.delay_msec(AudioService.SHUTDOWN_DRAIN_MS)
