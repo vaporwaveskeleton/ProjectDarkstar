@@ -48,8 +48,8 @@ uniform float lantern_r = 120.0;
 // subtraction: it drinks colour and light from what lies behind and around it (the backdrop's
 // PresenceCopy feeds screen_tex), and the fog bends in toward its front and its eye;
 // a living edge: the front breathes and reaches toward the Vigil (reach_x, local px);
-// wrongness: one eye-like void (never black: VOID tones, floor_col) whose slit pupil turns toward the
-// Vigil (gaze, local unit vector, smoothed in GDScript). `subtract` 0 = the old alpha path (no read).
+// wrongness: one lightless disc (pass 8 c, Q-T400; never black: near floor_col), seen only by what
+// it covers and drains, leaning toward the Vigil (gaze, local unit vector, smoothed in GDScript). `subtract` 0 = the old alpha path (no read).
 uniform sampler2D screen_tex : hint_screen_texture, filter_linear;
 uniform float subtract = 0.0;
 uniform float drink = 0.0;
@@ -60,21 +60,17 @@ uniform float breath_px = 0.0;
 uniform float reach_x = 700.0;
 uniform float node_rot = 0.0;
 uniform vec3 void_col : source_color = vec3(0.075, 0.078, 0.157);   // VOID-1
-// pass 8 b (Q-T314..316): chitin film tints, living veins, the eye's wet glint, its lock on the Vigil
+// pass 8 b (Q-T314): chitin film tints and living veins
 uniform vec3 film_a : source_color = vec3(0.588, 0.557, 0.824);     // AETHER-3
 uniform vec3 film_b : source_color = vec3(0.384, 0.812, 0.659);     // PHOS-4
 uniform vec3 vein_col : source_color = vec3(0.118, 0.486, 0.443);   // PHOS-2
-uniform vec3 iris_lo : source_color = vec3(0.078, 0.318, 0.31);     // PHOS-1
-uniform vec3 glint_col : source_color = vec3(0.969, 0.957, 0.91);   // BONE-5
-uniform float lock = 0.0;   // 0 = looking about … 1 = locked on the Vigil (the pupil contracts)
 
 // ✱ breathing period (s), the eye's half-length and half-height (local px), its slow aperture
 // period (s), the drink halo's reach outside the front and around the eye (px), and the bend (px).
 const float BREATH_S = 7.0;
-const float EYE_W = 66.0;
-const float EYE_H = 21.0;
 const float EYE_APERTURE_S = 11.0;
-const float IRIS_R = 17.0;
+const float DISC_R = 24.0;        // pass 8 c: the lightless disc's radius (local px)
+const float DISC_LEAN_PX = 3.0;   // how far it shifts toward the Vigil
 const float DRINK_FRONT_PX = 70.0;
 const float DRINK_EYE_PX = 110.0;
 const float BEND_EYE_PX = 22.0;
@@ -213,11 +209,12 @@ void fragment() {
 	// living veins in PHOS under the surface. Strength `drink`.
 	float sheen = pow(slope, 9.0) * smoothstep(0.0, 0.06, pc.y);
 	vec3 film = mix(film_a, film_b, fract(h_val * 2.7 + slope * 0.6));
-	vec3 shell = mix(body_col, void_col, 0.5 + 0.3 * h_val) + film * sheen * 0.75;
+	// pass 8 c (Q-T405): darker, cooler and of a piece: little value change between plates, a rarer sheen
+	vec3 shell = mix(body_col, void_col, 0.62 + 0.1 * h_val) + film * sheen * 0.4 * step(0.55, h_val);
 	float vn = abs(a_noise(p / 26.0 + pid * 0.37) * 2.0 - 1.0);
 	float veins = (1.0 - smoothstep(0.0, 0.07, vn)) * smoothstep(10.0, 40.0, s) * (0.5 + 0.5 * a_noise(p / 90.0));
-	shell = mix(shell, vein_col, veins * 0.55);
-	col = mix(col, shell, drink);
+	shell = mix(shell, vein_col, veins * 0.3);
+	col = mix(col, shell, clamp(drink * 1.3, 0.0, 1.0));
 
 	// --- thin edge: translucent where the shelf thins, a broken frost catch-light along it ---------
 	float thin = smoothstep(0.0, 70.0, s);
@@ -256,43 +253,18 @@ void fragment() {
 	col = mix(col, light_col, clamp(light, 0.0, 1.0));
 	a = max(a, clamp(light, 0.0, 1.0) * 0.85);
 
-	// --- pass 8: the eye-like void (inside the body, near the front; never black) ----------------
-	vec2 e = p - eye_px;
-	float ex = e.x / EYE_W;
-	float aperture = 0.62 + 0.38 * (0.5 + 0.5 * sin(t * 6.2831853 / EYE_APERTURE_S));
-	aperture = mix(aperture, 1.0, reveal * 0.6);       // lantern down: it opens (it is looking)
-	float lid = EYE_H * aperture * pow(max(1.0 - ex * ex, 0.0), 0.85);
-	lid += (a_noise(vec2(e.x / 7.0, step(0.0, e.y) * 5.0 + 1.0)) - 0.5) * 2.0;   // torn lids, never a clean lens
-	float eye_in = (1.0 - smoothstep(-1.0, 1.0, abs(e.y) - lid)) * step(abs(ex), 1.0) * eye_k * body;
-	vec2 pupil_c = vec2(gaze.x * EYE_W * 0.4, gaze.y * EYE_H * aperture * 0.3);
-	// pass 8 b (Q-T315): the iris — concentric PHOS rings round the pupil with fine radial fibres,
-	// brightest at the pupil's edge; it fills the opening (clipped by the lids, so never a whole ring)
-	vec2 ir = e - pupil_c;
-	float ir_r = length(ir);
-	float iris_m = 1.0 - smoothstep(IRIS_R - 1.5, IRIS_R + 0.5, ir_r);
-	float rings = 0.5 + 0.5 * cos(ir_r * 1.25 - t * 0.15);
-	float fibres = 0.75 + 0.25 * a_noise(vec2(atan(ir.y, ir.x) * 9.0, ir_r * 0.25));
-	float inner = 1.0 - smoothstep(0.0, IRIS_R, ir_r);
-	vec3 iris_c = mix(iris_lo, light_col, clamp(0.25 + 0.55 * rings * fibres + 0.45 * inner, 0.0, 1.0));
-	iris_c = mix(iris_c, glint_col, smoothstep(0.85, 1.0, rings) * inner * 0.25);
-	float iris_l = iris_m * mix(0.75, 1.0, reveal);
-	iris_c *= 1.0 + 0.9 * reveal;   // lantern down: the eye is the brightest thing it has
-	// a vertical slit pupil: wide while it looks about, a thin slit once it has locked on the Vigil
-	float slit = mix(mix(5.5, 7.5, reveal), 1.4, lock);
-	vec2 pq = ir / vec2(slit, IRIS_R * 0.95);
-	float pupil = (1.0 - smoothstep(0.8, 1.0, length(pq))) * iris_m;
-	// wet: a hard specular glint on the iris and a smaller second one (from the upper light)
-	vec2 g1 = (ir - vec2(-IRIS_R * 0.45, -IRIS_R * 0.5)) / vec2(3.4, 2.2);
-	vec2 g2 = (ir - vec2(IRIS_R * 0.4, IRIS_R * 0.35)) / vec2(1.6, 1.1);
-	float glint = (1.0 - smoothstep(0.6, 1.0, length(g1))) + 0.6 * (1.0 - smoothstep(0.6, 1.0, length(g2)));
-	// the drained ring round the eye (subtraction made visible against the coloured chitin)
-	float ed = length(e / vec2(EYE_W, EYE_H * 2.4));
-	float ering = smoothstep(0.95, 1.12, ed) * (1.0 - smoothstep(1.7, 2.3, ed)) * eye_k * body;
-	col = mix(col, vec3(a_luma(col)) * 0.85, ering * 0.95);
-	// the lids catch the frost light, broken along their length (upper strong, lower faint)
-	float lid_rim = (exp(-abs(e.y + lid) / 1.3) * step(e.y, 0.0) + 0.4 * exp(-abs(e.y - lid) / 1.1) * step(0.0, e.y))
-		* step(abs(ex), 0.95) * smoothstep(0.3, 0.55, a_noise(vec2(e.x / 9.0, 2.0)));
-	col = mix(col, frost_col, clamp(lid_rim * eye_k * body * 0.7, 0.0, 1.0));
+	// --- pass 8 c (Q-T400): the lightless disc (it replaced the eye: nothing eye-like remains) ----
+	// A disc of near-floor VOID inside the body near the front: it gives back no light at all, so it
+	// is seen only by what it covers and what it drains. Its edge is torn a little and breathes; it
+	// shifts a few px toward the Vigil (gaze). Never black: the floor is VOID-0.
+	vec2 e = p - eye_px - gaze * DISC_LEAN_PX * eye_k;
+	float aperture = 0.94 + 0.06 * sin(t * 6.2831853 / EYE_APERTURE_S);
+	float disc_r = DISC_R * aperture + (a_noise(vec2(atan(e.y, e.x) * 3.0, 4.0 + t * 0.05)) - 0.5) * 3.0;
+	float eye_in = (1.0 - smoothstep(disc_r - 1.5, disc_r + 1.0, length(e))) * eye_k * body;
+	// the drained ring round it: the Presence's own plates lose their colour there
+	float ed = length(e) / DISC_R;
+	float ering = smoothstep(0.95, 1.15, ed) * (1.0 - smoothstep(1.9, 2.6, ed)) * eye_k * body;
+	col = mix(col, vec3(a_luma(col)) * 0.8, ering * 0.95);
 
 	// --- pass 8: subtraction (it drinks colour and light; the fog bends in) ----------------------
 	float eyed = length(e);
@@ -306,12 +278,8 @@ void fragment() {
 	vec3 behind = texture(screen_tex, SCREEN_UV + disp * k_pres * subtract / screen_size).rgb;
 	float dk = drink * max(max(body, ering), max(exp(min(s, 0.0) / DRINK_FRONT_PX), exp(-eyed / DRINK_EYE_PX) * eye_k));
 	vec3 drained = mix(behind, vec3(a_luma(behind)) * vec3(0.8, 0.85, 1.0), dk) * (1.0 - 0.6 * dk);
-	// inside the eye: a wet dark sclera (the drained Aether sunk to VOID), the iris, the pupil at the
-	// floor (the darkest non-black), the glints on top
-	vec3 eye_col = mix(floor_col, void_col, 0.7) + drained * 0.08;
-	eye_col = mix(eye_col, iris_c, clamp(iris_l, 0.0, 1.0));
-	eye_col = mix(eye_col, floor_col, pupil);
-	eye_col = mix(eye_col, glint_col, clamp(glint, 0.0, 1.0));
+	// inside the disc: nothing comes back (near the floor, a breath of VOID-1 so it is never black)
+	vec3 eye_col = mix(floor_col, void_col, 0.15);
 
 	// no light in the play layer: veiled to a vague mass near the lantern's pool
 	float dl = length(spx - lantern_px);

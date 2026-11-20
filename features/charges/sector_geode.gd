@@ -34,6 +34,8 @@ var _time_s: float = 0.0
 var _recent := PackedFloat64Array()   ## times of recent accepted hits (over-fire window)
 var _shape := PackedVector2Array()
 var _glints := PackedVector2Array()
+## 0 = lantern up … 1 = lantern down (pass 8 c): the body dims to DARK_KEEP with a thin facet glint.
+var dark: float = 0.0
 
 @onready var health: HealthComponent = %HealthComponent
 @onready var hurtbox: HurtboxComponent = %Hurtbox
@@ -74,6 +76,14 @@ func advance(delta: float) -> void:
 	var before := _recent.size()
 	_prune()
 	if _recent.size() != before or not bool(SettingsService.get_value(&"reduced_motion")):
+		queue_redraw()
+
+
+## Pass 8 c (Q-T407): how dark the sector is (the far layer's reveal ramp, 0..1). Drawing only.
+func set_dark(level: float) -> void:
+	var d := clampf(level, 0.0, 1.0)
+	if not is_equal_approx(d, dark):
+		dark = d
 		queue_redraw()
 
 
@@ -173,6 +183,8 @@ func _build_shape(rng: RandomNumberGenerator) -> void:
 const FILL_ALPHA := 0.7           ## ✱ drawing: body fill opacity (pass 8 from 0.55)
 const BACKING_SCALE := 1.35       ## ✱ drawing, pass 8: dark fog pocket radius as a multiple of the body's
 const BACKING_ALPHA := 0.35       ## ✱ drawing, pass 8: dark fog pocket opacity
+const DARK_KEEP := 0.3            ## ✱ drawing, pass 8 c: share of the body's light kept with the lantern down
+const DARK_GLINT_ALPHA := 0.8     ## ✱ drawing, pass 8 c: the thin facet glint on the lit edge in the dark
 const SHIMMER_RATE := 1.7         ## rad/s ✱ drawing: facet glint shimmer
 const RIM_SHARE := 0.4            ## ✱ drawing: fraction of the outline that takes the rim light
 const RIM_DIR := Vector2(-0.6, -0.8)   ## ✱ drawing: light comes from upper left
@@ -227,3 +239,15 @@ func _draw() -> void:
 		var q := g.round()
 		draw_rect(Rect2(q - Vector2(1, 1), Vector2(2, 2)), Pal.PHOS_3)
 		draw_rect(Rect2(q, Vector2.ONE), Pal.PHOS_5 if heat > 0.0 else Pal.PHOS_4)
+	# pass 8 c (Q-T407): lantern down, the rock sinks to about DARK_KEEP of its light (a VOID veil, never
+	# black) and only a thin facet glint on its lit edge still catches the far light
+	if dark > 0.001:
+		var body := PackedVector2Array()
+		for v in _shape:
+			body.append(v.round())
+		draw_colored_polygon(body, Color(Pal.VOID_1, (1.0 - DARK_KEEP) * dark))
+		for k in n:
+			var a := pts[k]
+			var b := pts[k + 1]
+			if ((a + b) * 0.5).normalized().dot(RIM_DIR) > 1.0 - 2.0 * RIM_SHARE * 0.5:
+				draw_line(a, b, Color(Pal.AETHER_4, DARK_GLINT_ALPHA * dark), 1.0)

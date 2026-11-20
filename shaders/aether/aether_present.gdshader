@@ -22,6 +22,15 @@ uniform float cap_veil = 0.0;
 uniform vec3 veil_col = vec3(0.0065, 0.0070, 0.0215);
 uniform vec3 floor_col = vec3(0.003, 0.003, 0.006);
 uniform float night = 0.0;
+uniform vec3 night_floor = vec3(0.008, 0.005, 0.041);   // LINEAR: AETHER-0 × 0.35 (deep indigo)
+// pass 8 c (Q-T404): split tone of the far layer in the normal state, so lavender is one of three
+// hues: teal in the deep fog (tone_deep, AETHER-5's hue), a rose-pearl warmth on lit fog away from the
+// lantern (tone_lit, AETHER-4's hue) and amber in the lantern's own pool (tone_pool, GAS-3's hue: the
+// lantern's light). All LINEAR hue vectors; tone_k 0 = off.
+uniform float tone_k = 0.0;
+uniform vec3 tone_deep = vec3(0.216, 0.552, 0.631);
+uniform vec3 tone_lit = vec3(0.807, 0.716, 0.686);
+uniform vec3 tone_pool = vec3(0.693, 0.323, 0.027);
 uniform vec2 logical_size = vec2(640.0, 360.0);
 uniform vec2 lantern_px = vec2(320.0, 200.0);
 uniform float lantern_r = 120.0;
@@ -45,7 +54,7 @@ float luma(vec3 c) {
 void fragment() {
 	vec3 c = texture(TEXTURE, UV).rgb;
 	bool entity = max(c.r, max(c.g, c.b)) <= 0.0;
-	if (!entity && (cap_knee > 0.0 || night > 0.0)) {
+	if (!entity && (cap_knee > 0.0 || night > 0.0 || tone_k > 0.0)) {
 		vec2 px = UV * logical_size;
 		float spare = pow(1.0 - smoothstep(0.0, lantern_r * 2.4, length(px - lantern_px)), 1.5);
 		if (cap_knee > 0.0) {
@@ -56,12 +65,28 @@ void fragment() {
 			c = mix(c, vec3(luma(c)), cap_desat * keep);
 			c = mix(c, veil_col, cap_veil * keep);
 		}
+		if (tone_k > 0.0) {
+			float lt = luma(c);
+			float day = tone_k * (1.0 - night);
+			vec3 lc = vec3(lt);
+			float w_deep = 0.45 * (1.0 - smoothstep(0.012, 0.07, lt)) * (1.0 - spare);
+			float w_lit = 0.3 * smoothstep(0.05, 0.25, lt) * (1.0 - spare);
+			float w_pool = 0.35 * spare * smoothstep(0.03, 0.2, lt);
+			c = mix(c, lc * tone_deep / max(luma(tone_deep), 0.0001), w_deep * day);
+			c = mix(c, lc * tone_lit / max(luma(tone_lit), 0.0001), w_lit * day);
+			c = mix(c, lc * tone_pool / max(luma(tone_pool), 0.0001), w_pool * day);
+		}
 		if (night > 0.0) {
 			float l = luma(c);
 			float k = mix(NIGHT_KEEP, 1.0, smoothstep(NIGHT_LO, NIGHT_HI, l));
-			float n = night * (1.0 - smoothstep(NIGHT_LO, NIGHT_HI, l) * 0.6);
+			float n = night * (1.0 - smoothstep(NIGHT_LO, NIGHT_HI * 0.6, l));   // lights keep their hue (PHOS stays truth)
 			c *= mix(1.0, k, night);
-			c = mix(c, vec3(luma(c)) * vec3(0.7, 0.85, 1.3), NIGHT_COLD * n);
+			// pass 8 c (Q-T403): the crushed fog turns deep indigo (night_floor's hue), never neutral
+			// near-black: the Aether is never a black vacuum. A floor of that hue is lifted under the
+			// fog, less under what was already dark (the vast bodies stay darker than the fog).
+			vec3 hue = night_floor / max(luma(night_floor), 0.0001);
+			c = mix(c, vec3(luma(c)) * hue, NIGHT_COLD * n);
+			c += night_floor * night * (0.5 + 0.5 * smoothstep(0.01, 0.1, l));
 		}
 		c = max(c, floor_col);
 	}

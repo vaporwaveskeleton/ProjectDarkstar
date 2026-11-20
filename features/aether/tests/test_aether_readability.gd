@@ -262,23 +262,51 @@ func test_vast_identity_and_scale() -> void:
 		biggest = maxf(biggest, float(b["light"]))
 	assert_float(biggest).is_greater_equal(3.0)
 	var code := (load("res://shaders/aether/reveal_vast.gdshader") as Shader).code
-	for part in ["neck", "fins", "tendrils", "portholes", "head light", "rim"]:
+	for part in ["neck", "fins", "tendrils", "portholes", "rim"]:
 		assert_bool(code.contains(part)).override_failure_message("vast shader lost its %s" % part).is_true()
 
 
-func test_presence_pupil_contracts_when_locked_on() -> void:
-	var b := _backdrop(PM01)
-	await get_tree().process_frame
-	var p := b.find_child("FrostPresence", true, false) as FrostPresence
-	b.refresh()
-	var eye := p.get_global_transform_with_canvas() * FrostPresence.EYE
-	var target := eye + Vector2(250.0, 120.0)
-	assert_float(p.lock).is_equal(0.0)
-	var last := 0.0
-	for i in 200:
-		p.watch(target, 0.05, false)
-		assert_float(p.lock - last).is_less_equal(FrostPresence.LOCK_RATE * 0.05 + 0.0001)   # slow: no flicker
-		last = p.lock
-	assert_float(p.lock).is_greater(0.95)
-	p.watch(target, 0.05, true)
-	assert_float(p.lock).is_equal(0.0)
+# --- pass 8 c: no eye reads, the lantern-down floor, the normal state's hues -------------------------------
+
+func test_presence_has_no_eye_only_a_lightless_disc() -> void:
+	var code := (load("res://shaders/aether/frost_presence.gdshader") as Shader).code
+	for gone in ["iris_c", "pupil", "glint_col", "uniform float lock", "slit"]:
+		assert_bool(code.contains(gone)).override_failure_message("the Presence still has %s" % gone).is_false()
+	assert_bool(code.contains("vec3 eye_col = mix(floor_col, void_col, 0.15);")).is_true()
+	# the serpents carry no head light where an eye would be
+	var vast := (load("res://shaders/aether/reveal_vast.gdshader") as Shader).code
+	assert_bool(vast.contains("head_l")).is_false()
+	assert_bool(vast.contains("head_col")).is_false()
+
+
+func test_night_floor_is_coloured_and_the_normal_state_has_three_hues() -> void:
+	var look := load(PM01) as AetherLook
+	assert_float(look.far_split_tone).is_greater(0.0)
+	var m := ShaderMaterial.new()
+	m.shader = load("res://shaders/aether/aether_present.gdshader") as Shader
+	AetherView.grade_material(m, look)
+	var nf: Color = m.get_shader_parameter(&"night_floor")
+	# deep indigo, never neutral: blue well above red and green, and above the VOID-0 floor
+	assert_float(nf.b).is_greater(nf.r * 2.0)
+	assert_float(nf.b).is_greater(Pal.VOID_0.srgb_to_linear().b)
+	assert_float(float(m.get_shader_parameter(&"tone_k"))).is_equal(look.far_split_tone)
+	# the three tones are Pal hues: AETHER-5 teal, AETHER-4 rose-pearl, GAS-3 only in the lantern's pool
+	assert_bool(U.same_rgb(m.get_shader_parameter(&"tone_deep") as Color, Pal.AETHER_5.srgb_to_linear())).is_true()
+	assert_bool(U.same_rgb(m.get_shader_parameter(&"tone_lit") as Color, Pal.AETHER_4.srgb_to_linear())).is_true()
+	assert_bool(U.same_rgb(m.get_shader_parameter(&"tone_pool") as Color, Pal.GAS_3.srgb_to_linear())).is_true()
+	var code := (load("res://shaders/aether/aether_present.gdshader") as Shader).code
+	assert_bool(code.contains("float w_pool = 0.35 * spare")).is_true()   # amber only inside the lantern pool
+
+
+func test_geodes_sink_with_a_glint_and_the_vigil_keeps_an_ember() -> void:
+	var g: SectorGeode = auto_free(SectorGeode.new())
+	assert_float(SectorGeode.DARK_KEEP).is_equal_approx(0.3, 0.05)
+	g.set_dark(2.0)
+	assert_float(g.dark).is_equal(1.0)
+	g.set_dark(0.0)
+	assert_float(g.dark).is_equal(0.0)
+	var rig: AetherVigilRig = auto_free(AetherVigilRig.new())
+	assert_float(rig._ember_level(1.0)).is_equal(0.0)          # lantern up: no ember
+	assert_float(rig._ember_level(0.15)).is_greater(0.5)       # lantern down: a dim ember stays
+	rig._breached = true
+	assert_float(rig._ember_level(0.0)).is_equal(0.0)          # a breach gutters it out

@@ -288,7 +288,13 @@ func _step_far() -> void:
 	_step_lantern(now)
 	# lantern down (Q-T310): the near depth behind play darkens with the far layer's night, so the
 	# vast shapes' silhouettes are not broken up by bright motes (the play layer is untouched)
-	_depth_back.modulate.a = 1.0 - DEPTH_NIGHT_DIM * _far.reveal() * (_far.look.lantern_night if _far.look else 0.0)
+	var night := _far.reveal() * (_far.look.lantern_night if _far.look else 0.0)
+	_depth_back.modulate.a = 1.0 - DEPTH_NIGHT_DIM * night
+	# the geodes sink too, keeping a thin facet glint (pass 8 c, Q-T407; drawing only)
+	if _geodes:
+		for g in _geodes.geodes:
+			if is_instance_valid(g):
+				g.set_dark(night)
 	_depth_back.set_camera(far_centre)
 	_depth_front.set_camera(far_centre)
 

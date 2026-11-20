@@ -58,9 +58,10 @@ func _screen() -> Control:
 func test_row_reflects_and_writes_the_setting() -> void:
 	SettingsService.set_value(&"muzzle_flash", true)
 	var s := _screen()
-	var row: CheckButton = s.get_node("%MuzzleFlash")
+	var row: MenuRow = s.get_node("%MuzzleFlash")
 	assert_bool(row.button_pressed).is_true()
-	assert_str(row.text).is_equal("SETTINGS_MUZZLE_FLASH")
+	assert_str(String(row.key)).is_equal("SETTINGS_MUZZLE_FLASH")
+	assert_int(row.style).is_equal(MenuRow.Style.TOGGLE)
 	row.button_pressed = false
 	assert_bool(SettingsService.get_value(&"muzzle_flash")).is_false()
 	SettingsService.set_value(&"muzzle_flash", true)
@@ -71,18 +72,11 @@ func test_row_reflects_and_writes_the_setting() -> void:
 func test_row_has_text_and_tooltip_translations() -> void:
 	assert_str(tr("SETTINGS_MUZZLE_FLASH")).is_equal("Weapon Muzzle Flash")
 	assert_str(tr("SETTINGS_MUZZLE_FLASH_DESC")).is_not_equal("SETTINGS_MUZZLE_FLASH_DESC")
-	var row: CheckButton = _screen().get_node("%MuzzleFlash")
+	var row: MenuRow = _screen().get_node("%MuzzleFlash")
 	assert_str(row.tooltip_text).is_equal("SETTINGS_MUZZLE_FLASH_DESC")
 
 
-func test_focus_neighbours_form_a_closed_wrapping_ring() -> void:
+func test_row_sits_on_the_video_page() -> void:
 	var s := _screen()
-	var ring: Array[String] = ["LargeText", "ReducedMotion", "Photosensitivity", "SteadyLedger", "MuzzleFlash", "Back"]
-	for i in ring.size():
-		var c: Control = s.get_node("%" + ring[i])
-		var next: Control = s.get_node("%" + ring[(i + 1) % ring.size()])
-		var prev: Control = s.get_node("%" + ring[(i - 1 + ring.size()) % ring.size()])
-		assert_object(c.get_node(c.focus_neighbor_bottom)).is_same(next)
-		assert_object(c.get_node(c.focus_neighbor_top)).is_same(prev)
-	assert_str(s.default_focus.name).is_equal("Back")
+	assert_object(s.get_node("%MuzzleFlash").get_parent()).is_same(s.get_node("%PageVideo"))
 	assert_bool(s.cancel_closes).is_true()

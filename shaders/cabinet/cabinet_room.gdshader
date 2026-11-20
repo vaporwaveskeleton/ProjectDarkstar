@@ -3,6 +3,7 @@ shader_type canvas_item;
 // the frame falls off into darkness: on a wide window (16:9 spare width, 21:9, 16:10) that is dark room with
 // a hint of the cabinet's side panel catching the screen's glow, never the print stretched out to the edge.
 #include "res://shaders/cabinet/cabinet_material.gdshaderinc"
+#include "res://shaders/cabinet/cabinet_detail.gdshaderinc"
 
 uniform vec2 rect_size = vec2(640.0, 360.0);
 uniform vec2 rig_origin = vec2(0.0);
@@ -22,8 +23,13 @@ void fragment() {
 		float side_w = 15.0;
 		float panel = 1.0 - smoothstep(side_w - 1.5, side_w, ds);
 		vec3 amb = cab_amb(rp);
-		vec3 panel_c = vec3(0.05, 0.05, 0.06) * (0.35 * amb + cab_key(rp) * 0.22);
-		panel_c *= 0.8 + 0.4 * vnoise(vec2(rp.x * 0.5, rp.y * 0.03));          // faint laminate grain
+		// loom ds_cab_side: black paint chipped back to the plywood, grime in the chips. Seen edge-on, so the
+		// texture is squeezed 4x across the strip; its normal catches the key where a chip's edge faces it.
+		vec2 sp = vec2(ds * 4.0, rp.y);
+		vec3 side_alb = mix(vec3(0.05, 0.05, 0.06), texture(detail_albedo, detail_uv(sp)).rgb, clamp(detail_gain, 0.0, 1.0));
+		vec3 sn = normalize(vec3(detail_tilt(sp, 1.0), 1.0));
+		float side_ndl = max(dot(sn, cab_key_dir(rp)), 0.0);
+		vec3 panel_c = side_alb * (0.35 * amb + cab_key(rp) * (0.22 + 0.5 * side_ndl));
 		panel_c += vec3(0.5, 0.52, 0.56) * smoothstep(1.6, 0.0, ds) * 0.03 * (cab_amb(rp) + cab_key(rp));   // the crisp edge
 		// the dark room: nearly black, lit by the screen. The cabinet lights its surroundings: a broad
 		// screen-coloured pool on the floor and a fainter wash up the walls, breathing with the picture

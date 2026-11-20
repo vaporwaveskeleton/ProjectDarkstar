@@ -51,7 +51,6 @@ func _ready() -> void:
 	set_param(&"glow_col", Pal.AETHER_3)
 	set_param(&"rim_col", Pal.AETHER_5)
 	set_param(&"photo_col", Pal.PHOS_4)
-	set_param(&"head_col", Pal.PHOS_5)
 	set_param(&"floor_col", Pal.VOID_0)
 	set_param(&"horizon_px", HORIZON)
 	set_param(&"horizon_r", HORIZON_R)
