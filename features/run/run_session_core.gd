@@ -78,6 +78,9 @@ var _pauses: Dictionary = {}
 var _in_seam := false
 ## The Vigil Index the last arrival banked (−1 = none): the Ruins chalks it as a tally (LOOP-001 §10.5).
 var act0_vi_banked := -1
+## The seed of the run that ended last (−1 = none this boot): the Ruins pick the return chalk from it
+## (NARR-001 §5.7a; Q-T284). In memory only.
+var last_run_seed := -1
 ## False when the profile on disk could not be read: never overwrite it (no data loss).
 var _profile_writable := true
 
@@ -357,6 +360,7 @@ func _end_run(outcome: StringName) -> void:
 	# The Chronicle run count (Q-T353): every run end counts, a ninth-sky end too. Written with the
 	# profile at the next `ruins_entry`, as the banked Ember is.
 	_profile.runs_ended += 1
+	last_run_seed = _run.seed_value
 	_run = RunState.new()
 	_in_seam = false
 	run_ended.emit(outcome)
