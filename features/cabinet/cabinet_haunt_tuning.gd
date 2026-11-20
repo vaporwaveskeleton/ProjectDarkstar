@@ -14,7 +14,7 @@ extends TunableResource
 @export var chance_demo: float = 0.3                 ## odds the demo shows the figure once
 
 # --- What ---
-@export var figure_frames: int = 1                   ## the figure in the field lasts this many drawn frames (one field at 60 Hz)
+@export var figure_frames: int = 1                   ## the figure in the field, and the one on the crag, last this many drawn frames (one field at 60 Hz)
 @export var after_image_in_s: float = 0.4            ## the after-image of the never-drawn spine: fade in, hold, fade out (inside the 2.5 s READY card)
 @export var after_image_hold_s: float = 0.8
 @export var after_image_out_s: float = 1.2
@@ -26,9 +26,6 @@ extends TunableResource
 @export var litany_depth: float = 0.22               ## share of the marquee's light lost at the bottom of a dip
 @export var ghost_press_s: float = 0.9               ## the service button holds itself down this long
 @export var warm_coin_s: float = 3.0                 ## the coin return glows like an ember, fading over this
-@export var crag_figure_in_s: float = 0.6           ## the figure on the crag: fades in, holds, fades out (printed ink appearing, never a pop)
-@export var crag_figure_hold_s: float = 1.6
-@export var crag_figure_out_s: float = 0.9
 @export var jingle_detune_cents: float = -60.0       ## ✱ informational: the sour jingle is rendered this flat (audio/src/cabinet.cx.js)
 
 
@@ -86,19 +83,3 @@ func breath_gain_db(t: float) -> float:
 	var s := sin(PI * t / breath_s)
 	return breath_db * s * s
 
-
-## 0..1 the crag figure's ink at `t` from its start (fade in, hold, fade out).
-func crag_figure_k(t: float) -> float:
-	if t < 0.0:
-		return 0.0
-	if t < crag_figure_in_s:
-		return t / crag_figure_in_s
-	t -= crag_figure_in_s
-	if t < crag_figure_hold_s:
-		return 1.0
-	t -= crag_figure_hold_s
-	return clampf(1.0 - t / crag_figure_out_s, 0.0, 1.0)
-
-
-func crag_figure_s() -> float:
-	return crag_figure_in_s + crag_figure_hold_s + crag_figure_out_s

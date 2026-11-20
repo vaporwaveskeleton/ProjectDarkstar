@@ -17,6 +17,9 @@ extends Node
 signal finished
 
 const COLLAPSE_HOLD := 0.72            ## ✱ CRT `collapse` value where the dot is held (crt.gdshader: before its fade)
+const LINE_END := 0.55                 ## ✱ crt.gdshader LINE_END: the share of `collapse` spent squeezing to the line
+const LAST_LINE_RISE_S := 0.05         ## ✱ the last line's white bar on the bezel: rise, then fall (one bar, never repeated)
+const LAST_LINE_FALL_S := 0.3
 
 var tuning: CabinetDecayTuning
 var messages: CabinetMessages
@@ -67,6 +70,7 @@ func begin(hi: int, score: int) -> void:
 		crt.set_shader_parameter(&"bulge_radius", tuning.bulge_radius)
 	if bezel != null:
 		bezel.still = still
+		bezel.line_uv = tuning.focus_uv(play_top).y   # the line lands at the collapse focus (crt.gdshader `focus`)
 	if marquee_wear != null:
 		marquee_wear.still = still
 	if audio != null:
@@ -127,9 +131,10 @@ func apply(at: float) -> void:
 		bezel.bleach = tuning.print_bleach_max * sk
 		bezel.light = tuning.worn_through_light_max * sk
 		bezel.grow = sk
+		bezel.flash = last_line_k(at)
 	# --- the cursed turn beyond the screen: the marquee print wears (letters stay put), the arcade goes dark round you ---
 	if marquee_wear != null:
-		marquee_wear.set_state(0.3 * pk + 0.7 * sk, clampf((sk - 0.35) / 0.5, 0.0, 1.0), sk, clampf((sk - 0.15) / 0.6, 0.0, 1.0), at)
+		marquee_wear.set_state(0.3 * pk + 0.7 * sk, clampf((sk - 0.35) / 0.5, 0.0, 1.0), sk, clampf((sk - 0.15) / 0.6, 0.0, 1.0), at, sk)
 	if backdrop != null and backdrop.material is ShaderMaterial:
 		(backdrop.material as ShaderMaterial).set_shader_parameter(&"dark", backdrop_dark(at))
 	# --- the sound ---
@@ -234,3 +239,23 @@ static func _count_glyphs(msg: CabinetMessages) -> int:
 func backdrop_dark(at: float) -> float:
 	var m := tuning.marks()
 	return clampf((at - m[1]) / (m[4] - m[1]), 0.0, 1.0)
+
+
+## Decay time when the picture has squeezed to its line (crt.gdshader LINE_END of the held collapse).
+func last_line_at() -> float:
+	return tuning.marks()[3] + tuning.collapse_squeeze_s * minf(LINE_END / COLLAPSE_HOLD, 1.0)
+
+
+## 0..1 the last line's white bar thrown across the bezel's inner edges and the control strip: one quick rise
+## and a short fall at the line (PM 2026-11-20). Zero under photosensitivity / reduced motion (no line there:
+## the picture fades instead), so it can never add a flash for a player who asked for none.
+func last_line_k(at: float) -> float:
+	if still:
+		return 0.0
+	var d := at - last_line_at()
+	if d < -LAST_LINE_RISE_S or d > LAST_LINE_FALL_S:
+		return 0.0
+	if d < 0.0:
+		return 1.0 + d / LAST_LINE_RISE_S
+	var u := 1.0 - d / LAST_LINE_FALL_S
+	return u * u

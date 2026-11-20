@@ -29,8 +29,10 @@ uniform vec3 ceiling_color = vec3(0.16, 0.11, 0.07);
 uniform float warmth = 0.7;      // how far the other machines' hues are pulled toward tungsten
 uniform vec3 neon[6];          // set by ArcadeBackdrop from CabinetSurface.backdrop_neon
 // The cursed turn (TECH-001 Q-T294, cursed-cabinet; additive, 0 = as built): during the Decay the other machines
-// in the arcade go dark one by one, in a fixed per-cabinet order; the ceiling lights and the room stay.
+// in the arcade go dark one by one, in a fixed per-cabinet order.
 uniform float dark : hint_range(0.0, 1.0) = 0.0;
+// The cursed turn (PM 2026-11-20): the whole room dims with them, ceiling cans and neon too, by this much at `dark` 1.
+uniform float room_dim : hint_range(0.0, 1.0) = 0.5;
 
 const float HORIZON = 238.0;    // where the far row stands (rig y)
 
@@ -237,6 +239,7 @@ void fragment() {
 		float floor_pool = smoothstep(0.45, 1.0, yk);
 		glow += cab_screen_light.rgb * lum * room_glow * (0.12 * far * (0.3 + 1.4 * floor_pool * floor_pool));
 		vec3 c = (col + glow) * exposure;
+		c *= 1.0 - room_dim * dark;
 		// keep it out of the way: desaturate, darken next to the cabinet (its body and shadow) and toward the
 		// window's top and bottom
 		float l = dot(c, vec3(0.299, 0.587, 0.114));

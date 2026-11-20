@@ -20,6 +20,9 @@ const BROWN_FROM := 0.64              ## ✱ the browning tube section starts th
 const GUTTER_DIP_HZ := 1.2            ## ✱ the guttering tube's dips per second (≤ 3: flash rule); none when still
 const BLEACH_MAX := 0.42              ## ✱ how far the most-faded letter washes toward the lens colour
 const LENS := Color(0.97, 0.92, 0.78)   ## ✱ the backlit lens showing through bleached or pitted ink
+const BACKLIGHT_FLOOR := 0.5           ## ✱ the whole sign's backlight at the end of the turn (PM 2026-11-20: down to half)
+const BACKLIGHT_DIP_HZ := 1.7          ## ✱ the failing ballast's dips per second (≤ 3: flash rule); none when still
+const BACKLIGHT_DIP := 0.22            ## ✱ the deepest dip, as a share of the light left
 
 var marquee: BezelMarquee
 var still := false
@@ -27,6 +30,7 @@ var fade_k := 0.0                     ## 0..1 bleach, pitting and browning
 var gutter_k := 0.0                   ## 0..1 the one letter's backlight dying
 var glow_k := 0.0                     ## 0..1 the Aether glow through the worn ink
 var crack_k := 0.0                    ## 0..1 the crack across the plexi
+var backlight_k := 0.0                 ## 0..1 the whole sign's backlight failing toward BACKLIGHT_FLOOR
 var time_s := 0.0                     ## for the guttering dips
 var _glow: Control
 var _cache: Dictionary = {}
@@ -49,15 +53,20 @@ func attach(m: BezelMarquee) -> void:
 	m.refresh_ink()
 
 
-func set_state(p_fade: float, p_gutter: float, p_glow: float, p_crack: float, p_time: float) -> void:
+func set_state(p_fade: float, p_gutter: float, p_glow: float, p_crack: float, p_time: float, p_backlight: float = 0.0) -> void:
+	backlight_k = clampf(p_backlight, 0.0, 1.0)
 	fade_k = clampf(p_fade, 0.0, 1.0)
 	gutter_k = clampf(p_gutter, 0.0, 1.0)
 	glow_k = clampf(p_glow, 0.0, 1.0)
 	crack_k = clampf(p_crack, 0.0, 1.0)
 	time_s = p_time
 	if marquee != null:
+		var b := backlight_level()
+		marquee.modulate = Color(b, b, b, 1.0)
 		marquee.refresh_ink()
 	if _glow != null:
+		var inv := 1.0 / maxf(backlight_level(), 0.05)   # the Aether behind the print is not the sign's tube: it keeps its own light
+		_glow.modulate = Color(inv, inv, inv, 1.0)
 		_glow.queue_redraw()
 
 
@@ -68,6 +77,17 @@ func gutter_level() -> float:
 		return gutter_k
 	var dip := pow(maxf(sin(TAU * GUTTER_DIP_HZ * time_s), 0.0), 8.0)
 	return clampf(gutter_k + 0.3 * dip * (1.0 - gutter_k), 0.0, 1.0)
+
+
+## The whole sign's backlight now (1 full … BACKLIGHT_FLOOR): the ballast failing, with slow irregular dips
+## while it fails (at most BACKLIGHT_DIP_HZ a second); under photosensitivity or reduced motion, a plain fade.
+func backlight_level() -> float:
+	var base := lerpf(1.0, BACKLIGHT_FLOOR, backlight_k)
+	if still or backlight_k <= 0.0 or backlight_k >= 1.0:
+		return base
+	var a := maxf(sin(TAU * BACKLIGHT_DIP_HZ * time_s), 0.0)
+	var b := maxf(sin(TAU * BACKLIGHT_DIP_HZ * 0.37 * time_s + 1.3), 0.0)
+	return base * (1.0 - BACKLIGHT_DIP * pow(a * b, 4.0))
 
 
 ## Pure: each printed letter's box, from the printed layout (read only: nothing here ever moves a letter).

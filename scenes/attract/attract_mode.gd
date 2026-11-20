@@ -293,8 +293,8 @@ func _finish_power_off() -> void:
 
 
 ## Dev captures only (`-- --haunt-showcase`, debug builds): every attract Haunting once, a few seconds apart,
-## so one short windowed run can photograph them (normally they are rare and minutes apart). The figure is
-## held for 60 fields here so a still can catch it; in play it lasts one (Q-T253). Never in a release build.
+## so one short windowed run can photograph them (normally they are rare and minutes apart). The figures are
+## held for 60 fields here so a still can catch them; in play each lasts one (Q-T253, Q-T261). Never in a release build.
 ## Starts once the route has settled: after the power-on test if one runs, else at once.
 func _start_showcase() -> void:
 	if _power.running:
@@ -315,7 +315,8 @@ func _haunt_showcase() -> void:
 		[11.0, func() -> void: haunts.screen.show_figure(60)],
 		[14.0, func() -> void: haunts.perform(CabinetHauntDeck.LITANY)],
 		[14.0, func() -> void: haunts.perform(CabinetHauntDeck.SOUR_JINGLE)],
-		[16.5, func() -> void: haunts.perform(CabinetHauntDeck.CRAG_FIGURE)],
+		[16.5, func() -> void: haunts.show_crag_for_still(120)],
+		[19.5, func() -> void: haunts.show_crag_for_still(120, CabinetHaunts.SLOPE)],
 	]
 	for s: Array in steps:
 		get_tree().create_timer(float(s[0])).timeout.connect(s[1] as Callable)

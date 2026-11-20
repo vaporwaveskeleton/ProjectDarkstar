@@ -461,6 +461,8 @@ func _on_timer() -> void:
 func _hold_banner(key: String) -> void:
 	messages.banner(tr(key), MID_SHIFT_HOLD_SECONDS)
 	if haunts != null:
+		if haunts.enabled and decay_tuning.wear_level(stage_index) == haunts.tuning.min_wear_level:
+			haunts.plant_crag_slope()   # the early crag figure, seeded once at a0_3's end (PM 2026-11-20)
 		haunts.moment(CabinetHauntDeck.HOLD)
 	_enter(State.CREDITS, MID_SHIFT_HOLD_SECONDS)
 

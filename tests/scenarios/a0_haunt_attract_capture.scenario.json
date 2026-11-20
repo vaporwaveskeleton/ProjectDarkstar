@@ -95,6 +95,15 @@
 		},
 		{
 			"do": "wait_frames",
+			"frames": 170
+		},
+		{
+			"do": "screenshot",
+			"name": "36_crag_figure_slope",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
 			"frames": 60
 		},
 		{
