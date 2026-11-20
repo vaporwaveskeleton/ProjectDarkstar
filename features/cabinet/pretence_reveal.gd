@@ -169,8 +169,8 @@ func _make_decay(game: Node) -> CabinetDecay:
 	d.bezel = game.bezel_decay
 	var m := CabinetHaunts.find_marquee(game) as BezelMarquee
 	if m != null:
-		d.marquee_drift = CabinetMarqueeDrift.new()
-		d.marquee_drift.attach(m)
+		d.marquee_wear = CabinetMarqueeWear.new()
+		d.marquee_wear.attach(m)
 	d.backdrop = CabinetHaunts.find_backdrop(game)
 	d.still = ArcadeButton.is_still()
 	var spec := load("res://data/cabinet/cabinet_screen.tres") as CabinetScreenSpec

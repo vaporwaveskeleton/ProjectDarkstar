@@ -358,40 +358,46 @@ func test_the_stranger_is_an_extra_row_tied_with_you_shown_once() -> void:
 
 # --- stacked on #101: the bezel art's haunt anchors, the marquee, the arcade backdrop ---
 
-## English words of 3+ letters that DARKSTAR's letters could spell: none may appear in the rearranged sign.
-const BANNED := ["ARK", "ART", "ARTS", "ASK", "DARK", "DART", "DARTS", "DRAT", "RAD", "RAT", "RATS", "SAD", "SAT", "SKA",
-	"STAR", "STARK", "TAR", "TARS", "TSAR", "TRAD", "TASK", "KART", "ADS", "TAD", "ARKS", "DARKS", "RAKS", "SARK", "STRAD"]
-
-
-func test_the_marquee_rearranges_into_a_fixed_scramble_that_never_spells_a_word() -> void:
-	var s := tr("GAME_TITLE")
-	assert_str(s).is_equal("DARKSTAR")
-	var full := CabinetMarqueeDrift.scrambled(s)
-	assert_str(full).is_equal("TRKDASRA")
-	var shown := ""                                                # the lost letter fades out of the rearranged sign
-	for p in CabinetMarqueeDrift.SCRAMBLE.size():
-		if CabinetMarqueeDrift.SCRAMBLE[p] != CabinetMarqueeDrift.LOST:
-			shown += s.substr(CabinetMarqueeDrift.SCRAMBLE[p], 1)
-	assert_str(shown).is_equal("TRKDASR")
-	for w in BANNED:
-		assert_bool(full.contains(w)).override_failure_message("scramble holds %s" % w).is_false()
-		assert_bool(shown.contains(w)).override_failure_message("sign holds %s" % w).is_false()
-	var sorted := CabinetMarqueeDrift.SCRAMBLE.duplicate()
-	sorted.sort()
-	assert_array(sorted).is_equal([0, 1, 2, 3, 4, 5, 6, 7])       # every letter used once: nothing written
+## Owner, 2026-11-19: the marquee is a screenprint; letters may fade or wear, never move, fall off or reorder.
+func test_the_marquee_letters_never_move_fall_or_reorder_they_only_wear() -> void:
+	var sign := BezelMarquee.new()
+	add_child(sign)
+	var before := sign.lettering_override
+	var w := CabinetMarqueeWear.new()
+	w.attach(sign)
+	w.set_state(1.0, 1.0, 1.0, 1.0, 3.7)
+	assert_str(sign.lettering_override).is_equal(before)          # the printed title is never replaced
+	assert_str(tr(BezelMarquee.KEY)).is_equal("DARKSTAR")
 	var surf := CabinetSurface.default() as CabinetSurface
-	var prev := -1.0
-	for p in CabinetMarqueeDrift.SCRAMBLE.size():
-		var x := CabinetMarqueeDrift.slot_x(s, CabinetMarqueeDrift.SCRAMBLE[p], surf.marquee_lettering, surf.marquee_stroke, surf.marquee_tracking)
-		assert_float(x).is_greater(prev)                           # slots run left to right in scramble order
-		prev = x
-	var d := CabinetMarqueeDrift.new()
-	d.still = true
-	d.set_state(1.0, 0.5, 1.0)
-	assert_float(d.k).is_equal(0.0)                                # reduced motion: no sag, tilt, slide or travel
-	assert_float(d.swap_k).is_equal(0.0)
-	assert_float(d.lost_k).is_equal(0.5)                           # the fade is kept
-	assert_vector(CabinetMarqueeDrift.letter_pose(3, 0.0)).is_equal(Vector3.ZERO)
+	var anchor := sign.lettering_anchor()
+	var at_rest := CabinetMarqueeWear.letter_boxes("DARKSTAR", anchor, surf.marquee_lettering, surf.marquee_stroke, surf.marquee_tracking)
+	var prev := -INF
+	for box in at_rest:
+		assert_float(box.position.x).is_greater(prev)                 # D-A-R-K-S-T-A-R, left to right, in place
+		assert_float(box.position.y).is_equal(anchor.y)
+		prev = box.position.x
+	# centred on the print's own anchor, exactly as BezelMarquee centres it
+	assert_float((at_rest[0].position.x + at_rest[7].end.x) * 0.5).is_equal_approx(anchor.x, 0.75)
+	var code := FileAccess.get_file_as_string("res://features/cabinet/cabinet_marquee_wear.gd")
+	assert_bool(code.contains("lettering_override =")).is_false()  # no code path rewrites the print
+	assert_bool(ResourceLoader.exists("res://features/cabinet/cabinet_marquee_drift.gd")).is_false()
+	sign.free()
+
+
+func test_the_guttering_letter_dips_slowly_and_holds_still_under_reduced_motion() -> void:
+	var w := CabinetMarqueeWear.new()
+	assert_float(CabinetMarqueeWear.GUTTER_DIP_HZ).is_less_equal(3.0)
+	w.set_state(0.5, 0.5, 0.5, 0.5, 0.0)
+	var seen := {}
+	for f in 120:
+		w.time_s = f / 60.0
+		seen[snappedf(w.gutter_level(), 0.001)] = true
+		assert_float(w.gutter_level()).is_between(0.5, 1.0)
+	assert_int(seen.size()).is_greater(1)                          # it gutters
+	w.still = true
+	for f in 120:
+		w.time_s = f / 60.0
+		assert_float(w.gutter_level()).is_equal(0.5)               # still: a plain fade, no dips
 
 
 func test_the_printed_eye_wears_through_first_and_never_before_the_decay() -> void:
