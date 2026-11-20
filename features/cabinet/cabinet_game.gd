@@ -341,6 +341,7 @@ func brief_card(st: CabinetStage) -> Dictionary:
 		"unmakings": unm,
 		"prompt": tr("CAB_BRIEF_PRESS_FIRE"),
 		"blink_hz": tuning.brief_prompt_blink_hz,
+		"duty": tuning.brief_prompt_duty,
 	}
 
 

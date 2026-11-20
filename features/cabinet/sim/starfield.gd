@@ -52,6 +52,13 @@ var show_seams := true
 var spine_stars := false             ## S8: set from the stage in reset()
 var maw: MawView                     ## wired by CabinetGame: the live vertebra positions and reveal
 
+var _streak_rng := RandomNumberGenerator.new()   ## starfield-local: never world.rng, so the sim and the autopilot seeds are untouched
+var _streak_next := 0.0              ## world.time of the next streak
+var _streak_t0 := -1.0               ## world.time the live streak began (< 0 = none)
+var _streak_from := Vector2.ZERO     ## screen start of the live streak
+var _streak_vec := Vector2.ZERO      ## screen travel of the live streak (length = view crossing, direction = its heading)
+var _streak_len := 0.0
+
 
 func reset() -> void:
 	_stars.clear()
@@ -59,6 +66,9 @@ func reset() -> void:
 	pull_target = maw.centre if maw != null else world.screen_centre   # the sky drains into the wound (MawView, Q-T262)
 	spine_stars = world.stage != null and world.stage.spine_stars
 	backdrop = world.stage.backdrop if world.stage != null and BACKDROPS.has(world.stage.backdrop) else &""
+	_streak_rng.seed = 4242
+	_streak_t0 = -1.0
+	_streak_next = world.time + _streak_rng.randf_range(world.fx_tuning.streak_interval_min_s, world.fx_tuning.streak_interval_max_s)
 	var r := RandomNumberGenerator.new()
 	r.seed = 77
 	for layer in LAYERS:
@@ -153,6 +163,11 @@ func _draw() -> void:
 	for i in _spine.size():
 		if spine_star_drawn(i):
 			draw_rect(Rect2(spine_star_pos(i).round(), spine_star_size()), spine_star_color())
+	if pull <= 0.0:
+		_update_streak()
+		var sp := _streak_points()
+		if sp.size() == 2:
+			draw_line(sp[0], sp[1], Look.c(Pal.VOID_5))
 	if show_seams and pull <= 0.0:
 		_draw_seams()
 
@@ -280,3 +295,55 @@ func _horizon(out: Array[Rect2]) -> void:
 		for i in n:
 			var x := o.x + fposmod((float(i) + 0.5) / n * tile.x + off.x * (1.0 + dy / 30.0), tile.x)
 			out.append(Rect2(x - w * 0.5, y + dy, w, 1.0))
+
+
+# --- Distant streaks (draw-only) ---------------------------------------------------------------------
+
+## Are streaks allowed? Off under photosensitivity or reduced motion.
+func streaks_enabled() -> bool:
+	return not (bool(SettingsService.get_value(&"photosensitivity")) or bool(SettingsService.get_value(&"reduced_motion")))
+
+
+## Is a streak crossing the view right now? (tests)
+func streak_active() -> bool:
+	return _streak_t0 >= 0.0
+
+
+## Advance the streak clock (called from _draw): every streak_interval_min_s..max_s one thin dim line crosses a random part of the view over streak_cross_s.
+## Driven by the starfield's own RNG and world.time; nothing in the sim reads it.
+func _update_streak() -> void:
+	var ft := world.fx_tuning
+	if not streaks_enabled():
+		_streak_t0 = -1.0
+		return
+	if _streak_t0 < 0.0:
+		if world.time < _streak_next:
+			return
+		var view := world.view_rect
+		var ang := _streak_rng.randf_range(0.0, TAU)
+		var dir := Vector2.from_angle(ang)
+		_streak_len = _streak_rng.randf_range(ft.streak_length_min_px, ft.streak_length_max_px)
+		var mid := view.position + Vector2(_streak_rng.randf_range(0.2, 0.8) * view.size.x, _streak_rng.randf_range(0.2, 0.8) * view.size.y)
+		_streak_vec = dir * view.size.x * 0.45
+		_streak_from = mid - _streak_vec * 0.5
+		_streak_t0 = world.time
+	var k := (world.time - _streak_t0) / maxf(0.05, ft.streak_cross_s)
+	if k >= 1.0:
+		_streak_t0 = -1.0
+		_streak_next = world.time + _streak_rng.randf_range(ft.streak_interval_min_s, ft.streak_interval_max_s)
+		return
+
+
+## The live streak as screen points [tail, head], or empty when none or off the playfield.
+func _streak_points() -> PackedVector2Array:
+	var out := PackedVector2Array()
+	if _streak_t0 < 0.0:
+		return out
+	var k := (world.time - _streak_t0) / maxf(0.05, world.fx_tuning.streak_cross_s)
+	var head := _streak_from + _streak_vec * k
+	var tail := head - _streak_vec.normalized() * _streak_len
+	var field := world.playfield_rect
+	if field.has_point(head.round()) and field.has_point(tail.round()):
+		out.append(tail.round())
+		out.append(head.round())
+	return out

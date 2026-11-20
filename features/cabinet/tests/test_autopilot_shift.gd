@@ -93,6 +93,7 @@ func play_shift(k: int, roster: CabinetStageRoster = null) -> Dictionary:
 		if stage_t > STAGE_LIMIT_S:
 			result["stalled"] = true
 			break
+	stage_secs.append("%.0f" % stage_t)     # the stage it ended in (cleared, or where it stalled / was lost)
 	result["stage"] = game.stage_index
 	result["lives"] = game.score.lives
 	result["seconds"] = seconds
@@ -115,6 +116,7 @@ func test_autopilot_plays_the_shift_with_default_lives() -> void:
 	var reached := 0
 	var clears := 0
 	var lines := PackedStringArray()
+	var per_stage: Array = [[], [], [], [], []]
 	for k in SEEDS:
 		var r := play_shift(k)
 		var n := stages_cleared(r, total)
@@ -122,9 +124,20 @@ func test_autopilot_plays_the_shift_with_default_lives() -> void:
 			reached += 1
 		if bool(r["cleared"]):
 			clears += 1
+		var secs_list := str(r["stage_secs"]).split(",")
+		for si in secs_list.size():
+			if si < per_stage.size() and (si < n or bool(r["cleared"])):
+				(per_stage[si] as Array).append(float(secs_list[si]))
 		var how := "CLEARED" if r["cleared"] else ("stalled" if r["stalled"] else "game over")
 		lines.append("seed+%d: %s, %d/%d stages cleared, lives %d, %.0f sim s (stage s: %s) | %s" % [k, how, n, total,
 				int(r["lives"]), float(r["seconds"]), str(r["stage_secs"]), str(r["diag"])])
+	var summary := PackedStringArray()
+	for si in per_stage.size():
+		var xs: Array = per_stage[si]
+		xs.sort()
+		if not xs.is_empty():
+			summary.append("a0_%d median %.0f range %.0f-%.0f (n=%d)" % [si + 1, xs[xs.size() >> 1], xs[0], xs[xs.size() - 1], xs.size()])
+	print("autopilot stage sim seconds (cleared stages): ", " | ".join(summary))
 	print("autopilot shift: %d/%d cleared all, %d/%d cleared >= %d stages\n  %s" % [clears, SEEDS.size(), reached,
 			SEEDS.size(), MIN_STAGES, "\n  ".join(lines)])
 	assert_int(reached).override_failure_message("with default lives the autopilot cleared >= %d stages on %d of %d seeds (floor %d):\n%s"
