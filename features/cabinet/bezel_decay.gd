@@ -55,7 +55,7 @@ const RIM_POINTS := 56                 ## ✱ vertices round a void edge (torn-p
 const SMEAR_W := 16.0                  ## ✱ px, the smear band around the hole
 const EDGE_GAP := 1.5                  ## ✱ px, voids start this far outside the screen hole (they never cover the tube)
 const EYE_LEAD := 2.4                  ## ✱ the eye's absence darkens this many times faster than `grow` (it leads)
-const EYE_SCALE := 0.62                ## ✱ the eye hole's radius as a share of the printed eye's larger side: it eats the slit
+const EYE_SCALE := 0.9                 ## ✱ the hole's radius as a share of the wear origin's SMALLER side (the band's height): it lands on the band, it never swallows the world
 const EYE_OFFSET := Vector2(0.22, 0.14)   ## ✱ the hole sits off the slit's centre (share of its radius): never concentric
 const FLASH_SPILL := 22.0              ## ✱ px, how far the last line's bar spills onto the bezel either side of the hole
 const SEED := 1983                    ## ✱ fixed: the same damage every time (deterministic captures)
@@ -188,10 +188,12 @@ func _ring(c: Vector2, rim: PackedFloat32Array, r: float) -> PackedVector2Array:
 
 # --- the eye's absence --------------------------------------------------------------------------------
 
-## The printed eye's rect in rig units from the bezel art's haunt anchors (Rect2() when the art has none).
+## Where the cursed turn's wear-through starts, in rig units, from the bezel art's haunt anchors: `wear_origin`
+## (#101 Fable pass, Q-T295: the ringed world's middle band; the world has no eye, N4), falling back to the old
+## `eye` anchor when the art predates the rename. Rect2() when the art has neither.
 static func eye_anchor() -> Rect2:
 	var a: Dictionary = BezelArt.haunt_anchors()
-	var v: Variant = a.get(&"eye", Rect2())
+	var v: Variant = a.get(&"wear_origin", a.get(&"eye", Rect2()))
 	return v as Rect2 if v is Rect2 else Rect2()
 
 
@@ -200,7 +202,7 @@ static func eye_hole() -> Dictionary:
 	var e := eye_anchor()
 	if e.size.x <= 0.0:
 		return {}
-	var r := maxf(e.size.x, e.size.y) * EYE_SCALE
+	var r := maxf(minf(e.size.x, e.size.y) * EYE_SCALE, 8.0)
 	var es := SEED + 997
 	return {
 		"c": e.get_center() + EYE_OFFSET * r,

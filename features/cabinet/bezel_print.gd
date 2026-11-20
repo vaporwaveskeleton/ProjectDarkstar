@@ -47,6 +47,8 @@ func _ready() -> void:
 	size = Vector2(CabinetBezel.SIDE, 360.0)
 	_surface = CabinetSurface.default() as CabinetSurface
 	_mat = CabinetLighting.print_material(_surface, Vector2.ZERO, false)
+	_mat.set_shader_parameter(&"halftone_cell", _surface.print_art_cell)
+	_mat.set_shader_parameter(&"tone_steps", 1.0 if _surface.print_art_steps else 0.0)
 	material = _mat
 	pieces_rebuild()
 	_build_hardware()
@@ -103,13 +105,12 @@ func _draw() -> void:
 		_draw_crack()
 
 
-## The colour plates were never printed in perfect register: each ink is nudged by its own small offset
-## (the key-black plate is the reference). Deterministic, from the ink's name.
+## Misregistration: the key-black plate is the reference and the other screens sat in register but one
+## (CabinetSurface.print_art_misregister_ink), printed 1–2 px off (Fable review 2026-11-20).
 func plate_offset(ink: StringName) -> Vector2:
-	if ink == &"key_black" or _surface == null:
+	if _surface == null or ink != _surface.print_art_misregister_ink:
 		return Vector2.ZERO
-	var h := BezelArt.hash_int(String(ink).hash())
-	return Vector2(float(h % 2001) / 1000.0 - 1.0, float((h / 2001) % 2001) / 1000.0 - 1.0) * _surface.print_misregister
+	return _surface.print_art_misregister
 
 
 func _draw_piece(p: BezelPiece) -> void:

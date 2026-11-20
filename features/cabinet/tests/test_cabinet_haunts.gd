@@ -362,11 +362,10 @@ func test_the_stranger_is_an_extra_row_tied_with_you_shown_once() -> void:
 func test_the_marquee_letters_never_move_fall_or_reorder_they_only_wear() -> void:
 	var sign := BezelMarquee.new()
 	add_child(sign)
-	var before := sign.lettering_override
 	var w := CabinetMarqueeWear.new()
 	w.attach(sign)
 	w.set_state(1.0, 1.0, 1.0, 1.0, 3.7)
-	assert_str(sign.lettering_override).is_equal(before)          # the printed title is never replaced
+	assert_bool("lettering_override" in sign).is_false()          # #101 dropped the override: the title can never be replaced
 	assert_str(tr(BezelMarquee.KEY)).is_equal("DARKSTAR")
 	var surf := CabinetSurface.default() as CabinetSurface
 	var anchor := sign.lettering_anchor()
@@ -406,6 +405,8 @@ func test_the_printed_eye_goes_first_as_a_fixed_black_absence_off_its_slit() -> 
 	var e := BezelDecay.eye_hole()
 	assert_bool(e.is_empty()).is_false()
 	assert_bool((e["c"] as Vector2).is_equal_approx(eye.get_center())).is_false()   # never concentric with the slit (N4)
+	assert_bool(eye.has_point(e["c"] as Vector2)).is_true()            # it lands on the wear origin (the world's middle band)
+	assert_float(float(e["r"])).is_less_equal(minf(eye.size.x, eye.size.y))   # and never swallows the world
 	var bd := BezelDecay.new()
 	add_child(bd)
 	bd.grow = 0.0
