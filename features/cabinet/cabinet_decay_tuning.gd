@@ -38,6 +38,13 @@ extends TunableResource
 @export var hum_db: float = -26.0                     ## AUDIO-001 §2.1 "extra" row level ✱
 @export var shell_db: float = -14.0                   ## AUDIO-001 §2.1 layer A level ✱
 
+# --- The cursed turn (PROPOSED, PM under owner direction 2026-11-19 overnight push, TECH-001 Q-T260–Q-T263) ---
+@export var focus_play: Vector2 = Vector2(0.7, 0.38)  ## where the Cabinet looks back from: fraction of the play view (x, y), off-centre
+@export var bulge_max: float = 0.6                    ## the glass's swell at the end of D3 (0..1)
+@export var bulge_radius: float = 0.2                 ## ✱ the swell's radius, share of the screen height
+@export var breath_hz: float = 0.22                   ## the hum breathes this slowly across D2–D3 (one breath ≈ 4.5 s)
+@export var breath_db: float = 7.0                    ## how far the hum swells on each in-breath
+
 # --- Ending 5 ---
 @export var ending5_line_hold_s: float = 4.0
 
@@ -86,6 +93,18 @@ func skin_k(t: float) -> float:
 func collapse_k(t: float) -> float:
 	var m := marks()
 	return clampf((t - m[3]) / maxf(collapse_squeeze_s, 0.001), 0.0, 1.0)
+
+
+## 0..1 the glass's swell at `t`: from D2's start to D3's end, easing in (the lean grows), held through D4.
+func bulge_k(t: float) -> float:
+	var m := marks()
+	var k := clampf((t - m[1]) / (m[3] - m[1]), 0.0, 1.0)
+	return k * k * (3.0 - 2.0 * k)
+
+
+## The focus in whole-screen UV, given the UV y of the HUD strip's bottom (`play_top`).
+func focus_uv(play_top: float) -> Vector2:
+	return Vector2(focus_play.x, play_top + (1.0 - play_top) * focus_play.y)
 
 
 ## Wear level for stage index `i` (0 outside the table).

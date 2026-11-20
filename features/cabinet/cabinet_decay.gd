@@ -9,6 +9,9 @@ extends Node
 ## - subtract, never write: the only text is the honour-roll page the player already knows, losing glyphs;
 ## - the costume only: the HUD strip is never touched; only registers 1–6 drift, one RGB332 step each;
 ## - no flicker: every value moves one way; photosensitivity / reduced motion use a fade, not a squeeze.
+## - the cursed turn (TECH-001 Q-T260): the machine looks back without a face. From D2 the glass swells toward
+##   the player round an off-centre focus, and the picture collapses to a dot there, not at the middle; the
+##   tear then opens from that dot (PretenceReveal). A lens on the existing picture, never a new shape.
 ## `apply(t)` is a pure function of decay time t, so captures and tests can seek.
 
 signal finished
@@ -58,6 +61,8 @@ func begin(hi: int, score: int) -> void:
 	if crt != null:
 		crt.set_shader_parameter(&"collapse_fade", 1.0 if still else 0.0)
 		crt.set_shader_parameter(&"play_top", play_top)
+		crt.set_shader_parameter(&"focus", tuning.focus_uv(play_top))
+		crt.set_shader_parameter(&"bulge_radius", tuning.bulge_radius)
 	if bezel != null:
 		bezel.still = still
 	if audio != null:
@@ -87,6 +92,8 @@ func apply(at: float) -> void:
 		crt.set_shader_parameter(&"ghost", tuning.persistence_max * pk)
 		crt.set_shader_parameter(&"bleed", tuning.bloom_bleed_px_max * sk)
 		crt.set_shader_parameter(&"sag", 0.0 if still else tuning.raster_shrink_max * sk)
+		# the cursed turn: the glass leans out toward the player, off-centre (reduced motion: no swell)
+		crt.set_shader_parameter(&"bulge", 0.0 if still else tuning.bulge_max * tuning.bulge_k(at))
 		var ck := tuning.collapse_k(at)
 		crt.set_shader_parameter(&"collapse", ck if still else ck * COLLAPSE_HOLD)
 	# --- the registers: VOID and BONE only, one step each, round-robin ---

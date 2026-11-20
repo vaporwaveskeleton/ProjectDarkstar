@@ -3,10 +3,13 @@ extends Node
 ## THE PRETENCE (GDD §6.1 A0-5, WARP-001 W0-07 "Pretence Tear" and W0-08 "Costume Removal").
 ## There is no title card (owner direction 2026-11-19; TECH-001 §11.2). After the last credits the costume
 ## wears out with no words — THE DECAY (CabinetDecay: back to attract, tired phosphor, the skin fails, the
-## picture collapses to a dot) — and the tear opens from the dot. The bezels crack and fall away, the
-## scanlines and curvature drain off, the neon turns to the Aether's colour and fog rises; a hole opens where
-## a star should be and drinks the sky, the readouts and the light, and inside it, for the first time, the
-## thing is drawn as it really is. From the tear to the hand-off is 8 s (beat sheet 0:04 → 0:12; Q-T183 B).
+## picture collapses to a dot) — and the tear opens from the dot. The cursed turn (TECH-001 Q-T260–Q-T262):
+## the dot is off-centre, where the glass bulged toward the player, and the glass gives as the tear opens.
+## The bezels crack and fall away, the scanlines and curvature drain off, the neon turns to the Aether's
+## colour and fog rises; a torn hole opens at that dot (the same erasure as the Aether half, never a centred
+## disc, never a face) and drinks the sky, the readouts and the light; the spine stars settle on a column
+## running out of it and go out one by one, leaving the body as an absence. From the tear to the hand-off
+## is 8 s (beat sheet 0:04 → 0:12; Q-T183 B).
 ## Ending 5 (The Pretence Kept, NARR-001 §9.5): a clean-hands shift first shows Theodora Lune's ten screens,
 ## each held until a button is pressed, then the Cabinet's last screen THAT WAS A PRETENCE. — the only place
 ## it is ever shown — and then the Decay as on every clear.
@@ -80,6 +83,12 @@ func play(game: Node, skippable: bool, clean_hands: bool = false) -> void:
 	crt.set_shader_parameter(&"bleed", 0.0)
 	crt.set_shader_parameter(&"sag", 0.0)
 	crt.set_shader_parameter(&"collapse_fade", 0.0)
+	# the glass that leaned out toward the player gives as the tear opens (Q-T260); the focus stays put
+	var lean_v: Variant = crt.get_shader_parameter(&"bulge")
+	var lean := 0.0
+	if lean_v != null:
+		lean = float(lean_v)
+	_tween().tween_method(func(v: float) -> void: crt.set_shader_parameter(&"bulge", v), lean, 0.0, CRACK_S)
 	_tween().tween_method(func(v: float) -> void: crt.set_shader_parameter(&"collapse", v), CabinetDecay.COLLAPSE_HOLD, 0.0, CRACK_S)
 	_tween().tween_method(func(v: float) -> void: crt.set_shader_parameter(&"tear", v), 0.0, 0.7, CRACK_S)
 	_tween().tween_property(hud, "crack", 1.0, CRACK_S)
@@ -103,7 +112,8 @@ func play(game: Node, skippable: bool, clean_hands: bool = false) -> void:
 	if not _running:
 		return
 
-	# 3 — the hole where a star should be drinks the sky, the readouts and the light. No words (Q-T182).
+	# 3 — the torn hole, off-centre at the dot, drinks the sky, the readouts and the light. No words (Q-T182),
+	# no disc, no eye (Q-T262).
 	maw.visible = true
 	AudioService.play(&"entity_unmade", -6.0)
 	_tween().tween_property(maw, "radius", 96.0, 6.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)

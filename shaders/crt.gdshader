@@ -17,13 +17,19 @@ uniform float bleed : hint_range(0.0, 8.0) = 0.0;
 uniform float sag : hint_range(0.0, 0.5) = 0.0;
 // The Decay wears the play view only: rows above `play_top` (the HUD strip, UV y) stay honest and at home.
 uniform float play_top : hint_range(0.0, 1.0) = 0.0;
+// The cursed turn (WARP-001 W0-07, TECH-001 Q-T260): the Cabinet looks back. `focus` (screen UV) is where
+// the glass bulges toward the player and where the picture collapses to its dot, off-centre; the tear opens
+// from it. `bulge` 0 → 1 swells the glass there (a lens, never a new shape). Defaults keep the power-off centred.
+uniform vec2 focus = vec2(0.5, 0.5);
+uniform float bulge : hint_range(0.0, 1.0) = 0.0;
+uniform float bulge_radius : hint_range(0.01, 1.0) = 0.22;
 
 const float LINE_END = 0.55;        // share of `collapse` spent squeezing to the line; the rest shrinks and fades the dot
 const float LINE_H = 0.005;         // the line's half height (screen height = 1)
 
 // The dot phase: the line's half width shrinks toward the middle, then the dot fades.
 vec3 crt_dot_phase(vec2 suv, float asp) {
-	vec2 q = suv - 0.5;
+	vec2 q = suv - focus;
 	float k2 = clamp((collapse - LINE_END) / (1.0 - LINE_END), 0.0, 1.0);
 	float w = mix(0.5, 0.0, k2 * k2);
 	vec2 d = vec2(q.x / max(w, 0.004), q.y / LINE_H);
@@ -45,6 +51,16 @@ void fragment() {
 		float q = (UV.y - c) / (half_h * max(1.0 - sag, 0.05));
 		suv0 = vec2(UV.x, c + q * half_h);
 		keep = step(abs(q), 1.0);
+	}
+	if (bulge > 0.0 && in_play) {
+		// the glass swells toward the player round `focus`: the picture there is magnified and pushed out,
+		// as if something behind the tube leaned on it (aspect-correct, smooth fall-off; no flash)
+		vec2 ts0 = vec2(textureSize(TEXTURE, 0));
+		vec2 d = suv0 - focus;
+		vec2 da = vec2(d.x * ts0.x / ts0.y, d.y);
+		float k = bulge * exp(-dot(da, da) / (bulge_radius * bulge_radius));
+		suv0 = focus + d * (1.0 - 0.42 * k);
+		suv0.y = max(suv0.y, play_top);
 	}
 	vec2 uv = crt_sample_uv(suv0);
 	if (in_play && play_top > 0.0 && uv.y < play_top) {
@@ -86,9 +102,9 @@ void fragment() {
 			col = crt_dot_phase(UV, ts.x / ts.y);
 		} else {
 			float k1 = collapse / LINE_END;
-			float q = UV.y - 0.5;
+			float q = UV.y - focus.y;
 			float h = mix(0.5, LINE_H, k1 * k1);                // visible half height of the picture
-			vec2 suv2 = vec2(UV.x, 0.5 + q * 0.5 / h);
+			vec2 suv2 = vec2(UV.x, focus.y + q * 0.5 / h);
 			vec2 uv2 = crt_sample_uv(suv2);
 			vec3 c2 = vec3(0.0);
 			if (suv2.y >= 0.0 && suv2.y <= 1.0) {

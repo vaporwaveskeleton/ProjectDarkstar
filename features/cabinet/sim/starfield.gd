@@ -46,7 +46,7 @@ var backdrop: StringName = &""      ## set from the stage in reset()
 var _stars: Array[PackedVector2Array] = []
 var _spine: PackedVector2Array = PackedVector2Array()   ## tile-space spine star positions (formula, no RNG)
 var pull := 0.0                      ## 0..1, set by the reveal
-var pull_target := Vector2.ZERO    ## screen point the sky drains into (the play view centre, set in reset)
+var pull_target := Vector2.ZERO    ## screen point the sky drains into: the wound's off-centre origin (MawView.centre), else the play view centre; set in reset
 var desaturate := 0.0                ## 0..1, T0→T1 costume removal (W0-08)
 var show_seams := true
 var spine_stars := false             ## S8: set from the stage in reset()
@@ -56,7 +56,7 @@ var maw: MawView                     ## wired by CabinetGame: the live vertebra 
 func reset() -> void:
 	_stars.clear()
 	_spine = PackedVector2Array()
-	pull_target = world.screen_centre
+	pull_target = maw.centre if maw != null else world.screen_centre   # the sky drains into the wound (MawView, Q-T262)
 	spine_stars = world.stage != null and world.stage.spine_stars
 	backdrop = world.stage.backdrop if world.stage != null and BACKDROPS.has(world.stage.backdrop) else &""
 	var r := RandomNumberGenerator.new()
