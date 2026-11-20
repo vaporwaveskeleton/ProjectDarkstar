@@ -248,3 +248,13 @@ func test_depth_layer_offset_and_hash_are_deterministic() -> void:
 	assert_float(SectorDepth.cell_hash(3, -4, 1, 2)).is_equal(SectorDepth.cell_hash(3, -4, 1, 2))
 	var h := SectorDepth.cell_hash(-7, 9, 0, 1)
 	assert_bool(h >= 0.0 and h < 1.0).is_true()
+
+
+func test_depth_draws_batched_quads_from_generated_textures() -> void:
+	# Q-T248 perf: wisps and motes are textured quads sharing generated radial textures (no image files).
+	SectorDepth._ensure_textures()
+	for t: GradientTexture2D in [SectorDepth._wisp_tex, SectorDepth._mote_tex, SectorDepth._dot_tex]:
+		assert_object(t).is_not_null()
+		assert_int(t.fill).is_equal(GradientTexture2D.FILL_RADIAL)
+	var src := FileAccess.get_file_as_string("res://features/sector/sector_depth.gd")
+	assert_bool(src.contains("draw_circle(")).is_false()
