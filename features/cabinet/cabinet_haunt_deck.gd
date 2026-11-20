@@ -16,6 +16,7 @@ const WARM_COIN := &"warm_coin"         ## coin: a second coin drops into the re
 const AFTER_IMAGE := &"after_image"     ## READY card: the tube holds an after-image of something never drawn
 const BREATH := &"breath"               ## any: the cabinet hum breathes once
 const LITANY := &"marquee_litany"       ## any: the marquee light dips in the litany's rhythm
+const CRAG_FIGURE := &"crag_figure"     ## any: a figure stands on the crag in the side art for a moment, then never did (anchor `figure`, #101)
 
 const READY := &"ready"
 const HOLD := &"hold"
@@ -25,9 +26,9 @@ const DEMO := &"demo"
 
 ## The kinds each moment may offer, in a fixed order (the rng picks among the unused ones).
 const MOMENT_KINDS := {
-	&"ready": [&"after_image", &"breath", &"marquee_litany"],
-	&"hold": [&"breath", &"marquee_litany"],
-	&"attract": [&"roll_stranger", &"ghost_press", &"sour_jingle", &"breath", &"marquee_litany", &"field_figure"],
+	&"ready": [&"after_image", &"breath", &"marquee_litany", &"crag_figure"],
+	&"hold": [&"breath", &"marquee_litany", &"crag_figure"],
+	&"attract": [&"roll_stranger", &"ghost_press", &"sour_jingle", &"breath", &"marquee_litany", &"field_figure", &"crag_figure"],
 	&"coin": [&"warm_coin"],
 	&"demo": [&"field_figure"],
 }

@@ -28,6 +28,7 @@ var enabled := false                    ## the scene decides: a0_3 reached (attr
 var last_kind := &""
 var _litany_t := -1.0
 var _ember: _Ember
+var _crag: _CragFigure
 
 
 func _ready() -> void:
@@ -81,6 +82,8 @@ func perform(kind: StringName) -> void:
 				ghost_button.ghost_press(tuning.ghost_press_s)
 		CabinetHauntDeck.SOUR_JINGLE:
 			AudioService.play(&"haunt_jingle")
+		CabinetHauntDeck.CRAG_FIGURE:
+			_crag_figure()
 		CabinetHauntDeck.WARM_COIN:
 			_warm_coin()
 	haunted.emit(kind)
@@ -94,6 +97,9 @@ func stop_all() -> void:
 		screen.clear()
 	if _ember != null:
 		_ember.t = -1.0
+	if _crag != null:
+		_crag.t = -1.0
+		_crag.queue_redraw()
 
 
 func is_litany_running() -> bool:
@@ -163,3 +169,64 @@ class _Ember extends Control:
 			var r := 9.0 - i * 1.4
 			var col := Pal.GAS_2.lerp(Pal.GAS_4, i / 5.0)
 			draw_circle(c, r, Color(col.r, col.g, col.b, 0.16 * k))
+
+
+## Find the arcade backdrop under `root` (#101 builds it with the bezel). Null when the scene has none.
+static func find_backdrop(root: Node) -> CanvasItem:
+	if root is ArcadeBackdrop:
+		return root as CanvasItem
+	for c in root.get_children():
+		var b := find_backdrop(c)
+		if b != null:
+			return b
+	return null
+
+
+## Where the crag figure stands, in rig units: the bezel art's `figure` anchor (#101), feet on its bottom edge.
+## Rect2() when the art has no such anchor (then the Haunting does nothing).
+static func crag_anchor() -> Rect2:
+	var a: Dictionary = BezelArt.haunt_anchors()
+	var v: Variant = a.get(&"figure", Rect2())
+	return v as Rect2 if v is Rect2 else Rect2()
+
+
+func _crag_figure() -> void:
+	if rig == null or crag_anchor().size.y <= 0.0:
+		return
+	if _crag == null:
+		_crag = _CragFigure.new()
+		_crag.name = "CragFigure"
+		_crag.tuning = tuning
+		rig.add_child(_crag)
+	_crag.t = 0.0
+
+
+## W0-12 crag_figure (TECH-001 Q-T261 revised): for a few seconds the side art has one more figure in it, standing
+## on the crag summit against the moon in the print's own key black, as if it had always been printed there;
+## then it is gone. Featureless (never a face, N4). It fades in and out (no pop), so it is not a moving kind.
+class _CragFigure extends Control:
+	var tuning: CabinetHauntTuning
+	var t := -1.0
+
+	func _ready() -> void:
+		mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	func ink() -> float:
+		return tuning.crag_figure_k(t) if t >= 0.0 else 0.0
+
+	func _process(delta: float) -> void:
+		if t >= 0.0:
+			t += delta
+			if t >= tuning.crag_figure_s():
+				t = -1.0
+			queue_redraw()
+
+	func _draw() -> void:
+		var k := ink()
+		if k <= 0.0:
+			return
+		var r := CabinetHaunts.crag_anchor()
+		var inks := BezelInks.default() as BezelInks
+		var c := inks.key_black
+		c.a *= 0.92 * k
+		draw_colored_polygon(CabinetHauntScreen.figure_at(Vector2(r.get_center().x, r.end.y), r.size.y), c)

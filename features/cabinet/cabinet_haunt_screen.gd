@@ -84,8 +84,11 @@ func _draw() -> void:
 ## A standing figure in a long coat, at the right edge of the play view, about a third of its height:
 ## narrow head (a hexagon, not a circle), sloped shoulders, the coat falling straight. No features.
 static func figure_outline(play: Rect2) -> PackedVector2Array:
-	var h := play.size.y * 0.34
-	var foot := Vector2(play.end.x - 20.0, play.position.y + play.size.y * 0.78)
+	return figure_at(Vector2(play.end.x - 20.0, play.position.y + play.size.y * 0.78), play.size.y * 0.34, true)
+
+
+## The same featureless figure with its feet at `foot`, `h` tall; `snap` rounds to whole pixels (the arcade grid).
+static func figure_at(foot: Vector2, h: float, snap: bool = false) -> PackedVector2Array:
 	var u := h / 34.0
 	var pts := [
 		Vector2(0, -34), Vector2(2, -33), Vector2(2.5, -30), Vector2(1.5, -28),        # crown, right of the head
@@ -95,7 +98,8 @@ static func figure_outline(play: Rect2) -> PackedVector2Array:
 		Vector2(-1.5, -28), Vector2(-2.5, -30), Vector2(-2, -33)]
 	var out := PackedVector2Array()
 	for p: Vector2 in pts:
-		out.append((foot + p * u).round())
+		var q := foot + p * u
+		out.append(q.round() if snap else q)
 	return out
 
 

@@ -167,6 +167,11 @@ func _make_decay(game: Node) -> CabinetDecay:
 	d.crt = (game.screen as ArcadeScreen).crt_material()
 	d.registers = (game.screen as ArcadeScreen).get_node_or_null("Registers") as VideoRegisters
 	d.bezel = game.bezel_decay
+	var m := CabinetHaunts.find_marquee(game) as BezelMarquee
+	if m != null:
+		d.marquee_drift = CabinetMarqueeDrift.new()
+		d.marquee_drift.attach(m)
+	d.backdrop = CabinetHaunts.find_backdrop(game)
 	d.still = ArcadeButton.is_still()
 	var spec := load("res://data/cabinet/cabinet_screen.tres") as CabinetScreenSpec
 	d.play_top = spec.strip_rect().end.y / float(spec.grid.y)

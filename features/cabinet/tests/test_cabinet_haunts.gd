@@ -354,3 +354,78 @@ func test_the_stranger_is_an_extra_row_tied_with_you_shown_once() -> void:
 		pages._process(pages.tuning.page_seconds + 0.01)
 	assert_int(pages.roll_rows().size()).is_equal(2)               # once only
 	pages.free()
+
+
+# --- stacked on #101: the bezel art's haunt anchors, the marquee, the arcade backdrop ---
+
+func test_the_marquee_letters_loosen_but_never_change_order_and_one_fades() -> void:
+	var s := tr("GAME_TITLE")
+	var surf := CabinetSurface.default() as CabinetSurface
+	var prev := -INF
+	for i in s.length():
+		var x := BezelText.measure(s.substr(0, i), surf.marquee_lettering, surf.marquee_stroke, surf.marquee_tracking).x if i > 0 else 0.0
+		var pose := CabinetMarqueeDrift.letter_pose(i, 1.0)
+		assert_float(x + pose.x).is_greater(prev)                 # the order never changes: no new word
+		prev = x + pose.x
+		assert_float(absf(pose.z)).is_less_equal(CabinetMarqueeDrift.TILT + 0.0001)
+		assert_float(pose.y).is_between(0.0, CabinetMarqueeDrift.SAG + 0.0001)
+	assert_vector(CabinetMarqueeDrift.letter_pose(3, 0.0)).is_equal(Vector3.ZERO)
+	var kept := s.substr(0, CabinetMarqueeDrift.LOST) + s.substr(CabinetMarqueeDrift.LOST + 1)
+	assert_str(kept).is_equal("DARKSTR")
+	var d := CabinetMarqueeDrift.new()
+	d.still = true
+	d.set_state(1.0, 0.5)
+	assert_float(d.k).is_equal(0.0)                               # reduced motion: no sag, tilt or slide
+	assert_float(d.lost_k).is_equal(0.5)                          # the fade is kept
+
+
+func test_the_printed_eye_wears_through_first_and_never_before_the_decay() -> void:
+	var eye := BezelDecay.eye_anchor()
+	assert_float(eye.size.x).is_greater(0.0)
+	var bd := BezelDecay.new()
+	add_child(bd)
+	var ps := bd.patches()
+	var eye_p: Dictionary = {}
+	for p in ps:
+		if float(p["order"]) == BezelDecay.EYE_ORDER:
+			eye_p = p
+	assert_bool(eye_p.is_empty()).is_false()
+	assert_vector(eye_p["c"] as Vector2).is_equal(eye.get_center())
+	bd.grow = 0.0
+	for p in ps:
+		assert_float(bd.patch_k(p)).is_equal(0.0)                 # Wear never opens a patch
+	bd.grow = 0.05
+	for p in ps:
+		assert_float(bd.patch_k(eye_p)).is_greater_equal(bd.patch_k(p))
+	bd.free()
+
+
+func test_the_arcade_goes_dark_one_way_from_d2_to_the_tear() -> void:
+	var dec := CabinetDecay.new()
+	dec.tuning = _decay()
+	var m := dec.tuning.marks()
+	assert_float(dec.backdrop_dark(m[1] - 0.1)).is_equal(0.0)
+	assert_float(dec.backdrop_dark(m[4])).is_equal(1.0)
+	var prev := 0.0
+	var x := 0.0
+	while x <= m[4]:
+		var v := dec.backdrop_dark(x)
+		assert_float(v).is_greater_equal(prev)
+		prev = v
+		x += 0.1
+	dec.free()
+	var code := FileAccess.get_file_as_string("res://shaders/cabinet/arcade_backdrop.gdshader")
+	assert_bool(code.contains("uniform float dark")).is_true()
+
+
+func test_the_crag_figure_stands_on_the_anchor_and_fades() -> void:
+	var r := CabinetHaunts.crag_anchor()
+	assert_float(r.size.y).is_greater(0.0)
+	var pts := CabinetHauntScreen.figure_at(Vector2(r.get_center().x, r.end.y), r.size.y)
+	for p in pts:
+		assert_bool(r.grow(r.size.x).has_point(p)).is_true()
+	var t := _t()
+	assert_float(t.crag_figure_k(0.0)).is_equal(0.0)
+	assert_float(t.crag_figure_k(t.crag_figure_in_s + 0.1)).is_equal(1.0)
+	assert_float(t.crag_figure_k(t.crag_figure_s())).is_less(0.0001)
+	assert_bool(CabinetHauntDeck.MOVING.has(&"crag_figure")).is_false()

@@ -26,6 +26,9 @@ extends TunableResource
 @export var litany_depth: float = 0.22               ## share of the marquee's light lost at the bottom of a dip
 @export var ghost_press_s: float = 0.9               ## the service button holds itself down this long
 @export var warm_coin_s: float = 3.0                 ## the coin return glows like an ember, fading over this
+@export var crag_figure_in_s: float = 0.6           ## the figure on the crag: fades in, holds, fades out (printed ink appearing, never a pop)
+@export var crag_figure_hold_s: float = 1.6
+@export var crag_figure_out_s: float = 0.9
 @export var jingle_detune_cents: float = -60.0       ## ✱ informational: the sour jingle is rendered this flat (audio/src/cabinet.cx.js)
 
 
@@ -82,3 +85,20 @@ func breath_gain_db(t: float) -> float:
 		return 0.0
 	var s := sin(PI * t / breath_s)
 	return breath_db * s * s
+
+
+## 0..1 the crag figure's ink at `t` from its start (fade in, hold, fade out).
+func crag_figure_k(t: float) -> float:
+	if t < 0.0:
+		return 0.0
+	if t < crag_figure_in_s:
+		return t / crag_figure_in_s
+	t -= crag_figure_in_s
+	if t < crag_figure_hold_s:
+		return 1.0
+	t -= crag_figure_hold_s
+	return clampf(1.0 - t / crag_figure_out_s, 0.0, 1.0)
+
+
+func crag_figure_s() -> float:
+	return crag_figure_in_s + crag_figure_hold_s + crag_figure_out_s

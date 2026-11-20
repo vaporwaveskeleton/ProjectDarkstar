@@ -24,6 +24,8 @@ var crt: ShaderMaterial
 var registers: VideoRegisters
 var bezel: BezelDecay
 var audio: CabinetDecayAudio
+var marquee_drift: CabinetMarqueeDrift  ## the cursed turn on the marquee: letters come loose, one fades (Q-T261 revised)
+var backdrop: CanvasItem                ## the arcade behind the cabinet (#101): its other machines go dark one by one (Q-T294)
 var still := false                      ## photosensitivity or reduced motion (ArcadeButton.is_still)
 var play_top := 0.0                     ## UV y of the HUD strip's bottom: the Decay never wears above it (WARP-001 §4.2)
 
@@ -65,6 +67,8 @@ func begin(hi: int, score: int) -> void:
 		crt.set_shader_parameter(&"bulge_radius", tuning.bulge_radius)
 	if bezel != null:
 		bezel.still = still
+	if marquee_drift != null:
+		marquee_drift.still = still
 	if audio != null:
 		audio.start()
 	apply(0.0)
@@ -123,6 +127,11 @@ func apply(at: float) -> void:
 		bezel.bleach = tuning.print_bleach_max * sk
 		bezel.light = tuning.worn_through_light_max * sk
 		bezel.grow = sk
+	# --- the cursed turn beyond the screen: the marquee letters loosen, the arcade goes dark round you ---
+	if marquee_drift != null:
+		marquee_drift.set_state(0.25 * pk + 0.75 * sk, sk)
+	if backdrop != null and backdrop.material is ShaderMaterial:
+		(backdrop.material as ShaderMaterial).set_shader_parameter(&"dark", backdrop_dark(at))
 	# --- the sound ---
 	if audio != null:
 		audio.apply(at)
@@ -218,3 +227,10 @@ static func _count_glyphs(msg: CabinetMessages) -> int:
 	for s in all:
 		n += s.replace(" ", "").length()
 	return n
+
+
+## 0..1 how many of the arcade's other machines have gone dark at `at` (Q-T294): none before D2, all by the
+## tear, one by one in the backdrop's fixed per-cabinet order. A fade per machine, never a flicker.
+func backdrop_dark(at: float) -> float:
+	var m := tuning.marks()
+	return clampf((at - m[1]) / (m[4] - m[1]), 0.0, 1.0)

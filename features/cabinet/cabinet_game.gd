@@ -325,6 +325,7 @@ func _build_haunting() -> void:
 	haunts.hum = hum
 	haunts.screen = haunt_screen
 	haunts.marquee = CabinetHaunts.find_marquee(hud.get_parent())
+	haunts.rig = hud.get_parent() as Control
 	add_child(haunts)
 	hum.start()
 
