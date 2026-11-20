@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="CuePolicy" load_steps=78 format=3]
+[gd_resource type="Resource" script_class="CuePolicy" load_steps=86 format=3]
 
 ; AUDIO-001 12.6 first-pass voice policy. EVERY number here is an engineering value (tune in the slice).
 ; priority is the 7.2 level (lower = more important; P0 and P1 are never stolen). Buses: default_bus_layout.tres.
@@ -681,8 +681,80 @@ max_concurrent = 1
 min_retrigger_ms = 5000
 pitch_jitter_cents = 0.0
 
+[sub_resource type="Resource" id="p75"]
+script = ExtResource("2")
+id = &"ruins_chalk_write"
+bus = &"BUS-FLY"
+priority = 5
+max_concurrent = 2
+min_retrigger_ms = 60
+pitch_jitter_cents = 80.0
+
+[sub_resource type="Resource" id="p76"]
+script = ExtResource("2")
+id = &"ruins_ticket_payout"
+bus = &"BUS-FLY"
+priority = 4
+max_concurrent = 1
+min_retrigger_ms = 1000
+pitch_jitter_cents = 0.0
+
+[sub_resource type="Resource" id="p77"]
+script = ExtResource("2")
+id = &"ruins_tickets_land"
+bus = &"BUS-FLY"
+priority = 5
+max_concurrent = 1
+min_retrigger_ms = 300
+pitch_jitter_cents = 0.0
+
+[sub_resource type="Resource" id="p78"]
+script = ExtResource("2")
+id = &"ruins_lamp_gutter"
+bus = &"BUS-FLY"
+priority = 4
+max_concurrent = 1
+min_retrigger_ms = 500
+pitch_jitter_cents = 0.0
+
+[sub_resource type="Resource" id="p79"]
+script = ExtResource("2")
+id = &"ruins_tree_lamp"
+bus = &"BUS-FLY"
+priority = 4
+max_concurrent = 2
+min_retrigger_ms = 200
+pitch_jitter_cents = 0.0
+
+[sub_resource type="Resource" id="p80"]
+script = ExtResource("2")
+id = &"ruins_codex_page"
+bus = &"BUS-FLY"
+priority = 5
+max_concurrent = 1
+min_retrigger_ms = 150
+pitch_jitter_cents = 40.0
+
+[sub_resource type="Resource" id="p81"]
+script = ExtResource("2")
+id = &"ruins_dark_chalk"
+bus = &"BUS-FLY"
+priority = 3
+max_concurrent = 1
+min_retrigger_ms = 1000
+pitch_jitter_cents = 0.0
+
+[sub_resource type="Resource" id="p82"]
+script = ExtResource("2")
+id = &"ruins_station_near"
+bus = &"BUS-FLY"
+priority = 5
+max_concurrent = 1
+min_retrigger_ms = 400
+pitch_jitter_cents = 0.0
+
 [resource]
 script = ExtResource("1")
 ds_namespace = "ds_audio"
 source_section = "AUDIO-001 12.6 (engineering values, not SYS-001)"
-entries = [SubResource("p0"), SubResource("p1"), SubResource("p2"), SubResource("p3"), SubResource("p4"), SubResource("p5"), SubResource("p6"), SubResource("p7"), SubResource("p8"), SubResource("p9"), SubResource("p10"), SubResource("p11"), SubResource("p12"), SubResource("p13"), SubResource("p14"), SubResource("p15"), SubResource("p16"), SubResource("p17"), SubResource("p18"), SubResource("p19"), SubResource("p20"), SubResource("p21"), SubResource("p22"), SubResource("p23"), SubResource("p24"), SubResource("p25"), SubResource("p26"), SubResource("p27"), SubResource("p28"), SubResource("p29"), SubResource("p30"), SubResource("p31"), SubResource("p32"), SubResource("p33"), SubResource("p34"), SubResource("p35"), SubResource("p36"), SubResource("p37"), SubResource("p38"), SubResource("p39"), SubResource("p40"), SubResource("p41"), SubResource("p42"), SubResource("p43"), SubResource("p44"), SubResource("p45"), SubResource("p46"), SubResource("p47"), SubResource("p48"), SubResource("p49"), SubResource("p50"), SubResource("p51"), SubResource("p52"), SubResource("p53"), SubResource("p54"), SubResource("p55"), SubResource("p56"), SubResource("p57"), SubResource("p58"), SubResource("p59"), SubResource("p60"), SubResource("p61"), SubResource("p62"), SubResource("p63"), SubResource("p64"), SubResource("p65"), SubResource("p66"), SubResource("p67"), SubResource("p68"), SubResource("p69"), SubResource("p70"), SubResource("p71"), SubResource("p72"), SubResource("p73"), SubResource("p74")]
+entries = [SubResource("p0"), SubResource("p1"), SubResource("p2"), SubResource("p3"), SubResource("p4"), SubResource("p5"), SubResource("p6"), SubResource("p7"), SubResource("p8"), SubResource("p9"), SubResource("p10"), SubResource("p11"), SubResource("p12"), SubResource("p13"), SubResource("p14"), SubResource("p15"), SubResource("p16"), SubResource("p17"), SubResource("p18"), SubResource("p19"), SubResource("p20"), SubResource("p21"), SubResource("p22"), SubResource("p23"), SubResource("p24"), SubResource("p25"), SubResource("p26"), SubResource("p27"), SubResource("p28"), SubResource("p29"), SubResource("p30"), SubResource("p31"), SubResource("p32"), SubResource("p33"), SubResource("p34"), SubResource("p35"), SubResource("p36"), SubResource("p37"), SubResource("p38"), SubResource("p39"), SubResource("p40"), SubResource("p41"), SubResource("p42"), SubResource("p43"), SubResource("p44"), SubResource("p45"), SubResource("p46"), SubResource("p47"), SubResource("p48"), SubResource("p49"), SubResource("p50"), SubResource("p51"), SubResource("p52"), SubResource("p53"), SubResource("p54"), SubResource("p55"), SubResource("p56"), SubResource("p57"), SubResource("p58"), SubResource("p59"), SubResource("p60"), SubResource("p61"), SubResource("p62"), SubResource("p63"), SubResource("p64"), SubResource("p65"), SubResource("p66"), SubResource("p67"), SubResource("p68"), SubResource("p69"), SubResource("p70"), SubResource("p71"), SubResource("p72"), SubResource("p73"), SubResource("p74"), SubResource("p75"), SubResource("p76"), SubResource("p77"), SubResource("p78"), SubResource("p79"), SubResource("p80"), SubResource("p81"), SubResource("p82")]
