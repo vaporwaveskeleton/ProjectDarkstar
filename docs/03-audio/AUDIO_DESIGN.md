@@ -1090,6 +1090,8 @@ The game's dread is not flash-based (GDD-001 §11: dread from scale and wrongnes
 | Reduced motion | on / off | §8.3 |
 | Volume ducking for dialogue | off always | the entity's lines are never ducked (§7.3) |
 
+**Built 2026-11-19 (TECH-001 Q-T390 to Q-T393, §7.3, §2.7).** The six volume rows (Master, Music, Choir, Entity voice, UI and readouts, Foley and ambience) are on the Settings Audio tab, saved as `vol_master`, `vol_music`, `vol_choir`, `vol_entity`, `vol_ui`, `vol_foley`. Master is `BUS-MST` (`Master`); Music, Choir, Entity voice and UI map to `BUS-MUS`, `BUS-CHO`, `BUS-ENT`, `BUS-UI`. **Foley and ambience drives `BUS-AMB` and `BUS-FLY` and has a floor of 40 ✱ (PROPOSED, Q-T391):** `BUS-FLY` carries the glass chime and other cues the player needs, which §6.1 and §7.3 forbid putting on a slider the player can zero. Entity voice stops at 40 as the table says. A slider at 0 mutes its bus; the curve is amplitude = (value / 100)², so 70 is about −6.2 dB. Defaults: Master 70 (the table), Choir 100 (the table), the rest 100 ✱ (the table gives none). Each slider plays a preview cue on change after a 0.18 s ✱ delay, through the normal cue rules: Master `menu_accept`, Choir `grub_keen`, UI and readouts `menu_move`, Foley and ambience `shard_chime`. Music has no cue yet and the two entity cues are protected P0 set pieces, so those two sliders are silent when moved. **Not built:** Chant captions, Chant indicator, Mono output, Headphone field, Entity big type and the §7.1 calibration loop (each needs its own feature first); Photosensitivity and Reduced motion are on the Accessibility page.
+
 ---
 
 ## 9. Asset list and cost
@@ -1263,7 +1265,7 @@ Categories present: Arc-Lance and mining (lance, geode_*, shard_chime); Charges 
 
 ### 12.3 Current problems
 
-Findings marked *analytical* come from reading the code and were not reproduced at runtime. **Resolution (2026-11-18):** P1, P2, P3, P4, P6 and P7 are **resolved** by C1–C7 (see the status column); P5 stays **open**; P8 is still recorded in §12.9. "Resolved" means the code and tests exist; the runtime effect (boot time, CPU, steal behaviour in play) is unmeasured (§12.8).
+Findings marked *analytical* come from reading the code and were not reproduced at runtime. **Resolution (2026-11-18):** P1, P2, P3, P4, P6 and P7 are **resolved** by C1–C7 (see the status column); P5 stayed open until 2026-11-19, when ducking (§12.19) and the §8.4 volume sliders closed it; P8 is still recorded in §12.9. "Resolved" means the code and tests exist; the runtime effect (boot time, CPU, steal behaviour in play) is unmeasured (§12.8).
 
 | # | Problem | Where | Effect |
 |---|---|---|---|
@@ -1271,7 +1273,7 @@ Findings marked *analytical* come from reading the code and were not reproduced 
 | P2 **resolved (C1)** | **The fallback synth is built at every boot even though every render exists.** `_cues = SfxSynth.build_cabinet_set()` runs 23 per-sample GDScript recipes, then each is replaced by its render | `_ready()` | Boot CPU for nothing. Not measured; §11.5 budgets boot generation at ≤ 1.5 s ✱ |
 | P3 **resolved (C2)** | **No per-cue concurrency limit or retrigger gate, no variation.** Every call starts a voice; `pitch_scale` is forced to 1.0 | `play()` | Bursts stack and burn voices; a 6/s lance is the identical sample every time |
 | P4 **resolved (C2)** | **No per-cue bus.** Menu cues sit on `BUS-FLY`, nothing uses `BUS-ENT` | `_ready()` | The §8.4 sliders and §7.2 ducking cannot work as written |
-| P5 **open** | **Ducking and options are not wired** (known, TECH-001 §2.7); `SettingsService` has no audio keys | `settings_service.gd` | §7.2 and §8.4 unmet; planned M2 (PRODUCTION_PLAN §6) |
+| P5 **resolved (2026-11-19)** | ~~**Ducking and options are not wired**~~ Ducking was built in §12.19; the six §8.4 volume sliders are built (`vol_*` keys, Settings Audio tab, §8.4). The other §8.4 options are still not built | `settings_service.gd`, `audio_service.gd` | §7.2 met; §8.4 volume rows met, the rest planned |
 | P6 **resolved (C3)** | **20 dual-mono cues are stored as stereo** | §12.2 | 0.91 MB of source, and the decoded size scales with it, for no audible gain |
 | P7 **resolved (C5, C7); no budget or profile yet** | **No audio tests, budget or profile** | TECH-001 §8, §9 | Regressions in pool or limits would be silent |
 | P8 | **Documents disagree** (§12.9) | | |
@@ -1355,7 +1357,7 @@ Status column: **done** means implemented and covered by the 174-case suite (0 f
 | C7 | **done** (matches the original §12.2 exactly on the pre-mono backup) | `tools/audio_report.js` prints the §12.2 table from the LFS store | `tools/` | output matches §12.2 |
 | C8 | **done** (this update) | Docs: TECH-001 §2.7, §2.8, §8, §9, §11.1, §11.2; README | docs | match the code |
 
-Deferred to M2 (not in this set): ducking sidechains (§7.2), volume sliders (`SettingsService` keys plus the UI-001 settings screen), the music system, the entity speech chip, the thrust bed (Q-A11). (Update 2026-11-19: the thrust bed and the ducking sidechains are built, §12.19.)
+Deferred to M2 (not in this set): ducking sidechains (§7.2), volume sliders (`SettingsService` keys plus the UI-001 settings screen), the music system, the entity speech chip, the thrust bed (Q-A11). (Update 2026-11-19: the thrust bed and the ducking sidechains are built, §12.19; the volume sliders are built, §8.4.)
 
 ### 12.8 Baseline measurements and how to reproduce them
 

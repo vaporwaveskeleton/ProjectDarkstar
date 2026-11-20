@@ -15,7 +15,7 @@
 | Loading / transition curtain | brief | built (fade) — `scenes/boot/boot.tscn` |
 | Act 0 cabinet HUD: printed bezel around the 256×304 portrait screen, 1UP/score, Vigils (readouts on the screen's 40 px HUD strip, TECH-001 §2.10), glass-lamp Charge pips, Ledger Compass mini-map; READY card, banners, captions, credits, the entity's big type | WARP-001 W0-01/W0-02/W0-04, ART-001 §11.5 | built — `features/cabinet/` (TECH-001 §2.10) |
 | HUD (diegetic, may lie) | WARP-001 §4 | Act 1+: stub (one honest hull label) |
-| Rebinding, mouse sensitivity, aim assist, colourblind variants, subtitles, audio options (Settings shows bindings read-only on its Controls page; no Audio tab until the sliders exist, TECH-001 Q-T270) | GDD §10, AUDIO-001 §8.4 | planned |
+| Rebinding, mouse sensitivity, aim assist, colourblind variants, subtitles, the rest of the AUDIO-001 §8.4 options (captions, chant indicator, mono, headphone field; Settings shows bindings read-only on its Controls page and has an Audio tab with the six volume sliders, TECH-001 Q-T270 closed, Q-T393 open) | GDD §10, AUDIO-001 §8.4 | planned |
 | Death / cause-of-death screen | GDD §6.3, §8.9; AUDIO-001 §4.10 | planned |
 | Ruins first arrival (title, the lit sapling, continue) | GDD §6.4 | stub — `scenes/ruins/` |
 | Ruins hub, Lantern Tree, Chalk Desk, Codex, run summary | GDD §6.4, LOOP-001 §3, §7 | planned |
@@ -107,18 +107,18 @@ Owner direction 2026-11-19 ("too narrow, not enough artwork"); built by the PM u
 **Layout.**
 * **Settings** is a wide panel: about 470 logical px at 100 % text, up to the full 640 at 200 %.
   * Header: the title, plus `Service Mode` on the cabinet, then a heavy rule.
-  * Body: a **tab rail** on the left (Accessibility, Video, Controls, an art panel, then Back) and the **active page** on the right. Under the page, one line describes the focused row (`*_DESC` keys).
+  * Body: a **tab rail** on the left (Accessibility, Video, Audio, Controls, an art panel, then Back) and the **active page** on the right. Under the page, one line describes the focused row (`*_DESC` keys).
   * *Accessibility* page: Large Text, Reduced Motion, Photosensitivity Mode, Steady Ledger.
   * *Video* page: Weapon Muzzle Flash.
   * *Controls* page: a read-only table (action, keyboard, gamepad). It reads the live `InputMap` through `InputLabels`, so it always shows the real bindings. At 200 % text each row stacks the label, the keyboard binding and the gamepad binding on three lines, so the table never leaves the frame.
-  * There is no Audio tab until the AUDIO-001 §8.4 sliders are built (M2; TECH-001 Q-T270).
-  * The rows read and write `SettingsService` exactly as before. No setting, key, default or saved value changed.
+  * *Audio* page (2026-11-19, TECH-001 Q-T390): six volume sliders in AUDIO-001 §8.4 order and words, Master, Music, Choir, Entity voice, UI and readouts, Foley and ambience. Each row is a bar plus its number (never the bar alone). Left and right step it by 5, a click or drag on the bar sets it, `ui_cancel` on a slider returns to the Audio tab (a second one closes), 0 mutes the bus, and Entity voice and Foley and ambience stop at 40 (the bar shows a tick at the floor). Changes apply live and play a short preview cue after 0.18 s. At 200 % text the bar drops under the label. Music and Entity voice have no preview cue. The saved keys are the `vol_*` rows in TECH-001 §7.3.
+  * The rows read and write `SettingsService`. The Audio page adds six keys (`vol_*`); no other setting, key, default or saved value changed.
 * **Pause:** an art panel on the left; Resume, Settings and Abandon Run on the right (in the Ruins, Leave for the Title).
 * **Confirm:** the title, a heavy rule, a caution plate beside the body text, then Cancel (default focus) and Confirm.
 
 **Focus (§4).**
 * The Settings rail is a wrapping ring. Each page is its own wrapping ring.
-* Focusing a tab shows its page. `ui_accept` on a tab, or right from anywhere on the rail, moves to the page's first row. Left from a row returns to its tab.
+* Focusing a tab shows its page. `ui_accept` on a tab, or right from anywhere on the rail, moves to the page's first row. Left from a row returns to its tab, except on the Audio page, where left and right belong to the slider and `ui_cancel` returns to the tab.
 * Default focus is the Accessibility tab. `ui_cancel` closes, as on every overlay.
 * The Controls table header is not a focus stop. Its rows are, so a pad can scroll the table.
 
@@ -150,3 +150,5 @@ Owner direction 2026-11-19 ("too narrow, not enough artwork"); built by the PM u
 * the safe area at 200 %, inside a 640×360 viewport, for every page and menu in both costumes;
 * visible art at 100 %;
 * the costume choice per stack, and the still cursor.
+
+`scenes/tests/test_settings_audio.gd` covers the Audio page: the tab order, the six rows in both costumes, the closed focus ring, left/right stepping with real input, the Entity floor, mute at 0, Back on a slider, the preview, and the translations. `core/audio/tests/test_user_volume.gd` covers the curve, the persistence round trip and the bus effect.

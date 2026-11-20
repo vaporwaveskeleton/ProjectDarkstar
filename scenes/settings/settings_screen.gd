@@ -30,14 +30,20 @@ const BINDINGS := {
 ## ✱ Gap after each controls value column (logical px at 100 % text).
 const COLUMN_GAP := 12.0
 
-@onready var _tabs: Array[MenuRow] = [%TabAccessibility, %TabVideo, %TabControls]
-@onready var _pages: Array[Control] = [%PageAccessibility, %PageVideo, %PageControls]
+## ✱ A slider preview waits this long after the last change, so holding a key plays one cue, not a burst.
+const PREVIEW_DELAY_S := 0.18
+
+@onready var _tabs: Array[MenuRow] = [%TabAccessibility, %TabVideo, %TabAudio, %TabControls]
+@onready var _pages: Array[Control] = [%PageAccessibility, %PageVideo, %PageAudio, %PageControls]
 @onready var _back: MenuRow = %Back
 @onready var _desc: MenuText = %Desc
 @onready var _subtitle: MenuText = %Subtitle
 
 var _rows: Dictionary = {}     # MenuRow -> setting key
+var _sliders: Dictionary = {}  # MenuRow -> setting key (the Audio page's volume sliders)
 var _page := 0
+var _preview_timer: Timer
+var _preview_key: StringName = &""
 
 
 func _ready() -> void:
@@ -46,6 +52,17 @@ func _ready() -> void:
 		var row := get_node("%" + String(row_name)) as MenuRow
 		_rows[row] = TOGGLES[row_name]
 		row.toggled.connect(_on_toggled.bind(row))
+	_preview_timer = Timer.new()
+	_preview_timer.one_shot = true
+	_preview_timer.wait_time = PREVIEW_DELAY_S
+	_preview_timer.timeout.connect(_play_preview)
+	add_child(_preview_timer)
+	for e in UserVolume.SLIDERS:
+		var srow := get_node("%" + String(e["row"])) as MenuRow
+		srow.floor_value = int(e["floor"])
+		srow.step = UserVolume.STEP
+		_sliders[srow] = e["key"]
+		srow.value_changed.connect(_on_slider_changed.bind(srow))
 	for i in _tabs.size():
 		var tab := _tabs[i]
 		tab.focus_entered.connect(show_page.bind(i))
@@ -65,6 +82,30 @@ func refresh() -> void:
 		var key: StringName = _rows[row]
 		var v: Variant = SettingsService.get_value(key)
 		row.show_value(float(v) > 1.0 if key == &"text_scale" else bool(v))
+	for srow: MenuRow in _sliders:
+		srow.show_slider(int(SettingsService.get_value(_sliders[srow])))
+
+
+## A slider the player moved: write it (AudioService applies it live) and queue the preview cue.
+func _on_slider_changed(v: int, srow: MenuRow) -> void:
+	var key: StringName = _sliders[srow]
+	SettingsService.set_value(key, v)
+	_preview_key = key
+	_preview_timer.start()
+
+
+func _play_preview() -> void:
+	AudioService.preview_volume(_preview_key)
+
+
+## Escape / Back on a slider steps out to its tab (left and right belong to the slider); anywhere
+## else it closes the screen as every overlay does (UI-001 §3).
+func cancel() -> void:
+	var f := get_viewport().gui_get_focus_owner()
+	if f is MenuRow and _sliders.has(f):
+		_tabs[_page].grab_focus()
+		return
+	super()
 
 
 func _on_toggled(pressed: bool, row: MenuRow) -> void:

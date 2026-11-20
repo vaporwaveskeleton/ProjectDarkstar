@@ -73,7 +73,7 @@ func _assert_ring(s: Node, ring: Array[String]) -> void:
 
 func test_settings_rail_is_a_closed_wrapping_ring_and_opens_on_accessibility() -> void:
 	var s := _open(SETTINGS)
-	_assert_ring(s, ["TabAccessibility", "TabVideo", "TabControls", "Back"] as Array[String])
+	_assert_ring(s, ["TabAccessibility", "TabVideo", "TabAudio", "TabControls", "Back"] as Array[String])
 	assert_str(s.default_focus.name).is_equal("TabAccessibility")
 	assert_bool(_n(s, "PageAccessibility").visible).is_true()
 	assert_bool(_n(s, "PageVideo").visible).is_false()
@@ -87,9 +87,10 @@ func test_every_page_is_a_ring_and_left_returns_to_its_tab() -> void:
 	var pages := {
 		0: ["LargeText", "ReducedMotion", "Photosensitivity", "SteadyLedger"],
 		1: ["MuzzleFlash"],
-		2: ["BindMove", "BindAim", "BindFire", "BindCharge", "BindSurgelight", "BindLantern", "BindBrake", "BindCodex", "BindPause"],
+		2: ["VolMaster", "VolMusic", "VolChoir", "VolEntity", "VolUi", "VolFoley"],
+		3: ["BindMove", "BindAim", "BindFire", "BindCharge", "BindSurgelight", "BindLantern", "BindBrake", "BindCodex", "BindPause"],
 	}
-	var tabs := ["TabAccessibility", "TabVideo", "TabControls"]
+	var tabs := ["TabAccessibility", "TabVideo", "TabAudio", "TabControls"]
 	for i: int in pages:
 		s.call("show_page", i)
 		var ring: Array[String] = []
@@ -190,7 +191,7 @@ func test_no_raw_keys_and_no_missing_glyphs_on_any_menu_in_either_costume() -> v
 	for kind: int in KINDS:
 		var screens: Array[Node] = [_open(SETTINGS, kind), _open(PAUSE, kind), _confirm(kind)]
 		var settings := screens[0]
-		for i in 3:
+		for i in 4:
 			settings.call("show_page", i)
 			for c: Control in settings.call("page_rows", i):
 				c.grab_focus()   # every description is printed once
@@ -225,7 +226,7 @@ func test_every_page_and_menu_fits_the_screen_at_200_percent_text() -> void:
 	SettingsService.set_value(&"text_scale", 2.0)
 	for kind: int in KINDS:
 		var s := _open(SETTINGS, kind)
-		for i in 3:
+		for i in 4:
 			s.call("show_page", i)
 			await await_idle_frame()
 			await await_idle_frame()
