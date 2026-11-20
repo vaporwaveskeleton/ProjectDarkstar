@@ -215,6 +215,9 @@ extends TunableResource
 @export var presence_breath_px: float = 0.0
 ## ✱ vast shapes the lantern hides (CH-3): drawn only while the lantern is down (0 = none, max 3).
 @export_range(0, 3) var reveal_vast_count: int = 0
+## ✱ lantern-down night (Q-T310): how far the presenter crushes the far layer's dark and middle
+## values toward cold VOID while the lantern is down (0 = off, 1 = full); lights keep their value.
+@export_range(0.0, 1.0) var lantern_night: float = 0.0
 
 @export_group("Warp T1 (WARP-001 §2.2)")
 ## Registry ids of the standing warp effects this look represents as Aether data; tests check each
@@ -239,7 +242,7 @@ func tunable_properties() -> PackedStringArray:
 		"reveal_life_count", "rings_stalled", "rings_broken", "presence_fled", "chromatic_edge_px",
 		"missing", "sister_spheres", "sister_spheres_eaten", "presence_lit",
 		"far_value_cap", "far_cap_slope", "far_cap_desat", "far_cap_veil", "presence_drink", "presence_eye",
-		"presence_breath_px", "reveal_vast_count",
+		"presence_breath_px", "reveal_vast_count", "lantern_night",
 	])
 
 

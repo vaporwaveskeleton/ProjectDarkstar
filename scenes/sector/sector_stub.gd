@@ -6,6 +6,8 @@ extends Node2D
 ## Cabinet stage's `field_size` (`arena_source`); real kit bounds come from ZONES-001 later.
 
 const PAUSE_SCENE := preload("res://scenes/sector/pause_screen.tscn")
+## ✱ pass 8 b (Q-T310): share of the near depth behind play (DepthBack) faded out at full night.
+const DEPTH_NIGHT_DIM := 0.75
 
 @export var vigil_scene: PackedScene
 ## Where the arena size comes from: the Cabinet stage resource (its `field_size`, 1920×720 ✱).
@@ -284,6 +286,9 @@ func _step_far() -> void:
 	_far_last = now
 	_far.set_camera(far_centre, _camera.zoom.x)
 	_step_lantern(now)
+	# lantern down (Q-T310): the near depth behind play darkens with the far layer's night, so the
+	# vast shapes' silhouettes are not broken up by bright motes (the play layer is untouched)
+	_depth_back.modulate.a = 1.0 - DEPTH_NIGHT_DIM * _far.reveal() * (_far.look.lantern_night if _far.look else 0.0)
 	_depth_back.set_camera(far_centre)
 	_depth_front.set_camera(far_centre)
 

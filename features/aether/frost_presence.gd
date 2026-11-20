@@ -43,6 +43,10 @@ const GAZE_RATE := 0.35
 const REACH_PX_S := 20.0
 ## ✱ gaze at rest (local): toward the open fog below its front; reduced motion holds it here.
 const GAZE_REST := PI * 0.5
+## ✱ pass 8 b (Q-T315): the gaze is locked on within LOCK_ARC (rad) of the Vigil; the pupil contracts
+## and dilates at LOCK_RATE per second (slow: no flicker).
+const LOCK_ARC := 0.5
+const LOCK_RATE := 0.8
 
 ## 0 = here … 1 = gone. Rises only after presence_flee() (or a look's presence_fled).
 var flee_progress: float = 0.0
@@ -52,6 +56,8 @@ var reveal: float = 0.0
 ## Pass 8: the eye's gaze angle (local radians; PI/2 = out of its front) and the front's reach (local x).
 var gaze_angle: float = GAZE_REST
 var reach_x: float = EYE.x
+## 0 = looking about … 1 = locked on the Vigil (the pupil a thin slit).
+var lock: float = 0.0
 var _flee_s := 0.0
 
 
@@ -74,6 +80,11 @@ func configure(look: AetherLook) -> void:
 	set_param(&"light_col", look.presence_light)
 	set_param(&"floor_col", Pal.VOID_0)
 	set_param(&"void_col", Pal.VOID_1)
+	set_param(&"film_a", Pal.AETHER_3)
+	set_param(&"film_b", Pal.PHOS_4)
+	set_param(&"vein_col", Pal.PHOS_2)
+	set_param(&"iris_lo", Pal.PHOS_1)
+	set_param(&"glint_col", Pal.BONE_5)
 	set_param(&"drink", look.presence_drink)
 	set_param(&"eye_k", look.presence_eye)
 	set_param(&"eye_px", EYE)
@@ -94,15 +105,20 @@ static func subtracts(look: AetherLook) -> bool:
 func watch(target_screen: Vector2, delta: float, still: bool) -> void:
 	if still or not is_inside_tree():
 		gaze_angle = GAZE_REST
+		lock = 0.0
 	else:
 		var xf := get_global_transform_with_canvas()
 		var local_dir := xf.basis_xform_inv(target_screen - xf * EYE)
 		if local_dir.length() > 0.001:
 			gaze_angle = rotate_toward(gaze_angle, local_dir.angle(), GAZE_RATE * maxf(delta, 0.0))
+			# locked on: the pupil contracts once the gaze has settled on the Vigil
+			var off := absf(angle_difference(gaze_angle, local_dir.angle()))
+			lock = move_toward(lock, 1.0 - clampf(off / LOCK_ARC, 0.0, 1.0), LOCK_RATE * maxf(delta, 0.0))
 		var target_local := xf.affine_inverse() * target_screen
 		reach_x = move_toward(reach_x, clampf(target_local.x, 0.0, QUAD.x), REACH_PX_S * maxf(delta, 0.0))
 	set_param(&"gaze", Vector2.from_angle(gaze_angle))
 	set_param(&"reach_x", reach_x)
+	set_param(&"lock", lock)
 
 
 ## It turns and leaves: accelerating away and dimming over FLEE_S. Calling it again changes nothing.

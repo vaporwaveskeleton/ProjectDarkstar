@@ -58,4 +58,5 @@ presence_drink = 0.75
 presence_eye = 1.0
 presence_breath_px = 10.0
 reveal_vast_count = 3
+lantern_night = 1.0
 warp_effects = PackedStringArray("W1-01", "W1-03")

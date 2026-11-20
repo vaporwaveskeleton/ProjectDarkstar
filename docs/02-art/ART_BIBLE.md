@@ -908,7 +908,7 @@ Ruling Q-T193 (PM under the owner autonomy grant, TECH-001 §11.2): the Ruins ob
 Answers The Reviewer v3, gap 4 ("the Aether's horror doesn't read in stills": the Presence reads as rock, lantern down shows only faint jellyfish, the far layer outshines the play layer, the Grubs are the faintest thing on screen). Rulings Q-T295 to Q-T306, open Q-T307 to Q-T309 (TECH-001 §11.1, §11.2). Tests: `features/aether/tests/test_aether_readability.gd`, `features/sector/tests/test_sector_far_lantern.gd`. Evidence: one windowed before/after capture pass (scenario `aether_readability_capture` plus `m1_sector_look_capture`), judged by eye by the builder; no Reviewer score and no cold-viewer test yet. Every number is an engineering ✱ placeholder.
 
 **The play layer wins (§16.3 enforced).**
-- **The far layer is capped.** The grade applies an atmospheric value cap to the whole far layer: luma above a knee is compressed, colour is desaturated a little, and a thin veil of the look's deepest fog sits between the far layer and the play layer. The lantern pool is spared (it stays the warmest light), the floor stays VOID-0 and the entity's black is untouched. PM-01 only (`far_value_cap` and friends); every quality rung keeps it.
+- **The far layer is capped.** The presenter (since pass 8 b; first built in the grade) applies an atmospheric value cap to the whole far layer: luma above a knee is compressed, colour is desaturated a little, and a thin veil of the look's deepest fog sits between the far layer and the play layer. The lantern pool is spared (it stays the warmest light), the floor stays VOID-0 and the entity's black is untouched. PM-01 only (`far_value_cap` and friends); every quality rung keeps it.
 - **The actors are lifted.** Grubs are drawn 1.3× (collision unchanged), with a CHOIR-4 body, a CHOIR-5 rim on the lit flank and a stronger Choir halo. Grubs, the Sepulchre and the geodes sit on a soft pocket of VOID-1 fog (darkest at the core, never black), so they separate from the violet fog by value before hue. The Sepulchre's body is more opaque (the far layer no longer shows through it) and gets a BONE-4 rim. Amends the §16.6h actor line.
 - **Rule:** a Grub is never the faintest thing on screen. Guarded analytically (linear luma against the capped far layer); a capture luminance check is still open (TECH-001 Q-T64, Q-T305).
 
@@ -931,6 +931,16 @@ Answers The Reviewer v3, gap 4 ("the Aether's horror doesn't read in stills": th
 3. With the lantern down the far layer reads lavender and soft overall; the cap compresses the reveal's light too.
 4. The dark fog pockets behind actors read as soft discs when an actor is still.
 5. Cost: only the golden-path perf sample was run; the rungs are unmeasured (Q-T309, TECH-001 §8.5).
+
+#### Pass 8 b: darker, colder, and things with a shape (2026-11-19, PM review of #106)
+Rulings Q-T310 to Q-T317 (TECH-001 §11.2). Supersede the matching pass 8 lines above.
+- **Lantern down is night.** The fog closes to near-VOID and turns cold; only lights keep their value: a dim distant AETHER glow on the horizon, rims, portholes and the eye. The warm pool dies. It follows the reveal's 0.8 s ramp, so there is no flash. The play layer keeps its full read; in the sector the near depth behind play fades with the night.
+- **The bodies have identity.** A small skull on a long ribbed neck, a deep body with two pairs of trailing fins, a tapering tail with trailing tendrils and small dorsal spines. Near-VOID bodies, rim-lit hard (AETHER-5) on the flank facing the distant glow; one crosses in front of the glow so its whole outline shows. Rows of paired PHOS portholes run along both flanks like the lit windows of a ship that is alive; on the near giant a single light is a large fraction of the Vigil's size, so the scale reads at once. Their necks bend so the heads turn toward the Vigil.
+- **The eye is alive.** A PHOS iris of concentric rings with fine fibres, wet BONE-5 glints, a slit pupil that contracts when the gaze locks on the Vigil, a ring of drained, colourless plate round it. Lantern down, the iris is the brightest thing the Presence has.
+- **Chitin, not stone.** While it subtracts, the Presence's plates are dark shells with a narrow wet sheen in a thin-film tint (AETHER-3 to PHOS-4) and fine PHOS veins.
+- **Cost.** The value cap now lives in the present pass (no extra copy). In pass 8 the cap's veil and floor colours were passed in the wrong colour space, which caused the soft lavender wash; fixed.
+
+**Known weaknesses (pass 8 b, by eye).** The near giant's back ridge can still read as a jagged horizon line when its head is off-frame; the sector's front motes (DepthFront) still sprinkle bright points over the silhouettes; the drained ring round the eye is subtle lantern up; the eye's iris is a full disc when the lids are wide open. No cold-viewer test yet (Q-T307, Q-T308).
 
 ### 16.7 The Aether Vigil: a brass lantern skiff with visible systems (ruled, PM under owner autonomy grant, 2026-11-19)
 

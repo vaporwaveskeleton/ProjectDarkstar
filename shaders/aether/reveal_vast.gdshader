@@ -1,37 +1,45 @@
 shader_type canvas_item;
 render_mode unshaded, blend_premul_alpha;
-// The vast life the lantern hides (CH-3 lantern-down reveal, pass 8; ART-001 §16.6k, Q-T301..303).
-// Up to three bodies far bigger than the frame drift close around the Vigil in the fog. With the
-// lantern up they are there but unseen (the light washes them out); lantern down (`reveal` 1) shows
-// them as dark silhouettes cut out against distant light behind them, rim-lit on the side facing
-// that light, with slow rows of PHOS photophores and one head light that is brighter the more the
-// head is turned toward the Vigil (it watches). Far layer only: never a hitbox, no light in the play
-// layer, never black (body VOID tones above floor_col). No pulse above 0.2 Hz; `steady` holds the
-// lights level (reduced motion / photosensitivity). The rect sits at the screen origin (screen px).
-// Colours arrive from GDScript (Pal); defaults are overwritten. Every number here is ✱.
+// The vast life the lantern hides (CH-3 lantern-down reveal; ART-001 §16.6k, Q-T301..303, pass 2
+// Q-T311..313). Lantern down, the presenter crushes the fog to near-VOID (`night`, Q-T310); what is
+// left is a dim distant AETHER glow on the horizon and, in front of it, up to three bodies far
+// bigger than the Vigil: a small skull on a long ribbed neck, a deep body with two pairs of trailing
+// fins, a tapering tail with trailing tendrils, dorsal spines. Each is near-VOID, rim-lit hard on the
+// flank facing the distant glow, with rows of paired PHOS portholes along both flanks (living ship
+// lights; on the near one each light is about the Vigil's size: the scale cue) and one head light.
+// The neck bends so the head turns toward the Vigil (`bend`), and the head light is brighter the more
+// it faces it. One body crosses in front of the horizon glow so its whole outline shows.
+// Far layer only: never a hitbox, no light in the play layer, never black (floor_col), gone inside
+// the entity's loss. Photophores pulse in a 0.2 Hz wave; `steady` holds them (reduced motion /
+// photosensitivity). The rect sits at the screen origin (screen px). Colours arrive from GDScript
+// (Pal); defaults are overwritten. Every number here is ✱.
 
 #include "res://shaders/aether/aether_common.gdshaderinc"
 
-uniform vec3 body_col : source_color = vec3(0.075, 0.078, 0.157);    // VOID-1
-uniform vec3 body_hi : source_color = vec3(0.114, 0.125, 0.251);     // far_silhouette
-uniform vec3 glow_col : source_color = vec3(0.435, 0.357, 0.722);    // AETHER-2: the distant light
-uniform vec3 rim_col : source_color = vec3(0.588, 0.557, 0.824);     // AETHER-3
-uniform vec3 photo_col : source_color = vec3(0.384, 0.812, 0.659);   // PHOS-4
-uniform vec3 head_col : source_color = vec3(0.659, 0.941, 0.816);    // PHOS-5
+uniform vec3 body_col : source_color = vec3(0.039, 0.039, 0.07);     // VOID-0..1 silhouette
+uniform vec3 body_hi : source_color = vec3(0.075, 0.078, 0.157);     // VOID-1
+uniform vec3 glow_col : source_color = vec3(0.588, 0.557, 0.824);    // AETHER-3: the distant light
+uniform vec3 rim_col : source_color = vec3(0.502, 0.769, 0.816);     // AETHER-5: hard rim
+uniform vec3 photo_col : source_color = vec3(0.384, 0.812, 0.659);   // PHOS-4 portholes
+uniform vec3 head_col : source_color = vec3(0.659, 0.941, 0.816);    // PHOS-5 head light
 uniform vec3 floor_col : source_color = vec3(0.039, 0.039, 0.07);
 uniform float time_s = 0.0;
 uniform float reveal : hint_range(0.0, 1.0) = 0.0;
 uniform float steady = 0.0;
 uniform int count = 0;
-// per body: xy = head (screen px), z = heading (rad), w = length (px)
+uniform vec2 horizon_px = vec2(420.0, 78.0);
+uniform vec2 horizon_r = vec2(300.0, 130.0);
+// per body: xy = head (screen px), z = body heading (rad), w = length (px)
 uniform vec4 body_a[3];
-// per body: x = max half-width (px), y = seed, z = facing the Vigil 0..1, w = presence 0..1
+// per body: x = max half-width (px), y = seed, z = neck bend -1..1 (head turned toward the Vigil), w = light scale
 uniform vec4 body_b[3];
-uniform vec2 light_dir = vec2(0.45, -0.89);   // toward the distant light (screen)
+// per body: x = facing the Vigil 0..1, y = presence 0..1
+uniform vec4 body_c[3];
 
-const float PHOTO_SPACING = 22.0;
-const float BODY_ALPHA = 0.82;
-const float GLOW_ALPHA = 0.5;
+const float GLOW_HDR = 2.4;
+const float RIM_HDR = 1.7;
+const float PHOTO_HDR = 2.2;
+const float PORT_SPACING = 0.035;   // portholes per unit u
 
 varying vec2 v_px;
 
@@ -39,86 +47,101 @@ void vertex() {
 	v_px = VERTEX;
 }
 
-// Half-width of the body at u (0 = head … 1 = tail).
-// A rounded bell of a head, a waist, then a long tapering trunk: an animal, not a slab.
-float width_at(float u, float w, float sd) {
-	float head = sqrt(clamp(u / 0.1, 0.0, 1.0));
-	float bell = 1.0 - 0.32 * smoothstep(0.16, 0.3, u) * (1.0 - smoothstep(0.3, 0.5, u));
-	return w * head * bell * pow(max(1.0 - u, 0.0), 0.85) * (0.9 + 0.1 * sin(u * 17.0 + sd));
+// Half-width profile (units of w) at u (0 = head … 1 = tail tip): skull, ribbed neck, deep body, tail.
+float profile(float u, float len) {
+	float skull = 0.34 * sqrt(clamp(u / 0.06, 0.0, 1.0));
+	float neck = 0.17 + 0.035 * abs(sin(u * len / 8.0));
+	float f = mix(skull, neck, smoothstep(0.05, 0.1, u));
+	f = mix(f, 1.0, smoothstep(0.26, 0.42, u));
+	f *= 1.0 - 0.96 * smoothstep(0.62, 1.0, u);
+	return f * step(0.0, u) * step(u, 1.0);
 }
 
-// The spine's sideways offset at u: a slow undulation that grows toward the tail.
-float spine_at(float u, float len, float sd, float t) {
-	return len * 0.05 * sin(u * 8.2 - t * 0.35 + sd) * smoothstep(0.0, 0.35, u);
+// The spine's sideways offset: the neck bends toward the Vigil, the rest sways slowly.
+float spine(float u, float len, float bend, float sd, float t) {
+	float neck = bend * len * 0.16 * pow(max(1.0 - u / 0.32, 0.0), 2.0);
+	float sway = len * 0.025 * sin(u * 6.0 - t * 0.3 + sd) * smoothstep(0.3, 0.8, u);
+	return neck + sway;
 }
 
 void fragment() {
 	vec2 p = v_px;
 	float t = time_s;
 	vec4 acc = vec4(0.0);   // premultiplied
+	// the distant light on the horizon: dim, wide, behind everything
+	vec2 hq = (p - horizon_px) / horizon_r;
+	float hz = exp(-dot(hq, hq) * 1.6);
+	acc = vec4(glow_col * GLOW_HDR * hz * 0.85, hz * 0.85) * reveal;
 	for (int i = 0; i < 3; i++) {
 		if (i >= count) {
 			break;
 		}
 		vec4 A = body_a[i];
 		vec4 B = body_b[i];
+		vec4 C = body_c[i];
 		float len = A.w;
 		float w = B.x;
 		float sd = B.y;
-		float k = B.w * reveal;
+		float ls = B.w;
+		float k = C.y * reveal;
 		vec2 q = p - A.xy;
-		if (k <= 0.001 || dot(q, q) > pow(len * 1.25 + w * 3.0, 2.0)) {
+		if (k <= 0.001 || dot(q, q) > pow(len * 1.5 + w * 2.0, 2.0)) {
 			continue;
 		}
 		float c = cos(A.z);
 		float s = sin(A.z);
-		// body frame: x along the heading (head at 0, body toward -x), y across
-		vec2 b = vec2(q.x * c + q.y * s, -q.x * s + q.y * c);
-		vec2 lb = vec2(light_dir.x * c + light_dir.y * s, -light_dir.x * s + light_dir.y * c);
+		vec2 b = vec2(q.x * c + q.y * s, -q.x * s + q.y * c);   // x along the heading, head at 0
 		float u = -b.x / len;
-		float ys = spine_at(clamp(u, 0.0, 1.0), len, sd, t);
-		float v = b.y - ys;
-		float wu = width_at(u, w, sd);
-		wu += (a_noise(vec2(u * len / 18.0, sd + t * 0.05)) - 0.5) * 5.0 * step(0.0, u);
-		// frilled mantle: a scalloped edge on both flanks whose ripples travel head to tail
-		float frill = abs(sin(u * len / 26.0 - t * 0.5 + sd + step(0.0, v) * 1.3));
-		wu += w * 0.16 * frill * smoothstep(0.04, 0.14, u) * (1.0 - smoothstep(0.75, 1.0, u));
-		float inside_u = step(0.0, u) * step(u, 1.0);
-		float d = abs(v) - wu;                           // < 0 inside the body
-		float body = (1.0 - smoothstep(-1.2, 1.2, d)) * inside_u;
-		// the distant light behind it: a long soft glow offset toward the light, so the body is cut out
-		float gx = (b.x + 0.45 * len) / (0.75 * len);
-		float side = sign(lb.y + 0.0001);
-		float gy = (b.y - side * w * 0.9) / (w * 2.6);
-		float glow = exp(-gx * gx - gy * gy);
-		// rim on the flank facing the light
-		float facing_l = clamp(sign(v) * lb.y, 0.0, 1.0);
-		float rim = exp(-abs(d) / 2.4) * facing_l * inside_u * smoothstep(0.02, 0.12, u);
-		// photophores: two loose rows on the flanks, a slow wave travelling head to tail (≤ 0.2 Hz)
-		float idx = floor(u * len / PHOTO_SPACING + 0.5);
-		float pu = clamp(idx * PHOTO_SPACING / len, 0.0, 1.0);
-		float pw = width_at(pu, w, sd);
-		float py = spine_at(pu, len, sd, t);
-		float row = sign(v);
-		vec2 pp = vec2(-pu * len, py + row * pw * (0.48 + 0.1 * a_hash(vec2(idx, sd + row))));
-		float pd = length(b - pp);
-		float pulse = mix(0.45 + 0.55 * sin(t * 1.2566 - idx * 0.7 + sd), 0.7, steady);
-		float on = step(0.45, a_hash(vec2(idx * 1.7, sd * 3.1 + row))) * step(0.06, pu) * step(pu, 0.88);
-		float photo = on * pulse * (exp(-pd * pd / 2.2) + 0.3 * exp(-pd / 4.0));
-		// the head light: one, not a pair; brighter the more the head is turned toward the Vigil
-		vec2 hp = vec2(-0.06 * len, spine_at(0.06, len, sd, t));
-		float hd = length(b - hp);
-		float head_l = (0.35 + 0.65 * B.z) * (1.4 * exp(-hd * hd / 8.0) + 0.45 * exp(-hd / 11.0));
+		float uc = clamp(u, 0.0, 1.0);
+		float v = b.y - spine(uc, len, B.z, sd, t);
+		float wu = w * profile(u, len);
+		// two pairs of fins sweeping back from the body, swaying slowly
+		for (int f = 0; f < 2; f++) {
+			float u0 = f == 0 ? 0.42 : 0.58;
+			float fu = (u - u0) / 0.17;
+			float fin = clamp((u - u0) / 0.025, 0.0, 1.0) * (1.0 - clamp(fu, 0.0, 1.0)) * step(0.0, fu);
+			wu += w * (f == 0 ? 0.8 : 0.55) * fin * fin * (0.85 + 0.15 * sin(t * 0.5 + float(f) * 2.0 + sd));
+		}
+		// dorsal spines on the neck and back, on the side facing the light
+		vec2 to_l = normalize(horizon_px - A.xy + vec2(0.001));
+		float lit_side = sign(-to_l.x * s + to_l.y * c + 0.0001);   // + = the light is on the +y flank
+		float spines = min(w * 0.05, 5.0) * pow(max(sin(u * len / 4.0), 0.0), 10.0) * step(0.08, u) * step(u, 0.62);
+		wu += spines * step(0.0, v * lit_side);
+		float d = abs(v) - wu;                                      // < 0 inside
+		float body = (1.0 - smoothstep(-0.8, 0.8, d)) * step(0.0, u) * step(u, 1.0);
+		// trailing tendrils past the tail
+		float tend = 0.0;
+		for (int j = 0; j < 3; j++) {
+			float off = (float(j) - 1.0) * w * 0.12;
+			float ut = (u - 0.9) / 0.6;
+			float wave = w * 0.18 * sin(u * len / 40.0 - t * 0.7 + float(j) * 1.7 + sd) * ut;
+			float tw = mix(1.6, 0.5, clamp(ut, 0.0, 1.0));
+			tend = max(tend, (1.0 - smoothstep(tw * 0.5, tw, abs(v - off - wave))) * step(0.0, ut) * (1.0 - smoothstep(0.6, 1.0, ut)));
+		}
+		body = max(body, tend * 0.9);
+		// hard rim on the flank facing the distant light
+		float facing_l = clamp(sign(v) * lit_side, 0.0, 1.0);
+		float rim = (1.0 - smoothstep(0.0, 1.6, abs(d + 0.6))) * facing_l * step(0.0, u) * step(u, 1.0);
+		rim += tend * 0.35 * facing_l;
+		// paired portholes along both flanks of the body (a slow 0.2 Hz wave runs head to tail)
+		float sp = max(PORT_SPACING, 13.0 * ls / len);   // big lights sit further apart
+		float idx = floor(u / sp + 0.5);
+		float pu = idx * sp;
+		float pw = w * profile(pu, len);
+		float pv = spine(clamp(pu, 0.0, 1.0), len, B.z, sd, t) + sign(v) * pw * 0.42;
+		vec2 pp = vec2(-pu * len, pv);
+		float pd = length(b - pp) / ls;
+		float pulse = mix(0.75 + 0.25 * sin(t * 1.2566 - idx * 0.5 + sd), 0.9, steady);
+		float row = step(0.3, pu) * step(pu, 0.72);
+		float photo = row * pulse * (exp(-pd * pd / 1.6) + 0.35 * exp(-pd / 3.0));
+		// the head light: one; brighter the more the head faces the Vigil
+		vec2 hp = vec2(-0.025 * len, spine(0.025, len, B.z, sd, t));
+		float hd = length(b - hp) / max(ls * 0.8, 1.0);
+		float head_l = (0.3 + 0.7 * C.x) * (1.6 * exp(-hd * hd / 2.0) + 0.5 * exp(-hd / 3.5));
 
-		// composite this body over what is accumulated (premultiplied, back bodies first)
-		vec4 layer = vec4(glow_col * glow * GLOW_ALPHA, glow * GLOW_ALPHA);
-		vec3 sil = mix(body_col, body_hi, 0.35 + 0.3 * smoothstep(-wu, 0.0, -abs(v)));
-		// translucent rib bands across the trunk (anatomy: the distant light shows through between them)
-		float rib = smoothstep(0.7, 1.0, sin(u * len / 13.0 + sd)) * smoothstep(0.12, 0.25, u) * (1.0 - abs(v) / max(wu, 1.0));
-		sil = mix(sil, glow_col, clamp(rib, 0.0, 1.0) * 0.35);
-		float ba = body * BODY_ALPHA;
-		layer = vec4(layer.rgb * (1.0 - ba) + sil * ba, layer.a * (1.0 - ba) + ba);
-		vec3 add = rim_col * rim * 1.2 + (photo_col * photo * 0.9 + head_col * head_l) * body;
+		vec3 sil = mix(body_col, body_hi, 0.25 * smoothstep(-wu, 0.0, -abs(v)));
+		vec4 layer = vec4(sil * body, body);
+		vec3 add = rim_col * RIM_HDR * rim + photo_col * PHOTO_HDR * photo * max(body, 0.4) + head_col * PHOTO_HDR * head_l;
 		layer.rgb += add;
 		layer.a = max(layer.a, clamp(a_luma(add), 0.0, 1.0));
 		layer *= k;

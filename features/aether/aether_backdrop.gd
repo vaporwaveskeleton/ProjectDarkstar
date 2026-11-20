@@ -46,7 +46,6 @@ const SCATTER_PATCH := Vector2(40.0, -10.0)
 const DEFAULT_QUALITY := "res://data/aether/quality/quality_high.tres"
 ## Leash channel for the sphere's own camera drift (refraction, nested shells, cracks): factor 1.
 const DRIFT_CHANNEL := &"drift"
-
 ## Freezes drift and halves parallax (accessibility). Read from SettingsService when present.
 @export var reduced_motion: bool = false
 ## Long-flight tuning (Q-T127 option B): landmark leash and fog-band wrap.
@@ -214,12 +213,8 @@ func apply_look(new_look: AetherLook) -> void:
 	_grade.set_param(&"void_lo", Pal.VOID_1)
 	_grade.set_param(&"void_hi", Pal.VOID_4)
 	_grade.set_param(&"subtraction", look.subtraction_amount if look.subtraction else 0.0)
-	# pass 8 (Q-T296): the far layer's atmospheric value cap, every rung (readability is never dropped)
-	_grade.set_param(&"cap_knee", look.far_value_cap)
-	_grade.set_param(&"cap_slope", look.far_cap_slope)
-	_grade.set_param(&"cap_desat", look.far_cap_desat)
-	_grade.set_param(&"cap_veil", look.far_cap_veil)
-	_grade.set_param(&"veil_col", look.fog_deep)
+	# pass 8: the far layer's value cap and lantern-down night are drawn by the presenter
+	# (AetherView.grade_material / night_material, aether_present.gdshader): no extra copy here
 	_vast.configure(look)
 	_vast.set_steady(reduced_motion or photosensitive)
 	_leviathan.configure(look)
@@ -510,7 +505,7 @@ func _layer_active(l: StringName) -> bool:
 		&"far_fog", &"sky":
 			return true
 		&"grade":
-			return look.subtraction or drain > 0.001 or _any_entity() or look.far_value_cap > 0.0
+			return look.subtraction or drain > 0.001 or _any_entity()
 		&"vast":
 			return _vast.count > 0 and reveal > 0.001
 		&"cracks":
