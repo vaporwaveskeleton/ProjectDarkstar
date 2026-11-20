@@ -1,38 +1,50 @@
 class_name BezelArt
 extends RefCounted
 ## The Cabinet bezel's printed art as data (owner decision D-B; TECH-001 §1.3): `build_left()` and
-## `build_right()` return the sorted BezelPiece list for one 80 × 360 column, in column-local
-## coordinates. The two columns are the side halves of ONE printed sheet (PR C pass 2): no floating cards;
-## each is a full-bleed illustration whose characters, ships and planets run off the column's outer, top and
-## bottom edges (BezelPrint clips to the column), with the game title as a big logo in the upper left art
-## (Q-T32) and the how-to card printed straight onto the sheet. Everything is hand-placed and
-## deterministic: scatter uses a pure integer hash, never an RNG. The lists are the seam the later "zoom
-## destruction" (peel, crack, curl, decay) drives piece by piece: each piece has an id, a z and a pivot.
+## `build_right()` return the sorted BezelPiece list for one CabinetBezel.SIDE × 360 column (152 × 360 since
+## the surround pass, 2026-11-19), in column-local coordinates. The two columns are the side halves of ONE
+## printed sheet (PR C pass 2): no floating art cards; each is a full-bleed illustration whose characters,
+## ships, planets and crags run off the column's outer, top and bottom edges (BezelPrint clips to the column),
+## with the game title as a big logo in the upper left art (Q-T32), a small tidy how-to card printed in the
+## lower outer corner (real-bezel proportions: about an eighth of the sheet's width, fine-print type) and a
+## triple pinstripe border down each outer edge. Everything is hand-placed and deterministic: scatter uses a
+## pure integer hash, never an RNG. The lists are the seam the later "zoom destruction" (peel, crack, curl,
+## decay) drives piece by piece: each piece has an id, a z and a pivot.
 ##
-## Left: the title, the Vigil diving past a ringed planet and the how-to-play panel. Right: the
-## tagline burst, the Sepulchre as a reliquary moon with one slit eye (never a mouth, never two eyes, never
-## a skull: WARP-001 §12.7a) with the Choir climbing it, the sticker and the coin-door backing. Shading is
-## screened tone (HALFTONE pieces with a tone ramp), not soft blends. The 2 px nearest the screen is a key-black lip.
+## Left: the title, the Vigil diving past a ringed planet, its Arc-Lance striking a Glass geode, more geodes
+## adrift, and the how-to card. Right: the tagline burst, the Sepulchre as a reliquary moon with one slit eye
+## (never a mouth, never two eyes, never a skull: WARP-001 §12.7a) with the Choir on it, the Choir's
+## procession climbing a geode crag toward it, the sticker, the coin-door backing and the maker's badge.
+## Shading is screened tone (HALFTONE pieces with a tone ramp), not soft blends. The 2 px nearest the screen
+## is a key-black lip.
 
 const L := &"left"
 const R := &"right"
 
-## The how-to-play card's lines (en.po). Each must fit the card's 72 px (tested).
+## The how-to-play card's lines (en.po). Each must fit the card (tested).
 const HOWTO_KEYS: Array[String] = ["CAB_HOWTO_1", "CAB_HOWTO_2", "CAB_HOWTO_3", "CAB_HOWTO_4"]
+## Which how-to lines start a bulleted item (line 4 continues line 3).
+const HOWTO_BULLET: Array[bool] = [true, true, true, false]
 ## Every other string the sheet prints (all drawn with VectorText through tr()).
-const SHEET_KEYS: Array[String] = ["GAME_TITLE", "CAB_HOWTO_TITLE", "CAB_BEZEL_SLOGAN", "CAB_BEZEL_TAG_1", "CAB_BEZEL_TAG_2"]
+const SHEET_KEYS: Array[String] = ["GAME_TITLE", "CAB_HOWTO_TITLE", "CAB_BEZEL_SLOGAN", "CAB_BEZEL_TAG_1", "CAB_BEZEL_TAG_2", "CAB_BEZEL_MAKER"]
 
 const Z_BG := 0
 const Z_STARS := 5
-const Z_ART := 20          ## illustrations use Z_ART … Z_ART + 40
-const Z_CARD := 30
+const Z_ART := 20          ## illustrations use Z_ART … Z_ART + 50
+const Z_CARD := 82          ## above the pinstripes: the card is printed over the border
 const Z_WINDOW := 70
 const Z_CAP := 80
-const Z_LIP := 90
+const Z_LIP := 92
 const Z_GLARE := 100
 
-const LOGO_CAP_MAX := 24.0   ## ✱ the title's largest cap height, rig units
-const INK_W := 70.0          ## widest printed line, rig units (column 80 minus lip and margin)
+const W := CabinetBezel.SIDE   ## column width, rig units
+const LOGO_CAP_MAX := 30.0     ## ✱ the title's largest cap height, rig units
+const INK_W := W - 12.0        ## widest printed line, rig units (column minus lip and margins)
+const HOWTO_TITLE_CAP := 4.4   ## ✱ how-to card title cap height (real-bezel fine print: about 1.2 % of the sheet's height)
+const HOWTO_CAP := 3.6         ## ✱ how-to card line cap height (about 1 % of the sheet's height)
+const HOWTO_LEAD := 6.6        ## ✱ line pitch on the card
+const STRIPE_X: Array[float] = [13.0, 15.5, 17.5]   ## ✱ the outer pinstripes' distance from the outer edge (inside the bolts)
+
 
 
 ## Collects pieces for one column and keeps the build order for stable sorting. `sc` / `off` place a
@@ -114,28 +126,35 @@ class _Acc extends RefCounted:
 static func build_left() -> Array[BezelPiece]:
 	var a := _Acc.new(L)
 	_background(a)
+	_pinstripes(a)
 	_title_logo(a)
-	a.place(1.35, Vector2(-12.0, -80.0))
+	a.place(2.1, Vector2(-30.0, -150.0))
 	_vigil_illustration(a)
 	a.place(1.0, Vector2.ZERO)
+	_left_geodes(a)
 	_howto_panel(a, CabinetBezel.LEFT_HOWTO)
-	_lip(a, 78.0)
+	_lip(a, W - 2.0)
 	return sorted(a.items)
 
 
 static func build_right() -> Array[BezelPiece]:
 	var a := _Acc.new(R)
 	_background(a)
+	_pinstripes(a)
 	_tagline_burst(a)
-	a.place(1.7, Vector2(-14.0, -146.0))
+	a.place(2.2, Vector2(24.4, -202.4))
 	_sepulchre_illustration(a)
 	a.place(1.0, Vector2.ZERO)
+	_crag(a)
 	_choir_procession(a)
 	_coin_door_backing(a)
 	# one more monk, standing on the coin door's top edge
 	_monk(a, &"door_monk", Vector2(16, 252), -1, &"cyan", Z_WINDOW + 5)
+	_maker_badge(a)
 	_lip(a, 0.0)
 	return sorted(a.items)
+
+
 
 
 ## The string a TEXT piece prints: the whole translation, or one stacked half of it.
@@ -248,20 +267,46 @@ static func scatter(area: Rect2, count: int, seed_i: int, avoid: Array[Rect2]) -
 	return out
 
 
-
 # --- shared furniture ---------------------------------------------------------------------------
 
+## The outer edge of a column in column-local x (0 on the left column, W on the right).
+static func _outer(a: _Acc) -> float:
+	return 0.0 if a.col == L else W
+
+
+## Mirror a column-local x across the column so the right column can reuse a left-column layout.
+static func _mx(a: _Acc, x: float) -> float:
+	return x if a.col == L else W - x
+
+
 static func _background(a: _Acc) -> void:
-	a.rect(&"field", Rect2(-8, -8, 96, 376), &"navy", Z_BG)
-	var avoid: Array[Rect2] = [Rect2(0, 0, 80, 12), Rect2(0, 348, 80, 12)]
+	a.rect(&"field", Rect2(-8, -8, W + 16, 376), &"navy", Z_BG)
+	var avoid: Array[Rect2] = [Rect2(0, 0, W, 12), Rect2(0, 348, W, 12)]
 	var seed_i := 1 if a.col == L else 2
-	a.pixels(&"stars_cream", scatter(Rect2(0, 0, 80, 360), 22, seed_i, avoid), &"cream", Z_STARS)
-	a.pixels(&"stars_yellow", scatter(Rect2(0, 0, 80, 360), 10, seed_i + 10, avoid), &"yellow", Z_STARS)
-	var burst_y: Array[float] = [70.0, 216.0, 232.0]
+	# nebula washes: broad screened tone, so the dark field is never an empty patch
+	var n1 := Vector2(_mx(a, 46.0), 214.0)
+	var n2 := Vector2(_mx(a, 118.0), 70.0)
+	a.tone_radial(&"nebula_warm", circle_pts(n1, 96.0, 30), &"magenta", Z_BG + 1, n1, 0.0, 96.0, 0.42, 0.0)
+	a.tone_radial(&"nebula_cool", circle_pts(n2, 84.0, 30), &"process_blue", Z_BG + 1, n2, 0.0, 84.0, 0.5, 0.0)
+	a.tone_linear(&"nebula_band", PackedVector2Array([Vector2(-8, 150), Vector2(W + 8, 96), Vector2(W + 8, 136), Vector2(-8, 190)]), &"cyan", Z_BG + 2,
+		Vector2(0, 170), Vector2(0, 136), 0.18, 0.0)
+	a.pixels(&"stars_cream", scatter(Rect2(0, 0, W, 360), 46, seed_i, avoid), &"cream", Z_STARS)
+	a.pixels(&"stars_yellow", scatter(Rect2(0, 0, W, 360), 18, seed_i + 10, avoid), &"yellow", Z_STARS)
+	a.pixels(&"stars_cyan", scatter(Rect2(0, 0, W, 360), 10, seed_i + 20, avoid), &"cyan", Z_STARS)
+	var burst: Array[Vector2] = [Vector2(28, 98), Vector2(128, 242), Vector2(58, 258), Vector2(140, 22)]
 	if a.col != L:
-		burst_y = [150.0, 216.0, 232.0]
-	for i in burst_y.size():
-		a.fill(StringName("sparkle_%d" % i), star_pts(Vector2(40 + (i - 1) * 17, burst_y[i]), 2.5, 0.6, 4), &"yellow", Z_STARS + 1)
+		burst = [Vector2(40, 196), Vector2(138, 70), Vector2(74, 98), Vector2(30, 120)]
+	for i in burst.size():
+		a.fill(StringName("sparkle_%d" % i), star_pts(burst[i], 3.0, 0.7, 4), &"yellow", Z_STARS + 1)
+
+
+## A triple pinstripe (yellow, red, magenta) down the outer edge, inside the bezel bolts: the sheet's border.
+static func _pinstripes(a: _Acc) -> void:
+	var inks: Array[StringName] = [&"yellow", &"warm_red", &"magenta"]
+	var widths: Array[float] = [1.6, 1.0, 1.0]
+	for i in STRIPE_X.size():
+		var x := absf(_outer(a) - STRIPE_X[i])
+		a.stroke(StringName("stripe_%d" % i), PackedVector2Array([Vector2(x, -8), Vector2(x, 368)]), inks[i], Z_CAP - 2, widths[i])
 
 
 ## The key-black screen lip: the 2 px strip nearest the opening.
@@ -291,6 +336,40 @@ static func _monk(a: _Acc, id: StringName, feet: Vector2, face: int, glass_ink: 
 	a.outline(StringName("%s_glass_line" % id), diamond, &"key_black", z + 5)
 
 
+## A Glass geode: a lumpy rock cracked open on a cavity of cyan crystal, outlined in key black. `r` is the
+## rock's radius, `rot` turns the cavity's opening. Deterministic (hash of `seed_i`).
+static func _geode(a: _Acc, id: String, c: Vector2, r: float, rot: float, seed_i: int, z: int) -> void:
+	var rock := PackedVector2Array()
+	var n := 11
+	for i in n:
+		var ang := TAU * i / n
+		var k := 0.82 + 0.3 * float(hash_int(seed_i * 31 + i) % 100) / 100.0
+		rock.append(c + Vector2(cos(ang), sin(ang)) * r * k)
+	a.fill(StringName("%s_rock" % id), rock, &"chrome_dark", z)
+	a.tone_radial(StringName("%s_rock_shade" % id), rock, &"navy", z + 1, c + Vector2(-r * 0.35, -r * 0.4), r * 0.3, r * 1.2, 0.0, 0.9)
+	a.stroke(StringName("%s_rock_lit" % id), arc_pts(c, r * 0.86, r * 0.86, 0.0, 3.6, 4.9, 8), &"chrome_light", z + 2, 1.0)
+	a.outline(StringName("%s_rock_line" % id), rock, &"key_black", z + 2)
+	# the cavity, turned toward `rot`
+	var cav_c := c + Vector2(cos(rot), sin(rot)) * r * 0.18
+	var cav := ellipse_pts(cav_c, r * 0.62, r * 0.46, rot, 16)
+	a.fill(StringName("%s_cavity" % id), cav, &"navy", z + 3)
+	a.tone_radial(StringName("%s_cavity_glow" % id), cav, &"cyan", z + 3, cav_c, 0.0, r * 0.62, 0.8, 0.1)
+	a.outline(StringName("%s_cavity_rim" % id), cav, &"key_black", z + 4)
+	# crystal shards fanning out of the cavity
+	for i in 5:
+		var ang := rot - 1.1 + 0.55 * i
+		var ln := r * (0.55 + 0.25 * float(hash_int(seed_i * 53 + i) % 100) / 100.0)
+		var base := cav_c + Vector2(cos(ang), sin(ang)) * r * 0.08
+		var dir := Vector2(cos(ang), sin(ang))
+		var side := dir.orthogonal() * r * 0.11
+		var shard := PackedVector2Array([base - side, base + dir * ln, base + side])
+		a.fill(StringName("%s_shard_%d" % [id, i]), shard, &"cyan", z + 5)
+		a.stroke(StringName("%s_shard_%d_glint" % [id, i]), PackedVector2Array([base, base + dir * ln * 0.8]), &"cream", z + 6, 0.8)
+		a.outline(StringName("%s_shard_%d_line" % [id, i]), shard, &"key_black", z + 7)
+	var tip := cav_c + Vector2(cos(rot), sin(rot)) * r * 0.75
+	a.fill(StringName("%s_spark" % id), star_pts(tip, r * 0.3, r * 0.07, 4, 0.4), &"cream", z + 8)
+
+
 # --- LEFT: the title ----------------------------------------------------------------------------
 
 ## The big logo (Q-T32: it lives in the side-panel art): the game title stacked over two lines in yellow with a
@@ -300,42 +379,42 @@ static func _title_logo(a: _Acc) -> void:
 	var h1 := title.substr(0, int(ceil(title.length() * 0.5)))
 	var h2 := title.substr(int(ceil(title.length() * 0.5)))
 	var ratio := 0.2
-	var cap := minf(fit_cap(h1, INK_W - 4.0, LOGO_CAP_MAX, ratio, 0.8), fit_cap(h2, INK_W - 4.0, LOGO_CAP_MAX, ratio, 0.8))
+	var cap := minf(fit_cap(h1, INK_W - 8.0, LOGO_CAP_MAX, ratio, 1.2), fit_cap(h2, INK_W - 8.0, LOGO_CAP_MAX, ratio, 1.2))
 	var stroke := cap * ratio
-	var cx := 38.0
-	var y0 := 15.0
+	var cx := 78.0
+	var y0 := 16.0
 	var y1 := y0 + cap + 8.0
 	var mid := Vector2(cx, (y0 + y1 + cap) * 0.5)
-	a.tone_radial(&"logo_glow", circle_pts(mid, 52.0, 28), &"magenta", Z_ART, mid, 0.0, 52.0, 0.75, 0.0)
-	a.tone_radial(&"logo_glow_cool", circle_pts(mid + Vector2(-22, 18), 40.0, 24), &"process_blue", Z_ART, mid + Vector2(-22, 18), 0.0, 40.0, 0.7, 0.0)
+	a.tone_radial(&"logo_glow", circle_pts(mid, 78.0, 30), &"magenta", Z_ART, mid, 0.0, 78.0, 0.75, 0.0)
+	a.tone_radial(&"logo_glow_cool", circle_pts(mid + Vector2(-34, 26), 56.0, 26), &"process_blue", Z_ART, mid + Vector2(-34, 26), 0.0, 56.0, 0.7, 0.0)
+	# speed bars behind the logo (period racing stripes)
+	var bar_inks: Array[StringName] = [&"yellow", &"orange", &"warm_red"]
+	for i in bar_inks.size():
+		var y := y1 + cap + 6.0 + i * 3.4
+		a.rect(StringName("logo_bar_%d" % i), Rect2(10.0 + i * 10.0, y, W - 24.0 - i * 20.0, 1.8), bar_inks[i], Z_WINDOW - 1)
 	for part in [1, 2]:
 		var y := y0 if part == 1 else y1
 		var tag := "a" if part == 1 else "b"
-		a.text(StringName("logo_shadow_%s" % tag), "GAME_TITLE", Vector2(cx + 1.9, y + 2.3), &"warm_red", Z_WINDOW, cap, stroke + 3.4, true, 0.8, part)
-		a.text(StringName("logo_line_%s" % tag), "GAME_TITLE", Vector2(cx, y), &"key_black", Z_WINDOW + 1, cap, stroke + 3.4, true, 0.8, part)
-		a.text(StringName("logo_fill_%s" % tag), "GAME_TITLE", Vector2(cx, y), &"yellow", Z_WINDOW + 2, cap, stroke, true, 0.8, part)
-		a.text(StringName("logo_shine_%s" % tag), "GAME_TITLE", Vector2(cx - 0.5, y - 0.6), &"cream", Z_WINDOW + 3, cap, maxf(stroke * 0.28, 0.7), true, 0.8, part)
+		a.text(StringName("logo_shadow_%s" % tag), "GAME_TITLE", Vector2(cx + 2.4, y + 2.9), &"warm_red", Z_WINDOW, cap, stroke + 4.2, true, 1.2, part)
+		a.text(StringName("logo_line_%s" % tag), "GAME_TITLE", Vector2(cx, y), &"key_black", Z_WINDOW + 1, cap, stroke + 4.2, true, 1.2, part)
+		a.text(StringName("logo_fill_%s" % tag), "GAME_TITLE", Vector2(cx, y), &"yellow", Z_WINDOW + 2, cap, stroke, true, 1.2, part)
+		a.text(StringName("logo_shine_%s" % tag), "GAME_TITLE", Vector2(cx - 0.6, y - 0.8), &"cream", Z_WINDOW + 3, cap, maxf(stroke * 0.28, 0.8), true, 1.2, part)
 
 
 # --- LEFT: the Vigil ----------------------------------------------------------------------------
 
+## Drawn in the original 80-column frame and enlarged by `a.place` (build_left) so the ship and planet bleed.
 static func _vigil_illustration(a: _Acc) -> void:
-	var r := Rect2(3, 108, 74, 124)
 	var z := Z_ART + 1
 	var keep_clear: Array[Rect2] = [Rect2(14, 140, 40, 40)]
 	# glows: screened tone behind the planet and behind the ship's engines
-	a.tone_radial(&"vigil_glow_planet", circle_pts(Vector2(23, 129), 44.0, 28), &"process_blue", z, Vector2(23, 129), 0.0, 44.0, 0.75, 0.0)
+	a.tone_radial(&"vigil_glow_planet", circle_pts(Vector2(23, 129), 38.0, 28), &"process_blue", z, Vector2(23, 129), 0.0, 38.0, 0.75, 0.0)
 	a.tone_radial(&"vigil_glow_flame", circle_pts(Vector2(36, 150), 40.0, 28), &"orange", z, Vector2(36, 150), 0.0, 40.0, 0.7, 0.0)
-	# vignette: key-black screened tone in two corners
-	a.tone_linear(&"vigil_vignette_tl", PackedVector2Array([r.position, r.position + Vector2(36, 0), r.position + Vector2(0, 36)]), &"key_black", z, r.position, r.position + Vector2(13, 13), 0.95, 0.0)
-	a.tone_linear(&"vigil_vignette_br", PackedVector2Array([r.end, r.end - Vector2(40, 0), r.end - Vector2(0, 40)]), &"key_black", z, r.end, r.end - Vector2(14, 14), 0.95, 0.0)
-	a.pixels(&"vigil_stars", scatter(r.grow(-2), 20, 21, keep_clear), &"cream", z + 1)
-	a.pixels(&"vigil_stars_y", scatter(r.grow(-2), 8, 31, keep_clear), &"yellow", z + 1)
+	a.pixels(&"vigil_stars", scatter(Rect2(5, 110, 70, 120), 16, 21, keep_clear), &"cream", z + 1)
 	# starbursts
 	a.fill(&"vigil_burst_a", star_pts(Vector2(66, 124), 6, 1.6, 4), &"yellow", z + 2)
 	a.outline(&"vigil_burst_a_line", star_pts(Vector2(66, 124), 6, 1.6, 4), &"key_black", z + 3)
 	a.fill(&"vigil_burst_b", star_pts(Vector2(10, 206), 4, 1.2, 4), &"yellow", z + 2)
-	a.fill(&"vigil_burst_c", star_pts(Vector2(68, 220), 4, 1.2, 4), &"yellow", z + 2)
 	# hidden wrongness: one of the "stars" is a black hole with a thin cream ring
 	a.fill(&"vigil_hole", circle_pts(Vector2(52, 118), 3.0, 14), &"key_black", z + 2)
 	a.outline(&"vigil_hole_ring", circle_pts(Vector2(52, 118), 4.0, 16), &"cream", z + 3)
@@ -348,6 +427,7 @@ static func _vigil_illustration(a: _Acc) -> void:
 	a.tone_radial(&"vigil_planet_shade_wide", crescent_pts(pc, 11, -0.4, 2.6, 9), &"navy", z + 7, pc, 2.0, 11.0, 0.0, 0.95)
 	a.fill(&"vigil_planet_shade", crescent_pts(pc, 11, -0.2, 2.4, 4.5), &"navy", z + 8)
 	a.tone_radial(&"vigil_planet_shade_deep", crescent_pts(pc, 11, 0.1, 2.1, 2.5), &"key_black", z + 9, pc, 8.5, 11.0, 0.0, 0.95)
+	a.stroke(&"vigil_planet_band", arc_pts(pc, 10, 3, -0.38, 0.3, 2.8, 10), &"cyan", z + 9, 1.0)
 	a.outline(&"vigil_planet_line", circle_pts(pc, 11, 22), &"key_black", z + 10)
 	a.stroke(&"vigil_ring_front_line", arc_pts(pc, 18, 5, ring_rot, 0.0, PI, 18), &"key_black", z + 11, 5.0)
 	a.stroke(&"vigil_ring_front", arc_pts(pc, 18, 5, ring_rot, 0.0, PI, 18), &"magenta", z + 12, 3.0)
@@ -372,12 +452,13 @@ static func _vigil_illustration(a: _Acc) -> void:
 	a.fill(&"vigil_fin_l", xf(PackedVector2Array([Vector2(-12, -1), Vector2(-20, 16), Vector2(0, 8), Vector2(-5, 3)]), centre, rot), &"warm_red", z + 18)
 	a.outline(&"vigil_hull_line", xf(hull, centre, rot), &"key_black", z + 19)
 	a.stroke(&"vigil_keel", xf(PackedVector2Array([Vector2(0, -20), Vector2(0, 7)]), centre, rot), &"key_black", z + 19)
+	a.stroke(&"vigil_panel_line", xf(PackedVector2Array([Vector2(-9, 8), Vector2(0, -6), Vector2(9, 8)]), centre, rot), &"orange", z + 19, 0.6)
 	var cockpit := centre + Vector2(0, -4).rotated(rot)
 	a.fill(&"vigil_cockpit", circle_pts(cockpit, 5, 14), &"chrome_dark", z + 20)
 	a.fill(&"vigil_cockpit_glint", circle_pts(cockpit + Vector2(-1.5, -1.5), 2.5, 10), &"chrome_light", z + 21)
 	a.outline(&"vigil_cockpit_line", circle_pts(cockpit, 5, 14), &"key_black", z + 22)
 	a.pixels(&"vigil_cockpit_spark", PackedVector2Array([cockpit + Vector2(-2, -3)]), &"cream", z + 23)
-	# the cyan lance bolt from the nose toward the screen
+	# the cyan Arc-Lance bolt from the nose down to the geode it is mining (LEFT geodes)
 	var nose := centre + d * 26.0
 	var bolt := PackedVector2Array([nose, nose + d * 8.0 + perp * 3.0, nose + d * 15.0 - perp * 3.0, nose + d * 23.0])
 	a.stroke(&"vigil_bolt_line", bolt, &"key_black", z + 24, 5.0)
@@ -386,63 +467,93 @@ static func _vigil_illustration(a: _Acc) -> void:
 	a.fill(&"vigil_muzzle", star_pts(nose, 5, 1.5, 4, 0.3), &"cream", z + 27)
 
 
+## Glass geodes adrift round the Vigil; the big one at the lower inner corner takes the Arc-Lance hit.
+static func _left_geodes(a: _Acc) -> void:
+	_geode(a, "geode_big", Vector2(126, 316), 21.0, -2.3, 3, Z_ART + 42)
+	var hit := Vector2(128, 302)
+	a.fill(&"geode_hit", star_pts(hit, 9.0, 2.2, 6, 0.2), &"yellow", Z_ART + 50)
+	a.outline(&"geode_hit_line", star_pts(hit, 9.0, 2.2, 6, 0.2), &"key_black", Z_ART + 51)
+	a.fill(&"geode_hit_core", star_pts(hit, 4.5, 1.2, 4, 0.6), &"cream", Z_ART + 52)
+	# chips of Glass flying off the strike
+	var chips: Array[Vector2] = [Vector2(110, 288), Vector2(140, 282), Vector2(116, 276), Vector2(145, 300)]
+	for i in chips.size():
+		var c := chips[i]
+		var dm := PackedVector2Array([c + Vector2(0, -2.5), c + Vector2(1.6, 0), c + Vector2(0, 2.5), c + Vector2(-1.6, 0)])
+		a.fill(StringName("geode_chip_%d" % i), dm, &"cyan", Z_ART + 50)
+		a.outline(StringName("geode_chip_%d_line" % i), dm, &"key_black", Z_ART + 51)
+	_geode(a, "geode_drift_a", Vector2(18, 248), 10.0, -0.6, 7, Z_ART + 30)
+	_geode(a, "geode_drift_b", Vector2(138, 112), 8.0, 2.4, 11, Z_ART + 30)
+
+
 # --- LEFT: how to play --------------------------------------------------------------------------
 
-## The instruction panel is printed straight onto the sheet (it bleeds off the outer edge), with pictograms.
+## The instruction card printed in the lower outer corner: small and tidy like a real 1983 bezel's (title band,
+## bulleted fine print, a pictogram strip, a red keyline), not a poster.
 static func _howto_panel(a: _Acc, r: Rect2) -> void:
 	var z := Z_CARD
+	a.rect(&"howto_card", r, &"cream", z)
+	a.tone_linear(&"howto_age", PackedVector2Array([Vector2(r.position.x, r.end.y - 18.0), Vector2(r.end.x, r.end.y - 18.0), r.end, Vector2(r.position.x, r.end.y)]),
+		&"orange", z + 1, Vector2(0, r.end.y - 18.0), Vector2(0, r.end.y), 0.0, 0.3)
+	a.rect(&"howto_band", Rect2(r.position.x, r.position.y, r.size.x, 9.0), &"yellow", z + 2)
+	a.rect(&"howto_rule", Rect2(r.position.x, r.position.y + 9.0, r.size.x, 0.8), &"key_black", z + 3)
+	a.outline(&"howto_border", rect_pts(r.grow(-1.5)), &"warm_red", z + 3)
+	a.outline(&"howto_edge", rect_pts(r), &"key_black", z + 4)
 	var cx := r.position.x + r.size.x * 0.5
-	var x0 := r.position.x - 8.0
-	var w := r.size.x + 8.0
-	a.rect(&"howto_card", Rect2(x0, r.position.y, w, r.size.y), &"cream", z)
-	a.tone_linear(&"howto_age", PackedVector2Array([Vector2(x0, r.end.y - 30.0), Vector2(r.end.x, r.end.y - 30.0), r.end, Vector2(x0, r.end.y)]),
-		&"orange", z + 1, Vector2(0, r.end.y - 30.0), Vector2(0, r.end.y), 0.0, 0.35)
-	a.rect(&"howto_band", Rect2(x0, r.position.y + 1.0, w, 15), &"yellow", z + 2)
-	a.rect(&"howto_rule_top", Rect2(x0, r.position.y, w, 1), &"key_black", z + 3)
-	a.rect(&"howto_rule", Rect2(x0, r.position.y + 16.0, w, 1), &"key_black", z + 3)
-	a.rect(&"howto_rule_bottom", Rect2(x0, r.end.y - 1.0, w, 1), &"key_black", z + 3)
-	var tcap := howto_cap(["CAB_HOWTO_TITLE"], INK_W - 6.0, 6.0)
-	a.text(&"howto_title", "CAB_HOWTO_TITLE", Vector2(cx, r.position.y + 5.0), &"key_black", z + 3, tcap, 1.2, true, 0.7)
-	var lcap := howto_cap(HOWTO_KEYS, INK_W - 6.0, 5.4)
+	var tcap := minf(HOWTO_TITLE_CAP, howto_cap(["CAB_HOWTO_TITLE"], r.size.x - 8.0, HOWTO_TITLE_CAP))
+	a.text(&"howto_title", "CAB_HOWTO_TITLE", Vector2(cx, r.position.y + (9.0 - tcap) * 0.5), &"key_black", z + 4, tcap, 0.95, true, 0.6)
+	var lcap := howto_cap(HOWTO_KEYS, howto_line_width(), HOWTO_CAP)
+	var tx := r.position.x + 11.0
 	for i in HOWTO_KEYS.size():
-		a.text(StringName("howto_line_%d" % (i + 1)), HOWTO_KEYS[i], Vector2(cx, r.position.y + 24.0 + i * 11.0), &"key_black", z + 3, lcap, 1.05, true, 0.7)
+		var y := r.position.y + 13.5 + i * HOWTO_LEAD
+		a.text(StringName("howto_line_%d" % (i + 1)), HOWTO_KEYS[i], Vector2(tx, y), &"key_black", z + 4, lcap, 0.8, false, 0.5)
+		if HOWTO_BULLET[i]:
+			var b := Vector2(r.position.x + 6.0, y + lcap * 0.5)
+			a.fill(StringName("howto_bullet_%d" % (i + 1)), PackedVector2Array([b + Vector2(0, -1.4), b + Vector2(1.4, 0), b + Vector2(0, 1.4), b + Vector2(-1.4, 0)]), &"warm_red", z + 4)
 	# the pictogram strip: glass -> charge -> Sepulchre
-	var y := r.end.y - 14.0
-	var glass := PackedVector2Array([Vector2(16, y - 4), Vector2(20, y), Vector2(16, y + 4), Vector2(12, y)])
-	a.fill(&"howto_pic_glass", glass, &"cyan", z + 3)
-	a.outline(&"howto_pic_glass_line", glass, &"key_black", z + 4)
-	a.stroke(&"howto_pic_arrow_1", PackedVector2Array([Vector2(24, y), Vector2(31, y)]), &"key_black", z + 3)
-	a.fill(&"howto_pic_charge", star_pts(Vector2(40, y), 5, 2, 4), &"orange", z + 3)
-	a.outline(&"howto_pic_charge_line", star_pts(Vector2(40, y), 5, 2, 4), &"key_black", z + 4)
-	a.stroke(&"howto_pic_arrow_2", PackedVector2Array([Vector2(48, y), Vector2(55, y)]), &"key_black", z + 3)
-	a.fill(&"howto_pic_moon", circle_pts(Vector2(64, y), 4.5, 12), &"process_blue", z + 3)
-	a.outline(&"howto_pic_moon_line", circle_pts(Vector2(64, y), 4.5, 12), &"key_black", z + 4)
-	a.rect(&"howto_pic_moon_eye", Rect2(60, y - 1, 8, 1), &"key_black", z + 5)
+	var y := r.end.y - 8.5
+	var x0 := cx - 24.0
+	var glass := PackedVector2Array([Vector2(x0, y - 3), Vector2(x0 + 2.5, y), Vector2(x0, y + 3), Vector2(x0 - 2.5, y)])
+	a.fill(&"howto_pic_glass", glass, &"cyan", z + 4)
+	a.outline(&"howto_pic_glass_line", glass, &"key_black", z + 5)
+	a.stroke(&"howto_pic_arrow_1", PackedVector2Array([Vector2(x0 + 6, y), Vector2(x0 + 14, y)]), &"key_black", z + 4, 0.8)
+	a.fill(&"howto_pic_charge", star_pts(Vector2(x0 + 24, y), 4, 1.5, 4), &"orange", z + 4)
+	a.outline(&"howto_pic_charge_line", star_pts(Vector2(x0 + 24, y), 4, 1.5, 4), &"key_black", z + 5)
+	a.stroke(&"howto_pic_arrow_2", PackedVector2Array([Vector2(x0 + 33, y), Vector2(x0 + 41, y)]), &"key_black", z + 4, 0.8)
+	a.fill(&"howto_pic_moon", circle_pts(Vector2(x0 + 48, y), 3.5, 12), &"process_blue", z + 4)
+	a.outline(&"howto_pic_moon_line", circle_pts(Vector2(x0 + 48, y), 3.5, 12), &"key_black", z + 5)
+	a.rect(&"howto_pic_moon_eye", Rect2(x0 + 45, y - 0.5, 6, 1), &"key_black", z + 6)
+
+
+## The width a how-to line may use: the card less the bullet gutter and the right margin.
+static func howto_line_width() -> float:
+	return CabinetBezel.LEFT_HOWTO.size.x - 15.0
 
 
 ## The common cap height (up to `cap_max`) at which every translated line of `keys` fits `max_w`.
 static func howto_cap(keys: Array, max_w: float, cap_max: float) -> float:
 	var cap := cap_max
 	for k in keys:
-		cap = minf(cap, fit_cap(TranslationServer.translate(String(k)), max_w, cap_max, 0.2, 0.7))
+		cap = minf(cap, fit_cap(TranslationServer.translate(String(k)), max_w, cap_max, 0.2, 0.5))
 	return cap
 
 
 # --- RIGHT: the tagline burst and the Sepulchre -------------------------------------------------
 
 static func _tagline_burst(a: _Acc) -> void:
-	var c := Vector2(40, 38)
-	a.tone_radial(&"tag_glow", circle_pts(c, 46.0, 28), &"orange", Z_ART, c, 0.0, 46.0, 0.7, 0.0)
-	var burst := star_pts(c, 36, 28, 16, 0.2, 0.62)
-	a.fill(&"tag_shadow", xf(burst, Vector2(1.6, 2.0), 0.0), &"key_black", Z_ART + 1)
-	a.fill(&"tag_burst", burst, &"yellow", Z_ART + 2)
-	a.tone_radial(&"tag_burst_shade", burst, &"warm_red", Z_ART + 3, c + Vector2(-6, -8), 8.0, 38.0, 0.0, 0.55)
-	a.outline(&"tag_burst_line", burst, &"key_black", Z_ART + 4)
-	var cap := howto_cap(["CAB_BEZEL_TAG_1", "CAB_BEZEL_TAG_2"], 52.0, 6.0)
-	a.text(&"tag_line_1", "CAB_BEZEL_TAG_1", Vector2(c.x, c.y - cap - 1.5), &"key_black", Z_ART + 5, cap, cap * 0.22, true, 0.6)
-	a.text(&"tag_line_2", "CAB_BEZEL_TAG_2", Vector2(c.x, c.y + 2.0), &"key_black", Z_ART + 5, cap, cap * 0.22, true, 0.6)
+	var c := Vector2(50, 44)
+	a.tone_radial(&"tag_glow", circle_pts(c, 56.0, 28), &"orange", Z_ART, c, 0.0, 56.0, 0.7, 0.0)
+	var burst := star_pts(c, 42, 33, 18, 0.2, 0.62)
+	a.fill(&"tag_shadow", xf(burst, Vector2(1.8, 2.2), 0.0), &"key_black", Z_ART + 46)
+	a.fill(&"tag_burst", burst, &"yellow", Z_ART + 47)
+	a.tone_radial(&"tag_burst_shade", burst, &"warm_red", Z_ART + 48, c + Vector2(-7, -9), 9.0, 44.0, 0.0, 0.55)
+	a.outline(&"tag_burst_line", burst, &"key_black", Z_ART + 49)
+	var cap := howto_cap(["CAB_BEZEL_TAG_1", "CAB_BEZEL_TAG_2"], 60.0, 7.0)
+	a.text(&"tag_line_1", "CAB_BEZEL_TAG_1", Vector2(c.x, c.y - cap - 1.5), &"key_black", Z_ART + 50, cap, cap * 0.22, true, 0.6)
+	a.text(&"tag_line_2", "CAB_BEZEL_TAG_2", Vector2(c.x, c.y + 2.0), &"key_black", Z_ART + 50, cap, cap * 0.22, true, 0.6)
 
 
+## Drawn in the original 80-column frame and enlarged by `a.place` (build_right) so the moon bleeds off the
+## outer edge.
 static func _sepulchre_illustration(a: _Acc) -> void:
 	var z := Z_ART + 1
 	var keep_clear: Array[Rect2] = [Rect2(14, 128, 48, 48)]
@@ -457,6 +568,10 @@ static func _sepulchre_illustration(a: _Acc) -> void:
 	a.fill(&"sep_moon_shade", crescent_pts(c, rad, -0.3, 2.5, 9), &"navy", z + 4)
 	a.tone_radial(&"sep_moon_shade_deep", crescent_pts(c, rad, 0.0, 2.2, 5), &"key_black", z + 5, c, 16.0, rad, 0.0, 0.95)
 	a.stroke(&"sep_moon_glint", arc_pts(c, rad - 3, rad - 3, 0.0, 3.6, 4.4, 5), &"cream", z + 6)
+	# craters: small key-black rings on the lit face
+	var craters: Array[Vector2] = [Vector2(-11, 7), Vector2(-4, 13), Vector2(-14, -3)]
+	for i in craters.size():
+		a.outline(StringName("sep_crater_%d" % i), ellipse_pts(c + craters[i], 2.2, 1.4, 0.0, 10), &"navy", z + 6)
 	# two brass reliquary bands crossing it (front halves of tilted rings)
 	for i in 2:
 		var tilt := 0.45 if i == 0 else -0.45
@@ -490,21 +605,53 @@ static func _sepulchre_illustration(a: _Acc) -> void:
 		_monk(a, StringName("sep_monk_%d" % (i + 1)), Vector2(monk_x[i], monk_y[i]), monk_face[i], monk_glass[i], z + 20 + i * 6)
 
 
-## The Choir below the moon, in a procession toward it (printed bigger than life on the lower right art).
+## A dark crag of Glass-veined rock rising from the lower outer corner toward the moon: the Choir's road.
+static func _crag(a: _Acc) -> void:
+	var z := Z_ART + 30
+	var crag := PackedVector2Array([Vector2(70, 368), Vector2(76, 326), Vector2(86, 300), Vector2(90, 272), Vector2(100, 250),
+		Vector2(104, 226), Vector2(118, 206), Vector2(128, 186), Vector2(W + 8, 170), Vector2(W + 8, 368)])
+	a.fill(&"crag", crag, &"navy", z)
+	a.tone_linear(&"crag_light", crag, &"process_blue", z + 1, Vector2(150, 180), Vector2(100, 330), 0.9, 0.0)
+	a.tone_linear(&"crag_dark", crag, &"key_black", z + 1, Vector2(150, 300), Vector2(110, 200), 0.85, 0.0)
+	a.stroke(&"crag_rim_line", crag.slice(0, 9), &"key_black", z + 2, 3.0)
+	a.stroke(&"crag_rim", crag.slice(0, 9), &"cyan", z + 2, 1.4)
+	_geode(a, "crag_geode_a", Vector2(134, 228), 12.0, -1.9, 13, z + 3)
+	_geode(a, "crag_geode_b", Vector2(120, 300), 10.0, -2.6, 17, z + 3)
+	_geode(a, "crag_geode_c", Vector2(84, 238), 8.0, -0.9, 19, z + 3)
+
+
+## The Choir's procession up the crag, printed bigger than life (2× the monks on the moon).
 static func _choir_procession(a: _Acc) -> void:
-	var z := Z_ART + 50
-	a.place(1.5, Vector2.ZERO)
-	var mx: Array[float] = [12.0, 27.0, 41.0, 51.0]
-	var my: Array[float] = [138.0, 131.0, 139.0, 132.0]
-	var mf: Array[int] = [1, 1, 0, -1]
-	var mg: Array[StringName] = [&"cyan", &"cream", &"cyan", &"cream"]
-	for i in mx.size():
-		_monk(a, StringName("march_monk_%d" % (i + 1)), Vector2(mx[i], my[i]), mf[i], mg[i], z + i * 6)
+	var z := Z_ART + 46
+	var feet: Array[Vector2] = [Vector2(82, 324), Vector2(90, 298), Vector2(96, 272), Vector2(106, 248), Vector2(124, 206)]
+	var face: Array[int] = [1, 1, 0, 1, 1]
+	var glass: Array[StringName] = [&"cyan", &"cream", &"cyan", &"cream", &"cyan"]
+	a.place(2.0, Vector2.ZERO)
+	for i in feet.size():
+		_monk(a, StringName("march_monk_%d" % (i + 1)), feet[i] * 0.5, face[i], glass[i], z + i * 6)
 	a.place(1.0, Vector2.ZERO)
-	a.tone_linear(&"march_ground", PackedVector2Array([Vector2(0, 196), Vector2(80, 196), Vector2(80, 226), Vector2(0, 226)]), &"key_black", z - 2, Vector2(0, 196), Vector2(0, 226), 0.0, 0.8)
 
 
 static func _coin_door_backing(a: _Acc) -> void:
 	var z := Z_ART
-	a.rect(&"door_frame", Rect2(6, 249, 68, 87), &"key_black", z)
-	a.rect(&"door_frame_face", Rect2(7, 250, 66, 85), &"key_black", z + 1)
+	a.rect(&"door_frame", Rect2(6, 249, 68, 87), &"key_black", z + 52)
+	a.rect(&"door_frame_face", Rect2(7, 250, 66, 85), &"key_black", z + 53)
+
+
+## The maker's badge, bottom right (period bezels carry the manufacturer's mark): a lantern glyph and the
+## maker's name in cream on a key-black plate.
+static func _maker_badge(a: _Acc) -> void:
+	var z := Z_WINDOW + 10
+	var x0 := CabinetBezel.POWER_LOCAL.end.x + 3.0                   # right of the POWER rocker
+	var x1 := W - STRIPE_X[STRIPE_X.size() - 1] - 3.0               # inside the pinstripes
+	var cap := howto_cap(["CAB_BEZEL_MAKER"], x1 - x0 - 13.0, 3.6)
+	var sz := BezelText.painted_size(TranslationServer.translate("CAB_BEZEL_MAKER"), cap, 0.8, 0.6)
+	var plate := Rect2(x0, 333.0, minf(sz.x + 13.0, x1 - x0), 12.0)
+	a.rect(&"maker_plate", plate, &"key_black", z)
+	a.outline(&"maker_plate_rim", rect_pts(plate.grow(-1.2)), &"brass", z + 1)
+	var lx := plate.position.x + 5.0
+	var ly := plate.get_center().y
+	var lantern := PackedVector2Array([Vector2(lx - 2, ly - 3), Vector2(lx + 2, ly - 3), Vector2(lx + 2.6, ly + 3), Vector2(lx - 2.6, ly + 3)])
+	a.fill(&"maker_lantern", lantern, &"yellow", z + 2)
+	a.rect(&"maker_lantern_cap", Rect2(lx - 1.2, ly - 4.6, 2.4, 1.4), &"brass", z + 2)
+	a.text(&"maker_name", "CAB_BEZEL_MAKER", Vector2(lx + 5.0, ly - cap * 0.5), &"cream", z + 3, cap, 0.8, false, 0.6)

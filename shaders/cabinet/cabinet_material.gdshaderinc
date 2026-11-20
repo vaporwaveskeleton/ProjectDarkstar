@@ -9,6 +9,7 @@
 
 uniform float noise_seed = 7.0;
 uniform vec4 cab_hole = vec4(192.0, 28.0, 256.0, 304.0);          // x, y, w, h of the screen hole, rig units
+uniform float cab_side = 152.0;                                   // width of each printed column (CabinetBezel.SIDE)
 uniform vec3 cab_warm_color = vec3(1.0, 0.78, 0.52);
 uniform vec3 cab_fill_color = vec3(0.5, 0.58, 0.78);
 uniform float cab_warm_gain = 1.2;
@@ -192,14 +193,14 @@ vec3 environment(float t, float x, float blur) {
 // Where the cabinet is worn is where it is touched and kicked: the lower bezel edge, round the coin door,
 // the sheet's corners (lower ones most) and its outer edges. The upper art stays clean. 0 clean .. 1 worn.
 float wear_k(vec2 rp) {
-	float x0 = cab_hole.x - 80.0;
-	float x1 = cab_hole.x + cab_hole.z + 80.0;
+	float x0 = cab_hole.x - cab_side;
+	float x1 = cab_hole.x + cab_hole.z + cab_side;
 	float y0 = cab_hole.y;
 	float y1 = cab_hole.y + cab_hole.w;
 	float low = smoothstep(y1 - 80.0, y1 + 14.0, rp.y);
 	vec2 cn = vec2(rp.x < (x0 + x1) * 0.5 ? x0 : x1, rp.y < (y0 + y1) * 0.5 ? y0 : y1);
 	float corner = smoothstep(44.0, 3.0, length(rp - cn)) * (rp.y < (y0 + y1) * 0.5 ? 0.35 : 0.85);
-	vec2 dc = vec2(x1 - 40.0, y1 - 40.0);
+	vec2 dc = vec2(cab_hole.x + cab_hole.z + 40.0, y1 - 40.0);   // the coin door, on the right column next to the hole
 	float door = smoothstep(62.0, 24.0, length((rp - dc) * vec2(1.0, 1.1)));
 	float edge = smoothstep(6.0, 0.0, min(rp.x - x0, x1 - rp.x)) * 0.35;
 	return clamp(max(max(low * 0.85, corner), max(door, edge)), 0.0, 1.0);

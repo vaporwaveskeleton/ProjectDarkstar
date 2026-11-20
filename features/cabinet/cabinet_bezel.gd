@@ -7,16 +7,19 @@ extends RefCounted
 ## BezelInks (owner decision D-B). It carries no readouts: score, Vigils, scanner and the rest are
 ## lit on the screen's HUD strip (CabinetScreenHud, P5). PR C re-composes it.
 
-const SIDE := 80.0                    ## width of each printed column; both sit flush against the screen hole
+## Width of each printed column; both sit flush against the screen hole. 152 since the surround pass
+## (owner direction 2026-11-19): the sheet spans x 40..600 of the 640 reference, so a 16:9 window is all
+## cabinet but a sliver of side panel each side, and wider windows show the ArcadeBackdrop beyond it.
+const SIDE := 152.0
 const SPEC := "res://data/cabinet/cabinet_screen.tres"
 const EDGE := 2.0                     ## the key-black tube-mask edge above and below the hole
 ## The coin door on the right panel, column-local (see `coin_plate`).
 const COIN_PLATE_LOCAL := Rect2(12, 252, 56, 80)
 
-# --- Column-local art areas (x 0..80, y 0..360). The 2 px nearest the screen is the key-black lip. ---
-const LEFT_ART := Rect2(0, 66, 80, 172)         ## the Vigil illustration (full bleed, runs off the outer edge)
-const LEFT_HOWTO := Rect2(0, 238, 78, 108)      ## the how-to-play panel printed on the sheet (bleeds off the outer edge)
-const RIGHT_ART := Rect2(0, 66, 80, 156)        ## the Sepulchre illustration (full bleed)
+# --- Column-local art areas (x 0..SIDE, y 0..360). The 2 px nearest the screen is the key-black lip. ---
+const LEFT_ART := Rect2(0, 92, 152, 250)        ## the Vigil illustration and its geodes (full bleed, runs off the outer edge)
+const LEFT_HOWTO := Rect2(8, 270, 72, 58)       ## ✱ the small how-to card in the lower outer corner (real-bezel proportions)
+const RIGHT_ART := Rect2(0, 70, 152, 290)       ## the Sepulchre and the Choir crag (full bleed)
 const RIGHT_STICKER := Rect2(3, 222, 74, 26)   ## the die-cut NEW! sticker
 
 
