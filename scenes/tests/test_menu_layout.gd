@@ -208,7 +208,7 @@ func _check_texts(root: Node, re: RegEx, kind: int) -> void:
 		if shown == "":
 			continue
 		assert_bool(re.search(shown) == null).override_failure_message("%s prints raw key '%s' (kind %d)" % [mt.get_path(), shown, kind]).is_true()
-		assert_array(Array(mt.get_layout().missing)).override_failure_message("%s misses glyphs in '%s'" % [mt.get_path(), shown]).is_empty()
+		assert_array(Array(mt.missing_glyphs())).override_failure_message("%s misses glyphs in '%s'" % [mt.get_path(), shown]).is_empty()
 
 
 func test_controls_reference_prints_a_binding_for_every_row() -> void:
@@ -356,3 +356,98 @@ func test_every_menu_shows_its_art_at_100_percent_text() -> void:
 			var orn := s.get_node("%Ornament") as MenuOrnament
 			var side := minf(orn.size.x, orn.size.y)
 			assert_float(side).override_failure_message("%s ornament %s (kind %d)" % [s.name, orn.size, kind]).is_greater_equal(MenuOrnament.MIN_SIDE)
+
+
+# ---------------------------------------------------------------- restyle (Fable review 2026-11-20)
+
+func test_cabinet_text_is_the_pixel_font_at_an_integer_scale() -> void:
+	var s := _open(SETTINGS, MenuSkin.Kind.CABINET)
+	await await_idle_frame()
+	var title := s.get_node("%Title") as MenuText
+	var shown := title.shown_text()
+	assert_vector(title.get_combined_minimum_size()).is_equal(Vector2(PixelText.width(shown, 2), PixelText.H * 2))
+	SettingsService.set_value(&"text_scale", 2.0)
+	assert_vector(title.get_combined_minimum_size()).is_equal(Vector2(PixelText.width(shown, 4), PixelText.H * 4))
+	assert_int(MenuSkin.pixel_scale(MenuSkin.Role.ROW)).is_equal(2)
+
+
+func test_brass_title_is_engraved_capitals_and_rows_keep_their_case() -> void:
+	var s := _open(SETTINGS, MenuSkin.Kind.BRASS)
+	assert_str((s.get_node("%Title") as MenuText).shown_text()).is_equal(tr("SETTINGS_TITLE").to_upper())
+	assert_str((_n(s, "LargeText") as MenuRow).label_text()).is_equal(tr("SETTINGS_LARGE_TEXT"))
+
+
+func test_colour_bar_is_the_cabinet_registers_in_order() -> void:
+	var regs := MenuSkin.registers()
+	assert_int(regs.size()).is_equal(16)
+	var spec := load(MenuSkin.REGISTERS_PATH) as Resource
+	assert_array(Array(regs)).is_equal(Array(spec.get(&"defaults") as PackedColorArray))
+
+
+func test_off_reads_brighter_than_disabled_and_lamps_are_doubled() -> void:
+	for kind: int in KINDS:
+		assert_float(MenuSkin.off_ink(kind).get_luminance()).is_greater(MenuSkin.disabled_ink(kind).get_luminance())
+		assert_float(MenuSkin.off_ink(kind).get_luminance()).is_greater_equal(MenuSkin.c(kind, Pal.BONE_3).get_luminance() - 0.001)
+	assert_float(MenuRow.LAMP_R).is_equal(5.0)
+
+
+func test_preview_follows_the_focused_row() -> void:
+	for kind: int in KINDS:
+		var s := _open(SETTINGS, kind)
+		await await_idle_frame()
+		var pv := s.get_node("%Preview") as MenuPreview
+		var want := {"LargeText": &"text_scale", "ReducedMotion": &"reduced_motion", "Photosensitivity": &"photosensitivity",
+			"SteadyLedger": &"steady_ledger", "MuzzleFlash": &"muzzle_flash", "VolMaster": &"vol_master", "VolFoley": &"vol_foley"}
+		for row_name: String in want:
+			var page := 2 if row_name.begins_with("Vol") else (1 if row_name == "MuzzleFlash" else 0)
+			s.call("show_page", page)
+			_n(s, row_name).grab_focus()
+			await await_idle_frame()
+			assert_str(String(pv.setting)).override_failure_message("%s (kind %d)" % [row_name, kind]).is_equal(String(want[row_name]))
+		_n(s, "Back").grab_focus()
+		await await_idle_frame()
+		assert_str(String(pv.setting)).is_empty()
+		assert_float(pv.size.x).is_greater_equal(pv.base_min.x)
+
+
+func test_preview_motion_holds_still_under_reduced_motion_and_hides_at_200_percent() -> void:
+	var s := _open(SETTINGS, MenuSkin.Kind.BRASS)
+	await await_idle_frame()
+	var pv := s.get_node("%Preview") as MenuPreview
+	pv.show_for(&"reduced_motion")
+	assert_bool(pv.is_moving()).is_true()
+	SettingsService.set_value(&"reduced_motion", true)
+	assert_bool(pv.is_moving()).is_false()
+	SettingsService.set_value(&"text_scale", 2.0)
+	assert_bool(pv.visible).is_false()
+
+
+func test_brass_frame_has_fogged_glass_that_stops_under_reduced_motion() -> void:
+	var s := _open(PAUSE, MenuSkin.Kind.BRASS)
+	var frame := s.get_node("Center/Panel") as MenuFrame
+	await await_idle_frame()
+	var glass := frame.get_node("Glass") as ColorRect
+	assert_object(glass).is_not_null()
+	assert_bool(frame.size.x - glass.size.x < 20.0).is_true()
+	assert_bool(frame.is_processing()).is_true()
+	SettingsService.set_value(&"photosensitivity", true)
+	assert_bool(frame.is_processing()).is_false()
+	var cab := _open(PAUSE, MenuSkin.Kind.CABINET)
+	assert_bool((cab.get_node("Center/Panel") as MenuFrame).is_processing()).is_false()
+
+
+func test_focused_row_scrolls_fully_into_view_at_200_percent() -> void:
+	SettingsService.set_value(&"text_scale", 2.0)
+	for kind: int in KINDS:
+		var s := _open(SETTINGS, kind)
+		var scroll := s.get_node("%Scroll") as ScrollContainer
+		await await_idle_frame()   # the screen grabs its default focus deferred
+		for page in [2, 3, 0]:
+			s.call("show_page", page)
+			for c: Control in s.call("page_rows", page):
+				c.grab_focus()
+				for k in 4:
+					await await_idle_frame()
+				var view := scroll.get_global_rect().grow(0.5)
+				assert_bool(view.encloses(c.get_global_rect())).override_failure_message("%s %s clipped by %s (kind %d, focus %s, v %d)" % [c.name, c.get_global_rect(), view, kind, c.has_focus(), scroll.scroll_vertical]).is_true()
+		s.queue_free()

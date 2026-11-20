@@ -38,6 +38,8 @@ const PREVIEW_DELAY_S := 0.18
 @onready var _back: MenuRow = %Back
 @onready var _desc: MenuText = %Desc
 @onready var _subtitle: MenuText = %Subtitle
+@onready var _preview: MenuPreview = %Preview
+@onready var _scroll: ScrollContainer = %Scroll
 
 var _rows: Dictionary = {}     # MenuRow -> setting key
 var _sliders: Dictionary = {}  # MenuRow -> setting key (the Audio page's volume sliders)
@@ -74,6 +76,8 @@ func _ready() -> void:
 		c.focus_entered.connect(_describe.bind(c))
 	show_page(0)
 	SettingsService.setting_changed.connect(_on_setting_changed)
+	# a new description can change the panel height after the row was revealed: reveal it again
+	_scroll.resized.connect(_reveal_focus)
 	super()
 
 
@@ -194,6 +198,29 @@ func _ring(items: Array[Control]) -> void:
 
 func _describe(c: Control) -> void:
 	_desc.key = (c as MenuRow).desc_key if c is MenuRow else &""
+	var key: StringName = &""
+	if _rows.has(c):
+		key = _rows[c]
+	elif _sliders.has(c):
+		key = _sliders[c]
+	_preview.show_for(key)
+	if _scroll.is_ancestor_of(c):
+		_reveal.call_deferred(c)
+
+
+## The focused row, if it is inside the scroller, scrolled fully into view (after layout settles).
+func _reveal_focus() -> void:
+	var f := get_viewport().gui_get_focus_owner() if is_inside_tree() else null
+	if f != null and _scroll.is_ancestor_of(f):
+		_reveal.call_deferred(f)
+
+
+## Scroll the whole focused row into view once layout has settled. follow_focus alone could stop
+## short when the row's size changed in the same frame (a stacked slider at Large Text, #112).
+func _reveal(c: Control) -> void:
+	await get_tree().process_frame
+	if is_instance_valid(c) and c.is_visible_in_tree() and c.has_focus():
+		_scroll.ensure_control_visible(c)
 
 
 ## The controls reference reads the live InputMap (InputLabels), so it always matches the bindings.

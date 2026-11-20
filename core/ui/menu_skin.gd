@@ -23,6 +23,14 @@ const ROW_PAD := Vector2(10.0, 4.0)
 const BLINK_S := 0.45
 ## ✱ Crosshatch pitch of the cabinet test card (logical px).
 const GRID := 16.0
+## ✱ Gap between wrapped lines of cabinet pixel text, in font pixels.
+const PIXEL_LINE_GAP := 3
+## ✱ Brass title tracking (engraved capitals are spaced wide).
+const BRASS_TITLE_TRACKING := 3.2
+## The cabinet's 16 colour registers (power-on state, register order) for the service-mode colour bar.
+## Read as data so core/ui does not depend on the cabinet feature's classes.
+const REGISTERS_PATH := "res://data/cabinet/screen_registers.tres"
+static var _registers := PackedColorArray()
 
 ## Tests force a costume (-1 = follow Look.t).
 static var forced := -1
@@ -57,18 +65,67 @@ static func still() -> bool:
 	return bool(SettingsService.get_value(&"photosensitivity")) or bool(SettingsService.get_value(&"reduced_motion"))
 
 
-static func face(role: Role, scale: float = -1.0) -> VectorFace:
+static func face(role: Role, scale: float = -1.0, kind: Kind = Kind.CABINET) -> VectorFace:
 	var s := text_scale() if scale <= 0.0 else scale
 	var f := VectorFace.new()
 	f.size = float(SIZES[role]) * s
 	f.stroke_width = float(STROKES[role]) * (1.0 + (s - 1.0) * 0.6)
-	f.tracking = float(TRACKING[role]) * s
+	var tr_px: float = BRASS_TITLE_TRACKING if (kind == Kind.BRASS and role == Role.TITLE) else float(TRACKING[role])
+	f.tracking = tr_px * s
 	return f
+
+
+## The cabinet pixel font's integer scale for a role: titles are twice the row size, and Large Text
+## doubles both.
+static func pixel_scale(role: Role, scale: float = -1.0) -> int:
+	var s := text_scale() if scale <= 0.0 else scale
+	return (2 if role == Role.TITLE else 1) * (2 if s > 1.5 else 1)
 
 
 ## Cabinet text is upper case (the cabinet face has none, ART-001 §11).
 static func shown(s: String, kind: Kind) -> String:
 	return s.to_upper() if kind == Kind.CABINET else s
+
+
+## As shown(), plus the brass title's engraved capitals.
+static func shown_role(s: String, kind: Kind, role: Role) -> String:
+	return s.to_upper() if (kind == Kind.CABINET or role == Role.TITLE) else s
+
+
+## The size of `s` in the costume's face for `role`, anchored top-left as text() draws it.
+static func measure(s: String, role: Role, kind: Kind) -> Vector2:
+	var t := shown_role(s, kind, role)
+	if kind == Kind.CABINET:
+		var ps := pixel_scale(role)
+		return Vector2(PixelText.width(t, ps), PixelText.H * ps)
+	var f := face(role, -1.0, kind)
+	return VectorText.measure(t, VectorText.default_glyphs(), f) + Vector2(f.stroke_width, f.stroke_width)
+
+
+## Draws one line of menu text with its top-left at `pos`, for art panels that draw their own text.
+static func text(ci: CanvasItem, pos: Vector2, s: String, role: Role, kind: Kind, col: Color) -> void:
+	var t := shown_role(s, kind, role)
+	if kind == Kind.CABINET:
+		PixelText.draw_crt(ci, pos.round(), t, col, pixel_scale(role))
+		return
+	var f := face(role, -1.0, kind)
+	var mesh := cached_mesh(t, f)
+	if mesh != null:
+		ci.draw_mesh(mesh, null, Transform2D(0.0, pos + Vector2(f.stroke_width, f.stroke_width) * 0.5), col)
+
+
+## A stroke-text mesh kept alive after the draw call that uses it: draw_mesh only records the mesh's
+## RID, so a mesh built in _draw and dropped would be freed before the frame renders.
+static var _meshes: Dictionary = {}   # never cleared: the menus print a small, fixed set of strings
+
+
+static func cached_mesh(s: String, f: VectorFace) -> ArrayMesh:
+	var k := "%s|%.2f|%.2f|%.2f" % [s, f.size, f.stroke_width, f.tracking]
+	if _meshes.has(k):
+		return _meshes[k] as ArrayMesh
+	var m := VectorText.build_mesh(VectorText.layout(s, VectorText.default_glyphs(), f), f.stroke_width)
+	_meshes[k] = m
+	return m
 
 
 # ---------------------------------------------------------------- colours
@@ -95,8 +152,9 @@ static func on_ink(kind: Kind) -> Color:
 	return c(kind, Pal.PHOS_4)
 
 
+## OFF is a readable state, not a disabled one (Fable review 2026-11-20: lifted from BONE_2).
 static func off_ink(kind: Kind) -> Color:
-	return c(kind, Pal.BONE_2)
+	return c(kind, Pal.BONE_3) if kind == Kind.CABINET else Pal.BONE_4
 
 
 static func disabled_ink(kind: Kind) -> Color:
@@ -147,23 +205,38 @@ static func _cabinet_frame(ci: CanvasItem, r: Rect2) -> void:
 
 
 static func _brass_frame(ci: CanvasItem, r: Rect2) -> void:
+	brass_case_back(ci, r)
+	brass_case_front(ci, r)
+
+
+## The brass plate under the glass (MenuFrame draws its fogged glass between back and front).
+static func brass_case_back(ci: CanvasItem, r: Rect2) -> void:
 	# the smoky Aether shows through the edges; the plate is an instrument case
 	Brass.plate(ci, r, Pal.VOID_1)
+
+
+## What sits over the glass: the engraved hairline, the corner filigree, the rivets and the sheen.
+static func brass_case_front(ci: CanvasItem, r: Rect2) -> void:
 	var face := r.grow(-Brass.RIVET_INSET - 2.0)
-	# engraved inner line and corner filigree
-	ci.draw_rect(face.grow(-3.0), Color(Pal.GAS_2, 0.55), false, 1.0)
+	# an engraved hairline inside the brass: the cut (dark), with its lit lip 1 px below and to the right
+	var cut := face.grow(-3.0)
+	ci.draw_rect(cut, Color(Pal.VOID_0, 0.7), false, 1.0)
+	ci.draw_rect(Rect2(cut.position + Vector2(1, 1), cut.size), Color(Pal.GAS_3, 0.45), false, 1.0)
 	for i in 4:
 		var corner: Vector2 = [face.position, Vector2(face.end.x, face.position.y), face.end, Vector2(face.position.x, face.end.y)][i]
 		var a0 := float(i) * PI * 0.5
 		ci.draw_arc(corner, 9.0, a0, a0 + PI * 0.5, 10, Color(Pal.GAS_3, 0.8), 1.0)
 		ci.draw_arc(corner, 6.0, a0, a0 + PI * 0.5, 8, Color(Pal.GAS_2, 0.7), 1.0)
-	# rivets along the long edges
+	# rivets along the long edges, set by hand: each sits a little off the line (fixed per index, so
+	# the case never shimmers)
 	var step := 48.0
 	var x := r.position.x + step
+	var i := 0
 	while x < r.end.x - step * 0.5:
-		Brass.rivet(ci, Vector2(x, r.position.y + Brass.RIVET_INSET))
-		Brass.rivet(ci, Vector2(x, r.end.y - Brass.RIVET_INSET))
+		Brass.rivet(ci, Vector2(x + _jitter(i, 1.6), r.position.y + Brass.RIVET_INSET + _jitter(i + 31, 0.6)))
+		Brass.rivet(ci, Vector2(x + _jitter(i + 7, 1.6), r.end.y - Brass.RIVET_INSET + _jitter(i + 53, 0.6)))
 		x += step
+		i += 1
 	# faint glass sheen across the face
 	ci.draw_line(face.position + Vector2(14, 4), Vector2(face.position.x + face.size.x * 0.45, face.position.y + 4),
 		Color(Pal.BONE_5, 0.06), 2.0)
@@ -184,13 +257,17 @@ static func rule(ci: CanvasItem, from: Vector2, w: float, kind: Kind, heavy: boo
 				mid + Vector2(5, 0), mid + Vector2(0, 2.5)]), Pal.GAS_4)
 		return
 	if heavy:
-		# the 16-register colour bars of a period test screen (no SIGNAL: ART-001 SIGNAL budget)
-		var bars: Array[Color] = [Pal.BONE_5, Pal.GAS_4, Pal.PHOS_4, Pal.GAS_3, Pal.CHOIR_4, Pal.VOID_5,
-			Pal.PHOS_2, Pal.GAS_2, Pal.CHOIR_3, Pal.VOID_4, Pal.BONE_3, Pal.PHOS_3, Pal.CHOIR_2, Pal.BONE_1,
-			Pal.VOID_2, Pal.VOID_0]
-		var bw := w / float(bars.size())
+		# the period test screen's colour bars: the cabinet's 16 registers in register order (register 0,
+		# black, first), each as the register holds it, so the strip is the machine's own palette
+		var bars := registers()
+		if bars.is_empty():
+			return
+		var bw := floorf(w / float(bars.size()))
+		var x0 := from.x + floorf((w - bw * float(bars.size())) * 0.5)
 		for i in bars.size():
-			ci.draw_rect(Rect2(from + Vector2(bw * i, -1.0), Vector2(ceilf(bw), 3.0)), c(Kind.CABINET, bars[i]), true)
+			ci.draw_rect(Rect2(Vector2(x0 + bw * i, from.y - 1.0), Vector2(bw, 3.0)), bars[i], true)
+		# register 0 is black on black: a frame round the strip makes the first bar read as a bar
+		ci.draw_rect(Rect2(Vector2(x0 - 1.0, from.y - 2.0), Vector2(bw * float(bars.size()) + 2.0, 5.0)), c(Kind.CABINET, Pal.VOID_4), false, 1.0)
 		return
 	var dash := c(Kind.CABINET, Pal.VOID_4)
 	var x := 0.0
@@ -237,11 +314,25 @@ static func row_back(ci: CanvasItem, r: Rect2, kind: Kind, state: State, tab_act
 ## The ON/OFF indicator in front of a toggle's value: a glass lamp (brass) or an LED block (cabinet).
 static func indicator(ci: CanvasItem, center: Vector2, radius: float, kind: Kind, on: bool) -> void:
 	if kind == Kind.BRASS:
-		Brass.lamp(ci, center, radius, on)
+		if on:
+			Brass.lamp(ci, center, radius, true)
+			return
+		# an unlit glass lamp that still reads: a brass bezel, smoked glass and the glint
+		ci.draw_circle(center, radius + 1.5, Pal.GAS_2)
+		ci.draw_circle(center, radius + 0.5, Pal.GAS_0)
+		ci.draw_circle(center, radius, Pal.VOID_3)
+		ci.draw_circle(center, radius * 0.55, Pal.VOID_4)
+		ci.draw_circle(center - Vector2(radius * 0.35, radius * 0.35), maxf(0.6, radius * 0.22), Color(Pal.BONE_5, 0.75))
 		return
-	var r := Rect2(center - Vector2(radius, radius), Vector2(radius, radius) * 2.0)
-	ci.draw_rect(r, c(kind, Pal.PHOS_3) if on else c(kind, Pal.VOID_2), true)
-	ci.draw_rect(r, c(kind, Pal.BONE_1), false, 1.0)
+	var r := Rect2((center - Vector2(radius, radius)).round(), (Vector2(radius, radius) * 2.0).round())
+	if on:
+		ci.draw_rect(r, c(kind, Pal.PHOS_3), true)
+		ci.draw_rect(r.grow(-2.0), c(kind, Pal.PHOS_4), true)
+	else:
+		# an unlit LED: the cell and its window still show
+		ci.draw_rect(r, c(kind, Pal.VOID_3), true)
+		ci.draw_rect(r.grow(-2.0), c(kind, Pal.VOID_2), true)
+	ci.draw_rect(r, c(kind, Pal.BONE_4) if on else c(kind, Pal.BONE_3), false, 1.0)
 
 
 ## A volume bar inside `r`: a track with a lit fill to `fraction`, and a tick at `floor_fraction`
@@ -264,6 +355,21 @@ static func slider(ci: CanvasItem, r: Rect2, kind: Kind, fraction: float, floor_
 	if floor_fraction > 0.0:
 		var x := r.position.x + r.size.x * floor_fraction
 		ci.draw_line(Vector2(x, r.position.y - 2.0), Vector2(x, r.end.y + 2.0), on_ink(kind) if kind == Kind.CABINET else Pal.GAS_4, 1.0)
+
+
+## A fixed pseudo-random offset in [-amp, amp] for index `i` (no RNG state: the same every frame).
+static func _jitter(i: int, amp: float) -> float:
+	var h := sin(float(i) * 12.9898 + 78.233) * 43758.5453
+	return (h - floorf(h) - 0.5) * 2.0 * amp
+
+
+## The cabinet's colour registers in register order (the power-on values).
+static func registers() -> PackedColorArray:
+	if _registers.is_empty():
+		var spec := load(REGISTERS_PATH) as Resource
+		if spec != null:
+			_registers = spec.get(&"defaults") as PackedColorArray
+	return _registers
 
 
 static func _round_rect(ci: CanvasItem, r: Rect2, rad: float, col: Color, width: float) -> void:
