@@ -58,6 +58,8 @@ func begin(hi: int, score: int) -> void:
 	if crt != null:
 		crt.set_shader_parameter(&"collapse_fade", 1.0 if still else 0.0)
 		crt.set_shader_parameter(&"play_top", play_top)
+	if bezel != null:
+		bezel.still = still
 	if audio != null:
 		audio.start()
 	apply(0.0)
