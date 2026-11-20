@@ -698,7 +698,7 @@ msgstr "RT"
 msgid "CAB_PRESS_NEW_VIGIL"
 msgstr "PRESS NEW VIGIL"
 
-#. Printed on the bezel: the how-to-play card (the Pretence's 1983 marketing art). Each line must fit 72 px at 1x (12 characters).
+#. Printed on the bezel: the small how-to-play card (the Pretence's 1983 marketing art, fine print). Each line must fit the card (12 characters).
 msgid "CAB_HOWTO_TITLE"
 msgstr "HOW TO PLAY"
 
@@ -717,6 +717,10 @@ msgstr "SEPULCHRE"
 #. Printed on the bezel's die-cut sticker (VectorText).
 msgid "CAB_BEZEL_SLOGAN"
 msgstr "NEW!"
+
+#. Printed on the bezel's maker badge, bottom right (VectorText, fine print). The in-world maker (NARR-001, spoiler tier S1).
+msgid "CAB_BEZEL_MAKER"
+msgstr "LANTERN OFFICE"
 
 #. Printed on the bezel's tagline burst, line 1 (VectorText, 1983 marketing print). Keep each line under 12 characters.
 msgid "CAB_BEZEL_TAG_1"
@@ -773,3 +777,315 @@ msgstr "IF YOU HAVE NOT SIGNED, DON'T."
 #. Ending 5, Theodora Lune's message, screen 10 of 10 (NARR-001 §9.5). Held until a button is pressed. The only sentence-case text the Cabinet shows (the Cabinet face draws it in capitals).
 msgid "CAB_E5_SCREEN_10"
 msgstr "If you already have - bring your lamp home. Stand down, little lantern."
+
+#. Lantern Tree station: the honest banked Ember, top right. {n} = Ember banked.
+msgid "RUINS_TREE_EMBER"
+msgstr "{n} EMBER"
+
+#. Lantern Tree station: branch name under its bough (LOOP-001 §3.1).
+msgid "RUINS_TREE_BRANCH_LANTERN"
+msgstr "LANTERN"
+
+#. Lantern Tree station: branch name under its bough (LOOP-001 §3.1).
+msgid "RUINS_TREE_BRANCH_HULL"
+msgstr "HULL"
+
+#. Lantern Tree station: branch name under its bough (LOOP-001 §3.1).
+msgid "RUINS_TREE_BRANCH_ORDNANCE"
+msgstr "ORDNANCE"
+
+#. Lantern Tree station: branch name under its bough (LOOP-001 §3.1).
+msgid "RUINS_TREE_BRANCH_WARD"
+msgstr "WARD"
+
+#. Lantern Tree station: branch name under its bough (LOOP-001 §3.1).
+msgid "RUINS_TREE_BRANCH_MADNESS"
+msgstr "MADNESS"
+
+#. Lantern Tree station plate: the focused node is owned.
+msgid "RUINS_TREE_STATE_OWNED"
+msgstr "Lit. It burns on the Vigil."
+
+#. Lantern Tree station plate: the focused node can be bought. {cost} = Ember price.
+msgid "RUINS_TREE_STATE_BUY"
+msgstr "{cost} Ember to light."
+
+#. Lantern Tree station plate: not enough Ember. {cost} = price, {ember} = Ember banked.
+msgid "RUINS_TREE_STATE_SHORT"
+msgstr "{cost} Ember to light. You hold {ember}."
+
+#. Lantern Tree station plate: a hard prerequisite is missing. {names} = node names, comma-separated.
+msgid "RUINS_TREE_STATE_PREREQ"
+msgstr "Hangs from {names}. Light that lamp first."
+
+#. Lantern Tree station plate: the tier gate is not met. {n} = lamps needed on the bough below.
+msgid "RUINS_TREE_STATE_TIER"
+msgstr "Light {n} lamps on the bough below first."
+
+#. Lantern Tree station plate: a Codex-gated node whose entry is not known yet; the blank is chalk (LOOP-001 §3.7).
+msgid "RUINS_TREE_STATE_CODEX"
+msgstr "What you must understand: ________"
+
+#. Lantern Tree station plate: a node of a tier not on sale yet (the slice's dark lamps).
+msgid "RUINS_TREE_STATE_DARK"
+msgstr "A dark lamp. This bough has not grown yet."
+
+#. Lantern Tree station plate: a node held back from sale (data switch, TECH-001 Q-T328).
+msgid "RUINS_TREE_STATE_UNWIRED"
+msgstr "This lamp will not take a flame yet."
+
+#. Lantern Tree purchase confirmation, title.
+msgid "RUINS_TREE_CONFIRM_TITLE"
+msgstr "LIGHT THIS LAMP?"
+
+#. Lantern Tree purchase confirmation body. {name} = node name, {cost} = price, {ember} = Ember banked, {after} = Ember after.
+msgid "RUINS_TREE_CONFIRM_BODY"
+msgstr "{name}: {cost} Ember. You hold {ember}; {after} after."
+
+#. Lantern Tree purchase confirmation: buy.
+msgid "RUINS_TREE_CONFIRM_YES"
+msgstr "LIGHT IT"
+
+#. Lantern Tree purchase confirmation: the safe default, keep the Ember.
+msgid "RUINS_TREE_CONFIRM_NO"
+msgstr "NOT YET"
+
+#. Lantern Tree node LANTERN-1, name (LOOP-001 §3.3).
+msgid "RUINS_TREE_LANTERN_1_NAME"
+msgstr "Surgelight Charges"
+
+#. Lantern Tree node LANTERN-1, one-line effect (LOOP-001 §3.3; GDD-001 §7.3 legibility).
+msgid "RUINS_TREE_LANTERN_1_FX"
+msgstr "Hold two Surgelight charges."
+
+#. Lantern Tree node LANTERN-2, name (LOOP-001 §3.3).
+msgid "RUINS_TREE_LANTERN_2_NAME"
+msgstr "Wide Bellows"
+
+#. Lantern Tree node LANTERN-2, one-line effect (LOOP-001 §3.3; GDD-001 §7.3 legibility).
+msgid "RUINS_TREE_LANTERN_2_FX"
+msgstr "Each Surgelight burns a 25% wider gap in Shroud."
+
+#. Lantern Tree node LANTERN-3, name (LOOP-001 §3.3).
+msgid "RUINS_TREE_LANTERN_3_NAME"
+msgstr "Full Wick"
+
+#. Lantern Tree node LANTERN-3, one-line effect (LOOP-001 §3.3; GDD-001 §7.3 legibility).
+msgid "RUINS_TREE_LANTERN_3_FX"
+msgstr "A larger globe: your light reaches much further."
+
+#. Lantern Tree node LANTERN-4, name (LOOP-001 §3.3).
+msgid "RUINS_TREE_LANTERN_4_NAME"
+msgstr "Wick Ledger"
+
+#. Lantern Tree node LANTERN-4, one-line effect (LOOP-001 §3.3; GDD-001 §7.3 legibility).
+msgid "RUINS_TREE_LANTERN_4_FX"
+msgstr "The compass draws your true light ring and the nearest unlit way."
+
+#. Lantern Tree node LANTERN-5, name (LOOP-001 §3.3).
+msgid "RUINS_TREE_LANTERN_5_NAME"
+msgstr "Dark Lantern"
+
+#. Lantern Tree node LANTERN-5, one-line effect (LOOP-001 §3.3; GDD-001 §7.3 legibility).
+msgid "RUINS_TREE_LANTERN_5_FX"
+msgstr "Mine and fly better with the lantern down; the Choir sees you less."
+
+#. Lantern Tree node LANTERN-6, name (LOOP-001 §3.3).
+msgid "RUINS_TREE_LANTERN_6_NAME"
+msgstr "Long Burn"
+
+#. Lantern Tree node LANTERN-6, one-line effect (LOOP-001 §3.3; GDD-001 §7.3 legibility).
+msgid "RUINS_TREE_LANTERN_6_FX"
+msgstr "Surgelight pushes 20% harder."
+
+#. Lantern Tree node HULL-1, name (LOOP-001 §3.3).
+msgid "RUINS_TREE_HULL_1_NAME"
+msgstr "Drift Control"
+
+#. Lantern Tree node HULL-1, one-line effect (LOOP-001 §3.3; GDD-001 §7.3 legibility).
+msgid "RUINS_TREE_HULL_1_FX"
+msgstr "Less drift, and trim vanes for stronger sideways thrust."
+
+#. Lantern Tree node HULL-2, name (LOOP-001 §3.3).
+msgid "RUINS_TREE_HULL_2_NAME"
+msgstr "Dead Reckoning"
+
+#. Lantern Tree node HULL-2, one-line effect (LOOP-001 §3.3; GDD-001 §7.3 legibility).
+msgid "RUINS_TREE_HULL_2_FX"
+msgstr "A compass lie carries a chalk strike."
+
+#. Lantern Tree node HULL-3, name (LOOP-001 §3.3).
+msgid "RUINS_TREE_HULL_3_NAME"
+msgstr "Brake Radius"
+
+#. Lantern Tree node HULL-3, one-line effect (LOOP-001 §3.3; GDD-001 §7.3 legibility).
+msgid "RUINS_TREE_HULL_3_FX"
+msgstr "Brakes bite 25% harder."
+
+#. Lantern Tree node HULL-4, name (LOOP-001 §3.3).
+msgid "RUINS_TREE_HULL_4_NAME"
+msgstr "Plating"
+
+#. Lantern Tree node HULL-4, one-line effect (LOOP-001 §3.3; GDD-001 §7.3 legibility).
+msgid "RUINS_TREE_HULL_4_FX"
+msgstr "A brass plate takes the first hit of a run."
+
+#. Lantern Tree node HULL-6, name (LOOP-001 §3.3).
+msgid "RUINS_TREE_HULL_6_NAME"
+msgstr "Second Vigil"
+
+#. Lantern Tree node HULL-6, one-line effect (LOOP-001 §3.3; GDD-001 §7.3 legibility).
+msgid "RUINS_TREE_HULL_6_FX"
+msgstr "Once per run, a lethal hit puts you back in the Seam."
+
+#. Lantern Tree node HULL-7, name (LOOP-001 §3.3).
+msgid "RUINS_TREE_HULL_7_NAME"
+msgstr "Drift Baffles"
+
+#. Lantern Tree node HULL-7, one-line effect (LOOP-001 §3.3; GDD-001 §7.3 legibility).
+msgid "RUINS_TREE_HULL_7_FX"
+msgstr "Drift falls further; a second pair of trim vanes."
+
+#. Lantern Tree node ORDNANCE-1, name (LOOP-001 §3.3).
+msgid "RUINS_TREE_ORDNANCE_1_NAME"
+msgstr "Hookline"
+
+#. Lantern Tree node ORDNANCE-1, one-line effect (LOOP-001 §3.3; GDD-001 §7.3 legibility).
+msgid "RUINS_TREE_ORDNANCE_1_FX"
+msgstr "Shards hook onto a brass line from twice as far."
+
+#. Lantern Tree node ORDNANCE-2, name (LOOP-001 §3.3).
+msgid "RUINS_TREE_ORDNANCE_2_NAME"
+msgstr "First Sermon"
+
+#. Lantern Tree node ORDNANCE-2, one-line effect (LOOP-001 §3.3; GDD-001 §7.3 legibility).
+msgid "RUINS_TREE_ORDNANCE_2_FX"
+msgstr "The first Charge of each sector cannot be intercepted."
+
+#. Lantern Tree node ORDNANCE-3, name (LOOP-001 §3.3).
+msgid "RUINS_TREE_ORDNANCE_3_NAME"
+msgstr "Lance Rate I"
+
+#. Lantern Tree node ORDNANCE-3, one-line effect (LOOP-001 §3.3; GDD-001 §7.3 legibility).
+msgid "RUINS_TREE_ORDNANCE_3_FX"
+msgstr "The Arc-Lance fires 7 times a second instead of 6."
+
+#. Lantern Tree node ORDNANCE-4, name (LOOP-001 §3.3).
+msgid "RUINS_TREE_ORDNANCE_4_NAME"
+msgstr "Charge Capacity I"
+
+#. Lantern Tree node ORDNANCE-4, one-line effect (LOOP-001 §3.3; GDD-001 §7.3 legibility).
+msgid "RUINS_TREE_ORDNANCE_4_FX"
+msgstr "Carry one more Charge."
+
+#. Lantern Tree node ORDNANCE-6, name (LOOP-001 §3.3).
+msgid "RUINS_TREE_ORDNANCE_6_NAME"
+msgstr "Twin Vigil"
+
+#. Lantern Tree node ORDNANCE-6, one-line effect (LOOP-001 §3.3; GDD-001 §7.3 legibility).
+msgid "RUINS_TREE_ORDNANCE_6_FX"
+msgstr "Two Charge capacity upgrades may stack in one run."
+
+#. Lantern Tree node ORDNANCE-7, name (LOOP-001 §3.3).
+msgid "RUINS_TREE_ORDNANCE_7_NAME"
+msgstr "Lance Rate II"
+
+#. Lantern Tree node ORDNANCE-7, one-line effect (LOOP-001 §3.3; GDD-001 §7.3 legibility).
+msgid "RUINS_TREE_ORDNANCE_7_FX"
+msgstr "The Arc-Lance fires 8 times a second."
+
+#. Lantern Tree node WARD-1, name (LOOP-001 §3.3).
+msgid "RUINS_TREE_WARD_1_NAME"
+msgstr "Short Rite"
+
+#. Lantern Tree node WARD-1, one-line effect (LOOP-001 §3.3; GDD-001 §7.3 legibility).
+msgid "RUINS_TREE_WARD_1_FX"
+msgstr "Ward Pulse comes back 25% sooner."
+
+#. Lantern Tree node WARD-2, name (LOOP-001 §3.3).
+msgid "RUINS_TREE_WARD_2_NAME"
+msgstr "Salt Glass Mines"
+
+#. Lantern Tree node WARD-2, one-line effect (LOOP-001 §3.3; GDD-001 §7.3 legibility).
+msgid "RUINS_TREE_WARD_2_FX"
+msgstr "Place salt-glass wards that block a deposit."
+
+#. Lantern Tree node WARD-3, name (LOOP-001 §3.3).
+msgid "RUINS_TREE_WARD_3_NAME"
+msgstr "Ward Reach"
+
+#. Lantern Tree node WARD-3, one-line effect (LOOP-001 §3.3; GDD-001 §7.3 legibility).
+msgid "RUINS_TREE_WARD_3_FX"
+msgstr "Ward Pulse reaches 30% further."
+
+#. Lantern Tree node WARD-4, name (LOOP-001 §3.3).
+msgid "RUINS_TREE_WARD_4_NAME"
+msgstr "Salt the Wound"
+
+#. Lantern Tree node WARD-4, one-line effect (LOOP-001 §3.3; GDD-001 §7.3 legibility).
+msgid "RUINS_TREE_WARD_4_FX"
+msgstr "Each Ward Pulse burns away most of a Shroud cell."
+
+#. Lantern Tree node WARD-5, name (LOOP-001 §3.3).
+msgid "RUINS_TREE_WARD_5_NAME"
+msgstr "Ward Reach II"
+
+#. Lantern Tree node WARD-5, one-line effect (LOOP-001 §3.3; GDD-001 §7.3 legibility).
+msgid "RUINS_TREE_WARD_5_FX"
+msgstr "Ward Pulse reaches 30% further again."
+
+#. Lantern Tree node WARD-6, name (LOOP-001 §3.3).
+msgid "RUINS_TREE_WARD_6_NAME"
+msgstr "Silence the Choir"
+
+#. Lantern Tree node WARD-6, one-line effect (LOOP-001 §3.3; GDD-001 §7.3 legibility).
+msgid "RUINS_TREE_WARD_6_FX"
+msgstr "A Ward Pulse on the Sepulchre halts deposits for 4 seconds."
+
+#. Lantern Tree node MADNESS-1, name (LOOP-001 §3.3).
+msgid "RUINS_TREE_MADNESS_1_NAME"
+msgstr "Fray Reading"
+
+#. Lantern Tree node MADNESS-1, one-line effect (LOOP-001 §3.3; GDD-001 §7.3 legibility).
+msgid "RUINS_TREE_MADNESS_1_FX"
+msgstr "False chants come half as often and point at the true procession."
+
+#. Lantern Tree node MADNESS-2, name (LOOP-001 §3.3).
+msgid "RUINS_TREE_MADNESS_2_NAME"
+msgstr "Look Away"
+
+#. Lantern Tree node MADNESS-2, one-line effect (LOOP-001 §3.3; GDD-001 §7.3 legibility).
+msgid "RUINS_TREE_MADNESS_2_FX"
+msgstr "Held in the gaze and not firing, your Composure stops draining."
+
+#. Lantern Tree node MADNESS-3, name (LOOP-001 §3.3).
+msgid "RUINS_TREE_MADNESS_3_NAME"
+msgstr "Tremor Hand"
+
+#. Lantern Tree node MADNESS-3, one-line effect (LOOP-001 §3.3; GDD-001 §7.3 legibility).
+msgid "RUINS_TREE_MADNESS_3_FX"
+msgstr "Unmoored tremors last half as long."
+
+#. Lantern Tree node MADNESS-4, name (LOOP-001 §3.3).
+msgid "RUINS_TREE_MADNESS_4_NAME"
+msgstr "Bitter Candy"
+
+#. Lantern Tree node MADNESS-4, one-line effect (LOOP-001 §3.3; GDD-001 §7.3 legibility).
+msgid "RUINS_TREE_MADNESS_4_FX"
+msgstr "While Frayed, the chain bonus climbs higher."
+
+#. Lantern Tree node MADNESS-5, name (LOOP-001 §3.3).
+msgid "RUINS_TREE_MADNESS_5_NAME"
+msgstr "Clear Eyed"
+
+#. Lantern Tree node MADNESS-5, one-line effect (LOOP-001 §3.3; GDD-001 §7.3 legibility).
+msgid "RUINS_TREE_MADNESS_5_FX"
+msgstr "Spend 1 Composure to clear your warp for 20 seconds."
+
+#. Lantern Tree node MADNESS-6, name (LOOP-001 §3.3).
+msgid "RUINS_TREE_MADNESS_6_NAME"
+msgstr "One-Syllable Truth"
+
+#. Lantern Tree node MADNESS-6, one-line effect (LOOP-001 §3.3; GDD-001 §7.3 legibility).
+msgid "RUINS_TREE_MADNESS_6_FX"
+msgstr "While Frayed, phantoms die to one lance hit."

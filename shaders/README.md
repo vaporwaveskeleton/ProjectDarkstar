@@ -22,4 +22,5 @@ Index (TECH-001 §5.1 WarpComposer, §5.5 rendering ladder):
     - `bezel_marquee.gdshader`: the backlit marquee sign (uneven backlight, dead tube band, dust).
     - `cabinet_trim.gdshader`: the T-molding.
     - `bezel_bolt.gdshader`: the zinc bolts.
-    - `cabinet_room.gdshader`: the dark room beyond the printed sheet.
+    - `cabinet_room.gdshader`: the cabinet's side panel just beyond the printed sheet (transparent past it).
+    - `arcade_backdrop.gdshader`: the defocused 80s arcade floor behind the cabinet (`ArcadeBackdrop`): soft cabinet silhouettes, neon and tungsten bokeh, carpet, haze, film grain; procedural, no textures.

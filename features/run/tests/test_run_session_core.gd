@@ -49,6 +49,7 @@ func test_data_matches_sys001() -> void:
 	assert_int(s.score_per_ember).is_equal(200)
 	assert_int(s.act0_bank_floor_ember).is_equal(40)
 	assert_bool(s.carry_between_seams).is_true()
+	assert_int(s.slice_last_seam).is_equal(1)   # proposed SYS-001 row (Q-T276)
 	assert_float(s.death_cost_loop_min(1)).is_equal(10.0)
 	assert_float(s.death_cost_loop_min(5)).is_equal(18.0)
 
@@ -183,6 +184,71 @@ func test_abandon_only_between_seams_and_costs_the_death_price() -> void:
 	assert_bool(core.abandon()).is_true()
 	assert_float(core.loop_min_left()).is_equal(120.0 - 14.0)
 	assert_array(events).contains(["run_ended:abandoned"])
+
+
+## Q-T277: the sector's Abandon Run mid-Seam ends the run at the death price and banks its Ember.
+func test_abandon_from_seam_costs_the_death_price_and_banks() -> void:
+	core.arrive_at_ruins({})
+	core.start_run(1)
+	_clear_seam(7.0, 1, 5)       # 45 in-run Ember
+	core.enter_seam()            # Seam 2, inside it
+	assert_bool(core.abandon_from_seam()).is_true()
+	assert_bool(core.run().is_active()).is_false()
+	assert_bool(core.in_seam()).is_false()
+	assert_float(core.loop_min_left()).is_equal(120.0 - 12.0)
+	assert_int(core.profile().ember_banked).is_equal(45)
+	assert_array(events).contains(["run_ended:abandoned"])
+	assert_bool(core.abandon_from_seam()).is_false()   # no run left
+
+
+## Q-T276: at the slice frontier the cleared Seam's exit ends the run `returned`: Seam clear Ember and
+## the report's Ember bank in full, no death lump, no win refund.
+func test_frontier_exit_returns_and_banks_the_clear() -> void:
+	core.arrive_at_ruins({})
+	core.consume_clock(30.0, &"test")
+	core.start_run(1)
+	core.enter_seam()
+	assert_bool(core.at_frontier()).is_true()
+	assert_bool(core.return_from_frontier(_report(6.0, 2, 3))).is_true()
+	assert_bool(core.run().is_active()).is_false()
+	assert_int(core.profile().ember_banked).is_equal(3 + 40)
+	assert_float(core.loop_min_left()).is_equal(90.0)
+	assert_array(events).contains(["seam_cleared:1", "run_ended:returned"])
+	assert_bool(core.at_frontier()).is_false()
+
+
+func test_frontier_exit_outside_a_seam_is_refused() -> void:
+	core.start_run(1)
+	assert_bool(core.return_from_frontier(_report(5.0, 1, 0))).is_false()
+	assert_bool(core.run().is_active()).is_true()
+
+
+## `slice_last_seam` 0 switches the frontier off: the exit is an ordinary Seam clear.
+func test_no_frontier_means_the_exit_leads_to_the_next_seam() -> void:
+	var s := STATS.duplicate() as RunSessionStats
+	s.slice_last_seam = 0
+	core = RunSessionCore.new(s, null)
+	core.start_run(1)
+	core.enter_seam()
+	assert_bool(core.at_frontier()).is_false()
+	assert_bool(core.return_from_frontier(_report(5.0, 1, 0))).is_true()
+	assert_bool(core.run().is_active()).is_true()
+	assert_int(core.run().seam_index).is_equal(2)
+
+
+## The frontier never swallows the last Seam: a frontier at or past Seam 5 leaves the win path alone.
+func test_frontier_at_the_last_seam_still_wins() -> void:
+	var s := STATS.duplicate() as RunSessionStats
+	s.slice_last_seam = 5
+	core = RunSessionCore.new(s, null)
+	core.run_ended.connect(func(o: StringName) -> void: events.append("run_ended:%s" % o))
+	core.start_run(1)
+	for i in 4:
+		_clear_seam()
+	core.enter_seam()
+	assert_bool(core.at_frontier()).is_false()
+	core.return_from_frontier(_report(5.0, 1, 0))
+	assert_array(events).contains(["run_ended:won"])
 
 
 func test_multi_sky_lump_emits_each_sky() -> void:
