@@ -18,6 +18,13 @@ const MODULE_PARTS := {
 }
 const ALWAYS_PARTS: Array[StringName] = [&"keelSpine", &"hull", &"bellowsA", &"lanceTurret",
 		&"lampGimbal", &"lampGlobe", &"flue"]
+## ✱ drawing, pass 8 c (Q-T324): the Lantern Down ember (core radius and glow radius as globe radii,
+## opacities) and the warm hull rim it lights. Gaslight on the player only (ART-001 law 1).
+const EMBER_CORE := 0.45
+const EMBER_ALPHA := 0.75
+const EMBER_GLOW := 3.2
+const EMBER_GLOW_ALPHA := 0.22
+const HULL_RIM_ALPHA := 0.5
 
 @export var look: AetherVigilLook
 
@@ -354,6 +361,15 @@ func _draw_hull(lamp: float) -> void:
 			inner.append(Vector2(p.x * lerpf(1.0, 0.92, float(i) * 0.4), p.y * sc))
 		draw_colored_polygon(inner, _tint(bands[i]))
 	draw_polyline(_close(out), _tint(lk.brass_shadow), 1.5)
+	# Pass 8 c (Q-T324): Lantern Down, the ember lights a faint warm rim along the upper hull.
+	var ember: float = _ember_level(clampf(lamp, 0.0, 1.0))
+	if ember > 0.01:
+		var top := PackedVector2Array()
+		for p in out:
+			if p.y < -0.5:
+				top.append(p * 0.97)
+		if top.size() >= 2:
+			draw_polyline(top, _tint(Color(Pal.GAS_3, HULL_RIM_ALPHA * ember)), 1.0)
 	# Ribs and rivets.
 	var rib_x: Array[float] = [-23.0, -15.0, -7.0, 1.0, 9.0, 17.0, 25.0]
 	for x in rib_x:
@@ -565,6 +581,18 @@ func _draw_lamp(lamp: float) -> void:
 			draw_line(g + Vector2(-half, y), g + Vector2(half, y), _tint(lk.brass_dark), lerpf(1.8, 0.6, open))
 	draw_arc(g, r, 0.0, TAU, 24, _tint(lk.brass_high), 1.0)
 	draw_circle(g + Vector2(-r * 0.35, -r * 0.4), 0.9, _tint(lk.lamp_core.lerp(lk.lamp_ember, 1.0 - lit)))
+	# Pass 8 c (Q-T324): Lantern Down keeps a dim ember alive in the housing, so the ship stays the
+	# clearest shape in the dark (gaslight, the player's own colour; out once a breach gutters it).
+	var ember: float = _ember_level(lit)
+	if ember > 0.01:
+		draw_circle(g, r * EMBER_CORE, _tint(Color(Pal.GAS_3, EMBER_ALPHA * ember)))
+		draw_circle(g, r * EMBER_CORE * 0.45, _tint(Color(Pal.GAS_4, EMBER_ALPHA * ember)))
+		_add_glow(g, r * EMBER_GLOW, Pal.GAS_2, EMBER_GLOW_ALPHA * ember)
+
+
+## 0..1: the Lantern Down ember (1 - the lamp's light; 0 once the breach has guttered it).
+func _ember_level(lit: float) -> float:
+	return 0.0 if _breached else clampf(1.0 - lit, 0.0, 1.0)
 
 
 func _draw_sparks() -> void:

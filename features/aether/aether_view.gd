@@ -5,6 +5,9 @@ extends Node
 ## logical space, and shown on %Screen through aether_present.gdshader. Owns no veil and no fade:
 ## the scene that uses it decides how it is entered. Owns no game state.
 
+## ✱ pass 8 c: the night floor is AETHER-0 at this share (linear), a deep indigo, never neutral black.
+const NIGHT_FLOOR_K := 0.35
+
 @onready var world: SubViewport = %World
 @onready var _screen: TextureRect = %Screen
 @onready var _env: WorldEnvironment = %Env
@@ -62,6 +65,12 @@ static func grade_material(m: ShaderMaterial, look: AetherLook) -> void:
 	m.set_shader_parameter(&"cap_veil", look.far_cap_veil)
 	m.set_shader_parameter(&"veil_col", look.fog_deep.srgb_to_linear())
 	m.set_shader_parameter(&"floor_col", Pal.VOID_0.srgb_to_linear())
+	# pass 8 c (Q-T321, Q-T322): the night floor and the split tone, Pal hues in linear space
+	m.set_shader_parameter(&"night_floor", Pal.AETHER_0.srgb_to_linear() * NIGHT_FLOOR_K)
+	m.set_shader_parameter(&"tone_k", look.far_split_tone)
+	m.set_shader_parameter(&"tone_deep", Pal.AETHER_5.srgb_to_linear())
+	m.set_shader_parameter(&"tone_lit", Pal.AETHER_4.srgb_to_linear())
+	m.set_shader_parameter(&"tone_pool", Pal.GAS_3.srgb_to_linear())
 
 
 static func night_material(m: ShaderMaterial, backdrop: AetherBackdrop) -> void:

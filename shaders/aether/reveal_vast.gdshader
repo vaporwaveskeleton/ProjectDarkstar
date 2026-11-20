@@ -4,11 +4,12 @@ render_mode unshaded, blend_premul_alpha;
 // Q-T311..313). Lantern down, the presenter crushes the fog to near-VOID (`night`, Q-T310); what is
 // left is a dim distant AETHER glow on the horizon and, in front of it, up to three bodies far
 // bigger than the Vigil: a small skull on a long ribbed neck, a deep body with two pairs of trailing
-// fins, a tapering tail with trailing tendrils, dorsal spines. Each is near-VOID, rim-lit hard on the
-// flank facing the distant glow, with rows of paired PHOS portholes along both flanks (living ship
-// lights; on the near one each light is about the Vigil's size: the scale cue) and one head light.
-// The neck bends so the head turns toward the Vigil (`bend`), and the head light is brighter the more
-// it faces it. One body crosses in front of the horizon glow so its whole outline shows.
+// fins, a tapering tail with trailing tendrils, dorsal spines. Each is near-VOID with a directional
+// rim on the edges facing the distant glow (pass 8 c), rows of PHOS portholes (paired along the body,
+// single on the lit flank of the neck; on the near one a light is a sizeable fraction of the Vigil: the
+// scale cue) and no head light (pass 8 c: nothing where an eye would be). The neck bends so the head
+// turns toward the Vigil (`bend`), and the front portholes brighten the more it faces it. One body
+// crosses in front of the horizon glow so its whole outline shows.
 // Far layer only: never a hitbox, no light in the play layer, never black (floor_col), gone inside
 // the entity's loss. Photophores pulse in a 0.2 Hz wave; `steady` holds them (reduced motion /
 // photosensitivity). The rect sits at the screen origin (screen px). Colours arrive from GDScript
@@ -21,7 +22,6 @@ uniform vec3 body_hi : source_color = vec3(0.075, 0.078, 0.157);     // VOID-1
 uniform vec3 glow_col : source_color = vec3(0.588, 0.557, 0.824);    // AETHER-3: the distant light
 uniform vec3 rim_col : source_color = vec3(0.502, 0.769, 0.816);     // AETHER-5: hard rim
 uniform vec3 photo_col : source_color = vec3(0.384, 0.812, 0.659);   // PHOS-4 portholes
-uniform vec3 head_col : source_color = vec3(0.659, 0.941, 0.816);    // PHOS-5 head light
 uniform vec3 floor_col : source_color = vec3(0.039, 0.039, 0.07);
 uniform float time_s = 0.0;
 uniform float reveal : hint_range(0.0, 1.0) = 0.0;
@@ -119,10 +119,17 @@ void fragment() {
 			tend = max(tend, (1.0 - smoothstep(tw * 0.5, tw, abs(v - off - wave))) * step(0.0, ut) * (1.0 - smoothstep(0.6, 1.0, ut)));
 		}
 		body = max(body, tend * 0.9);
-		// hard rim on the flank facing the distant light
-		float facing_l = clamp(sign(v) * lit_side, 0.0, 1.0);
-		float rim = (1.0 - smoothstep(0.0, 1.6, abs(d + 0.6))) * facing_l * step(0.0, u) * step(u, 1.0);
-		rim += tend * 0.35 * facing_l;
+		// pass 8 c (Q-T320): a directional rim. Only edges that face the glow catch it, per pixel; the rim
+		// is widest near the head and thins toward the tail; far from the glow the fog swallows it.
+		vec2 lp = normalize(horizon_px - p + vec2(0.001));
+		float lby = -lp.x * s + lp.y * c;
+		float facing_l = smoothstep(0.05, 0.6, sign(v) * lby);
+		float rim_w = mix(2.8, 0.5, uc) * facing_l;
+		float rim = (1.0 - smoothstep(0.0, max(rim_w, 0.01), abs(d + 0.4))) * facing_l * step(0.0, u) * step(u, 1.0);
+		rim += tend * 0.25 * facing_l;
+		rim *= clamp(hz * 2.6 + 0.12, 0.0, 1.0);
+		// the far ends sink into the fog
+		body *= 1.0 - 0.7 * smoothstep(0.6, 1.0, u);
 		// paired portholes along both flanks of the body (a slow 0.2 Hz wave runs head to tail)
 		float sp = max(PORT_SPACING, 13.0 * ls / len);   // big lights sit further apart
 		float idx = floor(u / sp + 0.5);
@@ -130,18 +137,20 @@ void fragment() {
 		float pw = w * profile(pu, len);
 		float pv = spine(clamp(pu, 0.0, 1.0), len, B.z, sd, t) + sign(v) * pw * 0.42;
 		vec2 pp = vec2(-pu * len, pv);
-		float pd = length(b - pp) / ls;
+		float lsz = ls * mix(0.55, 1.0, smoothstep(0.2, 0.32, pu));   // smaller on the neck
+		float pd = length(b - pp) / lsz;
 		float pulse = mix(0.75 + 0.25 * sin(t * 1.2566 - idx * 0.5 + sd), 0.9, steady);
-		float row = step(0.3, pu) * step(pu, 0.72);
-		float photo = row * pulse * (exp(-pd * pd / 1.6) + 0.35 * exp(-pd / 3.0));
-		// the head light: one; brighter the more the head faces the Vigil
-		vec2 hp = vec2(-0.025 * len, spine(0.025, len, B.z, sd, t));
-		float hd = length(b - hp) / max(ls * 0.8, 1.0);
-		float head_l = (0.3 + 0.7 * C.x) * (1.6 * exp(-hd * hd / 2.0) + 0.5 * exp(-hd / 3.5));
+		// pass 8 c (Q-T319): no head light (it sat where an eye would be). The rows run up the neck on the
+		// lit flank only (single, never a pair near the head), paired along the body; the front lights
+		// brighten the more the head faces the Vigil (it is watching).
+		float neck_row = step(0.18, pu) * step(pu, 0.3) * step(0.0, v * lit_side);
+		float row = max(step(0.3, pu) * step(pu, 0.72), neck_row);
+		float watch = mix(0.5 + 1.0 * C.x, 1.0, smoothstep(0.3, 0.45, pu));
+		float photo = row * pulse * watch * (exp(-pd * pd / 1.6) + 0.35 * exp(-pd / 3.0));
 
 		vec3 sil = mix(body_col, body_hi, 0.25 * smoothstep(-wu, 0.0, -abs(v)));
 		vec4 layer = vec4(sil * body, body);
-		vec3 add = rim_col * RIM_HDR * rim + photo_col * PHOTO_HDR * photo * max(body, 0.4) + head_col * PHOTO_HDR * head_l;
+		vec3 add = rim_col * RIM_HDR * rim + photo_col * PHOTO_HDR * photo * max(body, 0.4);
 		layer.rgb += add;
 		layer.a = max(layer.a, clamp(a_luma(add), 0.0, 1.0));
 		layer *= k;

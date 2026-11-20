@@ -942,6 +942,15 @@ Rulings Q-T310 to Q-T317 (TECH-001 §11.2). Supersede the matching pass 8 lines 
 
 **Known weaknesses (pass 8 b, by eye).** The near giant's back ridge can still read as a jagged horizon line when its head is off-frame; the sector's front motes (DepthFront) still sprinkle bright points over the silhouettes; the drained ring round the eye is subtle lantern up; the eye's iris is a full disc when the lids are wide open. No cold-viewer test yet (Q-T307, Q-T308).
 
+#### Pass 8 c: no eye reads, a coloured night, three hues (2026-11-19, Fable art-direction review)
+Rulings Q-T318 to Q-T325 (TECH-001 §11.2). Supersede the matching pass 8 and 8 b lines above.
+- **No eye anywhere.** The Presence's eye is gone: no iris, pupil or glint. What is left is a lightless disc inside its body that gives back no light, seen only by what it covers and by the drained, colourless ring round it, with the fog bending in. It is never black (VOID floor) and leans a little toward the Vigil. The serpents carry no light where an eye would be: their porthole rows run up the lit flank of the neck (single there, paired only along the body). The Presence is not the entity (it flees the entity), but no eye reads are allowed on it either.
+- **Rims are directional.** Only the edges that face the distant glow catch it; the rim is widest at the head and thins to the tail; far from the glow the fog swallows it; the far ends of the bodies sink into the fog.
+- **Night is coloured.** Lantern down, the fog sinks to a deep indigo, never a neutral near-black; lights keep their own hue. The Vigil keeps a dim gaslight ember in its lantern housing and a faint warm rim along its upper hull, so it stays the clearest shape. The geodes sink to about 30% with a thin facet glint on their lit edge.
+- **Three hues in the normal state.** Teal in the deep fog, rose-pearl on lit fog, amber only in the lantern's own pool, so lavender is one hue of three. The upper-left crags read as one dark, cool mass.
+
+**Known weaknesses (pass 8 c, by eye).** The lightless disc is subtle in a still (it is meant to be found, not shown); the crag veins can read as thin worms at full size; the lantern-down indigo is a mid-deep value, not the deepest the palette allows. Not re-measured: perf and the flash pass (pass 8 b figures stand in TECH-001 §8.5).
+
 ### 16.7 The Aether Vigil: a brass lantern skiff with visible systems (ruled, PM under owner autonomy grant, 2026-11-19)
 
 > **Status: ruled, PM under owner autonomy grant, 2026-11-19** (TECH-001 Q-T170; queued for the owner's later review). It goes with the Aether handling profile (GDD §4.2a, SYS-001 §1.1a). Act 0's neon Vigil (§3, §15.2) is unchanged.

@@ -35,7 +35,7 @@ const FLEE_TURN := 0.24
 ## the WARP-001 §4.5 flicker cap) and the speed the beat travels along the veins.
 const BEAT_PERIOD_S := 4.0
 const WAVE_PX_S := 150.0
-## ✱ pass 8 (Q-T297..300): the eye's centre (local px, ~90 px inside the front, on screen at the top
+## ✱ pass 8 (Q-T297..300; pass 8 c Q-T318: an eye no longer, a lightless disc): its centre (local px, ~90 px inside the front, on screen at the top
 ## left of the frame), how fast its gaze turns toward the Vigil (rad/s) and how fast its front's reach
 ## follows the Vigil along the front (local px/s). Slow: it turns, it never snaps.
 const EYE := Vector2(690.0, 545.0)
@@ -43,21 +43,15 @@ const GAZE_RATE := 0.35
 const REACH_PX_S := 20.0
 ## ✱ gaze at rest (local): toward the open fog below its front; reduced motion holds it here.
 const GAZE_REST := PI * 0.5
-## ✱ pass 8 b (Q-T315): the gaze is locked on within LOCK_ARC (rad) of the Vigil; the pupil contracts
-## and dilates at LOCK_RATE per second (slow: no flicker).
-const LOCK_ARC := 0.5
-const LOCK_RATE := 0.8
 
 ## 0 = here … 1 = gone. Rises only after presence_flee() (or a look's presence_fled).
 var flee_progress: float = 0.0
 var fleeing: bool = false
 ## 0 = lantern up (vague mass) … 1 = lantern down (full lit pattern).
 var reveal: float = 0.0
-## Pass 8: the eye's gaze angle (local radians; PI/2 = out of its front) and the front's reach (local x).
+## Pass 8: the disc's lean (gaze) angle (local radians; PI/2 = out of its front) and the front's reach (local x).
 var gaze_angle: float = GAZE_REST
 var reach_x: float = EYE.x
-## 0 = looking about … 1 = locked on the Vigil (the pupil a thin slit).
-var lock: float = 0.0
 var _flee_s := 0.0
 
 
@@ -83,8 +77,6 @@ func configure(look: AetherLook) -> void:
 	set_param(&"film_a", Pal.AETHER_3)
 	set_param(&"film_b", Pal.PHOS_4)
 	set_param(&"vein_col", Pal.PHOS_2)
-	set_param(&"iris_lo", Pal.PHOS_1)
-	set_param(&"glint_col", Pal.BONE_5)
 	set_param(&"drink", look.presence_drink)
 	set_param(&"eye_k", look.presence_eye)
 	set_param(&"eye_px", EYE)
@@ -93,32 +85,27 @@ func configure(look: AetherLook) -> void:
 	set_flee_progress(look.presence_fled)
 
 
-## True when the look gives the Presence subtraction or an eye: it then reads the screen behind it
+## True when the look gives the Presence subtraction or its lightless disc: it then reads the screen behind it
 ## (the backdrop shows its PresenceCopy).
 static func subtracts(look: AetherLook) -> bool:
 	return look != null and (look.presence_drink > 0.0 or look.presence_eye > 0.0)
 
 
-## Pass 8: it watches. The eye's gaze turns toward `target_screen` (the Vigil's lantern, logical px)
+## Pass 8: it watches. The disc's lean turns toward `target_screen` (the Vigil's lantern, logical px)
 ## at GAZE_RATE and its front's reach follows it along the front at REACH_PX_S. `still` (reduced
 ## motion) holds the gaze at rest and the reach where it is.
 func watch(target_screen: Vector2, delta: float, still: bool) -> void:
 	if still or not is_inside_tree():
 		gaze_angle = GAZE_REST
-		lock = 0.0
 	else:
 		var xf := get_global_transform_with_canvas()
 		var local_dir := xf.basis_xform_inv(target_screen - xf * EYE)
 		if local_dir.length() > 0.001:
 			gaze_angle = rotate_toward(gaze_angle, local_dir.angle(), GAZE_RATE * maxf(delta, 0.0))
-			# locked on: the pupil contracts once the gaze has settled on the Vigil
-			var off := absf(angle_difference(gaze_angle, local_dir.angle()))
-			lock = move_toward(lock, 1.0 - clampf(off / LOCK_ARC, 0.0, 1.0), LOCK_RATE * maxf(delta, 0.0))
 		var target_local := xf.affine_inverse() * target_screen
 		reach_x = move_toward(reach_x, clampf(target_local.x, 0.0, QUAD.x), REACH_PX_S * maxf(delta, 0.0))
 	set_param(&"gaze", Vector2.from_angle(gaze_angle))
 	set_param(&"reach_x", reach_x)
-	set_param(&"lock", lock)
 
 
 ## It turns and leaves: accelerating away and dimming over FLEE_S. Calling it again changes nothing.
