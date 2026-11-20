@@ -242,8 +242,13 @@ func test_reset_clears_memory_saves_and_settings() -> void:
 	assert_bool(SaveService.has_slot(&"profile")).is_true()
 	SettingsService.persist = false
 	SettingsService.set_value(&"reduced_motion", true)
-	# No route table host here, so the wait for attract fails; clearing has already happened.
+	# The reset routes to attract. Without a host the router would fall back to change_scene_to_packed and
+	# leave a live attract (demo on) at /root for the rest of the suite; its 30 s demo timer then routed
+	# cabinet inside other tests (Q-T247). A FakeRouteHost records the route and frees the scene.
+	var fake := FakeRouteHost.install(self)
 	var r := await _start_with(_scenario([{"do": "reset"}], 400), "dev")
+	FakeRouteHost.uninstall(fake)
+	assert_array(fake.mounted_routes).contains(["res://scenes/attract/attract_mode.tscn"])
 	assert_bool(SaveService.has_slot(&"profile")).is_false()
 	assert_bool(bool(SettingsService.get_value(&"reduced_motion"))).is_false()
 	assert_bool(r.input.is_idle()).is_true()
