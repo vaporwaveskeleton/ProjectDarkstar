@@ -40,6 +40,15 @@
 			"do": "wait_until",
 			"id": "cabinet/game",
 			"prop": "state",
+			"eq": "briefing",
+			"within": 600
+		},
+		{"do": "wait_frames", "frames": 30},
+		{"do": "hold", "action": "fire_lance", "frames": 3},
+		{
+			"do": "wait_until",
+			"id": "cabinet/game",
+			"prop": "state",
 			"eq": "play",
 			"within": 600
 		},
