@@ -111,6 +111,8 @@ func _exit_tree() -> void:
 ## SceneRouter calls this in the same deferred call that mounts the scene, after this frame's
 ## _process, so everything the first drawn frame needs is pushed here, not on the next _process.
 func on_route_entered(params: Dictionary) -> void:
+	if router != null and router.has_method("prewarm"):
+		router.call("prewarm", RUINS_ROUTE)   # Q-T243: load the Ruins on a worker while the cinematic plays
 	time_s = _float_param(params, "aether_time_s", DEFAULT_TIME_S)
 	var tier := _int_param(params, "tier", DEFAULT_TIER)
 	_centre = _vector2_param(params, "camera_centre", DEFAULT_CAMERA_CENTRE)

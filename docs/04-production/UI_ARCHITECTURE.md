@@ -48,7 +48,7 @@ Route scene (e.g. AttractMode : Screen)        one per SceneRouter route
 | `ui_cancel` | only the top screen answers it. Overlays close. The root screen sets `cancel_closes = false` (cancel does nothing, never quits) |
 | `close()` | pops from the owning stack, or frees itself if it has none |
 
-`FitScrollContainer` (`core/ui/fit_scroll_container.gd`) wraps every overlay's rows. It is as tall as its content until the content would leave the safe area, then it scrolls and follows focus.
+`FitScrollContainer` (`core/ui/fit_scroll_container.gd`) wraps every overlay's rows. It is as tall as its content until the content would leave the safe area, then it scrolls and follows focus. The panel title is not a row: it sits above the scroller in a `VBoxContainer` (`Panel/Layout/Title`, `Panel/Layout/Scroll/Rows`), and the scroller subtracts its VBox siblings' height from its limit, so 200 % text scrolls the rows and never the title (2026-11-19, TECH-001 Q-T244).
 
 ## 4. Interaction rules
 

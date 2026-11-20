@@ -1,0 +1,173 @@
+[gd_resource type="Resource" script_class="WarpSet" load_steps=12 format=3]
+
+[ext_resource type="Script" path="res://features/warp/warp_set.gd" id="1"]
+[ext_resource type="Script" path="res://features/warp/warp_effect.gd" id="2"]
+
+[sub_resource type="Resource" id="e0"]
+script = ExtResource("2")
+id = &"W1-01"
+tier = 1
+kind = 0
+layer = 0
+trigger = 0
+deviation = 0
+name_key = &"WARP_W1_01"
+represented_by = &"aether_look"
+ms_standing = 0.04
+ms_transient = 0
+ms_reduced = 0.04
+photosensitive_variant = 0
+reduced_motion_variant = 0
+
+[sub_resource type="Resource" id="e1"]
+script = ExtResource("2")
+id = &"W1-02"
+tier = 1
+kind = 0
+layer = 1
+trigger = 0
+deviation = 0
+name_key = &"WARP_W1_02"
+represented_by = &""
+ms_standing = 0.1
+ms_transient = 0
+ms_reduced = 0.05
+photosensitive_variant = 0
+reduced_motion_variant = 1
+
+[sub_resource type="Resource" id="e2"]
+script = ExtResource("2")
+id = &"W1-03"
+tier = 1
+kind = 0
+layer = 0
+trigger = 0
+deviation = 0
+name_key = &"WARP_W1_03"
+represented_by = &"aether_look"
+ms_standing = 0.2
+ms_transient = 0
+ms_reduced = 0.12
+photosensitive_variant = 1
+reduced_motion_variant = 1
+
+[sub_resource type="Resource" id="e3"]
+script = ExtResource("2")
+id = &"W1-05"
+tier = 1
+kind = 0
+layer = 1
+trigger = 0
+deviation = 0
+name_key = &"WARP_W1_05"
+represented_by = &""
+ms_standing = 0.04
+ms_transient = 0
+ms_reduced = 0.04
+photosensitive_variant = 0
+reduced_motion_variant = 0
+
+[sub_resource type="Resource" id="e4"]
+script = ExtResource("2")
+id = &"W1-06"
+tier = 1
+kind = 0
+layer = 3
+trigger = 1
+deviation = 0
+name_key = &"WARP_W1_06"
+represented_by = &""
+ms_standing = 0.02
+ms_transient = 0
+ms_reduced = 0.02
+photosensitive_variant = 2
+reduced_motion_variant = 0
+
+[sub_resource type="Resource" id="e5"]
+script = ExtResource("2")
+id = &"W1-07"
+tier = 1
+kind = 1
+layer = 4
+trigger = 3
+deviation = 0
+name_key = &"WARP_W1_07"
+represented_by = &""
+ms_standing = 0
+ms_transient = 0.05
+ms_reduced = 0.05
+photosensitive_variant = 1
+reduced_motion_variant = 1
+
+[sub_resource type="Resource" id="e6"]
+script = ExtResource("2")
+id = &"W1-08"
+tier = 1
+kind = 0
+layer = 4
+trigger = 0
+deviation = 0
+name_key = &"WARP_W1_08"
+represented_by = &""
+ms_standing = 0.02
+ms_transient = 0
+ms_reduced = 0.02
+photosensitive_variant = 0
+reduced_motion_variant = 0
+
+[sub_resource type="Resource" id="e7"]
+script = ExtResource("2")
+id = &"W1-09"
+tier = 1
+kind = 1
+layer = 2
+trigger = 2
+deviation = 1
+name_key = &"WARP_W1_09"
+represented_by = &""
+ms_standing = 0
+ms_transient = 0.03
+ms_reduced = 0.03
+photosensitive_variant = 0
+reduced_motion_variant = 0
+
+[sub_resource type="Resource" id="e8"]
+script = ExtResource("2")
+id = &"W1-10"
+tier = 1
+kind = 1
+layer = 2
+trigger = 2
+deviation = 2
+name_key = &"WARP_W1_10"
+represented_by = &""
+ms_standing = 0
+ms_transient = 0.03
+ms_reduced = 0.03
+photosensitive_variant = 0
+reduced_motion_variant = 0
+
+[resource]
+script = ExtResource("1")
+ds_namespace = "ds_warp.t1"
+source_section = "WARP-001 §2.2, §1.4, §5.2; SYS-001 §1.5 Frayed row, §9 (Warp frame budget, Warp T1 presentation rows proposed 2026-11-19); GDD §16 R-02; slice set Q-T100"
+tier = 1
+effects = [SubResource("e0"), SubResource("e1"), SubResource("e2"), SubResource("e3"), SubResource("e4"), SubResource("e5"), SubResource("e6"), SubResource("e7"), SubResource("e8")]
+entry_quiet_s = 2.0
+novel_per_sector = 3
+budget_ms = 1.2
+seam_depth = PackedFloat32Array(0.6, 0.7, 0.8, 0.9, 1.0)
+breath_px = 1.0
+breath_period_s = 6.5
+breath_wave_px_s = 240.0
+teeth_count = 11
+teeth_len_px = 5.0
+chromatic_edge_px = 2.0
+false_chant_period_s = 40.0
+false_chant_s = 4.0
+false_chant_distance_px = 400.0
+transient_earliest_s = 20.0
+transient_latest_s = 90.0
+blip_lag_s = 0.8
+blip_smear_s = 8.0
+glyph_s = 6.0
