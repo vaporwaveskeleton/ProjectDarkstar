@@ -16,7 +16,7 @@ const WARM_COIN := &"warm_coin"         ## coin: a second coin drops into the re
 const AFTER_IMAGE := &"after_image"     ## READY card: the tube holds an after-image of something never drawn
 const BREATH := &"breath"               ## any: the cabinet hum breathes once
 const LITANY := &"marquee_litany"       ## any: the marquee light dips in the litany's rhythm
-const CRAG_FIGURE := &"crag_figure"     ## any: a figure stands on the crag in the side art for a moment, then never did (anchor `figure`, #101)
+const CRAG_FIGURE := &"crag_figure"     ## any: for one field a figure stands on the crag in the side art, then never did (anchor `figure`, #101)
 
 const READY := &"ready"
 const HOLD := &"hold"
@@ -33,7 +33,7 @@ const MOMENT_KINDS := {
 	&"demo": [&"field_figure"],
 }
 ## Kinds that move or change light quickly: never offered under photosensitivity or reduced motion.
-const MOVING := [&"field_figure", &"marquee_litany", &"ghost_press"]
+const MOVING := [&"field_figure", &"marquee_litany", &"ghost_press", &"crag_figure"]
 const AUTOPILOT_SEED := 1983           ## ✱ `--autopilot` runs (captures, scenarios) always tell the same story
 
 var tuning: CabinetHauntTuning

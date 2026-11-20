@@ -358,25 +358,40 @@ func test_the_stranger_is_an_extra_row_tied_with_you_shown_once() -> void:
 
 # --- stacked on #101: the bezel art's haunt anchors, the marquee, the arcade backdrop ---
 
-func test_the_marquee_letters_loosen_but_never_change_order_and_one_fades() -> void:
+## English words of 3+ letters that DARKSTAR's letters could spell: none may appear in the rearranged sign.
+const BANNED := ["ARK", "ART", "ARTS", "ASK", "DARK", "DART", "DARTS", "DRAT", "RAD", "RAT", "RATS", "SAD", "SAT", "SKA",
+	"STAR", "STARK", "TAR", "TARS", "TSAR", "TRAD", "TASK", "KART", "ADS", "TAD", "ARKS", "DARKS", "RAKS", "SARK", "STRAD"]
+
+
+func test_the_marquee_rearranges_into_a_fixed_scramble_that_never_spells_a_word() -> void:
 	var s := tr("GAME_TITLE")
+	assert_str(s).is_equal("DARKSTAR")
+	var full := CabinetMarqueeDrift.scrambled(s)
+	assert_str(full).is_equal("TRKDASRA")
+	var shown := ""                                                # the lost letter fades out of the rearranged sign
+	for p in CabinetMarqueeDrift.SCRAMBLE.size():
+		if CabinetMarqueeDrift.SCRAMBLE[p] != CabinetMarqueeDrift.LOST:
+			shown += s.substr(CabinetMarqueeDrift.SCRAMBLE[p], 1)
+	assert_str(shown).is_equal("TRKDASR")
+	for w in BANNED:
+		assert_bool(full.contains(w)).override_failure_message("scramble holds %s" % w).is_false()
+		assert_bool(shown.contains(w)).override_failure_message("sign holds %s" % w).is_false()
+	var sorted := CabinetMarqueeDrift.SCRAMBLE.duplicate()
+	sorted.sort()
+	assert_array(sorted).is_equal([0, 1, 2, 3, 4, 5, 6, 7])       # every letter used once: nothing written
 	var surf := CabinetSurface.default() as CabinetSurface
-	var prev := -INF
-	for i in s.length():
-		var x := BezelText.measure(s.substr(0, i), surf.marquee_lettering, surf.marquee_stroke, surf.marquee_tracking).x if i > 0 else 0.0
-		var pose := CabinetMarqueeDrift.letter_pose(i, 1.0)
-		assert_float(x + pose.x).is_greater(prev)                 # the order never changes: no new word
-		prev = x + pose.x
-		assert_float(absf(pose.z)).is_less_equal(CabinetMarqueeDrift.TILT + 0.0001)
-		assert_float(pose.y).is_between(0.0, CabinetMarqueeDrift.SAG + 0.0001)
-	assert_vector(CabinetMarqueeDrift.letter_pose(3, 0.0)).is_equal(Vector3.ZERO)
-	var kept := s.substr(0, CabinetMarqueeDrift.LOST) + s.substr(CabinetMarqueeDrift.LOST + 1)
-	assert_str(kept).is_equal("DARKSTR")
+	var prev := -1.0
+	for p in CabinetMarqueeDrift.SCRAMBLE.size():
+		var x := CabinetMarqueeDrift.slot_x(s, CabinetMarqueeDrift.SCRAMBLE[p], surf.marquee_lettering, surf.marquee_stroke, surf.marquee_tracking)
+		assert_float(x).is_greater(prev)                           # slots run left to right in scramble order
+		prev = x
 	var d := CabinetMarqueeDrift.new()
 	d.still = true
-	d.set_state(1.0, 0.5)
-	assert_float(d.k).is_equal(0.0)                               # reduced motion: no sag, tilt or slide
-	assert_float(d.lost_k).is_equal(0.5)                          # the fade is kept
+	d.set_state(1.0, 0.5, 1.0)
+	assert_float(d.k).is_equal(0.0)                                # reduced motion: no sag, tilt, slide or travel
+	assert_float(d.swap_k).is_equal(0.0)
+	assert_float(d.lost_k).is_equal(0.5)                           # the fade is kept
+	assert_vector(CabinetMarqueeDrift.letter_pose(3, 0.0)).is_equal(Vector3.ZERO)
 
 
 func test_the_printed_eye_wears_through_first_and_never_before_the_decay() -> void:
@@ -418,14 +433,24 @@ func test_the_arcade_goes_dark_one_way_from_d2_to_the_tear() -> void:
 	assert_bool(code.contains("uniform float dark")).is_true()
 
 
-func test_the_crag_figure_stands_on_the_anchor_and_fades() -> void:
+func test_the_crag_figure_stands_on_the_anchor_for_one_field() -> void:
 	var r := CabinetHaunts.crag_anchor()
 	assert_float(r.size.y).is_greater(0.0)
 	var pts := CabinetHauntScreen.figure_at(Vector2(r.get_center().x, r.end.y), r.size.y)
 	for p in pts:
 		assert_bool(r.grow(r.size.x).has_point(p)).is_true()
-	var t := _t()
-	assert_float(t.crag_figure_k(0.0)).is_equal(0.0)
-	assert_float(t.crag_figure_k(t.crag_figure_in_s + 0.1)).is_equal(1.0)
-	assert_float(t.crag_figure_k(t.crag_figure_s())).is_less(0.0001)
-	assert_bool(CabinetHauntDeck.MOVING.has(&"crag_figure")).is_false()
+	assert_bool(CabinetHauntDeck.MOVING.has(&"crag_figure")).is_true()   # one field: never under photosensitivity
+	var rig := Control.new()
+	add_child(rig)
+	var h := CabinetHaunts.new()
+	h.rig = rig
+	h.deck = CabinetHauntDeck.new(_t(), 1)
+	add_child(h)
+	h.perform(&"crag_figure")
+	var crag: Control = rig.get_node("CragFigure")
+	assert_float(float(crag.call(&"ink"))).is_equal(1.0)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	assert_float(float(crag.call(&"ink"))).is_equal(0.0)
+	h.free()
+	rig.free()

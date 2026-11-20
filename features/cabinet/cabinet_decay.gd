@@ -129,7 +129,7 @@ func apply(at: float) -> void:
 		bezel.grow = sk
 	# --- the cursed turn beyond the screen: the marquee letters loosen, the arcade goes dark round you ---
 	if marquee_drift != null:
-		marquee_drift.set_state(0.25 * pk + 0.75 * sk, sk)
+		marquee_drift.set_state(0.25 * pk + 0.75 * sk, sk, clampf((sk - 0.3) / 0.6, 0.0, 1.0))   # rearranged across the middle of D3
 	if backdrop != null and backdrop.material is ShaderMaterial:
 		(backdrop.material as ShaderMaterial).set_shader_parameter(&"dark", backdrop_dark(at))
 	# --- the sound ---

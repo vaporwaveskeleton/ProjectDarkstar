@@ -98,7 +98,7 @@ func stop_all() -> void:
 	if _ember != null:
 		_ember.t = -1.0
 	if _crag != null:
-		_crag.t = -1.0
+		_crag.frames = 0
 		_crag.queue_redraw()
 
 
@@ -190,7 +190,7 @@ static func crag_anchor() -> Rect2:
 	return v as Rect2 if v is Rect2 else Rect2()
 
 
-func _crag_figure() -> void:
+func _crag_figure(frames: int = -1) -> void:
 	if rig == null or crag_anchor().size.y <= 0.0:
 		return
 	if _crag == null:
@@ -198,35 +198,41 @@ func _crag_figure() -> void:
 		_crag.name = "CragFigure"
 		_crag.tuning = tuning
 		rig.add_child(_crag)
-	_crag.t = 0.0
+	_crag.frames = tuning.figure_frames if frames < 0 else frames
+	_crag.queue_redraw()
 
 
-## W0-12 crag_figure (TECH-001 Q-T261 revised): for a few seconds the side art has one more figure in it, standing
-## on the crag summit against the moon in the print's own key black, as if it had always been printed there;
-## then it is gone. Featureless (never a face, N4). It fades in and out (no pop), so it is not a moving kind.
+## Dev captures only (AttractMode showcase): hold the crag figure for `frames` fields so a still can catch it.
+func show_crag_for_still(frames: int) -> void:
+	_crag_figure(frames)
+
+
+## W0-12 crag_figure (TECH-001 Q-T261, PM ruling 2026-11-19 overnight push): for ONE field the side art has one
+## more figure in it, standing on the crag summit against the moon in the print's own key black, as if it had
+## always been printed there; the next field it never was. Featureless (never a face, N4). A one-field change,
+## so it is a moving kind: never under photosensitivity or reduced motion (CabinetHauntDeck.MOVING).
 class _CragFigure extends Control:
 	var tuning: CabinetHauntTuning
-	var t := -1.0
+	var frames := 0
 
 	func _ready() -> void:
 		mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	func ink() -> float:
-		return tuning.crag_figure_k(t) if t >= 0.0 else 0.0
+		return 1.0 if frames > 0 else 0.0
 
-	func _process(delta: float) -> void:
-		if t >= 0.0:
-			t += delta
-			if t >= tuning.crag_figure_s():
-				t = -1.0
+	func _process(_delta: float) -> void:
+		if frames > 0:
 			queue_redraw()
 
 	func _draw() -> void:
-		var k := ink()
-		if k <= 0.0:
+		if frames <= 0:
 			return
+		frames -= 1
 		var r := CabinetHaunts.crag_anchor()
 		var inks := BezelInks.default() as BezelInks
 		var c := inks.key_black
-		c.a *= 0.92 * k
+		c.a *= 0.92
 		draw_colored_polygon(CabinetHauntScreen.figure_at(Vector2(r.get_center().x, r.end.y), r.size.y), c)
+		if frames == 0:
+			queue_redraw.call_deferred()   # the next field draws nothing: exactly the asked number of fields
