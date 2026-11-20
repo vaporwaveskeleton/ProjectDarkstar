@@ -102,7 +102,7 @@ func test_the_default_roster_is_this_roster_and_counts_five() -> void:
 const PRESSURE := {
 	&"a0_1": [0.0, 0, 0.0, false, false, false, false, true],
 	&"a0_2": [40.0, 2, 20.0, false, true, false, true, true],
-	&"a0_3": [16.0, 5,"a0_3": [16.0, 6, 20.0, false, true, true, true, false],
+	&"a0_3": [16.0, 6, 20.0, false, true, true, true, false],
 	&"a0_4": [25.0, 6, 12.0, true, true, false, true, true],
 	&"a0_5": [0.0, 0, 20.0, true, true, false, true, true],
 }
