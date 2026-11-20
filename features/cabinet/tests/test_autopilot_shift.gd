@@ -15,8 +15,9 @@ const State := CabinetGame.State
 ## MIN_STAGES stages (the whole shift, a0_1–a0_5) with the default lives. a0_5 became winnable on
 ## 2026-11-19 (geode drift-in every 20 s: 8 geodes alone hold at most 8 × shards_detonated_max = 48
 ## glass, short of the 60 deposits its wake needs) and the stuck-FLEE Grub fix. Measured
-## 2026-11-19 on seeds +0…+19: 14/20 full shifts cleared, 0 games lost (every clear ended with 5
-## lives); the 6 others stall on a0_5 after the wake with no Charges left. Seeds 0–2 all clear.
+## 2026-11-19 on seeds +0…+19, after the post-wake Charge economy (PM Q-T231): 19/20 full shifts
+## cleared, 0 games lost (every clear ended with 5 lives); the other (+12) is still building
+## a0_5's Sepulchre (18/20 segments) at the stall limit. Before Q-T231: 14/20. Seeds 0–2 all clear.
 const SEEDS: Array[int] = [0, 1, 2]
 const MIN_STAGES := 5
 const MIN_REACHED := 2

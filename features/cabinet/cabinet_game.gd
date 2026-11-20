@@ -396,6 +396,7 @@ func _on_timer() -> void:
 				_enter(State.REVEAL)
 				_reveal_seen_before = bool(_profile.get("pretence_seen", false))
 				reveal.play(self, _reveal_seen_before, clean_hands and not demo)
+				SceneRouter.prewarm(UNMAKING_ROUTE)   # Q-T243: load the Unmaking while the reveal plays
 
 
 ## A mid-shift stage end (PM 2026-11-19): banner only, no roll. The stage-end banner stays up for
@@ -448,6 +449,8 @@ func _on_extra_life() -> void:
 
 func _on_reveal_finished() -> void:
 	_save_act0_complete()
+	# Q-T243: draw the Unmaking's materials once off-camera while the maw holds its full black.
+	await SceneWarmup.warm(self, SceneRouter.prewarmed(UNMAKING_ROUTE))
 	SceneRouter.go_to(UNMAKING_ROUTE, unmaking_params())
 
 
