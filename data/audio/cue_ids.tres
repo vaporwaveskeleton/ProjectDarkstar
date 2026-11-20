@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="CueIds" load_steps=81 format=3]
+[gd_resource type="Resource" script_class="CueIds" load_steps=92 format=3]
 
 [ext_resource type="Script" path="res://core/audio/cue_ids.gd" id="1"]
 [ext_resource type="Script" path="res://core/audio/cue_id_entry.gd" id="2"]
@@ -705,6 +705,105 @@ has_synth_fallback = false
 is_loop = false
 note = "render only, Composure wick band change (AUDIO-001 6.5, 12.17)"
 
+[sub_resource type="Resource" id="e78"]
+script = ExtResource("2")
+id = &"flight_engine"
+doc_id = "C11"
+act0_only = false
+has_synth_fallback = false
+is_loop = true
+note = "render only, Aether Vigil engine layer, swept at runtime (AUDIO-001 12.19)"
+
+[sub_resource type="Resource" id="e79"]
+script = ExtResource("2")
+id = &"flight_boiler"
+doc_id = "C12"
+act0_only = false
+has_synth_fallback = false
+is_loop = true
+note = "render only, Aether Vigil boiler layer (thrust), runtime sweep (AUDIO-001 12.19)"
+
+[sub_resource type="Resource" id="e80"]
+script = ExtResource("2")
+id = &"flight_rigging"
+doc_id = "C13"
+act0_only = false
+has_synth_fallback = false
+is_loop = true
+note = "render only, Aether Vigil rigging layer (drift, turn), runtime sweep (AUDIO-001 12.19)"
+
+[sub_resource type="Resource" id="e81"]
+script = ExtResource("2")
+id = &"flight_lantern"
+doc_id = "C14"
+act0_only = false
+has_synth_fallback = false
+is_loop = true
+note = "render only, Aether Vigil lantern hiss layer, runtime sweep (AUDIO-001 12.19)"
+
+[sub_resource type="Resource" id="e82"]
+script = ExtResource("2")
+id = &"flight_creak"
+doc_id = "C15"
+act0_only = false
+has_synth_fallback = false
+is_loop = false
+note = "render only, rigging creak on a hard turn (AUDIO-001 12.19)"
+
+[sub_resource type="Resource" id="e83"]
+script = ExtResource("2")
+id = &"flight_ballast"
+doc_id = "C16"
+act0_only = false
+has_synth_fallback = false
+is_loop = false
+note = "render only, ballast shift on the brake (AUDIO-001 12.19)"
+
+[sub_resource type="Resource" id="e84"]
+script = ExtResource("2")
+id = &"unmaking_lamp_out"
+doc_id = "W5-U1"
+act0_only = false
+has_synth_fallback = false
+is_loop = false
+note = "render only, the first Unmaking: the last lamp starves before the protected black (AUDIO-001 12.19)"
+
+[sub_resource type="Resource" id="e85"]
+script = ExtResource("2")
+id = &"ruins_hall"
+doc_id = "R-B"
+act0_only = false
+has_synth_fallback = false
+is_loop = true
+note = "render only, Ruins room tone with the clock, later visits (AUDIO-001 2.2 layer B, 12.19)"
+
+[sub_resource type="Resource" id="e86"]
+script = ExtResource("2")
+id = &"ruins_first_visit"
+doc_id = "R-B1"
+act0_only = false
+has_synth_fallback = false
+is_loop = true
+note = "render only, Ruins first-visit ambience, no clock yet (AUDIO-001 12.19)"
+
+[sub_resource type="Resource" id="e87"]
+script = ExtResource("2")
+id = &"pm01_threat_1"
+doc_id = "S-T1"
+act0_only = false
+has_synth_fallback = false
+is_loop = true
+note = "render only, PM-01 threat stem 1 (Deep), locked to aether_bed_t1 (AUDIO-001 12.19)"
+
+[sub_resource type="Resource" id="e88"]
+script = ExtResource("2")
+id = &"pm01_threat_2"
+doc_id = "S-T2"
+act0_only = false
+has_synth_fallback = false
+is_loop = true
+note = "render only, PM-01 threat stem 2 (Wrong), locked to aether_bed_t1 (AUDIO-001 12.19)"
+
 [resource]
 script = ExtResource("1")
-entries = [SubResource("e0"), SubResource("e1"), SubResource("e2"), SubResource("e3"), SubResource("e4"), SubResource("e5"), SubResource("e6"), SubResource("e7"), SubResource("e8"), SubResource("e9"), SubResource("e10"), SubResource("e11"), SubResource("e12"), SubResource("e13"), SubResource("e14"), SubResource("e15"), SubResource("e16"), SubResource("e17"), SubResource("e18"), SubResource("e19"), SubResource("e20"), SubResource("e21"), SubResource("e22"), SubResource("e23"), SubResource("e24"), SubResource("e25"), SubResource("e26"), SubResource("e27"), SubResource("e28"), SubResource("e29"), SubResource("e30"), SubResource("e31"), SubResource("e32"), SubResource("e33"), SubResource("e34"), SubResource("e35"), SubResource("e36"), SubResource("e37"), SubResource("e38"), SubResource("e39"), SubResource("e40"), SubResource("e41"), SubResource("e42"), SubResource("e43"), SubResource("e44"), SubResource("e45"), SubResource("e46"), SubResource("e47"), SubResource("e48"), SubResource("e49"), SubResource("e50"), SubResource("e51"), SubResource("e52"), SubResource("e53"), SubResource("e54"), SubResource("e55"), SubResource("e56"), SubResource("e57"), SubResource("e58"), SubResource("e59"), SubResource("e60"), SubResource("e61"), SubResource("e62"), SubResource("e63"), SubResource("e64"), SubResource("e65"), SubResource("e66"), SubResource("e67"), SubResource("e68"), SubResource("e69"), SubResource("e70"), SubResource("e71"), SubResource("e72"), SubResource("e73"), SubResource("e74"), SubResource("e75"), SubResource("e76"), SubResource("e77")]
+entries = [SubResource("e0"), SubResource("e1"), SubResource("e2"), SubResource("e3"), SubResource("e4"), SubResource("e5"), SubResource("e6"), SubResource("e7"), SubResource("e8"), SubResource("e9"), SubResource("e10"), SubResource("e11"), SubResource("e12"), SubResource("e13"), SubResource("e14"), SubResource("e15"), SubResource("e16"), SubResource("e17"), SubResource("e18"), SubResource("e19"), SubResource("e20"), SubResource("e21"), SubResource("e22"), SubResource("e23"), SubResource("e24"), SubResource("e25"), SubResource("e26"), SubResource("e27"), SubResource("e28"), SubResource("e29"), SubResource("e30"), SubResource("e31"), SubResource("e32"), SubResource("e33"), SubResource("e34"), SubResource("e35"), SubResource("e36"), SubResource("e37"), SubResource("e38"), SubResource("e39"), SubResource("e40"), SubResource("e41"), SubResource("e42"), SubResource("e43"), SubResource("e44"), SubResource("e45"), SubResource("e46"), SubResource("e47"), SubResource("e48"), SubResource("e49"), SubResource("e50"), SubResource("e51"), SubResource("e52"), SubResource("e53"), SubResource("e54"), SubResource("e55"), SubResource("e56"), SubResource("e57"), SubResource("e58"), SubResource("e59"), SubResource("e60"), SubResource("e61"), SubResource("e62"), SubResource("e63"), SubResource("e64"), SubResource("e65"), SubResource("e66"), SubResource("e67"), SubResource("e68"), SubResource("e69"), SubResource("e70"), SubResource("e71"), SubResource("e72"), SubResource("e73"), SubResource("e74"), SubResource("e75"), SubResource("e76"), SubResource("e77"), SubResource("e78"), SubResource("e79"), SubResource("e80"), SubResource("e81"), SubResource("e82"), SubResource("e83"), SubResource("e84"), SubResource("e85"), SubResource("e86"), SubResource("e87"), SubResource("e88")]

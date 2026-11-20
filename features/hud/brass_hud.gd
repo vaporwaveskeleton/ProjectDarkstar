@@ -15,6 +15,9 @@ extends Control
 ## or when it is breached. Values are pushed in by the sector (`set_values`), never read from the
 ## world here, and never lied about: nothing in this control has a lie seam (L6: Charges are a
 ## resource spendable in the next 3 s; L10/§4.7: the Seam index never lies). Text: VectorLabel + tr().
+## One deviation seam, not a lie: W1-10 Ledger Smudge (WARP-001 §4.2 Glyph class) may draw one Vigil
+## Index digit as a close neighbour through `liar` (HudLiar); `score` never changes, and with Steady
+## Ledger on the liar returns nothing (WARP-001 §4.4).
 
 const FACE := preload("res://data/hud/brass_face.tres")
 const SMALL := preload("res://data/hud/brass_face_small.tres")
@@ -55,6 +58,9 @@ var hourglass_frac := 1.0
 var hourglass_shown := false
 ## `_draw` passes (tests read it).
 var draw_count := 0
+## W1-10 seam (TECH-001 §5.1a). Null = honest, always.
+var liar: HudLiar = null
+var _smudged := false
 
 var _index_label: VectorLabel
 var _index_value: VectorLabel
@@ -113,6 +119,7 @@ func set_values(p_score: int, p_charges: int, p_capacity: int, p_seam: int, p_se
 	hull_breached = p_breached
 	ledger_on = ledger
 	_index_value.text = LocFormat.format_int(score)
+	_apply_glyph()
 	_ledger_label.text = LocFormat.tr_count("HUD_LEDGER_TIER", tier)
 	_ledger_label.visible = ledger_on
 	if hull_breached:
@@ -290,3 +297,26 @@ func _draw_sand_glass(r: Rect2) -> void:
 	draw_polyline(PackedVector2Array([upper[0], upper[3], lower[3], lower[2], lower[1], upper[2], upper[1], upper[0]]), Pal.AETHER_3, 1.0)
 	draw_rect(Rect2(r.position.x - 1.0, r.position.y - 0.5, r.size.x + 2.0, 1.5), Pal.GAS_3)
 	draw_rect(Rect2(r.position.x - 1.0, r.end.y - 1.0, r.size.x + 2.0, 1.5), Pal.GAS_2)
+
+
+## True while W1-10 draws a wrong digit on the Vigil Index (automation `sector/warp`).
+func index_smudged() -> bool:
+	return _smudged
+
+
+func _process(_delta: float) -> void:
+	var live := liar != null and liar.glyph_live() and not HudModel.steady_ledger_on()
+	if live != _smudged:
+		_apply_glyph()
+
+
+func _apply_glyph() -> void:
+	if _index_value == null:
+		return
+	_smudged = liar != null and liar.glyph_live() and not HudModel.steady_ledger_on()
+	if _smudged:
+		var l := liar
+		var txt := _index_value.text
+		_index_value.glyph_filter = func(ch: String, index: int) -> Variant: return l.glyph_for(ch, index, txt)
+	else:
+		_index_value.glyph_filter = Callable()

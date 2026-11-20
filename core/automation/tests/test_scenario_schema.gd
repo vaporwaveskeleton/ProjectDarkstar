@@ -141,9 +141,11 @@ func test_catalog_and_validator_agree() -> void:
 ## still be valid scenarios, just not suite-eligible. Each entry is named here on purpose.
 ## a1_golden_path: coin → Act 0 → reveal → the 94 s Unmaking → Ruins → PM-01 (~20600 frames, Act 0
 ## capture switches as args; TECH-001 §9.1). perf_golden_path and a11y_flash_pass: the same path with
-## frame-time windows / flash-rule windows (TECH-001 §8.5, §9.1). a0_reveal_decay_capture: a0_5 by autopilot
-## with `--clean-hands`, then ending 5's ten screens, the line and the Decay (~3300 frames; ART-001 §12.7b).
-const LONG_SCENARIOS: Array[String] = ["a1_golden_path.scenario.json", "ruins_onboarding_first_visit.scenario.json", "perf_golden_path.scenario.json", "a11y_flash_pass.scenario.json", "a0_reveal_decay_capture.scenario.json"]
+## frame-time windows / flash-rule windows (TECH-001 §8.5, §9.1). warp_t1_capture: the T1 warp stills
+## (dev `--warp-showcase` arg, ~1000 frames + margin; TECH-001 §5.1a). a0_reveal_decay_capture: a0_5 by
+## autopilot with `--clean-hands`, then ending 5's ten screens, the line and the Decay (~3400 frames; ART-001 §12.7b).
+const LONG_SCENARIOS: Array[String] = ["a1_golden_path.scenario.json", "ruins_onboarding_first_visit.scenario.json", "perf_golden_path.scenario.json", "a11y_flash_pass.scenario.json",
+	"warp_t1_capture.scenario.json", "a0_reveal_decay_capture.scenario.json"]
 
 
 func test_shipped_scenarios_are_valid_for_the_suite() -> void:

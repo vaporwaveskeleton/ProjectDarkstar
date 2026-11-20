@@ -49,6 +49,9 @@ const MEASURE_WARMUP := 420   ## ✱ > FrostPresence.FLEE_S at 60 fps, so a held
 const MEASURE_FRAMES := 120   ## ✱
 const BED_CUE := &"aether_bed_t1"
 const FLEE_CUE := &"presence_flee"
+## The last lamp starving (AUDIO-001 §12.19): starts as the front reaches the lamp and ends in a 0.3 s
+## fade at the black, so the protected silence that follows is the beat (no sting, §1.1).
+const LAMP_OUT_CUE := &"unmaking_lamp_out"
 
 ## The world's look. Pale Marches (T1) until the run decides where the player arrives.
 @export var look: AetherLook = preload("res://data/aether/pale_marches_t1.tres")
@@ -71,6 +74,7 @@ var _skip_held := 0.0
 var _fled := false
 var _front := false
 var _lamp_out := false
+var _lamp_starving := false
 var _calm := false
 var _prev_time_scale := -1.0
 var _hold_at := -1.0
@@ -126,6 +130,7 @@ func on_route_entered(params: Dictionary) -> void:
 	_fled = false
 	_front = false
 	_lamp_out = false
+	_lamp_starving = false
 	if _backdrop.is_erasing():
 		_backdrop.clear_erasure()
 	_backdrop.set_time(time_s)
@@ -227,6 +232,9 @@ func _apply(t: float) -> void:
 		_backdrop.set_drain(base + UnmakingTimeline.drain(t))
 		_backdrop.set_erasure(UnmakingTimeline.FRONT_ORIGIN, UnmakingTimeline.front_radius(t),
 			UnmakingTimeline.front_growth(t), UnmakingTimeline.front_reach(), UnmakingTimeline.FRONT_SEED)
+	if not _lamp_starving and t >= UnmakingTimeline.LAMP_REACH_AT:
+		_lamp_starving = true
+		_play(LAMP_OUT_CUE)
 	if not _lamp_out and t >= UnmakingTimeline.LAMP_OUT_AT:
 		_lamp_out = true
 		_audio(&"set_ambience", [&""])
