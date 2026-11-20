@@ -211,3 +211,15 @@ func _whole_field_radius() -> float:
 func _play(id: StringName) -> void:
 	if sfx.is_valid():
 		sfx.call(id, 0.0)
+
+
+## Starts laden (a kit's `start_carriers`): standing at route waypoint `at_waypoint`, carrying a shard
+## toward the next one. Call before the first step.
+func start_laden(at_waypoint: int) -> void:
+	if route.is_empty():
+		return
+	var i := clampi(at_waypoint, 0, route.size() - 1)
+	position = torus.wrap(route[i])
+	carrying = true
+	route_at = i + 1
+	state = State.CARRY

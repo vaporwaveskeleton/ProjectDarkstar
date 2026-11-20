@@ -1027,6 +1027,39 @@ Rulings Q-T400 to Q-T407 (TECH-001 §11.2). Supersede the matching pass 8 and 8 
 
 **Known weaknesses (pass 8 c, by eye).** The lightless disc is subtle in a still (it is meant to be found, not shown); the crag veins can read as thin worms at full size; the lantern-down indigo is a mid-deep value, not the deepest the palette allows. Not re-measured: perf and the flash pass (pass 8 b figures stand in TECH-001 §8.5).
 
+### 16.6l PM-02 Dark Throat: under the shelf, and the Aether Acolyte (2026-11-20)
+PM under owner direction, 2026-11-20 push (TECH-001 Q-T421, Q-T425–Q-T427). The kit spec is ZONES-001 §3.1a. This section owns how PM-02 looks and how the Acolyte looks at Aether tier. Every value is an engineering ✱ drawing parameter in `Pal` colours (TECH-001 §3.4). The role laws hold: faction hues, phosphor = truth, SIGNAL ≤ 3, and law 4 (nothing outshines the lantern).
+
+**Same biome, same tier, a different place.** PM-02 is the Pale Marches at T1, like PM-01. It keeps T1's dominant hue and accent (§15.4: AETHER-3 lavender with BONE-4 / AETHER-4 pearl; PHOS-4 seam), so a still from it sorts as T1 and as the Marches. It must still read as a different *place* from PM-01 in one cold still. Four things do that, and none of them is a new hue:
+
+| | PM-01 First Vigil | PM-02 Dark Throat |
+|---|---|---|
+| **Play-band value** | open and honest: the field is lit fog | **a dark kit** (`dark_default`): the play band's ambient drops (`dark_ambient` ✱, a VOID-tinted modulate) except inside the shelf's light pocket. The three-value structure (§15.4) keeps its order: the play band is still the highest band where something is lit |
+| **The Presence** | far off, cropped, migrating | **overhead**: the frost shelf's underside fills the upper far band over the corridor (`presence_offset`, `presence_scale` ✱). Lantern up: a pale mist ceiling, no lit pattern (`presence_lit` 0, the sector law, §16.6i). Lantern down: the full lit pattern overhead, with the heartbeat (≤ 1 Hz, built at 1 beat per 4 s) travelling the veins |
+| **The far band** | orrery and fog bands | the same, plus the **five sister spheres** (§16.6i; `sister_spheres` on, 0 eaten at T1) and the **KEEP THE VIGIL sign** (ZONES-001 §2.4), frosted and still lit, in the far fog over the throat |
+| **Life** | `life_density` 1 | **thinner with the lantern up** (`life_density` 0.8 ✱); lantern down reveals as much far life as PM-01. The dark is more alive than the light |
+
+**The dark kit at Aether tier (Q-T426).** Darkness is low ambient, never black (the only true black is the entity, §16.1). What still shows in the dark is exactly the kit's Twist:
+- **Glass is truth.** Geodes, loose shards and the shard a Grub carries keep their PHOS glow at full strength in the dark. In the corridor, the only bright thing is the shard overhead in the Grub's claws (ZONES-001 §3.1 PM-02).
+- **Grubs** keep their rim light but lose their glow halo outside light (halo × `dark_halo` ✱ 0.25). They are harmless (SYS-001 §3), so dimming them is fair.
+- **The Acolyte** always reads (it is the only unit that can kill). Its censer ember and its tell are self-lit at any ambient (below).
+- **The light pocket** over the shelf is a cold PHOS-2/PHOS-3 pool of glass light, dimmer than the lantern (law 4).
+- **The lantern** is still the warmest and brightest light in the frame. Lantern down, the warm pool fades out (the existing reveal ramp, §16.6f) and the kit becomes glass, ember and the Presence overhead.
+- **Greyscale read:** the Vigil, the Acolyte's ember and a carried shard must each separate from the dark ambient by value alone (§16.3). Checked by eye from the capture pass (normal and lantern down); there is no pixel test yet.
+
+**The Aether Acolyte (Censer Knight; GDD §8.5 "pale knight with a rotating censer turret").** Runtime vector, drawn like the Aether Grub (§16.6h: filled body, rim light, soft halo in Choir hue, slow facet shimmer, off under Reduced Motion). Collision is separate (TECH-001 §2.9). Colours are the Choir ramp. GAS never appears on the Choir (law 1), so the censer is not brass.
+- **Body.** A tall, narrow, hooded knight about 2.5× the Grub's height ✱. Vestment plates in CHOIR-1 (base) and CHOIR-2 (light), pale BONE-2/BONE-3 trim on the plate edges (the "pale knight"), and a CHOIR-0 under-shadow. The hood is a VOID-2 hollow with **no face**, never black.
+- **Censer turret.** An iron cage in CHOIR-0 with CHOIR-3 bands, on a short chain below and ahead of the body. It swings to face the Vigil **0.25 s behind the body** (SYS-001 §3, 🔒): the lag is drawn as the swing, so leading its body reads on screen. Inside is a **CHOIR-4 ember**, the unit's self-lit light: one small soft glow that never lights the play layer around it.
+- **Tell (21 f 🔒).** The ember swells and brightens over the tell, the cage lifts on its chain and a bell rings (`acolyte_tell` cue). It reads the same lantern up or down. No SIGNAL is spent: CHOIR-4 is the Choir's bright tell (§4).
+- **Censer shot.** A CHOIR-4 ember bolt with a short CHOIR-1 smoke trail that fades in ≤ 0.3 s ✱. Distinct from the Vigil's Arc-Lance by hue (faction law) and by shape (a soft ember, not a lance streak).
+- **Idle.** A slow sway; the ember breathes (≤ 0.25 Hz). Reduced Motion holds the sway still and keeps the ember steady.
+- **Hit and death.** A hit flashes the plate rim to CHOIR-4 for one tell-length at most. On death the censer drops, the ember gutters out over 0.4 s ✱ (no flash, no pop) and leaves a brief chalk outline (the readable-death chalk of SYS-001 §9).
+- **In the Cabinet** the Acolyte keeps its neon vector look (§15.2). This is the Aether rung of the same unit: same silhouette idea, same turret lag, new fidelity (§15.1).
+
+**As built (2026-11-20, PR #118).** (1) The dark kit is real 2D lighting on the play canvas only: a CanvasModulate ambient plus PointLight2D discs (TECH-001 §2.9). The far layer is never dimmed, so the lantern-down Presence keeps the deep indigo of pass 8's night floor, not near-black. The first build multiplied a veil over every layer, crushed it toward black and drew a hard band; it was replaced. (2) `presence_offset` and `presence_scale` exist on `AetherLook`, but PM-02 ships them at 0 / 1.0. Captures at (120, −260) × 1.4 and (40, −120) × 1.2 did not change the read, because the pass 8 lantern-down reveal already fills the upper frame. (3) The unlit corridor is not drawn darker than the rest of the kit (`corridor_dim` is not applied by the lighting model). (4) **The KEEP THE VIGIL sign** (`GriefSign`, `features/sector/grief_sign.gd`) is a small frosted Office placard on the Depth canvas layer, behind play and never dimmed by the dark kit. It has a BONE-0 board, a BONE-3 frame, BONE-4/5 frost creeping in from the edges, GAS-3 stroke words and one small GAS-4 lamp that breathes at 0.12 Hz (held still under Reduced Motion). It is drawn at 0.62 scale and 0.42 alpha ✱ and drifts at 0.45 parallax ✱, so it reads far and stays below the lantern (law 4). (5) A faint darker strip along the frame's left and top edges shows in PM-02 lantern-down stills. It persists with the Presence moved and the sister spheres off; source not found.
+
+**Known limits (spec only, 2026-11-20).** No capture exists yet. The phase 2 build PR carries the first capture pass (PM-02 normal and lantern down) and states what was and was not looked at. There is no Reviewer score.
+
 ### 16.7 The Aether Vigil: a brass lantern skiff with visible systems (ruled, PM under owner autonomy grant, 2026-11-19)
 
 > **Status: ruled, PM under owner autonomy grant, 2026-11-19** (TECH-001 Q-T170; queued for the owner's later review). It goes with the Aether handling profile (GDD §4.2a, SYS-001 §1.1a). Act 0's neon Vigil (§3, §15.2) is unchanged.

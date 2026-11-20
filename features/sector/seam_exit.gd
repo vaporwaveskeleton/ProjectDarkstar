@@ -25,6 +25,8 @@ var torus: Torus
 var vigil: Node2D
 var sepulchre: Sepulchre
 var throat: SeamThroat
+## The throat's torus home: `stats.throat_pos`, or the kit's exit anchor (`set_anchor`).
+var throat_home := Vector2.ZERO
 ## The rule's threshold now (stats, or a dev override).
 var knocks_required := 0
 var cleared := false
@@ -42,7 +44,8 @@ func bind(p_torus: Torus, p_vigil: Node2D, p_sepulchre: Sepulchre, actors: Node,
 	throat.name = "SeamThroat"
 	throat.radius_px = stats.throat_radius_px if stats else 40.0
 	throat.still = still
-	throat.position = stats.throat_pos if stats else Vector2.ZERO
+	throat_home = stats.throat_pos if stats else Vector2.ZERO
+	throat.position = throat_home
 	if actors:
 		actors.add_child(throat)
 
@@ -111,5 +114,17 @@ func open() -> void:
 func throat_offset() -> Vector2:
 	if not is_instance_valid(vigil) or not is_instance_valid(throat):
 		return Vector2.ZERO
-	var c := stats.throat_pos if stats else throat.position
+	var c := throat_home
 	return torus.delta(vigil.global_position, c) if torus else c - vigil.global_position
+
+
+## Moves the throat to a kit's exit anchor (torus px) instead of `stats.throat_pos`.
+func set_anchor(p: Vector2) -> void:
+	throat_home = torus.wrap(p) if torus else p
+	if is_instance_valid(throat):
+		throat.position = throat_home
+
+
+## Points the clear rule at a (re)built Sepulchre. The host re-applies the dev switches afterwards.
+func set_sepulchre(p_sepulchre: Sepulchre) -> void:
+	sepulchre = p_sepulchre

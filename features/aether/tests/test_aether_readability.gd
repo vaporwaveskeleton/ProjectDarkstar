@@ -6,6 +6,8 @@ extends GdUnitTestSuite
 
 const U := preload("res://features/aether/tests/aether_test_util.gd")
 const PM01 := "res://data/aether/pm01_pale_marches_t1.tres"
+## Sector looks (PM-01, and PM-02 the slice's Seam 2, Q-T430) carry the pass 8 cap and night; gallery looks do not.
+const SECTOR_LOOKS := ["res://data/aether/pm01_pale_marches_t1.tres", "res://data/aether/pm02_pale_marches_t1.tres"]
 const GRUB_VIEW := "res://features/choir/grub_view.gd"
 const FAR_LAYER := "res://features/aether/aether_far_layer.tscn"
 
@@ -86,13 +88,13 @@ func test_lantern_down_turns_the_far_layer_to_night() -> void:
 	assert_float(last).is_equal_approx(look.lantern_night, 0.0001)
 	# other looks never go to night
 	for path in U.look_paths():
-		if path != PM01:
+		if not SECTOR_LOOKS.has(path):
 			assert_float((load(path) as AetherLook).lantern_night).is_equal(0.0)
 
 
 func test_other_looks_keep_the_cap_off() -> void:
 	for path in U.look_paths():
-		if path == PM01:
+		if SECTOR_LOOKS.has(path):
 			continue
 		assert_float((load(path) as AetherLook).far_value_cap).override_failure_message("%s caps the far layer" % path).is_equal(0.0)
 

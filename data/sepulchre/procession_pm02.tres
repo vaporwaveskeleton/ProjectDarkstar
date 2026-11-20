@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="ProcessionSandboxStats" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://features/sepulchre/procession_sandbox_stats.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+ds_namespace = "ds_sepulchre.pm02"
+source_section = "PM-02 Dark Throat (slice Seam 2): Sepulchre at (1620, 600), route (980,300)-(980,430)-(1160,672)-(1500,672), 7 Grubs; placement ✱"
+sepulchre_pos = Vector2(1620, 600)
+route = PackedVector2Array(980, 300, 980, 430, 1160, 672, 1500, 672)
+grub_count = 7
+grub_spawn_ring_px = 60.0

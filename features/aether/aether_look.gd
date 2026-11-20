@@ -196,6 +196,11 @@ extends TunableResource
 ## reveal law; the lantern-down reveal still takes it to 1). The ladder raises it at T2: the Presence
 ## is uneasy and its heartbeat shows through the fog, the last bright thing before it flees.
 @export_range(0.0, 1.0) var presence_lit: float = 0.0
+## ✱ where the Presence sits relative to its home (logical px, up = -y) and how large it is (1 = home).
+## PM-02 hangs it overhead in the upper far band, larger.
+@export var presence_offset_x: float = 0.0
+@export var presence_offset_y: float = 0.0
+@export var presence_scale: float = 1.0
 
 @export_group("Readability (pass 8, Q-T295..309)")
 ## ✱ far-layer atmospheric value cap (ART-001 §16.6k): linear luma above which the far layer is
@@ -243,7 +248,7 @@ func tunable_properties() -> PackedStringArray:
 		"leviathan_cross_s", "leviathan_period_s", "leviathan_phase_s", "camera_drift_px", "base_drain",
 		"star_strength", "value_deep", "glow_band_px", "glow_band_inset", "lantern_scatter", "vast_jelly_count",
 		"reveal_life_count", "rings_stalled", "rings_broken", "presence_fled", "chromatic_edge_px",
-		"missing", "sister_spheres", "sister_spheres_eaten", "presence_lit",
+		"missing", "sister_spheres", "sister_spheres_eaten", "presence_lit", "presence_offset_x", "presence_offset_y", "presence_scale",
 		"far_value_cap", "far_cap_slope", "far_cap_desat", "far_cap_veil", "presence_drink", "presence_eye",
 		"presence_breath_px", "reveal_vast_count", "lantern_night", "far_split_tone",
 	])

@@ -24,6 +24,10 @@ var respawn_timers: Array[float] = []
 var kills: int = 0
 var score: int = 0
 var spawned: int = 0
+## The dark kit's halo dimming outside the light pocket (1 = off; `pocket_radius_px` 0 = no pocket).
+var dark_halo: float = 1.0
+var pocket_pos := Vector2.ZERO
+var pocket_radius_px: float = 0.0
 ## Cue sink handed to every Grub. Tests replace it.
 var sfx: Callable = AudioService.play
 
@@ -73,6 +77,7 @@ func tick(delta: float) -> void:
 			g.queue_free()
 		else:
 			keep.append(g)
+			g.view.halo_scale = halo_scale_at(g.home())
 	grubs = keep
 	for i in range(respawn_timers.size() - 1, -1, -1):
 		respawn_timers[i] -= delta
@@ -96,3 +101,25 @@ func carrying_count() -> int:
 		if is_instance_valid(g) and not g.dead and g.carrying:
 			n += 1
 	return n
+
+
+## Halo multiplier for a Grub at torus position `p`: 1 inside the light pocket, `dark_halo` outside.
+func halo_scale_at(p: Vector2) -> float:
+	if dark_halo >= 1.0:
+		return 1.0
+	if pocket_radius_px > 0.0 and torus != null and torus.distance(p, pocket_pos) <= pocket_radius_px:
+		return 1.0
+	return dark_halo
+
+
+## Makes the first `count` Grubs laden at the route's last waypoints (nearest the Sepulchre first).
+func start_laden(count: int) -> void:
+	var n := mini(count, grubs.size())
+	for k in n:
+		grubs[k].start_laden(maxi(0, route.size() - 1 - (k % maxi(1, route.size()))))
+
+
+## Spawns `count` extra Grubs at `at` (a satellite pair); they join the same procession.
+func spawn_satellites(count: int, at: Vector2) -> void:
+	for i in count:
+		spawn(at + Vector2.from_angle(TAU * i / maxi(1, count)) * 12.0)

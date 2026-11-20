@@ -23,6 +23,8 @@ const RIM_DIR := Vector2(-0.6, -0.8)
 
 @export var grub: OublietteGrub
 
+## Multiplier on the halo (the dark kit dims it outside the light pocket; GrubProcession sets it).
+var halo_scale: float = 1.0
 var _flash: float = 0.0
 var _wiggle: float = 0.0
 var _time: float = 0.0
@@ -58,7 +60,7 @@ func _draw() -> void:
 	for r in BACKING_STEPS:   # a soft-edged pocket: stacked discs, darkest at the core
 		draw_circle(mid, BACKING_RADIUS_PX * (1.0 - 0.15 * r), Color(Pal.VOID_1, BACKING_ALPHA / BACKING_STEPS * 1.6))
 	for r in HALO_RINGS:
-		draw_circle(Vector2.ZERO, HALO_RADIUS_PX * float(r + 1) / HALO_RINGS, Color(Pal.CHOIR_3, HALO_ALPHA))
+		draw_circle(Vector2.ZERO, HALO_RADIUS_PX * float(r + 1) / HALO_RINGS, Color(Pal.CHOIR_3, HALO_ALPHA * halo_scale))
 	var body := Pal.CHOIR_5 if hot else Pal.CHOIR_4
 	for i in SEGMENTS:
 		var k := SEGMENTS - 1 - i   # tail first so the head overlaps

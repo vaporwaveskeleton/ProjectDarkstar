@@ -68,6 +68,8 @@ A kit's `.tres` resource (`kit_definition.tres`, TECH_ARCHITECTURE §6) holds:
 | `dark_default` | bool | whether the kit's authored lighting is unlit |
 | `mirror_policy` | `horizontal` / `vertical` / `both` | §1.5 |
 | `reserved_markers` | `herald`, `rite_gate`, `penitent`, `ui_eat_slot` | §7, §8, §5.4 |
+| `clear_rule` | enum; `sepulchre_unmade` is the only value so far | What "kit cleared" (LOOP-001 §1) means for this kit. `sepulchre_unmade`: the kit's Sepulchre stands at 0 segments after Null-Iron Charges have knocked off at least the SYS-001 §6 `Seam clear: Sepulchre segments knocked` row. Added 2026-11-20 (TECH-001 Q-T422; answers Q-T283 for the slice kits) |
+| `exit_anchor` | position (kit-local, follows the mirror) | Where the exit throat opens once the kit is cleared (§1.7 `ExitAnchor`). For any kit that has one, it replaces the single shared `throat_pos` ✱. Added 2026-11-20 (Q-T422) |
 
 ### 1.5 Re-keying at Warp ≥ 3, and what threat points mean
 Threat points are **per-Sector, not per-kit**. SYS-001 §4 bands a *Seam*'s threat (Seam 1 = 8–12 at T0–T1, and so on). A Seam's threat is the sum of its primary kit plus its satellite clusters. Therefore a kit's authored `threat_pts` must sit inside its slot's band **with room for ≥ 2 satellites** (§4.3). This is an explicit reading of SYS-001 §4/§6, recorded in §10 Q-01 for sign-off; nothing in this doc contradicts the band itself, and the lint is what enforces it (§4.6).
@@ -124,7 +126,8 @@ EncounterKit (Node2D, script encounter_kit.gd, export kit_definition)
 │   ├── HeraldAnchor × 2 (Marker2D, reserved)        # §8
 │   ├── RiteGateAnchor × 1 (Marker2D, reserved)      # §7
 │   ├── PenitentAnchor × 1 (Marker2D, reserved)      # §4.5 Coma
-│   └── UiEatAnchor × 1 (Marker2D, T4+)              # GDD §8.7
+│   ├── UiEatAnchor × 1 (Marker2D, T4+)              # GDD §8.7
+│   └── ExitAnchor × 1 (Marker2D)                    # exit throat after the clear (§1.4 `exit_anchor`, Q-T422)
 ├── Ore (Node2D)
 │   └── GeodeCluster × n (StaticBody2D + Area2D per face, 64 px pitch ✱)
 ├── Sepulchre (Node2D)               # cold / active / prebuilt; absent in kits with no anchor
@@ -201,7 +204,7 @@ PM ruling 2026-11-18 (owner grant), cosmic horror design rev 3, CHD-16. Each bio
 | **The Drowned Observatory** | a lantern floating upward through the inverted hall, never arriving | `cx_place_observatory_lantern` |
 | **The Black** | the brass ring of a Lampkeeper, unlit, turning slowly | `cx_vigil_unlit_ring` |
 
-Placement rules: a grief story is **art only** (no collision, no hitbox, no light cast into the play layer, no lint effect), and sits in the biome's own geometry set or far layer. Any words on a prop (the Pale Marches sign) are player-visible text and go through a `tr()` key (L10N-001). Which kits of each biome carry the story, and how often it is drawn, is not yet decided (owed to Design (levels) with the Aether art chat).
+Placement rules: a grief story is **art only** (no collision, no hitbox, no light cast into the play layer, no lint effect), and sits in the biome's own geometry set or far layer. Any words on a prop (the Pale Marches sign) are player-visible text and go through a `tr()` key (L10N-001). Which kits of each biome carry the story, and how often it is drawn, is not yet decided (owed to Design (levels) with the Aether art chat). **First placement (2026-11-20, TECH-001 Q-T429):** the Pale Marches sign is placed in **PM-02**'s far layer, over the Dark Throat (§3.1a). It is always drawn there.
 
 ---
 
@@ -218,11 +221,58 @@ Threat points are authored **at T0–T1** and must sit inside the Seam band for 
 | Kit ID | Name | Biome | Seam slots | Threat pts | Geometry (what is on screen) | Geodes / shards on offer | Choir mix | Sepulchre? | Twist (the one thing that makes this kit not-generic) | Warp re-key (T3+) | Status |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | PM-01 | First Vigil | Pale Marches | 1 | 10 | Open torus, one low bone monolith at the throat, long honest sightlines, two wide unlit corridors | 8 geodes / 24 shards (exactly the lint floor) | 6 Grub | **Cold** — one deposit lane, ring anchors dormant | **The cold Sepulchre sits in plain sight, lit by nothing, and it is a vigil site: the Grubs gather at it and set their lit shards down in a ring around it, waiting, for the first 20 s ✱. When it wakes, the deposits begin** ("they were waiting for it") — you see the whole plan before it starts. *(Twist amended 2026-11-18, PM ruling (owner grant), Act 1 vertical slice, amended after The Reviewer's notes; was "the only Grubs in the sector walk straight past it for the first 20 s ✱"; timing value unchanged.)* **Lint exception (PM under owner autonomy grant 2026-11-19, TECH-001 §11.1a Q-T151):** "in plain sight" is an **authored exception** to lint item 4 (§1.5; §6.1 phase-0 row): PM-01's Sepulchre is the vigil site, so it may be visible from the entry at T ≤ 2. PM-01 only. **M2 slice satellite:** built from PM-01's own anchors (`GeodeCluster`, `SpawnMarkerLit`/`SpawnMarkerUnlit`, §1.7) as a small geode + Grub pocket on the far throat; layout ✱ | dark pack + monolith moves to the far throat; ring anchors arm | authored |
-| PM-02 | Dark Throat | Pale Marches | 1, 2 | 11 | A lit geode shelf above a 96 px unlit corridor that runs the full seam edge; one light pocket | 8 geodes / 24 | 7 Grub (route), 1 Acolyte at the throat | Active | **You can walk the deposit path with your lantern down and strip shards out of a Grub procession** — detection −60% (SYS-001 §1.2) — because the only thing glowing in that corridor is the shard overhead in the Grub's claws. | dark pack is a no-op (already dark); ring on; Acolyte count ×2 | authored, **L** |
+| PM-02 | Dark Throat | Pale Marches | 1, 2 | 11 | A lit geode shelf above a 96 px unlit corridor that runs the full seam edge; one light pocket | 8 geodes / 24 | 7 Grub (route), 1 Acolyte at the throat | Active | **You can walk the deposit path with your lantern down and strip shards out of a Grub procession** — detection −60% (SYS-001 §1.2) — because the only thing glowing in that corridor is the shard overhead in the Grub's claws. **Slice Seam 2 (2026-11-20, TECH-001 Q-T420–Q-T430): full specification in §3.1a.** | dark pack is a no-op (already dark); ring on; Acolyte count ×2 | authored, **L** |
 | PM-03 | Twin Drift | Pale Marches | 1, 2 | 9 | Two geode clusters straddling the left/right wrap pair, mirrored across the throat; shards drift toward the edge | 9 geodes / 27 | 5 Grub, 1 Grub pair on the return leg | **Cold** | **The two clusters are the same cluster, wrapped:** every shard you knock off the left face arrives, still drifting, on the right — and a Grub picks it up there. | mirror policy `horizontal` enforced; wrap pair → roulette pair | authored |
 | PM-04 | Censer Shelf | Pale Marches | 2 | 14 | One lit shelf on a bone spur, one unlit lane below, one shrine anchor at the spur foot | 9 geodes / 27 | 1 Acolyte (turret on the spur), 5 Grub | Active | **The geodes are ore for both sides:** the Acolyte mines at 50% rate (SYS-001 §3), so every face you leave standing is a segment the Choir gets for free, and the kill order is ore-then-knight, not the reverse. | dark pack; second Acolyte; unlit lane widened | authored |
 | PM-05 | Sacred Ground | Pale Marches | 2 | 15 | One geode cluster, one seeded Shrine at the cluster's edge, one light pocket, one choke | 8 geodes / 24 | 1 Grave-Tide Deceiver, 6 Grub | Active | **The Shrine is your only cover, and it is also the trap:** Choir units hold fire within 120 px of it (SYS-001 §3.1), but if you fire while standing there, the nearest geode converts to a second Shrine and Corruption ticks (GDD §8.5, SYS-001 §6). | dark pack; Deceiver count 2; a third Shrine anchor seeds at T4 | authored, **S** — **reserve** (§3.8) |
 | PM-06 | Procession Cut | Pale Marches | 2, 3 | 18 | Two procession routes crossing in an X above the entry anchor; one elbow reachable only across the ice band; one Listener | 9 geodes / 27 | 8 Grub on two routes, 1 Listener | Active | **You can cut the procession's route:** the elbow is a 40 px ✱ hop across the ice band, and the 2–3 shards a route drops into the Sepulchre per lap (SYS-001 §3 carry 1, §2 shard 3 = 1 segment) are the difference between a build and a build you arrive late to. | ring on; route waypoints +1 ✱; Listener swaps to Deacon at Seam 4 | authored |
+
+### 3.1a PM-02 Dark Throat: the slice's second Seam (2026-11-20)
+
+PM under owner direction, 2026-11-20 push (TECH-001 §11.2, Q-T420–Q-T430). This section turns the PM-02 row above into a buildable spec for the M2 slice, so a run has two Seams: **Ruins → Seam 1 (PM-01) → exit throat → Seam 2 (PM-02) → exit throat → Ruins.** The row above stays the kit's identity; this section adds only what the row leaves open. Numbers are SYS-001 rows (rev 1.9, **proposed**); look rules are ART-001 §16.6l; build contract is TECH-001 §2.9.
+
+**Why PM-02.** It is the only Seam-2-eligible Pale Marches kit with an Acolyte that is not a reserve kit (PM-05 is a reserve kit, §3.8), and its Twist is the lantern. That makes it the right second step after PM-01's "watch the plan form": now **the dark is the tool**. The Acolyte appears in the Aether for the first time here (PROD-001 §5 wave 1; PM-04 is the second). Act 1 runs use exactly 2 biomes (§4.4 rule 3), and the slice's second biome comes later, so Seam 2 stays in the Pale Marches.
+
+**Biome and tier (Q-T421).** The biome is the **Pale Marches** (this kit's row). The world tier is **T1** (Act 1 is pinned at T1, WARP-001 §1.3). PM-02 is not a new biome. It has its own *place* inside the Marches' pearl-mist weather: **under the shelf**. The Dark Throat runs beneath the Pale Marches Presence (§2.3), so the dark sky over the corridor is the underside of the migrating ice shelf. ART-001 §16.6l owns the look; the level-side rules of §2.3 hold unchanged (far layer only, no hitbox, no light into the play layer, flees the entity).
+
+**Kit: what is assembled.** One primary kit plus one satellite (§4.2, §4.3). Positions are torus positions in the slice's 1920×720 field (SYS-001 §9 `M1 sandbox arena`). They are listed in SYS-001 §9 `PM-02 slice layout` ✱, and are replaced by the kit scene's anchors when kit scenes (§1.7) exist.
+
+| §1.7 node | PM-02 content | Notes |
+|---|---|---|
+| Entry (Vigil spawn) | left, on the lit side, beyond the Acolyte's lantern-up detection (vertical wrap counted) | the Sepulchre is **not** visible from the entry (lint item 4; PM-02 has no PM-01-style exception) |
+| `GeodeCluster` (the lit shelf) | 8 geodes on one shelf band in the upper middle of the field | 24 shards: exactly the lint floor (item 1). This is the kit's one lit geode cluster (§5.3: a dark kit is fair only with one) |
+| `LightPocket` × 1 | radius 110 px ✱ over the shelf's lower lip, where the procession route leaves the shelf | must intersect a procession route (§1.4); the shard-steal beat (§6.3) |
+| `UnlitCorridor` × 1 | a 96 px ✱ band along the bottom wrap seam, the full width of the field | lint item 3. "Runs the full seam edge": it crosses the torus seam, so it has no end |
+| `procession_routes` × 1 | shelf → down through the light pocket → into the corridor → along it → up to the Sepulchre | 7 route Grubs (the row's Choir mix) |
+| `Sepulchre` (**Active**) | at the corridor's far end, in the dark | starts at SYS-001 §2 `PM-02 Sepulchre start segments` (3, proposed): no vigil wait, the deposits run from the first second. It emits nothing until Quickening (§5.3) |
+| `SpawnMarkerUnlit` (Acolyte) × 1 | the Acolyte's post at the throat (below) | the "1 Acolyte at the throat" |
+| `ExitAnchor` (Q-T422) | **the Dark Throat**: inside the corridor at its near end, below the entry | the exit throat opens here on the clear. It is guarded: the Acolyte's post is beside it |
+| Satellite (§4.2) | one Grub pair on the return leg, drawn from the kit's own `SpawnMarkerLit` slots; no new props | lifts the sector into the Seam-2 band (below) |
+
+**Threat (§4.3).** Primary 11 (7 Grubs × 1 + 1 Acolyte × 4, SYS-001 §3) + satellite 2 (one Grub pair) = **13**, inside the Seam 2 band of 12–18 (SYS-001 §4). Seam 2's Contents line allows a Deceiver or a Listener; PM-02 uses neither (neither is built; TECH-001 Q-T432).
+
+**Roster.**
+
+| Unit | Count | Behaviour in PM-02 |
+|---|---|---|
+| Oubliette Grub | 7 route + 2 satellite | as built for PM-01 (SYS-001 §3 Grub rows), but **no vigil wait**: they mine shards, carry them down the route through the dark, and deposit. A carrying Grub never flees (Q-T112), so a laden procession walks past a dark Vigil. Shooting a carrier drops its shard, which glows in the corridor. That is the Twist |
+| **Acolyte (Censer Knight)**, Aether tier | 1 | **the first Choir unit in the Aether that shoots back.** It holds a post beside the exit throat (leash: SYS-001 §3 `Acolyte post leash`) and watches the corridor. It **detects** the Vigil at the Choir base detection radius × the lantern modifier (SYS-001 §1.2 rows; §3 `Choir base detection radius`): far with the lantern up, close with it down. Once it detects the Vigil, its censer turret tracks with the 0.25 s 🔒 lag. In range (SYS-001 §3 `Acolyte engagement range`) it fires a censer shot every cycle after the 21 f 🔒 tell (all SYS-001 §3 Acolyte rows: HP 6, shot 240 px/s, 1 dmg, 1.8 s). It intercepts Charges (SYS-001 §1.4 `Charge HP`). It loses the Vigil after the SYS-001 §1.2 `Acquisition loss timer` without detection. It does not mine in PM-02 (no geode is within its leash). Mining at 50% is PM-04's Twist |
+
+**Hazards.** (1) The censer shot: the only lethal thing in the kit (one-hit hull, D-08 data-switchable). (2) The dark: below T3, mining is off with the lantern down (SYS-001 §1.2). You mine on the lit shelf and steal in the dark, never both at once. (3) The race: an Active Sepulchre with a 7-Grub procession builds while you mine, so waiting costs segments. No Shroud (Pale Marches, rare before T2), no gravity, no wrap roulette (T1 is an honest torus, §5.6).
+
+**Seam objective and clear (Q-T422).** `clear_rule` = `sepulchre_unmade`. Mine shards on the shelf, turn them into Null-Iron Charges, and knock the Active Sepulchre back to 0 segments, with at least the `knocks_required` row knocked off (SYS-001 §6, 3, as for PM-01). The Grubs keep depositing, so PM-02 takes **more** Charges than PM-01 unless the player first breaks the procession in the dark. On the clear the exit throat opens at the `ExitAnchor`: diegetic, no text, a Ledger Compass marker (TECH-001 Q-T278). The Acolyte is still standing beside it unless the player killed it. Flying in reports the Seam. At the slice frontier (Q-T420) the run then ends `returned` and goes back to the Ruins.
+
+**How PM-02 escalates the horror over PM-01 (Q-T427).** All escalation stays inside T1's legal set (WARP-001 §1.3). No W2/W3 effect appears: **no Passing, not even its T2 echo**. The run escalates by depth and by darkness instead:
+1. **Seam depth.** The T1 standing set runs at SYS-001 §9 `Warp T1 seam depth` for Seam 2 (0.7, against PM-01's 0.6). The mote light, teeth, breath and chant bed are a step stronger.
+2. **The Presence overhead.** In PM-01 the frost shelf is far off and migrating. In PM-02 you fly under it. Lantern up: a pale ceiling of mist (the lantern-up law, `presence_lit` 0). Lantern down: its full lit pattern fills the far band above the corridor, with the heartbeat travelling its veins. It is indifferent and keeps migrating. It does not react to the player (§2.3).
+3. **The dark is more alive than the light.** With the lantern up, far life is thinner than in PM-01 (`life_density` ✱, ART-001 §16.6l). Lantern down reveals as much as PM-01's reveal, so the gap between lantern up and down is wider: you see more of the Aether only by giving up your light.
+4. **The other heavens.** The five sister spheres (ART-001 §16.6i) appear for the first time in a sector, none eaten (T1). Lantern down brightens their life.
+5. **The grief story.** The frosted **KEEP THE VIGIL** sign (§2.4) hangs in the far fog over the throat, still lit. Its words go through a `tr()` key. Its Codex entry `cx_place_marches_sign` is stamped at the PM-02 clear (NARR-001 owns the entry text, not yet written). **Built 2026-11-20:** the sign (`GriefSign`, key `NARR_PM_SIGN_KEEP_THE_VIGIL`) and the stamp at the PM-02 clear (TECH-001 Q-T429).
+6. **Something shoots back, from the dark, at the exit.** The censer bell is heard down the throat before the Acolyte is seen (a positional chant source at the post, ≤ 420 px, SYS-001 §3.1). Its ember is the one CHOIR-4 light in the corridor.
+
+**Death and leaving.** A breach in PM-02 ends the run `died` and returns to the Ruins after the breach hold (TECH-001 Q-T279), at the Seam 2 death price (SYS-001 §6 `Death clock cost`: 12). Abandon Run behaves as it does in Seam 1.
+
+**Not in the slice (logged).** The Litany Ring re-key ("ring on") and the T3 Acolyte ×2 never trigger at T1. Kit memory dressing (§4.8), death-site Penitents (§4.5) and mirror policy need the assembler (§4.6, §4.7). The slice hand-picks Seam 1 = PM-01, Seam 2 = PM-02 through a data table (TECH-001 Q-T430). The assembler replaces that table.
 
 ### 3.2 Ossuary Belt — 6 kits
 

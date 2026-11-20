@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="SliceKitTable" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://features/sector/slice_kit_table.gd" id="1"]
+[ext_resource type="Resource" path="res://data/sector/kits/pm_01.tres" id="2"]
+[ext_resource type="Resource" path="res://data/sector/kits/pm_02.tres" id="3"]
+[ext_resource type="Script" path="res://features/sector/sector_kit.gd" id="4"]
+
+[resource]
+script = ExtResource("1")
+ds_namespace = "ds_sector.slice"
+source_section = "Slice run shape: Seam 1 PM-01, Seam 2 PM-02 (ZONES-001 §1.7 kit tree stand-in)"
+seam_kits = Array[ExtResource("4")]([ExtResource("2"), ExtResource("3")])

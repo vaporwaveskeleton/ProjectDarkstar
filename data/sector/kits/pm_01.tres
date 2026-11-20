@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="SectorKit" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://features/sector/sector_kit.gd" id="1"]
+[ext_resource type="Resource" path="res://data/sepulchre/procession_sandbox.tres" id="2"]
+[ext_resource type="Resource" path="res://data/aether/pm01_pale_marches_t1.tres" id="3"]
+
+[resource]
+script = ExtResource("1")
+ds_namespace = "ds_sector.kit_pm_01"
+source_section = "PM-01 First Vigil (ZONES-001 §3.1) as the M1 sandbox has always laid it out: seeded geodes, cold Sepulchre, throat at ds_sector.exit.throat_pos, no Acolyte, no dark; placement ✱"
+kit_id = &"pm_01"
+vigil_spawn = Vector2(320, 180)
+procession = ExtResource("2")
+far_look = ExtResource("3")

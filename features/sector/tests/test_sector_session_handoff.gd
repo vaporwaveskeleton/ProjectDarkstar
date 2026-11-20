@@ -19,8 +19,12 @@ func after_test() -> void:
 	saver.free_service()
 
 
-func _session_core() -> RunSessionCore:
-	var core := RunSessionCore.new(STATS, saver)
+func _session_core(last_seam: int = -1) -> RunSessionCore:
+	var stats := STATS
+	if last_seam >= 0:
+		stats = STATS.duplicate() as RunSessionStats
+		stats.slice_last_seam = last_seam
+	var core := RunSessionCore.new(stats, saver)
 	core.arrive_at_ruins({})
 	core.start_run(5)
 	return core
@@ -107,9 +111,9 @@ func _live_sector(runner: GdUnitSceneRunner, core: RunSessionCore, router: FakeR
 	return sector
 
 
-## Q-T276, Q-T278: at the slice frontier the throat banks the clear and returns to the Ruins.
+## Q-T276, Q-T278: at the slice frontier the throat banks the clear and returns to the Ruins (frontier 1 by a stats copy).
 func test_exit_throat_at_the_frontier_banks_and_returns_to_the_ruins() -> void:
-	var core := _session_core()
+	var core := _session_core(1)   # a stats copy whose last slice Seam is 1
 	var router := FakeRouter.new()
 	var runner := scene_runner(SCENE)
 	var sector := _live_sector(runner, core, router)
@@ -204,3 +208,31 @@ func test_no_session_uses_a_throwaway_core_that_never_saves() -> void:
 	(sector.vigil as Vigil).hull_breached.emit()
 	assert_array(saver.calls).is_empty()
 	assert_bool(core.iteration().started).is_false()
+
+
+## PM-02: with the shipped `slice_last_seam` 2, Seam 1's exit leads on to the sector route (Seam 2),
+## and Seam 2's exit ends the run `returned` at the Ruins.
+func test_seam_1_exit_goes_to_seam_2_and_seam_2_exit_returns_to_the_ruins() -> void:
+	var core := _session_core()
+	var router := FakeRouter.new()
+	var runner := scene_runner(SCENE)
+	var sector := _live_sector(runner, core, router)
+	assert_str(sector.kit_id).is_equal("pm_01")
+	(sector.seam_exit as SeamExit).open()
+	(sector.vigil as Vigil).global_position = (sector.seam_exit as SeamExit).throat_home
+	await runner.simulate_frames(3)
+	assert_bool(sector.exit_taken).is_true()
+	assert_bool(core.run().is_active()).is_true()
+	assert_int(core.run().seam_index).is_equal(2)
+	assert_int(router.calls.size()).is_equal(1)
+	assert_str(router.calls[0][0]).is_equal("sector")
+	# the next sector scene is Seam 2
+	var runner2 := scene_runner(SCENE)
+	var sector2 := _live_sector(runner2, core, router)
+	assert_str(sector2.kit_id).is_equal("pm_02")
+	(sector2.seam_exit as SeamExit).open()
+	(sector2.vigil as Vigil).global_position = (sector2.seam_exit as SeamExit).throat_home
+	await runner2.simulate_frames(3)
+	assert_bool(sector2.exit_taken).is_true()
+	assert_bool(core.run().is_active()).is_false()
+	assert_array(router.calls.back()).is_equal(["ruins", {"run_outcome": "returned"}])
