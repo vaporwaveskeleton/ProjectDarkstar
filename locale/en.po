@@ -285,13 +285,10 @@ msgstr "THANK YOU FOR YOUR SERVICE"
 msgid "ENTITY_IT_WAKES"
 msgstr "IT WAKES."
 
-#. THE PRETENCE (GDD §6.1 A0-3): the arcade shell is revealed as a lie.
+#. The Cabinet's last ROM screen (NARR-001 §9.5). Shown ONLY in ending 5, after Theodora Lune's message; a normal clear never reaches it (the Decay, GDD §6.1 A0-5). Also the line on her maker's plate (§5.4).
 msgid "REVEAL_PRETENCE"
 msgstr "THAT WAS A PRETENCE."
 
-#. Entity line as the first sky goes dark (AUDIO-001 §4.5).
-msgid "REVEAL_ONE_SKY_LESS"
-msgstr "ONE SKY LESS."
 
 #. The Ruins, first visit (NARR-001 §5.7; LOOP-001 §10.5). Sable's chalk: sentence case, second
 #. person, present tense, never a question. The first two are the first words read after THE PRETENCE.
@@ -572,3 +569,51 @@ msgstr "ONE COIN."
 #. Printed on the bezel's tagline burst, line 2.
 msgid "CAB_BEZEL_TAG_2"
 msgstr "ONE VIGIL."
+
+#. The Decay (ART-001 §12.7b): the attract honour-roll page the machine shows after the last credits, then loses letter by letter.
+msgid "CAB_HONOUR_ROLL"
+msgstr "HONOUR ROLL"
+
+#. The player's own row on the honour roll (NARR-001 §4.4 PLAYER 1).
+msgid "CAB_ROLL_PLAYER"
+msgstr "PLAYER 1"
+
+#. Ending 5, Theodora Lune's message, screen 1 of 10 (NARR-001 §9.5). Held until a button is pressed.
+msgid "CAB_E5_SCREEN_01"
+msgstr "THANK YOU FOR PLAYING."
+
+#. Ending 5, Theodora Lune's message, screen 2 of 10 (NARR-001 §9.5). Held until a button is pressed.
+msgid "CAB_E5_SCREEN_02"
+msgstr "THIS IS THEODORA LUNE. I BUILT THIS MACHINE."
+
+#. Ending 5, Theodora Lune's message, screen 3 of 10 (NARR-001 §9.5). Held until a button is pressed.
+msgid "CAB_E5_SCREEN_03"
+msgstr "YOU NEVER USED THE LIGHT. YOU WERE CAREFUL."
+
+#. Ending 5, Theodora Lune's message, screen 4 of 10 (NARR-001 §9.5). Held until a button is pressed.
+msgid "CAB_E5_SCREEN_04"
+msgstr "SO I CAN TELL YOU."
+
+#. Ending 5, Theodora Lune's message, screen 5 of 10 (NARR-001 §9.5). Held until a button is pressed.
+msgid "CAB_E5_SCREEN_05"
+msgstr "THE HONOUR ROLL IS THE ENLISTMENT LIST."
+
+#. Ending 5, Theodora Lune's message, screen 6 of 10 (NARR-001 §9.5). Held until a button is pressed.
+msgid "CAB_E5_SCREEN_06"
+msgstr "IN HERE THE DARK STAR ALWAYS LOSES. I WROTE IT THAT WAY."
+
+#. Ending 5, Theodora Lune's message, screen 7 of 10 (NARR-001 §9.5). Held until a button is pressed.
+msgid "CAB_E5_SCREEN_07"
+msgstr "OUT THERE IT DOES NOT."
+
+#. Ending 5, Theodora Lune's message, screen 8 of 10 (NARR-001 §9.5). Held until a button is pressed.
+msgid "CAB_E5_SCREEN_08"
+msgstr "THE NEXT SCREEN SAYS PRETENCE. THEY THOUGHT I MEANT IT AS A TWIST."
+
+#. Ending 5, Theodora Lune's message, screen 9 of 10 (NARR-001 §9.5). Held until a button is pressed.
+msgid "CAB_E5_SCREEN_09"
+msgstr "IF YOU HAVE NOT SIGNED, DON'T."
+
+#. Ending 5, Theodora Lune's message, screen 10 of 10 (NARR-001 §9.5). Held until a button is pressed. The only sentence-case text the Cabinet shows (the Cabinet face draws it in capitals).
+msgid "CAB_E5_SCREEN_10"
+msgstr "If you already have - bring your lamp home. Stand down, little lantern."

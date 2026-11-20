@@ -9,6 +9,14 @@ shader_type canvas_item;
 
 uniform float collapse : hint_range(0.0, 1.0) = 0.0;
 uniform float collapse_fade : hint_range(0.0, 1.0) = 0.0;
+// The Decay (ART-001 §12.7b, SYS-001 §9 ds_cabinet.decay.*): all 0 at rest, so attract and play are unchanged.
+// `ghost` = phosphor persistence (a trail of the picture behind itself, never a flash), `bleed` = CRT bloom
+// bleed radius in grid px, `sag` = share of the picture height lost to a sagging raster.
+uniform float ghost : hint_range(0.0, 1.0) = 0.0;
+uniform float bleed : hint_range(0.0, 8.0) = 0.0;
+uniform float sag : hint_range(0.0, 0.5) = 0.0;
+// The Decay wears the play view only: rows above `play_top` (the HUD strip, UV y) stay honest and at home.
+uniform float play_top : hint_range(0.0, 1.0) = 0.0;
 
 const float LINE_END = 0.55;        // share of `collapse` spent squeezing to the line; the rest shrinks and fades the dot
 const float LINE_H = 0.005;         // the line's half height (screen height = 1)
@@ -27,8 +35,49 @@ vec3 crt_dot_phase(vec2 suv, float asp) {
 }
 
 void fragment() {
-	vec2 uv = crt_sample_uv(UV);
-	vec3 col = crt_finish(crt_quantize(texture(TEXTURE, uv).rgb), UV, uv);
+	vec2 suv0 = UV;
+	float keep = 1.0;
+	bool in_play = UV.y >= play_top;
+	if (sag > 0.0 && in_play) {
+		// the play view's raster loses height toward its own middle; outside it the tube is dark
+		float c = (play_top + 1.0) * 0.5;
+		float half_h = (1.0 - play_top) * 0.5;
+		float q = (UV.y - c) / (half_h * max(1.0 - sag, 0.05));
+		suv0 = vec2(UV.x, c + q * half_h);
+		keep = step(abs(q), 1.0);
+	}
+	vec2 uv = crt_sample_uv(suv0);
+	if (in_play && play_top > 0.0 && uv.y < play_top) {
+		keep = 0.0;   // curvature or sag would reach into the HUD strip: dark tube instead
+	}
+	vec3 col;
+	if (in_play) {
+		// the Decay's persistence and bleed, quantised so the register limits hold
+		// (inline: a canvas shader cannot pass TEXTURE to a function)
+		vec3 pick = crt_quantize(texture(TEXTURE, uv).rgb);
+		if (ghost > 0.0 || bleed > 0.0) {
+			vec2 px = 1.0 / vec2(textureSize(TEXTURE, 0));
+			if (ghost > 0.0) {
+				// the phosphor still glows where the picture was a few lines ago (a raster-direction trail)
+				for (int i = 1; i <= 4; i++) {
+					vec2 su = uv - vec2(0.0, px.y * float(i) * 1.5);
+					if (su.y >= play_top) {   // never trail the HUD strip into the play view
+						pick = max(pick, crt_quantize(texture(TEXTURE, su).rgb) * ghost * (1.0 - float(i) * 0.2));
+					}
+				}
+			}
+			if (bleed > 0.0) {
+				vec3 bl = texture(TEXTURE, uv + vec2(px.x * bleed, 0.0)).rgb;
+				bl += texture(TEXTURE, uv - vec2(px.x * bleed, 0.0)).rgb;
+				bl += texture(TEXTURE, uv + vec2(0.0, px.y * bleed)).rgb;
+				bl += texture(TEXTURE, vec2(uv.x, max(uv.y - px.y * bleed, play_top))).rgb;
+				pick += crt_quantize(bl * 0.25) * 0.18 * bleed;
+			}
+		}
+		col = crt_finish(pick, suv0, uv) * keep;
+	} else {
+		col = crt_finish(crt_quantize(texture(TEXTURE, uv).rgb), suv0, uv);   // the HUD strip: untouched
+	}
 	if (collapse > 0.0) {
 		if (collapse_fade > 0.5) {
 			col *= 1.0 - collapse;

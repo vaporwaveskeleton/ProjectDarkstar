@@ -52,7 +52,7 @@ func test_every_cabinet_message_fits_the_screen_at_its_scale() -> void:
 		["CAB_ZONE_STILLWATER", 1],
 		["CAB_READY", 2], ["CAB_GAME_OVER", 2], ["CAB_VIGIL_COMPLETE", 2], ["CAB_ENTITY_DOWN", 2],
 		["CAB_EXTRA_VIGIL", 1], ["CAB_CAPTION_WHISPER", 1], ["CAB_CREDIT", 1],
-		["ENTITY_IT_WAKES", 3], ["REVEAL_PRETENCE", 3], ["REVEAL_ONE_SKY_LESS", 3], ["CAB_MAKER", 1],
+		["ENTITY_IT_WAKES", 3], ["REVEAL_PRETENCE", 3], ["CAB_MAKER", 1],
 	]
 	for i in 7:
 		items.append(["CAB_CREDITS_%d" % (i + 1), 2])

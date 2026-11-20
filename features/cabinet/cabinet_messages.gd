@@ -24,6 +24,18 @@ var glitch := 0.0                ## 0..1 the Pretence Tear corrupts the credits
 var demo := false                ## attract demo: INSERT CREDIT over the field
 var _t := 0.0
 
+## The Decay's honour-roll page (ART-001 §12.7b, NARR-001 §4.5): the machine goes back to attract after the
+## last credits. It only ever LOSES glyphs and bulbs; nothing here writes new words.
+var roll_page := false
+var roll_header := ""
+var roll_rows: PackedStringArray = PackedStringArray()   ## the last row is the player's own (eroded last)
+var roll_glyphs_lost := 0        ## glyphs blanked so far across header, rows and INSERT CREDIT
+var roll_bulbs_dead := 0.0       ## dark bulbs, fractional = the next one dimming out
+var roll_blink_period := 1.0     ## s, INSERT CREDIT's blink period (0 = steady)
+var roll_seed := 9               ## ✱ the order glyphs are lost in is fixed per seed (deterministic captures)
+var _roll_t := 0.0
+var _hold := ""                  ## ending 5 (NARR-001 §9.5): one held screen of Theodora's message, "" = none
+
 signal credits_stat_shown(index: int)       ## stat line `index` (0..3) just scrolled into view
 
 @export var spec: CabinetScreenSpec
@@ -99,7 +111,18 @@ func roll_credits(lines: PackedStringArray, stat_indices: PackedInt32Array = Pac
 	credits_frozen = false
 
 
+## Ending 5: hold one screen (≤ 2 lines, Cabinet face) until replaced; "" clears it.
+func hold_screen(text: String) -> void:
+	_hold = text
+
+
+func held_screen() -> String:
+	return _hold
+
+
 func clear() -> void:
+	roll_page = false
+	_hold = ""
 	_ready_t = 0.0
 	_banner_t = 0.0
 	_caption_t = 0.0
@@ -114,6 +137,8 @@ func _process(delta: float) -> void:
 	_banner_t = maxf(0.0, _banner_t - delta)
 	_caption_t = maxf(0.0, _caption_t - delta)
 	_line_t = maxf(0.0, _line_t - delta)
+	if roll_page:
+		_roll_t += delta
 	if credits_t >= 0.0 and not credits_frozen:
 		credits_t += delta
 		_emit_stat_lines()
@@ -141,6 +166,13 @@ func block_height(s: String, scale: int) -> float:
 
 func _draw() -> void:
 	var cy := size.y * 0.5
+	# the machine is back in attract (or showing Theodora's screens): the paused field is not on the tube
+	if roll_page or not _hold.is_empty():
+		draw_rect(Rect2(Vector2.ZERO, size), Look.c(Pal.VOID_0))
+	if roll_page:
+		_draw_roll()
+	if not _hold.is_empty():
+		_block(cy - block_height(_hold, 1) * 0.5, _hold, 1, Look.c(Pal.BONE_5))
 	if _ready_t > 0.0:
 		if not _ready_zone.is_empty():
 			_block(ready_zone_top(), _ready_zone, 1, Look.c(Pal.GAS_4))
@@ -162,6 +194,84 @@ func _draw() -> void:
 		var top := cy - 60.0 - h * 0.5
 		draw_rect(Rect2(0, top, size.x, h), Look.c(Pal.NULL))
 		_block(top + 8.0, _line, 3, Look.c(Pal.BONE_5))
+
+
+## The honour-roll page as the Decay leaves it: every string eroded by `roll_glyphs_lost`.
+func _draw_roll() -> void:
+	var lines := PackedStringArray([roll_header])
+	lines.append_array(roll_rows)
+	lines.append(tr("CAB_CREDIT"))
+	var protect := 1 + roll_rows.size() - 1   # the player's own row goes last
+	var eroded := CabinetMessages.erode(lines, roll_glyphs_lost, roll_seed, protect)
+	_draw_roll_bulbs()
+	_centered(14.0, eroded[0], 1, Look.c(Pal.VOID_5))
+	var y := 40.0
+	for i in roll_rows.size():
+		var col := Look.c(Pal.GAS_4) if i == roll_rows.size() - 1 else Look.c(Pal.BONE_5)
+		_centered(y, eroded[1 + i], 1, col)
+		y += 14.0
+	var on := roll_blink_period <= 0.0 or fmod(_roll_t, roll_blink_period) < roll_blink_period * 0.5
+	if on:
+		_centered(size.y - 40.0, eroded[eroded.size() - 1], 1, Look.c(Pal.BONE_5))   # clear of the maker line
+
+
+## The attract card's chasing bulbs, dying from the last one back (a dim-out, never a flicker).
+func _draw_roll_bulbs() -> void:
+	var pts := CabinetMessages.bulb_points(Rect2(Vector2(2, 2), size - Vector2(4, 4)))
+	var still: bool = SettingsService.get_value(&"reduced_motion") or SettingsService.get_value(&"photosensitivity")
+	var step := 0 if still else int(_roll_t * 6.0)
+	var n := pts.size()
+	for i in n:
+		var from_end := n - 1 - i
+		var dead := clampf(roll_bulbs_dead - float(from_end), 0.0, 1.0)
+		var lit := (i + step) % 4 == 0
+		var c := Look.c(Pal.GAS_4) if lit else Look.c(Pal.GAS_1)
+		c = c.lerp(Look.c(Pal.VOID_0), dead)
+		draw_rect(Rect2(pts[i] - Vector2.ONE, Vector2(2, 2)), c)
+
+
+## Bulb centres round `r`, every 8 px (the attract card's layout, scenes/attract/attract_pages.gd).
+static func bulb_points(r: Rect2) -> Array[Vector2]:
+	var pts: Array[Vector2] = []
+	for x in range(int(r.position.x), int(r.end.x), 8):
+		pts.append(Vector2(x, r.position.y))
+	for y in range(int(r.position.y), int(r.end.y), 8):
+		pts.append(Vector2(r.end.x, y))
+	for x in range(int(r.end.x), int(r.position.x), -8):
+		pts.append(Vector2(x, r.end.y))
+	for y in range(int(r.end.y), int(r.position.y), -8):
+		pts.append(Vector2(r.position.x, y))
+	return pts
+
+
+## Subtract-only erosion (NARR-001 §4.5): blank `lost` non-space glyphs across `lines` in a fixed seeded
+## order; line `protect` (or -1) loses its glyphs only after every other glyph is gone. Never adds or moves one.
+static func erode(lines: PackedStringArray, lost: int, seed: int, protect: int = -1) -> PackedStringArray:
+	var first: Array[Vector2i] = []
+	var last: Array[Vector2i] = []
+	for li in lines.size():
+		for ci in lines[li].length():
+			if lines[li][ci] != " ":
+				(last if li == protect else first).append(Vector2i(li, ci))
+	var rng := RandomNumberGenerator.new()
+	rng.seed = seed
+	_shuffle(first, rng)
+	_shuffle(last, rng)
+	var order: Array[Vector2i] = first + last
+	var out := lines.duplicate()
+	for k in mini(maxi(lost, 0), order.size()):
+		var p := order[k]
+		var s := out[p.x]
+		out[p.x] = s.substr(0, p.y) + " " + s.substr(p.y + 1)
+	return out
+
+
+static func _shuffle(a: Array[Vector2i], rng: RandomNumberGenerator) -> void:
+	for i in range(a.size() - 1, 0, -1):
+		var j := rng.randi_range(0, i)
+		var t := a[i]
+		a[i] = a[j]
+		a[j] = t
 
 
 ## The credits window (play-view y): from MARGIN below the HUD rule down to READY_CLEAR above the
