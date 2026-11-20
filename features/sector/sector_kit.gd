@@ -23,9 +23,9 @@ extends TunableResource
 ## ✱ True = the exit throat opens at `exit_anchor`; false = at `ds_sector.exit.throat_pos`.
 @export var has_exit_anchor: bool = false
 @export var exit_anchor: Vector2 = Vector2.ZERO
-## ✱ The dark kit look (PM-02): a multiply veil over the play layer, never black.
+## ✱ The dark kit look (PM-02): play-canvas lighting (a CanvasModulate ambient plus lit discs), never black.
 @export var dark_default: bool = false
-## ✱ The veil colour away from every light (multiplies the play layer; VOID-tinted, never 0).
+## ✱ The play layer's ambient away from every light (CanvasModulate; VOID-tinted, never 0).
 @export var dark_ambient: Color = Color(1, 1, 1, 1)
 ## ✱ Multiplier on a Grub's halo outside the light pocket (1 = unchanged).
 @export var dark_halo: float = 1.0
@@ -41,11 +41,16 @@ extends TunableResource
 @export var satellite_spawn: Vector2 = Vector2.ZERO
 ## The far layer's look for this Seam (null = keep the scene's).
 @export var far_look: AetherLook
+## ✱ The biome's grief story sign (ZONES-001 §2.4, Q-T429): drawn in the far depth at `grief_sign_pos`.
+@export var grief_sign: bool = false
+@export var grief_sign_pos: Vector2 = Vector2.ZERO
+## Codex entry stamped when this kit's Seam clears (empty = none; the entry text is NARR-001's).
+@export var grief_codex: StringName = &""
 
 
 func tunable_properties() -> PackedStringArray:
 	return PackedStringArray([
 		"vigil_spawn", "geodes", "sepulchre_start_segments", "start_carriers", "acolyte_posts", "has_exit_anchor",
 		"exit_anchor", "dark_default", "dark_ambient", "dark_halo", "corridor_dim", "light_pocket_pos",
-		"light_pocket_radius_px", "unlit_corridor", "satellite_grubs", "satellite_spawn",
+		"light_pocket_radius_px", "unlit_corridor", "satellite_grubs", "satellite_spawn", "grief_sign_pos",
 	])

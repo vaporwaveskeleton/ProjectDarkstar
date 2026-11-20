@@ -26,4 +26,7 @@ light_pocket_radius_px = 110.0
 unlit_corridor = Rect2(0, 624, 1920, 96)
 satellite_grubs = 2
 satellite_spawn = Vector2(1700, 160)
+grief_sign = true
+grief_sign_pos = Vector2(560, 470)
+grief_codex = &"cx_place_marches_sign"
 far_look = ExtResource("3")

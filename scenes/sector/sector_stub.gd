@@ -90,6 +90,8 @@ var _breached := false
 var kit: SectorKit
 var acolytes: Array[AetherAcolyte] = []
 var darkness: SectorDarkness
+## The kit's grief story sign, on the Depth canvas layer (null when the kit has none; Q-T429).
+var grief_sign: GriefSign
 ## The Seam's clear rule and exit throat (built in _start_exit).
 var seam_exit: SeamExit
 ## Who receives route requests (SceneRouter unless a test injects one): needs go_to(id, params).
@@ -321,6 +323,7 @@ func _start_exit() -> void:
 	seam_exit.bind(torus, vigil, sep, _actors, bool(SettingsService.get_value(&"reduced_motion")))
 	_bind_kit_exit()
 	seam_exit.throat_entered.connect(take_exit)
+	seam_exit.throat_opened.connect(_on_seam_cleared)
 	add_child(seam_exit)
 
 
@@ -383,6 +386,8 @@ func _step_far() -> void:
 				g.set_dark(night)
 	_depth_back.set_camera(far_centre)
 	_depth_front.set_camera(far_centre)
+	if grief_sign:
+		grief_sign.follow(_camera.get_screen_center_position(), get_viewport_rect().size)
 
 
 ## The Vigil's lantern for the far layer (pass 8, Q-T295; TECH-001 §2.9): its pool follows the ship
@@ -653,6 +658,29 @@ func _build_kit_world() -> void:
 	darkness.acolytes = acolytes
 	darkness.lantern_radius_px = _far.look.lantern_radius if _far and _far.look else 120.0
 	darkness.apply_kit(kit)
+	_build_grief_sign()
+
+
+## The kit's grief story (ZONES-001 §2.4): a sign in the far depth, art only. Rebuilt with the kit.
+func _build_grief_sign() -> void:
+	if is_instance_valid(grief_sign):
+		grief_sign.queue_free()
+	grief_sign = null
+	if kit == null or not kit.grief_sign:
+		return
+	grief_sign = GriefSign.new()
+	grief_sign.name = "GriefSign"
+	grief_sign.torus = torus
+	grief_sign.anchor = kit.grief_sign_pos
+	grief_sign.reduced_motion = bool(SettingsService.get_value(&"reduced_motion"))
+	_depth_back.get_parent().add_child(grief_sign)
+
+
+## The Seam cleared (the throat opened): stamp the kit's Codex entry, if it has one (Q-T429). In memory
+## only (RunSessionCore.stamp_codex never saves); the throwaway core is stamped too but never saved.
+func _on_seam_cleared() -> void:
+	if kit != null and kit.grief_codex != &"" and session != null:
+		session.stamp_codex(kit.grief_codex)
 
 
 ## Points the exit at this kit's Sepulchre and anchor (the throat opens at the kit's anchor, else at

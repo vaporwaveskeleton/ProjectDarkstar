@@ -1235,3 +1235,7 @@ msgstr "One-Syllable Truth"
 #. Lantern Tree node MADNESS-6, one-line effect (LOOP-001 §3.3; GDD-001 §7.3 legibility).
 msgid "RUINS_TREE_MADNESS_6_FX"
 msgstr "While Frayed, phantoms die to one lance hit."
+
+#. The Pale Marches grief story (ZONES-001 §2.4): an Office recruitment sign, frosted over and still lit, in PM-02's far fog.
+msgid "NARR_PM_SIGN_KEEP_THE_VIGIL"
+msgstr "KEEP THE VIGIL"

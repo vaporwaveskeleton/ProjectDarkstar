@@ -167,3 +167,29 @@ func test_grub_halo_dims_outside_the_light_pocket_only() -> void:
 	gp.pocket_radius_px = 110.0
 	assert_float(gp.halo_scale_at(Vector2(1000, 340))).is_equal(1.0)
 	assert_float(gp.halo_scale_at(Vector2(1500, 340))).is_equal(0.25)
+
+
+func test_pm_02_hangs_the_grief_sign_and_stamps_it_on_the_clear() -> void:
+	assert_bool(PM01.grief_sign).is_false()
+	assert_bool(PM02.grief_sign).is_true()
+	assert_str(String(PM02.grief_codex)).is_equal("cx_place_marches_sign")
+	var core := _seam_2_core()
+	var runner := scene_runner(SCENE)
+	var sector: Node = runner.scene()
+	sector.on_route_entered(core.enter_seam())
+	var sign: GriefSign = sector.grief_sign
+	assert_object(sign).is_not_null()
+	assert_str(String(sign.label.key)).is_equal("NARR_PM_SIGN_KEEP_THE_VIGIL")
+	# art only: behind play on the Depth canvas layer, no physics body anywhere under it
+	assert_object(sign.get_parent()).is_instanceof(CanvasLayer)
+	assert_int((sign.get_parent() as CanvasLayer).layer).is_less(0)
+	assert_int(sign.find_children("*", "CollisionObject2D", true, false).size()).is_equal(0)
+	assert_bool(core.profile().codex_known.has(&"cx_place_marches_sign")).is_false()
+	sector._on_seam_cleared()
+	assert_bool(core.profile().codex_known.has(&"cx_place_marches_sign")).is_true()
+
+
+func test_pm_01_has_no_grief_sign() -> void:
+	var runner := scene_runner(SCENE)
+	var sector: Node = runner.scene()
+	assert_object(sector.grief_sign).is_null()
