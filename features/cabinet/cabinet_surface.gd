@@ -46,6 +46,12 @@ extends TunableResource
 @export_range(0.0, 1.0) var print_mottle: float = 0.4             ## ink-density unevenness (slow blotches only)
 @export_range(0.0, 1.0) var print_halftone: float = 1.0           ## screened tones on (1) or flat (0)
 @export var print_halftone_cell: float = 1.25                     ## halftone dot pitch, rig units (about 1 to 1.5)
+## The side art's period screen (Fable review 2026-11-20: 1983 spot-colour screenprint). Its tones are stepped to
+## a coarse two-step dot screen whose dots show at 1080p, and one ink is printed off register.
+@export var print_art_cell: float = 2.4                           ## ✱ side-art dot pitch, rig units (7 px at 1920×1080)
+@export var print_art_steps: bool = true                          ## ✱ side-art tones stepped to two dot densities (no smooth ramps)
+@export var print_art_misregister: Vector2 = Vector2(0.5, 0.33)   ## ✱ the off-register ink's offset, rig units (1–2 px at 1080p)
+@export var print_art_misregister_ink: StringName = &"yellow"     ## ✱ the one ink printed off register
 @export_range(0.0, 1.0) var print_scuff: float = 0.5              ## rub fade along the worn edges
 @export_range(0.0, 1.0) var print_flake: float = 0.95            ## sharp-edged flakes of ink lost to the black backing (causal)
 @export var backer_color: Color = Color8(0xE4, 0xDF, 0xD2)        ## the white backer ink behind the colours
@@ -113,7 +119,7 @@ extends TunableResource
 @export_range(0.0, 1.0) var panel_palm_polish: float = 0.8        ## palm-polish where hands rest beside START (smoother, glossier laminate)
 @export_range(0.0, 1.0) var panel_grain: float = 0.5              ## the laminate's fine grain (its own material, not the print's speckle)
 @export var panel_color: Color = Color8(0x1E, 0x21, 0x2C)         ## dark blue-grey laminate
-@export_range(0.0, 1.0) var start_decal_rub: float = 0.34         ## share of the START decal's ink rubbed off by thumbs (the left half goes first)
+@export_range(0.0, 1.0) var start_decal_rub: float = 0.26         ## share of the START decal's ink rubbed thin by thumbs (the left half goes first); worn but legible
 @export_range(0.0, 1.0) var decal_rub: float = 0.12               ## the other decals' light wear
 @export var caption_cap: float = 4.4                              ## cap height of the panel captions (Settings, Quit game), rig units
 @export var caption_stroke: float = 0.95
@@ -128,6 +134,22 @@ extends TunableResource
 @export var tape_black: Color = Color8(0x16, 0x14, 0x14)          ## its black ink
 @export var rocker_lamp_color: Color = Color8(0xFF, 0x4A, 0x1C)   ## the lit half of the POWER rocker
 
+
+# --- Surround pass (owner direction 2026-11-19): the defocused arcade behind the cabinet (ArcadeBackdrop; all ✱) ---
+@export_range(0.0, 1.0) var backdrop_exposure: float = 0.42       ## overall brightness: two to three stops under the bezel, so it never pulls the eye from the screen
+@export var backdrop_blur: float = 1.0                            ## defocus: 1 = about 3.5 rig units of soft edge (more on the far row)
+@export_range(0.0, 0.2) var backdrop_grain: float = 0.045         ## 35 mm film grain amplitude
+@export var backdrop_grain_fps: float = 12.0                      ## grain refresh per second (0 = frozen; always frozen with photosensitivity on)
+@export_range(0.0, 1.0) var backdrop_desaturate: float = 0.15     ## pulls the neon toward grey
+@export_range(0.0, 1.0) var backdrop_cabinet_shadow: float = 0.5  ## darkening right next to the cabinet
+@export_range(0.0, 1.0) var backdrop_haze: float = 1.0            ## warm smoke veil at head height
+@export var backdrop_wall_color: Color = Color8(0x1A, 0x0F, 0x22) ## dark plum wall and cabinet bodies
+@export var backdrop_carpet_color: Color = Color8(0x4A, 0x0E, 0x1C) ## oxblood carpet band across the bottom
+@export var backdrop_ceiling_color: Color = Color8(0x2A, 0x1C, 0x12) ## the drop ceiling's unlit tiles (one in three is an amber light panel)
+@export_range(0.0, 1.0) var backdrop_warmth: float = 0.85         ## how far the other machines' hues are pulled toward tungsten (warm, not cool neon)
+@export var backdrop_tungsten_color: Color = Color8(0xFF, 0xC0, 0x78) ## warm ceiling lights
+@export var backdrop_neon: PackedColorArray = PackedColorArray([Color8(0xFF, 0x34, 0x9A), Color8(0x26, 0xD8, 0xFF), Color8(0xFF, 0xB2, 0x26),
+	Color8(0x4C, 0xFF, 0x5A), Color8(0xFF, 0x40, 0x26), Color8(0x9A, 0x4C, 0xFF)])   ## the other machines' marquee and screen hues
 # --- loom textures (owner direction 2026-11-19; ART-001 §14.8a; CabinetTextures, art/src/cabinet_textures.tx.js) ---
 @export_range(0.0, 1.0) var texture_detail: float = 1.0           ## strength of every loom detail texture (0 = the untextured look)
 @export var laminate_tile: float = 40.0                           ## control-panel laminate: rig units per texture repeat

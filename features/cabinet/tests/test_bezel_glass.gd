@@ -73,21 +73,21 @@ func test_columns_carry_real_vents_and_the_right_one_a_sticker() -> void:
 		assert_bool(id.contains("cap_") or id.contains("sticker") or id.contains("glare") or id.contains("apron")).override_failure_message(id).is_false()
 
 
-func test_plate_misregistration_is_deterministic_small_and_spares_the_key_plate() -> void:
+## One ink printed off register by 1–2 px at 1920×1080 (3 px per rig unit), the rest in register with the key
+## plate (Fable review 2026-11-20).
+func test_one_ink_is_printed_off_register_by_one_to_two_pixels() -> void:
 	var p := BezelPrint.new()
 	add_child(p)
 	auto_free(p)
 	var s := load("res://data/cabinet/cabinet_surface.tres") as CabinetSurface
 	assert_object(p.plate_offset(&"key_black")).is_equal(Vector2.ZERO)
 	var moved := 0
-	for ink in [&"navy", &"yellow", &"cyan", &"magenta", &"orange", &"cream"]:
+	for ink in BezelArt.PRINT_INKS:
 		var o := p.plate_offset(ink)
-		assert_object(o).is_equal(p.plate_offset(ink))
-		assert_float(absf(o.x)).is_less_equal(s.print_misregister + 0.001)
-		assert_float(absf(o.y)).is_less_equal(s.print_misregister + 0.001)
 		if o != Vector2.ZERO:
 			moved += 1
-	assert_int(moved).is_greater(3)
+			assert_float(o.length() * 3.0).is_between(1.0, 2.0)
+	assert_int(moved).is_equal(1)
 
 
 func test_field_uses_the_print_material_and_keeps_six_paint_rects() -> void:
