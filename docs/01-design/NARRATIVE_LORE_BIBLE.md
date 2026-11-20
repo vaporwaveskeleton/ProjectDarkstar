@@ -866,6 +866,24 @@ Community rule: Sable is the only character who speaks outside the game (Discord
 | 7 | `CAB_CREDITS_7` | "THANK YOU FOR YOUR SERVICE" |
 
 
+**The stage card** (owner direction 2026-11-19; PM under owner direction, 2026-11-19 overnight push, TECH-001 Q-T373; layout UI-001 §10). Cabinet register: the 1983 machine is bossy, cheerful and sure of itself. Each line is ≤ 30 characters and goes through `tr()` with prefix `CAB_BRIEF_` / `CAB_UNIT_`. The boss is named as the Cabinet knows it, **the Sepulchre** (the owner's "The Presence"; GDD §19). Wording PROPOSED. The first reminder names the stage's trait (SYS-001 §1.7, the zone-trait cycle, Q-T378).
+
+| Key | Line |
+|---|---|
+| `CAB_BRIEF_ORDER_WAKE` | "UNMAKE THE SEPULCHRE" |
+| `CAB_BRIEF_ORDER_COLD` | "BREAK THE SEPULCHRE" |
+| `CAB_BRIEF_ROSTER` | "IN THIS STAGE" |
+| `CAB_BRIEF_UNMAKINGS` | "UNMAKINGS {n} / {total}" |
+| `CAB_BRIEF_PRESS_FIRE` | "PRESS FIRE TO CONTINUE" |
+| `CAB_UNIT_GEODE` / `_GRUB` / `_ACOLYTE` / `_SEPULCHRE` | "GEODE" / "GRUB" / "ACOLYTE" / "SEPULCHRE" |
+| `CAB_BRIEF_A0_1_1` / `_2` | "SHOOT GEODES. CATCH THE GLASS." / "CHARGES BREAK THE SEPULCHRE." |
+| `CAB_BRIEF_A0_2_1` / `_2` | "GRUBS STEAL GLASS. SHOOT THEM." / "WATCH THE COMPASS." |
+| `CAB_BRIEF_A0_3_1` / `_2` | "ACOLYTES SWARM HERE." / "{n} CHARGES UNMAKE WHAT WAKES." ({n} = 13 from data) |
+| `CAB_BRIEF_A0_4_1` / `_2` | "GEODES ARE RICH HERE." / "ACOLYTES MINE FOR GRUBS." |
+| `CAB_BRIEF_A0_5_1` / `_2` | "GLASS IS SCARCE." / "LAST ONE. UNMAKE IT." |
+
+The A0-5 card is the last honest thing the Cabinet says. Nothing on any card hints at the Pretence.
+
 ### 7.6 Office text (environmental)
 
 Posters and stencils in Act 0 and in Pale Marches / Ossuary Belt ruins. Office register. ≤ 6 words. Examples: "KEEP THE VIGIL" · "EVERY SHARD IS SOMEONE'S SKY" · "QUOTA IS SERVICE" · "THE LIGHT IS NEARLY FINISHED" · "LAMPS LIT, LAMPKEEPERS" · "REPORT TO YOUR VIGIL HALL". The last two are what the Penitent obeys (§2.3).
@@ -886,6 +904,7 @@ Posters and stencils in Act 0 and in Pale Marches / Ossuary Belt ruins. Office r
 | Brother Wick | 15 | `NARR_WICK_` | authored |
 | the Lampkeeper | 2 | `NARR_KEEPER_` | authored |
 | Cabinet | 28 (17 marquee/attract + 11 credits; "SCORE BANKED" added 2026-11-18, §5.7) | `NARR_CAB_` | authored |
+| Cabinet stage card (§7.5) | 19 (9 card lines + 10 stage reminders) | `CAB_BRIEF_`, `CAB_UNIT_` | proposed 2026-11-19 (Q-T373) |
 | First Ruins visit scene (§5.7) | 1 scene (4 Sable lines and 1 Cabinet line, counted in the rows above; the EMBER ticket print; 1 Codex page, the existing `cx_place_act0_3`) | (in the cast sets above) | authored 2026-11-18 (PM ruling, Act 1 vertical slice) |
 | Hard Unmaking beat lines | 8 scenes | (in the cast sets above) | authored (§5.6) |
 | Office environmental | 6 | `NARR_OFFICE_` | authored |
