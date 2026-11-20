@@ -22,14 +22,12 @@ func _vigil(runner: GdUnitSceneRunner) -> Vigil:
 
 # --- one source ----------------------------------------------------------------------------------
 
-func test_arena_is_the_cabinet_field_size() -> void:
+func test_arena_is_the_sector_sandbox_size() -> void:
 	var runner := scene_runner(SCENE)
 	await runner.simulate_frames(1)
 	var t: Torus = runner.get_property("torus")
 	assert_object(t).is_not_null()
-	for path: String in STAGES:
-		assert_vector(t.size).is_equal((load(path) as CabinetStage).field_size)
-	assert_vector(t.size).is_equal(CabinetStage.new().field_size)
+	# the sandbox keeps its own 1,920 × 720 px arena; the Cabinet field grew to 65,536 px (SYS-001 §1.7)
 	assert_vector(t.size).is_equal(Vector2(1920, 720))   # SYS-001 §9 sandbox row (✱)
 	var compass: LedgerCompass = runner.find_child("LedgerCompass")
 	assert_object(compass.world_rect).is_equal(Rect2(Vector2.ZERO, t.size))

@@ -28,6 +28,7 @@ signal slowmo_changed(scale: float)         ## the world's sim speed changed (1.
 var stage: CabinetStage
 var record: ServiceRecord             ## S7 run-wide counts; owned by CabinetGame, survives start()
 var torus: Torus
+var neighbourhood: Neighbourhood      ## SYS-001 §1.7: the box of free units round the Vigil (re-wrap + spawn placement)
 var rng := RandomNumberGenerator.new()
 var view_centre := Vector2.ZERO
 var view_rect := Rect2()              ## the play view in screen (grid) coordinates: the grid below the HUD strip
@@ -73,6 +74,7 @@ func _ready() -> void:
 func start(p_stage: CabinetStage) -> void:
 	stage = p_stage
 	torus = Torus.new(stage.field_size)
+	neighbourhood = Neighbourhood.new(self)
 	rng.seed = stage.seed
 	time = 0.0
 	shader_time = 0.0
@@ -81,8 +83,12 @@ func start(p_stage: CabinetStage) -> void:
 	layers = [stars, geodes, glass, ritual, grubs, acolytes, shots, vigil, fx]
 	for l in layers:
 		l.world = self
+	# the Vigil resets first: the Sepulchre and every spawn are placed relative to it (SYS-001 §1.7)
+	vigil.reset()
+	view_centre = vigil.pos
 	for l in layers:
-		l.reset()
+		if l != vigil:
+			l.reset()
 	view_centre = vigil.pos
 
 
@@ -106,6 +112,7 @@ func step(delta: float) -> void:
 	time += sdt
 	for l in layers:
 		l.tick(delta if l == vigil else sdt)
+	neighbourhood.step()                  # SYS-001 §1.7: free units re-wrap round the Vigil, after everything has moved
 	# camera: glue to the Vigil (critically damped follow is the Act 1 camera, SYS-001 §9)
 	view_centre = vigil.pos
 	if _shake > 0.0:

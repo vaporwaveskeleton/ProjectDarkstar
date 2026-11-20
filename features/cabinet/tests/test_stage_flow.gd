@@ -47,7 +47,7 @@ func test_a_mid_shift_unmade_holds_the_banner_then_starts_the_next_stage() -> vo
 	assert_float(messages._banner_t).is_equal(game.MID_SHIFT_HOLD_SECONDS)
 	assert_float(game._timer).is_equal(game.MID_SHIFT_HOLD_SECONDS)
 	game._on_timer()
-	assert_int(game.state).is_equal(game.State.INTRO)
+	assert_int(game.state).is_equal(game.State.BRIEFING)   # the next stage opens on its stage card
 	assert_int(game.stage_index).is_equal(3)
 	assert_str(String(world.stage.id)).is_equal("a0_4")
 
@@ -59,7 +59,7 @@ func test_a_cleared_stage_starts_the_next_stage() -> void:
 	assert_float(messages.credits_t).override_failure_message("no roll mid-shift: banner only").is_less(0.0)
 	assert_str(messages._banner).is_equal(tr("CAB_VIGIL_COMPLETE"))
 	game._on_timer()
-	assert_int(game.state).is_equal(game.State.INTRO)
+	assert_int(game.state).is_equal(game.State.BRIEFING)   # the next stage opens on its stage card
 	assert_int(game.stage_index).is_equal(2)
 
 
@@ -103,7 +103,7 @@ func test_continue_starts_a_new_game_at_that_stage() -> void:
 	game.on_route_entered({"continue_stage": 3})
 	assert_int(game.stage_index).is_equal(3)
 	assert_str(String(world.stage.id)).is_equal("a0_4")
-	assert_int(game.state).is_equal(game.State.INTRO)
+	assert_int(game.state).is_equal(game.State.BRIEFING)   # the next stage opens on its stage card
 	assert_int(game.score.score).is_equal(0)
 	assert_int(game.score.lives).is_equal(game.tuning.lives_start)
 	assert_int(game.record.grubs_destroyed).is_equal(0)
@@ -138,8 +138,10 @@ func test_the_continue_line_counts_stages_from_one() -> void:
 
 func test_the_ready_card_shows_the_zone_line_when_the_stage_has_one() -> void:
 	game.start_stage(0)
+	game.dismiss_brief()                # the READY card follows the stage card
 	assert_str(messages.ready_zone()).is_empty()
 	game.start_stage(1)
+	game.dismiss_brief()
 	assert_str(messages.ready_zone()).is_equal(tr("CAB_ZONE_DRIFT"))
 	var top := messages.ready_zone_top()
 	assert_float(top).is_greater_equal(0.0)
@@ -150,6 +152,7 @@ func test_the_ready_card_shows_the_zone_line_when_the_stage_has_one() -> void:
 func test_every_ready_card_ends_above_the_vigil_spawn() -> void:
 	for i in game.stages.size():
 		game.start_stage(i)
+		game.dismiss_brief()
 		assert_float(messages.ready_bottom()).override_failure_message("stage %d card reaches the Vigil" % i) \
 			.is_less_equal(messages.size.y * 0.5 - 12.0)
 		var top := messages.ready_zone_top() if not messages.ready_zone().is_empty() else messages.ready_title_top()

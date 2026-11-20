@@ -201,7 +201,8 @@ func test_grubs_carry_glass_and_every_three_deposits_add_a_segment() -> void:
 	var s := _stage()
 	s.grubs = 1
 	world.start(s)
-	world.vigil.pos = world.torus.wrap(world.ritual.pos + Vector2(900, 300))   # far away: no fear
+	world.vigil.pos = world.torus.wrap(world.ritual.pos + Vector2(600, 300))   # far away: no fear, yet inside the Vigil's box with the glass
+	(world.grubs.items[0] as GrubFlock.Grub).pos = world.torus.wrap(world.ritual.pos + Vector2(0, -200))   # Grubs now spawn in the box round the Vigil, not at the altar
 	for k in t.shards_per_segment:
 		world.glass.spawn_shard(world.torus.wrap(world.ritual.pos + Vector2(120, 0)), Vector2.ZERO)
 	_steps(20.0)

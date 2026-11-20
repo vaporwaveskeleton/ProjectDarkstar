@@ -13,7 +13,7 @@
 | Pause: Resume, Settings, Abandon Run (Ruins: Leave for the Title); art panel; costume (§10) | GDD §4.1, WARP-001 §4.4 W4-07 | built — `scenes/sector/pause_screen.tscn` |
 | Confirmation (two-choice, safe default); caution plate; costume (§10) | brief | built — `scenes/common/confirm_screen.tscn` |
 | Loading / transition curtain | brief | built (fade) — `scenes/boot/boot.tscn` |
-| Act 0 cabinet HUD: printed bezel around the 256×304 portrait screen, 1UP/score, Vigils (readouts on the screen's 40 px HUD strip, TECH-001 §2.10), glass-lamp Charge pips, Ledger Compass mini-map; READY card, banners, captions, credits, the entity's big type | WARP-001 W0-01/W0-02/W0-04, ART-001 §11.5 | built — `features/cabinet/` (TECH-001 §2.10) |
+| Act 0 cabinet HUD: printed bezel around the 256×304 portrait screen, 1UP/score, Vigils (readouts on the screen's HUD strip, 40 px, 48 px proposed Q-T367, TECH-001 §2.10), glass-lamp Charge pips, Ledger Compass mini-map; READY card, the stage card (§11), banners, captions, credits, the entity's big type | WARP-001 W0-01/W0-02/W0-04, ART-001 §11.5 | built — `features/cabinet/` (TECH-001 §2.10) |
 | HUD (diegetic, may lie) | WARP-001 §4 | Act 1+: stub (one honest hull label) |
 | Rebinding, mouse sensitivity, aim assist, colourblind variants, subtitles, the rest of the AUDIO-001 §8.4 options (captions, chant indicator, mono, headphone field; Settings shows bindings read-only on its Controls page and has an Audio tab with the six volume sliders, TECH-001 Q-T270 closed, Q-T393 open) | GDD §10, AUDIO-001 §8.4 | planned |
 | Death / cause-of-death screen | GDD §6.3, §8.9; AUDIO-001 §4.10 | planned |
@@ -159,3 +159,27 @@ Owner direction 2026-11-19 ("too narrow, not enough artwork"); built by the PM u
 * the costume choice per stack, and the still cursor.
 
 `scenes/tests/test_settings_audio.gd` covers the Audio page: the tab order, the six rows in both costumes, the closed focus ring, left/right stepping with real input, the Entity floor, mute at 0, Back on a slider, the preview, and the translations. `core/audio/tests/test_user_volume.gd` covers the curve, the persistence round trip and the bus effect.
+
+## 11. The Act 0 stage card (owner direction 2026-11-19; PM under owner direction, 2026-11-19 overnight push, TECH-001 Q-T371–Q-T374; PROPOSED)
+
+Owner: "At the beginning of each arcade stage the game should pause and give a reminder along the lines of 'Unmake the presence' with a short reminder of mechanics along with a list of enemies in the stage and a Press Fire To Continue prompt."
+
+**What it is.** The card is part of the Cabinet costume. It is drawn on the arcade screen by `CabinetMessages` with `PixelText` in the 16 colour registers. It is **not** a `Screen` and is not pushed on the `ScreenStack`, because it lives inside the 256 × 304 SubViewport (TECH-001 §2.10). It opens at the start of every stage, including after CONTINUE, and the world does not tick while it is up (Hourglass and score untouched).
+
+**Layout, top to bottom, inside the 256 × 256 play view:**
+1. Zone line (`CAB_ZONE_*`, small) and stage title (`CAB_STAGE_A0_n`, 2×).
+2. **The order:** `CAB_BRIEF_ORDER_WAKE` "UNMAKE THE SEPULCHRE" on the waking stages, `CAB_BRIEF_ORDER_COLD` "BREAK THE SEPULCHRE" on the cold ones. It uses the phosphor (truth) register.
+3. **Two reminders:** `CAB_BRIEF_A0_n_1`, `_2`, each at most 30 characters.
+4. **In this stage:** `CAB_BRIEF_ROSTER`, then one row per unit present: icon (the unit's own drawing at 1×), name (`CAB_UNIT_*`) and count from the stage data. Rows: geodes, Grubs, Acolytes (start + guard), Sepulchre. Never a unit the stage does not have.
+5. **Progress:** `CAB_BRIEF_UNMAKINGS` "UNMAKINGS {n} / {total}", shown from A0-3 on.
+6. **The prompt:** `CAB_BRIEF_PRESS_FIRE` "PRESS FIRE TO CONTINUE", blinking at `ds_cabinet.brief.prompt_blink_hz` (steady under photosensitivity or reduced motion).
+
+**Input (honours the input map, GDD §4.1/§4.3; `tests/test_input_map.gd` is unchanged).**
+
+| Action | On the card |
+|---|---|
+| `fire_lance` (Arc-Lance) | A fresh press, after `ds_cabinet.brief.arm_s`, dismisses the card: a short READY, then play. It is the **only** dismiss |
+| `pause` / `ui_cancel` | Opens the pause screen (the same overlay as in play, with ABANDON). On return the card is still up. `ui_cancel` never skips the card |
+| anything else | ignored |
+
+The card waits with no timeout (it is a pause). `--autopilot` and `--smoke` dismiss it after `ds_cabinet.brief.autopilot_s`. Focus: none needed (no controls on the card; the arcade screen owns input while it is up).

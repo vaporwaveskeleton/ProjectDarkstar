@@ -482,6 +482,14 @@ Hard rule shared with GDD-001 §10: **no variant removes information.** Every re
 4. Each state shows a shape cue as well as its colour change.
 5. Manifest rows exist (ASSET-003 §3) and the theme references the sheets (UI-001).
 
+### 12.7c Relative sizes on the Act 0 screen (owner direction 2026-11-19; PM under owner direction, 2026-11-19 overnight push, TECH-001 Q-T369; PROPOSED)
+
+The owner pointed at the 1983 reference's screenshots, where the units read big against a small window. The measurements are in `research/arcade_layer_study.md` §10.2, and the numbers are SYS-001 §1.7. The drawing rules:
+
+- **Size is set by the play view, not by the bezel.** Each unit's longest extent is a fixed share of the 256 px view: Vigil 4.7 %, Grub 4.3 %, Acolyte 5.9 %, geodes 7–11.7 %, Sepulchre 20–23 %, shard ~2 % (5 px).
+- **Size ranks the threat.** shard < Grub ≈ Vigil < Acolyte < geode < Sepulchre. A Grub must never read smaller than a shard cluster, and an Acolyte must always read bigger than the Vigil.
+- **Bigger, not filled.** The look stays neon line art (§15.2). Bigger units carry more line (a second contour, inner detail at the new size), but never a solid fill, so the lit share rises without changing the Neon Cabinet look. The 16 colour registers are unchanged (§15.2a).
+- **The stage card's icons** (UI-001 §11) are each unit's own runtime drawing at 1×, so the icon *is* the in-play size.
 ## 13. Narrative art beats (requested by NARR-001, 2026-11-17)
 
 Story facts that only work if the art carries them. Each is a single frame or prop, not a new kit.

@@ -1,7 +1,7 @@
 class_name CabinetGame
 extends Node
 ## Act 0 — "The Last Normal Day" as the Cabinet runs it (GDD §6.1). Owns the stage flow only:
-## READY → play → (death → respawn | game over → attract, where CONTINUE restarts this stage) →
+## the stage card (BRIEFING) → READY → play → (death → respawn | game over → attract, where CONTINUE restarts this stage) →
 ## stage clear or entity unmade → its banner → next stage … → the last stage (a0_5) → the full
 ## credits (the first credits of the shift) → THE PRETENCE (WARP-001 W0-07/W0-08) → the Ruins.
 ## PM 2026-11-19: the shift total (every credit's score, across continues) is run-scoped and rides
@@ -9,10 +9,10 @@ extends Node
 ## credit. The profile keeps only the furthest stage reached (a relaunch may CONTINUE from it).
 ## Rules live in the ArcadeWorld layers; text lives in en.po; numbers live in CabinetTuning.
 
-enum State { INTRO, PLAY, DEAD, CLEARED, UNMADE, CREDITS, REVEAL, GAME_OVER }
+enum State { INTRO, PLAY, DEAD, CLEARED, UNMADE, CREDITS, REVEAL, GAME_OVER, BRIEFING }
 
 const PAUSE_SCENE := preload("res://scenes/sector/pause_screen.tscn")
-const READY_SECONDS := 2.5         ## ✱
+const READY_SECONDS := 2.5         ## ✱ the READY card's old length; after the stage card it is CabinetTuning.brief_ready_after_s
 const CLEAR_SECONDS := 2.5         ## ✱
 const UNMADE_SECONDS := 3.0        ## ✱
 const CREDITS_SECONDS := 9.0       ## ✱
@@ -55,6 +55,9 @@ var score: ScoreKeeper
 var record := ServiceRecord.new()   ## S7 run-wide counts: lives as long as `score`, NOT reset between stages
 var state: int = State.INTRO
 var stage_index := 0
+var unmakings := 0                ## Unmakings done this shift (run-scoped, never saved); on a stage start it is derived from the stage index
+var _brief_t := 0.0               ## s the stage card has been up
+var _brief_froze := false         ## the card paused the world (and so must unpause it)
 var _timer := 0.0
 var _profile: Dictionary = {}
 var demo := false
@@ -152,6 +155,7 @@ func on_route_entered(params: Dictionary) -> void:
 		_demo_t = DEMO_SECONDS
 		autopilot.enabled = true
 		messages.demo = true
+		dismiss_brief()                # the attract demo never shows the stage card
 		# W0-12: the demo may show the figure once, if this cabinet has been played to a0_3 (Q-T253)
 		if haunts != null and (int(_profile.get(KEY_STAGE_REACHED, -1)) >= haunts.tuning.attract_min_stage or bool(_profile.get("act0_complete", false))):
 			haunts.enabled = true
@@ -288,15 +292,79 @@ func start_stage(i: int, carried: int = -1) -> void:
 	AudioService.set_bed_pitch_scale(1.0)
 	world.vigil.input_enabled = false
 	messages.clear()
-	var zone := "" if st.zone_key.is_empty() else tr(st.zone_key)
-	messages.show_ready(tr(st.title_key), tr(st.subtitle_key), READY_SECONDS, zone)
+	unmakings = roster.unmakings_before(stage_index)
 	if st.zone_cue != &"":
-		AudioService.play(st.zone_cue)   # AUDIO-001 zone jingle (≤ READY_SECONDS); unknown id = silent no-op
-	_enter(State.INTRO, READY_SECONDS)
+		AudioService.play(st.zone_cue)   # AUDIO-001 zone jingle; unknown id = silent no-op
+	_open_brief(st)
 	_apply_wear()
 	_apply_haunting()
 	stage_record_start = record_values()
 	_write_stage_reached()
+
+
+## The stage card (SYS-001 §1.7, UI-001 §11) opens at every stage start, CONTINUE included: the world does
+## not tick while it is up. The demo (attract) never shows it.
+func _open_brief(st: CabinetStage) -> void:
+	_brief_t = 0.0
+	var reopened := state == State.BRIEFING      # a restart while the card is up keeps the first card's claim on the world
+	_enter(State.BRIEFING)
+	if not reopened:
+		_brief_froze = not world.paused_sim
+	world.paused_sim = true
+	messages.show_brief(brief_card(st), tuning)
+	if demo:
+		dismiss_brief()
+
+
+## The card's content for stage `st` (pure data; CabinetMessages draws it). Rows list only units the stage has.
+func brief_card(st: CabinetStage) -> Dictionary:
+	var n := stage_number(st)
+	var wake := st.goal == CabinetStage.Goal.UNMAKE_ENTITY
+	var rows: Array[Dictionary] = []
+	if st.geodes > 0:
+		rows.append({"kind": CabinetBriefIcons.GEODE, "name": tr("CAB_UNIT_GEODE"), "count": st.geodes})
+	if st.grubs > 0:
+		rows.append({"kind": CabinetBriefIcons.GRUB, "name": tr("CAB_UNIT_GRUB"), "count": st.grubs})
+	if st.acolytes + st.guard_acolytes > 0:
+		rows.append({"kind": CabinetBriefIcons.ACOLYTE, "name": tr("CAB_UNIT_ACOLYTE"), "count": st.acolytes + st.guard_acolytes})
+	rows.append({"kind": CabinetBriefIcons.SEPULCHRE, "name": tr("CAB_UNIT_SEPULCHRE"), "count": 1})
+	var reminders := PackedStringArray([
+		tr("CAB_BRIEF_A0_%d_1" % n).format({"n": world.tuning.unravel_hits}),
+		tr("CAB_BRIEF_A0_%d_2" % n).format({"n": world.tuning.unravel_hits})])
+	var unm := ""
+	if n >= 3:
+		unm = tr("CAB_BRIEF_UNMAKINGS").format({"n": unmakings, "total": roster.unmakings_required()})
+	return {
+		"zone": "" if st.zone_key.is_empty() else tr(st.zone_key),
+		"title": tr(st.title_key),
+		"order": tr("CAB_BRIEF_ORDER_WAKE" if wake else "CAB_BRIEF_ORDER_COLD"),
+		"reminders": reminders,
+		"roster": tr("CAB_BRIEF_ROSTER"),
+		"rows": rows,
+		"unmakings": unm,
+		"prompt": tr("CAB_BRIEF_PRESS_FIRE"),
+		"blink_hz": tuning.brief_prompt_blink_hz,
+	}
+
+
+## 1-based stage number from the stage id ("a0_3" → 3); falls back to the roster position.
+func stage_number(st: CabinetStage) -> int:
+	var i := roster.index_of(st.id)
+	return (i if i >= 0 else stage_index) + 1
+
+
+## Close the card: the world wakes, then the short READY card (brief_ready_after_s), then play.
+func dismiss_brief() -> void:
+	if state != State.BRIEFING:
+		return
+	messages.hide_brief()
+	if _brief_froze:
+		world.paused_sim = false
+	_brief_froze = false
+	var st := stages[stage_index]
+	var zone := "" if st.zone_key.is_empty() else tr(st.zone_key)
+	messages.show_ready(tr(st.title_key), tr(st.subtitle_key), tuning.brief_ready_after_s, zone)
+	_enter(State.INTRO, tuning.brief_ready_after_s)
 
 
 ## W0-11 Wear (PM under owner autonomy grant 2026-11-19, Q-T180 B): at a stage start only, the bezel ages
@@ -415,6 +483,11 @@ func _process(delta: float) -> void:
 		_demo_haunt_t -= delta
 		if _demo_haunt_t <= 0.0:
 			haunts.moment(CabinetHauntDeck.DEMO)
+	if state == State.BRIEFING:
+		_brief_t += delta
+		# --autopilot and --smoke dismiss the card themselves (SYS-001 §1.7 brief.autopilot_s)
+		if (autopilot.enabled or OS.get_cmdline_user_args().has("--smoke")) and _brief_t >= tuning.brief_autopilot_s:
+			dismiss_brief()
 	if _timer > 0.0:
 		_timer -= delta
 		if _timer <= 0.0:
@@ -513,6 +586,7 @@ func _on_sepulchre_cleared() -> void:
 
 
 func _on_entity_unmade() -> void:
+	unmakings += 1
 	if music != null:
 		music.stop()
 	world.vigil.input_enabled = false
@@ -578,12 +652,12 @@ func _save_hi_score() -> void:
 	SaveService.save_slot(&"profile", _profile, &"cabinet_score")
 
 
-## Far from the entity, the Sepulchre and every Acolyte.
+## Far from the entity, the Sepulchre and every Acolyte, within the Vigil's neighbourhood box.
 func _safe_spawn() -> Vector2:
 	var best := world.vigil.pos
 	var best_score := -1.0
 	for i in 12:
-		var p := world.random_point()
+		var p := world.neighbourhood.random_spot(0.0)   # SYS-001 §1.7: the box round where the Vigil fell, never across the 65,536 px field
 		var d := world.torus.distance(p, world.ritual.entity_pos if world.ritual.awake else world.ritual.pos)
 		for a in world.acolytes.items:
 			d = minf(d, world.torus.distance(p, a.pos) * 1.5)
@@ -600,14 +674,35 @@ func _unhandled_input(event: InputEvent) -> void:
 			demo = false
 			SceneRouter.go_to(&"attract")
 		return
+	if state == State.BRIEFING:
+		_brief_input(event)
+		return
 	if event.is_action_pressed(&"pause") and not event.is_echo() and overlays.is_empty() and state != State.REVEAL:
 		get_viewport().set_input_as_handled()
-		get_tree().paused = true
-		var pause := PAUSE_SCENE.instantiate()
-		pause.abandon_requested.connect(func() -> void:
-			get_tree().paused = false
-			SceneRouter.go_to(&"attract"))
-		overlays.push(pause)
+		_open_pause()
+
+
+## The stage card's input (UI-001 §11): only a fresh fire_lance press after brief_arm_s dismisses it;
+## pause and ui_cancel open the pause overlay, after which the card is still up; nothing else does anything.
+func _brief_input(event: InputEvent) -> void:
+	if not overlays.is_empty() or event.is_echo():
+		return
+	if event.is_action_pressed(&"fire_lance"):
+		get_viewport().set_input_as_handled()
+		if _brief_t >= tuning.brief_arm_s:
+			dismiss_brief()
+	elif event.is_action_pressed(&"pause") or event.is_action_pressed(&"ui_cancel"):
+		get_viewport().set_input_as_handled()
+		_open_pause()
+
+
+func _open_pause() -> void:
+	get_tree().paused = true
+	var pause := PAUSE_SCENE.instantiate()
+	pause.abandon_requested.connect(func() -> void:
+		get_tree().paused = false
+		SceneRouter.go_to(&"attract"))
+	overlays.push(pause)
 
 
 ## THE PRETENCE begins: the Hauntings stop and the hum, the stage loop and the marquee go quiet, so the

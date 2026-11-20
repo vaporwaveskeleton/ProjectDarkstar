@@ -22,7 +22,6 @@ class Geode:
 	var shards_freed: int = 0
 	var alive: bool = true
 
-const SIZE_RADII: Array[float] = [10.0, 15.0, 21.0]   ## px by size class 0..2
 const DRAW_MARGIN := 4.0                              ## px a geode's glow reaches past its radius (_draw cull)
 const DRIFT_TRIES := 30                               ## placement attempts per drift-in tick (search bound, like random_point's)
 
@@ -33,10 +32,14 @@ var _drift_clock := 0.0               ## P2 drift-in: sim s spent below the floo
 func reset() -> void:
 	items.clear()
 	_drift_clock = 0.0
-	var avoid := world.torus.size * 0.5
 	for i in world.stage.geodes:
 		var size_class := world.rng.randi_range(0, 2)
-		add_geode(world.random_point(avoid, 160.0), size_class)
+		add_geode(world.neighbourhood.random_spot(size_radius(size_class) + DRAW_MARGIN), size_class)
+
+
+## Radius in px of size class 0..2 (CabinetTuning.size_geode_radii, SYS-001 §1.7).
+func size_radius(size_class: int) -> float:
+	return world.tuning.size_geode_radii[clampi(size_class, 0, world.tuning.size_geode_radii.size() - 1)]
 
 
 func add_geode(at: Vector2, size_class: int) -> Geode:
@@ -48,7 +51,7 @@ func add_geode(at: Vector2, size_class: int) -> Geode:
 	g.spin = world.rng.randf_range(-0.4, 0.4)
 	g.faces = size_class + 1
 	g.faces_left = g.faces
-	g.radius = SIZE_RADII[size_class]
+	g.radius = size_radius(size_class)
 	var n := 8 + size_class * 2
 	for k in n:
 		var ang := TAU * k / n
@@ -87,9 +90,9 @@ func _tick_drift(delta: float) -> void:
 ## time (the caller tries again next tick).
 func drift_in() -> Geode:
 	var size_class := world.rng.randi_range(0, 2)
-	var margin := SIZE_RADII[size_class] + DRAW_MARGIN
+	var margin := size_radius(size_class) + DRAW_MARGIN
 	for i in DRIFT_TRIES:
-		var p := world.random_point(world.vigil.pos, world.tuning.geode_drift_clear_px)
+		var p := world.neighbourhood.random_spot(margin, world.vigil.pos, world.tuning.geode_drift_clear_px)
 		if world.torus.distance(p, world.vigil.pos) >= world.tuning.geode_drift_clear_px and not world.on_screen(p, margin):
 			return add_geode(p, size_class)
 	return null

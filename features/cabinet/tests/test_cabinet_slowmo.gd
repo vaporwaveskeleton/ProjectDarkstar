@@ -123,7 +123,7 @@ func test_the_vigil_keeps_real_speed_while_the_world_slows() -> void:
 	var p0 := v.pos
 	world.step(DT)
 	var moved := world.torus.delta(p0, v.pos)
-	assert_float(moved.x).is_equal_approx(v.vel.x * DT, 0.0001)
+	assert_float(moved.x).is_equal_approx(v.vel.x * DT, 0.01)   # float32 positions near the middle of the 65,536 px field resolve 0.004 px
 
 
 func test_with_two_hits_left_the_farther_of_two_charges_is_lethal() -> void:

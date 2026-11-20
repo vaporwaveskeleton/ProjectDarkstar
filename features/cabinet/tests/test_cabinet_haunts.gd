@@ -235,7 +235,7 @@ func test_a_forced_after_image_shows_on_the_ready_card_and_leaves_the_readouts_a
 	await get_tree().process_frame
 	assert_float(game.haunt_screen.after_image_k()).is_greater(0.0)
 	assert_int(hud.score).is_equal(score_before)
-	assert_int(game.state).is_equal(CabinetGame.State.INTRO)   # a READY card, not play
+	assert_int(game.state).is_equal(CabinetGame.State.BRIEFING)   # the stage card is up (the Haunting hooks to its opening), not play
 	game.free()
 
 

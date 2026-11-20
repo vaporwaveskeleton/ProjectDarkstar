@@ -379,6 +379,82 @@ msgstr "ENTERING THE SHOAL"
 msgid "CAB_ZONE_STILLWATER"
 msgstr "ENTERING STILLWATER"
 
+#. The stage card (NARR-001 §7.5, UI-001 §11). # WORDING PROPOSED (Q-T373). The order on a waking stage.
+msgid "CAB_BRIEF_ORDER_WAKE"
+msgstr "UNMAKE THE SEPULCHRE"
+
+#. # WORDING PROPOSED (Q-T373). The order on a cold stage.
+msgid "CAB_BRIEF_ORDER_COLD"
+msgstr "BREAK THE SEPULCHRE"
+
+#. # WORDING PROPOSED (Q-T373). Heading of the unit list.
+msgid "CAB_BRIEF_ROSTER"
+msgstr "IN THIS STAGE"
+
+#. # WORDING PROPOSED (Q-T373). {n} = Unmakings done, {total} = Unmakings the shift needs.
+msgid "CAB_BRIEF_UNMAKINGS"
+msgstr "UNMAKINGS {n} / {total}"
+
+#. # WORDING PROPOSED (Q-T373). The prompt; blinks, steady under photosensitivity or reduced motion.
+msgid "CAB_BRIEF_PRESS_FIRE"
+msgstr "PRESS FIRE TO CONTINUE"
+
+#. # WORDING PROPOSED (Q-T373). Unit names on the stage card.
+msgid "CAB_UNIT_GEODE"
+msgstr "GEODE"
+
+#. # WORDING PROPOSED (Q-T373).
+msgid "CAB_UNIT_GRUB"
+msgstr "GRUB"
+
+#. # WORDING PROPOSED (Q-T373).
+msgid "CAB_UNIT_ACOLYTE"
+msgstr "ACOLYTE"
+
+#. # WORDING PROPOSED (Q-T373).
+msgid "CAB_UNIT_SEPULCHRE"
+msgstr "SEPULCHRE"
+
+#. # WORDING PROPOSED (Q-T373). A0-1 reminders.
+msgid "CAB_BRIEF_A0_1_1"
+msgstr "SHOOT GEODES. CATCH THE GLASS."
+
+#. # WORDING PROPOSED (Q-T373).
+msgid "CAB_BRIEF_A0_1_2"
+msgstr "CHARGES BREAK THE SEPULCHRE."
+
+#. # WORDING PROPOSED (Q-T373). A0-2 reminders.
+msgid "CAB_BRIEF_A0_2_1"
+msgstr "GRUBS STEAL GLASS. SHOOT THEM."
+
+#. # WORDING PROPOSED (Q-T373).
+msgid "CAB_BRIEF_A0_2_2"
+msgstr "WATCH THE COMPASS."
+
+#. # WORDING PROPOSED (Q-T373). A0-3 reminders.
+msgid "CAB_BRIEF_A0_3_1"
+msgstr "ACOLYTES SWARM HERE."
+
+#. # WORDING PROPOSED (Q-T373). {n} = Charges to unmake the entity, from CabinetTuning.unravel_hits (13).
+msgid "CAB_BRIEF_A0_3_2"
+msgstr "{n} CHARGES UNMAKE WHAT WAKES."
+
+#. # WORDING PROPOSED (Q-T373). A0-4 reminders.
+msgid "CAB_BRIEF_A0_4_1"
+msgstr "GEODES ARE RICH HERE."
+
+#. # WORDING PROPOSED (Q-T373).
+msgid "CAB_BRIEF_A0_4_2"
+msgstr "ACOLYTES MINE FOR GRUBS."
+
+#. # WORDING PROPOSED (Q-T373). A0-5 reminders.
+msgid "CAB_BRIEF_A0_5_1"
+msgstr "GLASS IS SCARCE."
+
+#. # WORDING PROPOSED (Q-T373).
+msgid "CAB_BRIEF_A0_5_2"
+msgstr "LAST ONE. UNMAKE IT."
+
 msgid "CAB_GAME_OVER"
 msgstr "GAME OVER"
 

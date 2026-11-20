@@ -7,7 +7,6 @@ extends ArcadeLayer
 ## P2 stage switches (CabinetStage): grubs_after_wake keeps the births going after the wake;
 ## grub_pilfer makes them snatch nearby loose glass.
 
-const RADIUS := 6.0
 const SEEK_SPEED := 160.0     ## ✱ between the carry (130) and flee (190) speeds of SYS-001 §3
 
 enum State { SEEK, CARRY, FLEE, IDLE, WORSHIP }
@@ -34,7 +33,12 @@ func reset() -> void:
 	items.clear()
 	_respawn_timers.clear()
 	for i in world.stage.grubs:
-		_spawn(world.ritual.pos + Vector2.from_angle(TAU * i / maxi(1, world.stage.grubs)) * 60.0)
+		_spawn(world.neighbourhood.random_spot(world.tuning.size_grub_px))
+
+
+## Hurt radius: half the drawn extent, minus 1 (CabinetTuning.size_grub_px, SYS-001 §1.7).
+func radius() -> float:
+	return world.tuning.size_grub_px * 0.5 - 1.0
 
 
 func _spawn(at: Vector2) -> Grub:
@@ -87,16 +91,18 @@ func tick(delta: float) -> void:
 			State.SEEK:
 				target = g.shard.pos
 			State.IDLE:
-				target = world.torus.wrap(world.ritual.pos + Vector2.from_angle(world.time * 0.3 + g.id) * 90.0)
+				if not world.neighbourhood.outside(world.ritual.pos):   # loiter at the Sepulchre only while it is in the box
+					target = world.torus.wrap(world.ritual.pos + Vector2.from_angle(world.time * 0.3 + g.id) * 90.0)
 				speed = 70.0
 			State.WORSHIP:
-				target = world.torus.wrap(world.ritual.pos + Vector2.from_angle(world.time * 0.6 + g.id * 1.3) * 70.0)
+				if not world.neighbourhood.outside(world.ritual.pos):
+					target = world.torus.wrap(world.ritual.pos + Vector2.from_angle(world.time * 0.6 + g.id * 1.3) * 70.0)
 				speed = 90.0
 		var d := world.torus.delta(g.pos, target)
 		var want := d.normalized() * speed if d.length() > 2.0 else Vector2.ZERO
 		g.vel = g.vel.lerp(want, clampf(delta * 5.0, 0.0, 1.0))
 		g.pos = world.torus.wrap(g.pos + g.vel * delta)
-		if g.state == State.SEEK and g.shard != null and world.torus.distance(g.pos, g.shard.pos) < RADIUS + 4.0:
+		if g.state == State.SEEK and g.shard != null and world.torus.distance(g.pos, g.shard.pos) < radius() + 4.0:
 			g.carrying = true
 			g.shard.carried = true
 		if g.carrying and g.shard != null:
@@ -113,7 +119,7 @@ func tick(delta: float) -> void:
 		if _respawn_timers[i] <= 0.0:
 			_respawn_timers.remove_at(i)
 			if not world.ritual.awake or world.stage.grubs_after_wake:   # P2: some stages keep birthing after the wake
-				_spawn(world.ritual.pos)
+				_spawn(world.neighbourhood.random_spot(world.tuning.size_grub_px))   # SYS-001 §1.7: births land in the box, off view
 
 
 func _claim(g: Grub) -> void:
@@ -157,9 +163,27 @@ func _pilfer(g: Grub) -> bool:
 	return true
 
 
+## A re-wrapped loose shard: whoever claimed it lets it go (Neighbourhood).
+func release_shard(s: GlassField.Shard) -> void:
+	s.claimed_by = 0
+	for g in items:
+		if g.shard == s and not g.carrying:
+			g.shard = null
+			g.think = 0.0
+
+
+## A re-wrapped empty-handed Grub drops its claim on a shard it has not picked up yet (Neighbourhood).
+func release_claim(g: Grub) -> void:
+	if g.shard != null and not g.carrying:
+		if g.shard.claimed_by == g.id:
+			g.shard.claimed_by = 0
+		g.shard = null
+		g.think = 0.0
+
+
 func hit_test(p: Vector2, r: float) -> Grub:
 	for g in items:
-		if g.alive and world.torus.distance_sq(p, g.pos) <= (RADIUS + r) * (RADIUS + r):
+		if g.alive and world.torus.distance_sq(p, g.pos) <= (radius() + r) * (radius() + r):
 			return g
 	return null
 
@@ -197,17 +221,28 @@ func kill(g: Grub, by_player: bool) -> void:
 func _draw() -> void:
 	if world == null:
 		return
+	var size := world.tuning.size_grub_px
 	for g in items:
-		if not visible_at(g.pos, 16.0):
+		if not visible_at(g.pos, size + 4.0):
 			continue
 		var c := world.to_screen(g.pos)
 		var heading := g.vel.normalized() if g.vel.length() > 1.0 else Vector2.RIGHT
 		var side := heading.orthogonal()
 		var body := Look.c(Pal.CHOIR_5) if g.flash > 0.4 else Look.c(Pal.CHOIR_3)
-		for k in 3:
-			var q := c - heading * (k * 4.0) + side * sin(g.wiggle - k * 1.1) * 1.5
-			draw_arc(q.round(), 3.0 - k * 0.6, 0.0, TAU, 8, body, 1.0)
-		draw_rect(Rect2((c + heading * 2.0).round(), Vector2.ONE), Look.c(Pal.CHOIR_5))
+		# four line-art segments, head to tail, spanning the drawn extent (size_grub_px, SYS-001 §1.7)
+		var r0 := size * 0.22
+		var r_last := size * 0.1
+		var span := size - r0 - r_last
+		for k in 4:
+			var rk := lerpf(r0, r_last, k / 3.0)
+			var q := c + heading * (size * 0.5 - r0) - heading * (span * k / 3.0) + side * sin(g.wiggle - k * 1.1) * 1.5
+			draw_arc(q.round(), rk, 0.0, TAU, 10, body, 1.0)
+			if k == 1 or k == 2:     # stub legs on the middle segments
+				draw_line((q + side * rk).round(), (q + side * (rk + 1.5)).round(), Look.c(Pal.CHOIR_2))
+				draw_line((q - side * rk).round(), (q - side * (rk + 1.5)).round(), Look.c(Pal.CHOIR_2))
+		var head := c + heading * (size * 0.5 - r0)
+		draw_rect(Rect2((head + heading * 2.0).round(), Vector2.ONE), Look.c(Pal.CHOIR_5))                 # the eye
+		draw_line(head.round(), (head - heading * span).round(), Look.c(Pal.CHOIR_1))                    # the spine
 		if g.carrying:
-			var s := (c - side * 6.0).round()
+			var s := (c - side * (size * 0.5 + 1.0)).round()
 			draw_colored_polygon(PackedVector2Array([s + Vector2(0, -3), s + Vector2(2, 0), s + Vector2(0, 3), s + Vector2(-2, 0)]), Look.c(Pal.PHOS_4))

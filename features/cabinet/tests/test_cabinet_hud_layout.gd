@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## Act 0 HUD strip (owner 2026-11-18, Q-T31): every live readout sits inside the 40-px strip at the top
+## Act 0 HUD strip (owner 2026-11-18, Q-T31): every live readout sits inside the 48-px strip at the top
 ## of the 256×304 screen, none overlap, the compass is honest and inside, a 2× score that does not fit
 ## drops to 1×, the demo credit line and the Sepulchre AWAKE text fit. The bezel carries no readouts.
 
@@ -24,7 +24,7 @@ func test_wide_score_falls_back_to_single_scale() -> void:
 
 func test_a_double_scale_score_never_reaches_the_compass() -> void:
 	var score_right := CabinetScreenHud.LEFT_X + CabinetScreenHud.SCORE_MAX_W
-	assert_bool(score_right <= CabinetScreenHud.COMPASS.position.x - 4.0).is_true()
+	assert_bool(score_right <= CabinetScreenHud.compass_box().position.x - 4.0).is_true()
 	assert_float(float(PixelText.width("12,345", 2))).is_less_equal(CabinetScreenHud.SCORE_MAX_W)
 
 
@@ -55,15 +55,15 @@ func test_no_two_readouts_overlap() -> void:
 
 func test_the_compass_is_inside_the_strip_and_centred() -> void:
 	var spec := _spec()
-	assert_bool(spec.strip_rect().grow(-1.0).encloses(CabinetScreenHud.COMPASS)).is_true()
-	assert_float(CabinetScreenHud.COMPASS.get_center().x).is_equal(float(spec.grid.x) * 0.5)
-	assert_float(CabinetScreenHud.COMPASS.end.y).is_less(CabinetScreenHud.SEPARATOR_Y)
+	assert_bool(spec.strip_rect().grow(-1.0).encloses(CabinetScreenHud.compass_box())).is_true()
+	assert_float(CabinetScreenHud.compass_box().get_center().x).is_equal(float(spec.grid.x) * 0.5)
+	assert_float(CabinetScreenHud.compass_box().end.y).is_less(CabinetScreenHud.SEPARATOR_Y)
 
 
 func test_awake_fits_left_of_the_first_lamp_and_clear_of_the_compass() -> void:
 	var w := float(PixelText.width(tr("CAB_SEP_AWAKE")))
 	var left := CabinetScreenHud.SEPULCHRE_END_X - w
-	assert_float(left).is_greater_equal(CabinetScreenHud.COMPASS.end.x + 2.0)
+	assert_float(left).is_greater_equal(CabinetScreenHud.compass_box().end.x + 2.0)
 	assert_float(CabinetScreenHud.SEPULCHRE_END_X).is_less(CabinetScreenHud.lamp_centre(0, 5).x - 4.0)
 
 
@@ -81,7 +81,7 @@ func test_spare_vigil_icons_stay_left_of_the_compass() -> void:
 	var most := CabinetScreenHud.icon_count(99)
 	var right := CabinetScreenHud.ICON_X + CabinetScreenHud.ICON_STEP * (most - 1) + 8.0
 	assert_float(right).is_less_equal(CabinetScreenHud.ICON_LIMIT_X)
-	assert_float(CabinetScreenHud.ICON_LIMIT_X).is_less(CabinetScreenHud.COMPASS.position.x)
+	assert_float(CabinetScreenHud.ICON_LIMIT_X).is_less(CabinetScreenHud.compass_box().position.x)
 
 
 func test_demo_credit_line_is_inside_the_play_view() -> void:

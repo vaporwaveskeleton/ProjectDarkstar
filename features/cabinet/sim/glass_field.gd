@@ -192,8 +192,10 @@ func _draw() -> void:
 		if not s.alive or not visible_at(s.pos, 8.0):
 			continue
 		var p := world.to_screen(s.pos).round()
-		var k := 3.0 + sin(s.spin) * 1.0
-		var pts := PackedVector2Array([p + Vector2(0, -k - 1), p + Vector2(k * 0.6, 0), p + Vector2(0, k + 1), p + Vector2(-k * 0.6, 0)])
+		# a ~5 px crystal (CabinetTuning.size_shard_px, SYS-001 §1.7); the spin only breathes its width
+		var k := world.tuning.size_shard_px * 0.5
+		var w := k * (0.6 + sin(s.spin) * 0.15)
+		var pts := PackedVector2Array([p + Vector2(0, -k), p + Vector2(w, 0), p + Vector2(0, k), p + Vector2(-w, 0)])
 		draw_colored_polygon(pts, Look.c(Pal.PHOS_3))
 		draw_rect(Rect2(p, Vector2.ONE), Look.c(Pal.PHOS_5))
 	for c in charges_flying:

@@ -151,9 +151,11 @@ func test_catalog_and_validator_agree() -> void:
 ## a0_cursed_cabinet_capture: the a0_3 after-image (dev `--haunt=after_image`), then a0_5 by autopilot and the
 ## cursed turn, one still every 0.5 s, with a luma window (~3100 frames). a0_haunt_attract_capture: every attract
 ## Haunting once (dev `--haunt-showcase`, fixture profile_act0_done, ~950 frames). TECH-001 Q-T268, §9.1.
+## a0_rework_capture: stage cards, the new scale and one a0_3 Unmaking by autopilot (~5000 frames; Q-T365..Q-T380).
 const LONG_SCENARIOS: Array[String] = ["a1_golden_path.scenario.json", "ruins_onboarding_first_visit.scenario.json", "perf_golden_path.scenario.json", "a11y_flash_pass.scenario.json",
 	"warp_t1_capture.scenario.json", "a0_reveal_decay_capture.scenario.json", "perf_ruins.scenario.json", "a1_run_loop.scenario.json",
-	"ui_menus_capture.scenario.json", "a0_cursed_cabinet_capture.scenario.json", "a0_haunt_attract_capture.scenario.json"]
+	"ui_menus_capture.scenario.json", "a0_cursed_cabinet_capture.scenario.json", "a0_haunt_attract_capture.scenario.json",
+	"a0_rework_capture.scenario.json"]
 
 
 func test_shipped_scenarios_are_valid_for_the_suite() -> void:

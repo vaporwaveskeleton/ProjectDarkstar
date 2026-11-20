@@ -12,15 +12,14 @@ const STAGE_LIMIT_S := 420.0       ## sim seconds a stage may take before the ru
 const State := CabinetGame.State
 
 ## The fixed seeds this suite plays, and the honest floor: at least MIN_REACHED of them clear all
-## MIN_STAGES stages (the whole shift, a0_1–a0_5) with the default lives. a0_5 became winnable on
-## 2026-11-19 (geode drift-in every 20 s: 8 geodes alone hold at most 8 × shards_detonated_max = 48
-## glass, short of the 60 deposits its wake needs) and the stuck-FLEE Grub fix. Measured
-## 2026-11-19 on seeds +0…+19, after the post-wake Charge economy (PM Q-T231): 19/20 full shifts
-## cleared, 0 games lost (every clear ended with 5 lives); the other (+12) is still building
-## a0_5's Sepulchre (18/20 segments) at the stall limit. Before Q-T231: 14/20. Seeds 0–2 all clear.
-const SEEDS: Array[int] = [0, 1, 2]
+## MIN_STAGES stages (the whole shift, a0_1–a0_5) with the default lives. Measured 2026-11-19 on seeds
+## +0…+19 at the Act 0 scale (65,536 px field, 1,536 px Vigil neighbourhood; SYS-001 §1.7, PROPOSED):
+## 17/20 full shifts cleared, 0 games lost; +9, +15 and +17 stall in a0_2. Typical stage sim times (s):
+## a0_1 20–60, a0_2 20–130, a0_3 230–380, a0_4 160–330 (slower than §1.7's skilled targets). At the old
+## 1,920 px field it was 19/20. The bot presses the stage card the moment it opens. Takes ~5 min headless.
+const SEEDS: Array[int] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
 const MIN_STAGES := 5
-const MIN_REACHED := 2
+const MIN_REACHED := 16
 
 
 func before_test() -> void:
@@ -65,7 +64,10 @@ func play_shift(k: int, roster: CabinetStageRoster = null) -> Dictionary:
 	var stage_t := 0.0
 	var at_stage := game.stage_index
 	var result := {"cleared": false, "stage": 0, "lives": 0, "seconds": 0.0, "stalled": false}
+	var stage_secs := PackedStringArray()      # sim seconds each stage took (for the test log)
 	while true:
+		if game.state == State.BRIEFING:
+			game.dismiss_brief()        # the stage card waits for a fire press; the bot presses it at once
 		pilot._physics_process(DT)
 		world.step(DT)
 		# CabinetGame._process's timer, without the CRT/clear-colour presentation
@@ -79,6 +81,7 @@ func play_shift(k: int, roster: CabinetStageRoster = null) -> Dictionary:
 				game._on_timer()
 		seconds += DT
 		if game.stage_index != at_stage:
+			stage_secs.append("%.0f" % stage_t)
 			at_stage = game.stage_index
 			stage_t = 0.0
 		stage_t += DT
@@ -93,6 +96,7 @@ func play_shift(k: int, roster: CabinetStageRoster = null) -> Dictionary:
 	result["stage"] = game.stage_index
 	result["lives"] = game.score.lives
 	result["seconds"] = seconds
+	result["stage_secs"] = ",".join(stage_secs)
 	var r := world.ritual
 	result["diag"] = "grubs_killed %d deposits %d grubs %d phase %d awake %s segments %d hits_left %d charges %d acolytes %d shards %d geodes %d" % [game.record.grubs_destroyed, game.record.glass_carried, world.grubs.items.size(), r.phase,
 			r.awake, r.segments, r.hits_left, world.glass.charges, world.acolytes.living_count(),
@@ -119,8 +123,8 @@ func test_autopilot_plays_the_shift_with_default_lives() -> void:
 		if bool(r["cleared"]):
 			clears += 1
 		var how := "CLEARED" if r["cleared"] else ("stalled" if r["stalled"] else "game over")
-		lines.append("seed+%d: %s, %d/%d stages cleared, lives %d, %.0f sim s | %s" % [k, how, n, total,
-				int(r["lives"]), float(r["seconds"]), str(r["diag"])])
+		lines.append("seed+%d: %s, %d/%d stages cleared, lives %d, %.0f sim s (stage s: %s) | %s" % [k, how, n, total,
+				int(r["lives"]), float(r["seconds"]), str(r["stage_secs"]), str(r["diag"])])
 	print("autopilot shift: %d/%d cleared all, %d/%d cleared >= %d stages\n  %s" % [clears, SEEDS.size(), reached,
 			SEEDS.size(), MIN_STAGES, "\n  ".join(lines)])
 	assert_int(reached).override_failure_message("with default lives the autopilot cleared >= %d stages on %d of %d seeds (floor %d):\n%s"
