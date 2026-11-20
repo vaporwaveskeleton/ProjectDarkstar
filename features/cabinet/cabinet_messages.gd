@@ -206,7 +206,7 @@ func brief_prompt_lit() -> bool:
 		return false
 	if bool(SettingsService.get_value(&"photosensitivity")) or bool(SettingsService.get_value(&"reduced_motion")):
 		return true
-	return fmod(_t * float(_brief.get("blink_hz", 1.5)), 1.0) < 0.5
+	return fmod(_t * float(_brief.get("blink_hz", 1.5)), 1.0) < float(_brief.get("duty", 0.7))
 
 
 ## The y of the card's elements, top to bottom (play-view px), for _draw and the fit test. `bottom` is the

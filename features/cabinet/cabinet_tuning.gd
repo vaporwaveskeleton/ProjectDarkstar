@@ -44,7 +44,12 @@ extends TunableResource
 @export var grub_hp: int = 4
 @export var grub_speed_carry: float = 130.0
 @export var grub_speed_flee: float = 190.0
-@export var grub_flee_radius: float = 110.0      ## px ✱ (flees the Vigil's lamp in Act 0)
+@export var grub_flee_radius: float = 70.0        ## px ✱ (flees the Vigil's lamp in Act 0; was 110, which pushed them off a 128 px half-view)
+@export var grub_shadow_radius: float = 100.0     ## px ✱ an idle Grub circles the Vigil at about this distance (the reference's workers wait near the player)
+@export var grub_shadow_band: float = 24.0        ## px ✱ ± spread of that orbit radius, per Grub
+@export var acolyte_hold_px: float = 120.0          ## px ✱ an engaged Acolyte holds this far from the Vigil (was the HOLD_DISTANCE constant)
+@export var acolyte_patrol_min_px: float = 160.0  ## px ✱ an idle Acolyte patrols the Vigil from this distance …
+@export var acolyte_patrol_max_px: float = 220.0  ## px ✱ … to this one
 @export var grub_respawn: float = 6.0            ## s ✱ the Sepulchre births a replacement
 @export var acolyte_hp: int = 6
 @export var acolyte_speed: float = 150.0
@@ -58,7 +63,7 @@ extends TunableResource
 # --- Stage pressure (P2, PM Q-T105; per-stage switches live on CabinetStage) ---
 @export var reinforce_tell_s: float = 1.0        ## s ✱ censer-bell warning before a reinforcement Acolyte arrives
 @export var reinforce_entry_px: float = 24.0     ## px ✱ the arrival point sits this far outside the view edge
-@export var geode_drift_floor: float = 0.5       ## ✱ drift-in runs while live geodes < floor(stage.geodes × this)
+@export var geode_drift_floor: float = 0.8       ## ✱ drift-in runs while live geodes < floor(stage.geodes × this)
 @export var geode_drift_clear_px: float = 160.0  ## px ✱ a drift-in geode appears at least this far from the Vigil (and off-view)
 @export var grub_pilfer_radius: float = 160.0    ## px ✱ how far a pilfering Grub looks for loose glass
 @export var escort_distance: float = 60.0        ## px ✱ an escorting Acolyte trails its laden Grub at this distance
@@ -85,7 +90,7 @@ extends TunableResource
 @export var hitbox_radius: float = 6.0           ## px — 12 px diameter (SYS-001 §9, R-04)
 
 # --- Act 0 scale (SYS-001 §1.7, Q-T365–Q-T377; every row PROPOSED ✱, retuned after a human plays it) ---
-@export var field_neighbourhood_half_px: float = 768.0    ## px ✱ half-size of the box round the Vigil the free units live in (6 × 6 screens; 1,536 px box)
+@export var field_neighbourhood_half_px: float = 640.0    ## px ✱ half-size of the box round the Vigil the free units live in (= the Compass range ±640; 1,280 px box, 25 screens)
 @export var field_sepulchre_start_px: float = 2560.0      ## px ✱ the Sepulchre starts this far straight ahead of the Vigil's heading
 @export var field_sepulchre_leash_px: float = 4096.0      ## px ✱ beyond this Vigil↔Sepulchre distance the Sepulchre drifts toward the Vigil…
 @export var field_sepulchre_drift_px_s: float = 90.0      ## px/s ✱ …at this speed (slower than the Vigil, so it is never escaped for good)
@@ -95,12 +100,13 @@ extends TunableResource
 @export var size_geode_radii: Array[float] = [9.0, 12.0, 15.0]   ## px ✱ geode radius by size class 0..2
 @export var size_shard_px: float = 5.0                    ## px ✱ Mourning Glass shard's drawn length (pickup and magnet unchanged)
 @export var acolyte_enter_hold_s: float = 1.0             ## s ✱ an Acolyte entering the view holds fire this long before its tell
-@export var acolyte_mine_range_px: float = 768.0          ## px ✱ ENGINEERING (not a SYS-001 §1.7 row): how far an Acolyte looks for a geode to mine; = the neighbourhood half-size
+@export var acolyte_mine_range_px: float = 640.0          ## px ✱ ENGINEERING (not a SYS-001 §1.7 row): how far an Acolyte looks for a geode to mine; = the neighbourhood half-size
 @export var acolyte_mine_standoff_px: float = 36.0           ## px ✱ ENGINEERING (not a SYS-001 §1.7 row): a mining Acolyte hovers this far beyond the geode's edge
 @export var unmakings_required: int = 3                         ## Act 0 ends at the third Unmaking (SYS-001 §1.7, Q-T365); = the roster's UNMAKE_ENTITY stages (a test asserts it)
 
 # --- The stage card (SYS-001 §1.7, Q-T371–Q-T374; UI-001 §11; PROPOSED ✱) ---
 @export var brief_arm_s: float = 0.35                    ## s ✱ fire_lance is ignored until the card has been up this long (and it needs a fresh press)
+@export var brief_prompt_duty: float = 0.7                ## fraction ✱ of each blink cycle PRESS FIRE is lit (was 0.5: stills could miss it)
 @export var brief_prompt_blink_hz: float = 1.5            ## Hz ✱ PRESS FIRE blinks (under the 3 Hz flash rule); steady under photosensitivity or reduced motion
 @export var brief_ready_after_s: float = 1.5              ## s ✱ the READY card after the press (was 2.5 s)
 @export var brief_autopilot_s: float = 1.0                ## s ✱ --autopilot and --smoke dismiss the card after this long

@@ -91,9 +91,11 @@ func tick(delta: float) -> void:
 			State.SEEK:
 				target = g.shard.pos
 			State.IDLE:
-				if not world.neighbourhood.outside(world.ritual.pos):   # loiter at the Sepulchre only while it is in the box
-					target = world.torus.wrap(world.ritual.pos + Vector2.from_angle(world.time * 0.3 + g.id) * 90.0)
-				speed = 70.0
+				# shadow the Vigil: circle it at about grub_shadow_radius, each Grub with its own phase, direction and radius
+				var ring := t.grub_shadow_radius + t.grub_shadow_band * sin(g.id * 1.7)
+				var dir := 1.0 if g.id % 2 == 0 else -1.0
+				target = world.torus.wrap(world.vigil.pos + Vector2.from_angle(g.id * 2.4 + dir * world.time * 0.35) * ring)
+				speed = clampf(60.0 + 1.5 * world.torus.distance(g.pos, target), 70.0, 200.0)   # catches up with a Vigil on the move, settles to a slow orbit
 			State.WORSHIP:
 				if not world.neighbourhood.outside(world.ritual.pos):
 					target = world.torus.wrap(world.ritual.pos + Vector2.from_angle(world.time * 0.6 + g.id * 1.3) * 70.0)

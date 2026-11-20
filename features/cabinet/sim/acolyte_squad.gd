@@ -7,7 +7,6 @@ extends ArcadeLayer
 ## P2 stage switches (CabinetStage): censer-bell reinforcements from beyond the view edge, and
 ## escorts that trail laden Grubs instead of mining.
 
-const HOLD_DISTANCE := 170.0   ## ✱ preferred range when engaging
 const GUARD_ORBIT := 110.0     ## ✱ Litany Ring radius around the Sepulchre
 
 class Acolyte:
@@ -113,7 +112,7 @@ func tick(delta: float) -> void:
 			# hold range and circle: approach if far, back off if close
 			var radial := to_v.normalized()
 			var dist := to_v.length()
-			var want := radial * (dist - HOLD_DISTANCE) + radial.orthogonal() * 40.0
+			var want := radial * (dist - t.acolyte_hold_px) + radial.orthogonal() * 40.0
 			target = world.torus.wrap(a.pos + want)
 		else:
 			var ward: GrubFlock.Grub = null
@@ -131,11 +130,17 @@ func tick(delta: float) -> void:
 					var away := world.torus.delta(geode.pos, a.pos).normalized()
 					target = world.torus.wrap(geode.pos + away * (geode.radius + t.acolyte_mine_standoff_px))
 					aim_angle = world.torus.delta(a.pos, geode.pos).angle()
-				elif a.guard or not world.neighbourhood.outside(world.ritual.pos):
+				elif a.guard:
 					a.slot += delta * 0.4
 					target = world.torus.wrap(world.ritual.pos + Vector2.from_angle(a.slot) * GUARD_ORBIT)
 				elif v.alive:
-					target = v.pos     # the Sepulchre is out of the box: an idle Acolyte closes on the Vigil instead
+					# idle: patrol round the Vigil at its own distance (acolyte_patrol_min_px..max_px), so a few are usually on or near the view
+					a.slot += delta * 0.3 * (1.0 if a.id % 2 == 0 else -1.0)
+					var patrol := lerpf(t.acolyte_patrol_min_px, t.acolyte_patrol_max_px, fposmod(a.id * 0.618, 1.0))
+					target = world.torus.wrap(v.pos + Vector2.from_angle(a.slot) * patrol)
+				elif not world.neighbourhood.outside(world.ritual.pos):
+					a.slot += delta * 0.4
+					target = world.torus.wrap(world.ritual.pos + Vector2.from_angle(a.slot) * GUARD_ORBIT)
 		var d := world.torus.delta(a.pos, target)
 		var desired_vel := d.normalized() * minf(t.acolyte_speed, d.length() * 2.0)
 		a.vel = a.vel.lerp(desired_vel, clampf(delta * 3.0, 0.0, 1.0))
@@ -163,11 +168,13 @@ func tick(delta: float) -> void:
 ## The nearest live geode within acolyte_mine_range_px (CabinetStage.acolyte_mine), or null.
 func _mine_target(a: Acolyte) -> GeodeField.Geode:
 	var best: GeodeField.Geode = null
-	var best_d := world.tuning.acolyte_mine_range_px * world.tuning.acolyte_mine_range_px
+	var range_px := world.tuning.acolyte_mine_range_px
+	var best_d := INF
 	for g in world.geodes.items:
-		if not g.alive:
+		if not g.alive or world.torus.distance(a.pos, g.pos) > range_px:
 			continue
-		var dd := world.torus.distance_sq(a.pos, g.pos)
+		# prefer rock near the Vigil (the workers mine where the action is), then near the Acolyte
+		var dd := world.torus.distance(world.vigil.pos, g.pos) + 0.5 * world.torus.distance(a.pos, g.pos)
 		if dd < best_d:
 			best_d = dd
 			best = g

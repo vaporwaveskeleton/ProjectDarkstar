@@ -595,7 +595,7 @@ func test_set_stage_builds_each_stage_through_the_real_roster() -> void:
 		assert_int(_val("cabinet/world", "geodes")).is_equal(st.geodes)
 		assert_int(_val("cabinet/world", "grubs")).is_equal(st.grubs)
 		assert_bool(_val("cabinet/world", "entity_awake")).is_false()
-	assert_int(geodes[3]).is_equal(26)
+	assert_int(geodes[3]).is_equal(72)
 	assert_int(_val("cabinet/world", "geodes")).is_equal(game.stages[4].geodes)
 
 

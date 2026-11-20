@@ -341,6 +341,7 @@ The owner found Act 0 "a bit too simple". Ruled by the PM under owner direction,
 7. ✅ Stage card: paused, PRESS FIRE TO CONTINUE on `fire_lance`, `pause`/`ui_cancel` open the pause overlay; `CAB_BRIEF_*` keys in `locale/en.po`.
 8. ✅ Autopilot clears Act 0 at the new scale (17/20 seeds, Q-T379); tests; headless golden path. ⏳ windowed capture pass (card, scale, scanner, an Unmaking).
 9. ✅ Hauntings reconciled, no change needed (Q-T374: they run at stage start, the card's opening); #101's bezel unaffected.
+10. ✅ Density and feel pass (Q-T381–Q-T384): 4–8 units and 1–3 geodes in a typical view; streaks; autopilot 20/20. ⏳ Stage times vs targets (Q-T383), human playtest.
 
 ---
 

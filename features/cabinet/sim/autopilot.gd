@@ -26,11 +26,11 @@ const DODGE_MARGIN := 9.0         ## px ✱ extra clearance beyond the Vigil's r
 const SHOT_DODGE_WEIGHT := 2.5    ## ✱ how hard a shot on course pushes the Vigil aside
 const LINE_TELL := 0.45           ## s ✱ an Acolyte this close to firing gets strafed
 const STANDOFF_MINE := 190.0      ## px ✱ mine from here when the glass is for the Choir (Grubs flee the lamp)
-const GRUB_ROOM := 90.0           ## px ✱ beyond the Grubs' flee radius the bot keeps clear while the Choir builds
+const GRUB_ROOM := 15.0           ## px ✱ beyond the Grubs' flee radius the bot keeps clear while the Choir builds
 const FEED_ENOUGH := 3            ## ✱ loose shards that keep the Grubs busy: the bot stops mining for them
 const CULL_RANGE := 600.0         ## px ✱ how far the bot goes to put down a stuck Grub
-const SEPULCHRE_FAR := 1000.0      ## px ✱ farther than this from the Sepulchre the bot heads for it (the field is 65,536 px wide; Grubs would carry glass the whole way)
-const SEPULCHRE_NEAR := 450.0       ## px ✱ …and keeps heading for it until it is this close (hysteresis: no tug-of-war with the geodes)
+const SEPULCHRE_FAR := 600.0      ## px ✱ farther than this from the Sepulchre the bot heads for it (the field is 65,536 px wide; Grubs would carry glass the whole way)
+const SEPULCHRE_NEAR := 250.0       ## px ✱ …and keeps heading for it until it is this close (hysteresis: no tug-of-war with the geodes)
 
 @export var world: ArcadeWorld
 var enabled := false

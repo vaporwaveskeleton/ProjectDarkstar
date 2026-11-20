@@ -115,15 +115,15 @@ func test_a_free_object_beyond_the_box_re_enters_on_the_opposite_edge() -> void:
 	var gr := world.grubs._spawn(v + Vector2(830, 0))
 	var a := world.acolytes.spawn(v + Vector2(0, 900))
 	world.neighbourhood.step()
-	assert_float(world.torus.delta(v, s.pos).y).is_equal_approx(-1000.0 + 1536.0, 0.01)
-	assert_float(world.torus.delta(v, gr.pos).x).is_equal_approx(830.0 - 1536.0, 0.01)
-	assert_float(world.torus.delta(v, a.pos).y).is_equal_approx(900.0 - 1536.0, 0.01)
+	assert_float(world.torus.delta(v, s.pos).y).is_equal_approx(-1000.0 + 2.0 * t.field_neighbourhood_half_px, 0.01)
+	assert_float(world.torus.delta(v, gr.pos).x).is_equal_approx(830.0 - 2.0 * t.field_neighbourhood_half_px, 0.01)
+	assert_float(world.torus.delta(v, a.pos).y).is_equal_approx(900.0 - 2.0 * t.field_neighbourhood_half_px, 0.01)
 
 
 func test_inside_the_box_nothing_moves() -> void:
 	_start(_stage())
 	var v := world.vigil.pos
-	var p := v + Vector2(700, -700)
+	var p := v + Vector2(600, -600)
 	var g := world.geodes.add_geode(p, 0)
 	world.neighbourhood.step()
 	assert_vector(g.pos).is_equal(p)

@@ -144,3 +144,10 @@ func tunable_properties() -> PackedStringArray:
 		if (p.usage & PROPERTY_USAGE_SCRIPT_VARIABLE) and p.name != "ds_namespace" and p.name != "source_section":
 			out.append(p.name)
 	return out
+
+# --- Starfield: rare distant streaks (draw-only; Starfield's own RNG) ---
+@export var streak_interval_min_s: float = 6.0            ## s ✱ shortest wait between distant streaks
+@export var streak_interval_max_s: float = 14.0           ## s ✱ longest wait
+@export var streak_length_min_px: float = 10.0            ## px ✱
+@export var streak_length_max_px: float = 18.0            ## px ✱
+@export var streak_cross_s: float = 0.5                   ## s ✱ one streak crosses the view in this long (dim, 1 px)

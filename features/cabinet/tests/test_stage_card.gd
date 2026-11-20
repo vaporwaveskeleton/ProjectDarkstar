@@ -255,3 +255,14 @@ func test_a_restart_under_the_card_still_unpauses_the_world_on_dismiss() -> void
 	game.dismiss_brief()
 	assert_bool(world.paused_sim).override_failure_message("the world must run after the card closes").is_false()
 	assert_int(game.state).is_equal(CabinetGame.State.INTRO)
+
+
+func test_the_prompt_is_lit_70_percent_of_each_blink_cycle() -> void:
+	game.start_stage(0)
+	assert_float(t.brief_prompt_duty).is_equal(0.7)
+	var lit := 0
+	for k in 100:
+		messages._t = k * 0.01 / t.brief_prompt_blink_hz
+		if messages.brief_prompt_lit():
+			lit += 1
+	assert_int(absi(lit - 70)).is_less_equal(1)
