@@ -490,6 +490,7 @@ The owner pointed at the 1983 reference's screenshots, where the units read big 
 - **Size ranks the threat.** shard < Grub ≈ Vigil < Acolyte < geode < Sepulchre. A Grub must never read smaller than a shard cluster, and an Acolyte must always read bigger than the Vigil.
 - **Bigger, not filled.** The look stays neon line art (§15.2). Bigger units carry more line (a second contour, inner detail at the new size), but never a solid fill, so the lit share rises without changing the Neon Cabinet look. The 16 colour registers are unchanged (§15.2a).
 - **The stage card's icons** (UI-001 §11) are each unit's own runtime drawing at 1×, so the icon *is* the in-play size.
+- **Density and distant streaks** (Q-T381, Q-T382; PROPOSED). A typical view shows 4–8 units and 1–3 geodes (SYS-001 §1.6). The starfield adds rare distant streaks: 1 px, 10–18 px long, in a dim VOID register, at most one per 6–14 s, crossing in about 0.5 s. They never appear under photosensitivity or reduced motion and stay inside the 16 registers (§15.2a). Keys: SYS-001 §1.7.
 ## 13. Narrative art beats (requested by NARR-001, 2026-11-17)
 
 Story facts that only work if the art carries them. Each is a single frame or prop, not a new kit.

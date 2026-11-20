@@ -1,6 +1,6 @@
 # DARKSTAR — Systems Bible (Numbers)
 
-**Doc ID:** SYS-001 · **Version:** 1.11 · **Status:** Authoritative for all numbers · **Last updated:** 2026-11-19
+**Doc ID:** SYS-001 · **Version:** 1.12 · **Status:** Authoritative for all numbers · **Last updated:** 2026-11-20
 **Owner:** Design (systems) · **Upstream:** `GDD_DARKSTAR_v0.2.md` (GDD-001) · **Downstream:** every other doc in this set
 **Data target:** `docs/04-production/TECH_ARCHITECTURE.md` §6 (data-driven tables) — every table below maps 1:1 to a `.tres`/JSON resource.
 **Rev 1.1 (2026-11-17):** the Anchor field rows in §1.1 (owner decision D-11 of GDD-001 §18); **rev 1.2 (2026-11-17, owner-delegated rulings R-01, R-04, R-10, R-11, R-14):** §1.2 post-hit grace, §9 resolution closed to 640×360, hitbox diameter and entity exception, on-screen caps; §2.2 ninth-sky Hunger as one +2 row, §6 Hourglass budget/death cost/refund, §7.2 Codex stamp note, §7.5 Fragments and Threads (LOOP-001 LR-09…LR-13); the warp-owned numbers WARP-001 asked for in its §8 R-01 to R-05, added to §6, §9 and §10; and the §2.2 eaten-rule pointer corrected from WARP-001 §6 to §3. **No pre-existing number in this doc was changed by that revision.**
@@ -14,6 +14,7 @@
 **Rev 1.9 (2026-11-19 overnight, the M2 Lantern Tree stub; PM under owner direction, TECH-001 Q-T330):** §7.7 two **proposed** rows, `Lantern Tree tier-2 gate` (2) and `Lantern Tree tiers on sale (M2 slice)` (1). No existing value changed; the tier prices are read from the §7.7 rows as they stand (`ds_lantern_tree.stock.price_tier1`, `ds_lantern_tree.tree.price_tier2`, `ds_lantern_tree.tree.price_codex_gated`).
 **Rev 1.10 (2026-11-19 overnight, race framing and the Codex record; PM under owner direction, TECH-001 Q-T353, Q-T355, Q-T356):** §9 one **proposed** row, `Race fit margin` (24 px); the `Race pull-out zoom` and `Race pull-out max` rows now describe the fitted pull-out (0.8 is its floor; a Charge in flight holds it for the whole flight; never under Reduced Motion). §7.6 `Gating backstop: tier-1 entries` gains its data key and its reading of "run 3" (the profile run count, every outcome). No existing value changed.
 **Rev 1.11 (2026-11-19, Act 0 "too simple" pass; PM under owner direction, 2026-11-19 overnight push, TECH-001 Q-T365–Q-T377):** new §1.7, all PROPOSED (revised the same night with the PM's pixel measurements of the reference screenshots, Q-T378): three Unmakings, a 65,536 px wrapping field with a travelling neighbourhood, a 48 px HUD band with a local square Ledger Compass, unit proportions, Acolyte mining, and the stage card timings. §1.6's field-size line points at §1.7.
+**Rev 1.12 (2026-11-20, Act 0 density and feel pass; PM under owner direction, 2026-11-20 extended push (Q-T381–Q-T384)):** all PROPOSED. §1.6 stage counts raised (geodes 34/40/44/72/14, Grubs 6/14/14/10/6, Sepulchre start segments 20/20/4/6/4; a0_3 bell 16 s, cap 6), `geode_drift_floor` 0.5 → 0.8; §1.7 neighbourhood half 768 → 640, `grub_flee_radius` 110 → 70, new shadow/patrol/hold, prompt-duty and streak keys, measured stage times (Q-T383).
 
 ---
 
@@ -193,11 +194,13 @@ Act 0 is a five-stage shift (~9–11 min skilled; GDD §6.1; TECH-001 §2.10). O
 
 | Id | Name / zone | Geodes | Grubs | Acolytes | Guard Acolytes | Sepulchre start segments | Wakes | Goal |
 |---|---|---|---|---|---|---|---|---|
-| `a0_1` | First Vigil (cold) | 12 | 2 | 0 | 0 | 8 | no | 0 |
-| `a0_2` | Second Vigil / Drift (cold, Grub-heavy) | 16 | 7 | 1 | 1 | 10 | no | 0 |
-| `a0_3` | Third Vigil / Censer Watch (Acolyte-heavy, first full Waking) | 18 | 4 | 3 | 2 | 0 | yes | 1 |
-| `a0_4` | Fourth Vigil / Shoal (geode-rich) | 26 | 6 | 2 | 1 | 4 | yes | 1 |
-| `a0_5` | The Last Normal Day / Stillwater (geode-scarce, last stage) | 8 | 4 | 2 | 1 | 0 | yes | 1 |
+| `a0_1` | First Vigil (cold) | 34 | 6 | 0 | 0 | 20 | no | 0 |
+| `a0_2` | Second Vigil / Drift (cold, Grub-heavy) | 40 | 14 | 1 | 1 | 20 | no | 0 |
+| `a0_3` | Third Vigil / Censer Watch (Acolyte-heavy, first full Waking) | 44 | 14 | 5 | 2 | 4 | yes | 1 |
+| `a0_4` | Fourth Vigil / Shoal (geode-rich) | 72 | 10 | 3 | 1 | 6 | yes | 1 |
+| `a0_5` | The Last Normal Day / Stillwater (geode-scarce, last stage) | 14 | 6 | 2 | 1 | 4 | yes | 1 |
+
+The counts were raised in the density pass so a typical view shows 4–8 actors and 1–3 geodes (Q-T381, PROPOSED; PM under owner direction, 2026-11-20 extended push (Q-T381–Q-T384)). The cold stages now start with the whole Sepulchre (20 segments). Measured means (geodes / actors in view, autopilot, 3 seeds, 20–80 s): a0_1 1.53 / 4.19, a0_2 1.59 / 4.97, a0_3 2.08 / 5.06, a0_4 2.69 / 4.09, a0_5 0.20 / 2.06 (Stillwater is sparse on purpose).
 
 **Pressure switches (P2, built; PM 2026-11-19, TECH-001 §11.1 Q-T105; retune at playtest `⚙`).** Per-stage `CabinetStage` fields; each default reproduces the pre-P2 game, and `a0_1` keeps every default. Vigil rows are untouched. TECH-001 §2.10 holds the behaviour.
 
@@ -206,7 +209,7 @@ Act 0 is a five-stage shift (~9–11 min skilled; GDD §6.1; TECH-001 §2.10). O
 | default | 0 (off) | 0 | yes | 0 (off) | no | no | no | no | none (plain sky) |
 | `a0_1` | default | default | default | default | no | no | no | no | none |
 | `a0_2` | 40 s | 2 | default | 20 s | no (cold) | yes | no | yes | `currents` |
-| `a0_3` | 40 s | 4 | **no** | 20 s | no | yes | yes | yes | `chains` |
+| `a0_3` | 16 s | 6 | **no** | 20 s | no | yes | yes | yes | `chains` |
 | `a0_4` | 25 s | 6 | default | 12 s | yes | yes | no | yes | `shoal` |
 | `a0_5` | 0 (off) | 0 | default | 20 s | yes | yes | no | yes | `horizon` |
 
@@ -220,7 +223,7 @@ Engineering rows (✱, `CabinetTuning`, `ds_cabinet.tuning.*`; PM-accepted 2026-
 |---|---|---|
 | Bell warning (`reinforce_tell_s`) | 1.0 s ✱ | censer bell rings at its start, then the Acolyte arrives |
 | Arrival offset (`reinforce_entry_px`) | 24 px ✱ | outside the current view edge |
-| Drift floor (`geode_drift_floor`) | 0.5 ✱ | drift-in runs while live geodes < floor(stage geodes × this) |
+| Drift floor (`geode_drift_floor`) | 0.8 ✱ (was 0.5, Q-T381) | drift-in runs while live geodes < floor(stage geodes × this) |
 | Drift clearance (`geode_drift_clear_px`) | 160 px ✱ | a drift-in geode is off view and at least this far from the Vigil |
 | Pilfer radius (`grub_pilfer_radius`) | 160 px ✱ | how far a pilfering Grub looks for loose glass |
 | Escort distance (`escort_distance`) | 60 px ✱ | an escorting Acolyte trails its Grub at this distance |
@@ -238,14 +241,14 @@ Owner direction 2026-11-19 ("Act 0 is too simple"), measured against the 1983 re
 | Key | Value | Notes |
 |---|---|---|
 | `ds_cabinet.shift.unmakings_required` | **3** | Act 0 ends at the third Unmaking. It equals the number of `goal = 1` stages in `stage_roster.tres` (a0_3, a0_4, a0_5), and a test asserts this |
-| Stage time targets (skilled) | a0_1 1–1.5 min · a0_2 1.5–2 · a0_3 2–2.5 · a0_4 2.5–3 · a0_5 2–2.5 | Total ≈ 9.5–11.5 min, matching GDD §6.1 (Q-T376). These are targets for playtest, not timers |
+| Stage time targets (skilled) | a0_1 1–1.5 min · a0_2 1.5–2 · a0_3 2–2.5 · a0_4 2.5–3 · a0_5 2–2.5 | Total ≈ 9.5–11.5 min, matching GDD §6.1 (Q-T376). These are targets for playtest, not timers. Measured autopilot medians (20 seeds, Q-T383): a0_1 38 s, a0_2 46 s, a0_3 256 s, a0_4 207 s, a0_5 224 s; the wake stages are still 1.2–1.7× over target (OPEN) |
 
 **Field (Q-T366).** This replaces §1.6's 1920 × 720 ✱ torus.
 
 | Key | Value | Notes |
 |---|---|---|
 | `ds_cabinet.field.size` | **65,536 × 65,536 px**, wrapping | 256 × 256 screens of 256 px. Owner: matches the reference's 16-bit field. 65,536 ÷ 340 px/s (Vigil top speed, §1.1) ≈ **193 s to cross** |
-| `ds_cabinet.field.neighbourhood_half_px` | **768 px** ✱ | The units live in a 1,536 × 1,536 box centred on the Vigil (≈ 6 × 6 screens; about 1.7× the old 1920 × 720 torus area, so density stays close to the old stages; was 1,024 / 2,048 in the first draft). A geode, an empty-handed Grub, an idle Acolyte or loose glass that leaves the box on one axis re-enters on the opposite edge of the box (a local wrap round the Vigil). It is never placed inside the view. Laden Grubs, their escorts, the Sepulchre and the awake entity are never moved |
+| `ds_cabinet.field.neighbourhood_half_px` | **640 px** ✱ (was 768, Q-T381) | The units live in a 1,280 × 1,280 box centred on the Vigil (25 screens = the Compass range; was a 1,536 box, and 1,024 / 2,048 in the first draft). A geode, an empty-handed Grub, an idle Acolyte or loose glass that leaves the box on one axis re-enters on the opposite edge of the box (a local wrap round the Vigil). It is never placed inside the view. Laden Grubs, their escorts, the Sepulchre and the awake entity are never moved |
 | `ds_cabinet.field.sepulchre_start_px` | 2,560 px ✱ | The Sepulchre is placed this far from the Vigil's start, **straight ahead** of its starting heading: two scanner widths, so it begins just off the Compass, and the edge pip points the way (the 1983 game starts each zone with the boss "about two scanner widths away", straight ahead) |
 | `ds_cabinet.field.sepulchre_leash_px` | 4,096 px ✱ | While the Vigil is farther than this from the Sepulchre (16 screens), the Sepulchre drifts toward it… |
 | `ds_cabinet.field.sepulchre_drift_px_s` | 90 px/s ✱ | …at this speed: always slower than the Vigil, so the Sepulchre can never be escaped for good, and never catches you up |
@@ -273,7 +276,7 @@ Owner direction 2026-11-19 ("Act 0 is too simple"), measured against the 1983 re
 
 Hurt radii follow the drawn size: half the drawn extent minus 1 px ✱. Collision stays separate from drawing (CLAUDE.md §3).
 
-**Mix (Q-T370).** New `CabinetStage` switch `acolyte_mine` (default off): an Acolyte with no Vigil inside `acolyte_range` and no escort job lances the nearest geode at its normal fire cycle. The glass it breaks is loose, and anyone can take it. **On for a0_3, a0_4 and a0_5.** The §1.6 counts are unchanged; they now mean "live in the neighbourhood". ✱ ENGINEERING rows (built, not design numbers): `acolyte_mine_range_px` = 768 px (how far an Acolyte looks for a geode; equals the neighbourhood half-size) and `acolyte_mine_standoff_px` = 36 px (a mining Acolyte hovers this far beyond the geode's edge).
+**Mix (Q-T370).** New `CabinetStage` switch `acolyte_mine` (default off): an Acolyte with no Vigil inside `acolyte_range` and no escort job lances the nearest geode at its normal fire cycle. The glass it breaks is loose, and anyone can take it. **On for a0_3, a0_4 and a0_5.** The §1.6 counts are unchanged; they now mean "live in the neighbourhood". ✱ ENGINEERING rows (built, not design numbers): `acolyte_mine_range_px` = 640 px (how far an Acolyte looks for a geode; equals the neighbourhood half-size) and `acolyte_mine_standoff_px` = 36 px (a mining Acolyte hovers this far beyond the geode's edge).
 
 **Stage identities follow the 1983 zone-trait cycle** (Q-T378). The reference cycles worker-heavy → warrior-heavy → planetoid-heavy → void (few planetoids, hardest). §1.6 already maps onto it, so no count changes: a0_1 soft open (cold), **a0_2 Drift = Grub-heavy**, **a0_3 Censer Watch = Acolyte-heavy**, **a0_4 Shoal = geode-rich**, **a0_5 Stillwater = the void** (geode-scarce, last). Each stage card names its trait in the first reminder line.
 
@@ -289,7 +292,9 @@ Hurt radii follow the drawn size: half the drawn extent minus 1 px ✱. Collisio
 | `ds_cabinet.brief.autopilot_s` | 1.0 s ✱ | `--autopilot` and `--smoke` dismiss the card themselves after this long |
 | Sepulchre card icon radius | 8 px ✱ ENGINEERING | `CabinetBriefIcons` draws the Sepulchre icon on the card at this radius |
 
-Built key names (`CabinetTuning`, `features/cabinet/cabinet_tuning.gd`): `field_neighbourhood_half_px` 768, `field_sepulchre_start_px` 2560, `field_sepulchre_leash_px` 4096, `field_sepulchre_drift_px_s` 90, `compass_px_per_dot` 32, `size_grub_px` 11, `size_acolyte_px` 15, `size_geode_radii` [9, 12, 15], `size_shard_px` 5, `acolyte_enter_hold_s` 1.0, `acolyte_mine_range_px` 768 ✱, `acolyte_mine_standoff_px` 36 ✱, `unmakings_required` 3, `brief_arm_s` 0.35, `brief_prompt_blink_hz` 1.5, `brief_ready_after_s` 1.5, `brief_autopilot_s` 1.0. (`ds_cabinet.…` names above map to these flat property names.)
+**Density behaviours (Q-T381, PROPOSED ✱).** Idle Grubs circle the Vigil (the reference's workers wait near the player) at `grub_shadow_radius` 100 px ± `grub_shadow_band` 24 px; idle Acolytes patrol the Vigil 160–220 px away (`acolyte_patrol_min_px`, `acolyte_patrol_max_px`); an engaged Acolyte holds `acolyte_hold_px` 120 px away. `grub_flee_radius` is 70 px (was 110). `brief_prompt_duty` 0.7 (PRESS FIRE lit 70 % of each 1.5 Hz cycle; was 0.5). Rare distant streaks (`CabinetFxTuning`): `streak_interval_min_s` 6, `streak_interval_max_s` 14, `streak_length_min_px` 10, `streak_length_max_px` 18, `streak_cross_s` 0.5; off under photosensitivity or reduced motion.
+
+Built key names (`CabinetTuning`, `features/cabinet/cabinet_tuning.gd`): `field_neighbourhood_half_px` 640, `field_sepulchre_start_px` 2560, `field_sepulchre_leash_px` 4096, `field_sepulchre_drift_px_s` 90, `compass_px_per_dot` 32, `size_grub_px` 11, `size_acolyte_px` 15, `size_geode_radii` [9, 12, 15], `size_shard_px` 5, `acolyte_enter_hold_s` 1.0, `acolyte_mine_range_px` 640 ✱, `acolyte_mine_standoff_px` 36 ✱, `unmakings_required` 3, `grub_shadow_radius` 100, `grub_shadow_band` 24, `acolyte_hold_px` 120, `acolyte_patrol_min_px` 160, `acolyte_patrol_max_px` 220, `brief_arm_s` 0.35, `brief_prompt_duty` 0.7, `brief_prompt_blink_hz` 1.5, `brief_ready_after_s` 1.5, `brief_autopilot_s` 1.0. (`ds_cabinet.…` names above map to these flat property names.)
 
 ## 2. The Dark Star — Waking lifecycle numbers
 
@@ -379,7 +384,7 @@ Oubliette Grub AI numbers (the Cabinet values, so M1 matches Act 0; closes that 
 | Field | Value | Notes |
 |---|---|---|
 | Grub seek speed | 160 px/s ✱ | speed toward a free shard, before it carries one (carry and flee speeds are in the table above). PM-approved 2026-11-18 |
-| Grub flee radius | 110 px ✱ | distance from the Vigil at which a Grub starts to flee. PM-approved 2026-11-18 |
+| Grub flee radius | 70 px ✱ (was 110; Q-T381, Act 0 density pass) | distance from the Vigil at which a Grub starts to flee. PM-approved 2026-11-18 |
 | Grub respawn | 6.0 s ✱ | delay before a killed Grub is replaced. PM-approved 2026-11-18. In the Cabinet it stops at the wake unless the stage sets `grubs_after_wake` (§1.6, P2) |
 | Grub flee while carrying | never ✱ | a Grub carrying glass does not flee the lantern ("devotion beats fear", the Cabinet rule). PM under owner autonomy grant 2026-11-19 (TECH-001 Q-T112) |
 | Grub body and steering (engineering) | radius 6 px; pickup margin 4 px; steer 5 /s; arrive 2 px; flee step 80 px; waypoint reach 12 px; a dying carrier drops its shard with 0.3 of its velocity ✱ | the Cabinet's literals, mirrored in M1 (`ds_choir.grub.*`, TECH-001 §3.4); waypoint reach is new in M1. PM-accepted 2026-11-19 (PM under owner autonomy grant 2026-11-19) |

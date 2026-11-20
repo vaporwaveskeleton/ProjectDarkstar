@@ -172,7 +172,7 @@ Owner: "At the beginning of each arcade stage the game should pause and give a r
 3. **Two reminders:** `CAB_BRIEF_A0_n_1`, `_2`, each at most 30 characters.
 4. **In this stage:** `CAB_BRIEF_ROSTER`, then one row per unit present: icon (the unit's own drawing at 1×), name (`CAB_UNIT_*`) and count from the stage data. Rows: geodes, Grubs, Acolytes (start + guard), Sepulchre. Never a unit the stage does not have.
 5. **Progress:** `CAB_BRIEF_UNMAKINGS` "UNMAKINGS {n} / {total}", shown from A0-3 on.
-6. **The prompt:** `CAB_BRIEF_PRESS_FIRE` "PRESS FIRE TO CONTINUE", blinking at `ds_cabinet.brief.prompt_blink_hz` (steady under photosensitivity or reduced motion).
+6. **The prompt:** `CAB_BRIEF_PRESS_FIRE` "PRESS FIRE TO CONTINUE", blinking at `ds_cabinet.brief.prompt_blink_hz` (1.5 Hz) with a 70 % on duty (`brief_prompt_duty`, Q-T381), steady under photosensitivity or reduced motion.
 
 **Input (honours the input map, GDD §4.1/§4.3; `tests/test_input_map.gd` is unchanged).**
 
