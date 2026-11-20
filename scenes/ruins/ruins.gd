@@ -33,6 +33,10 @@ const STATS := preload("res://data/interactions/ruins_onboarding.tres")
 const TREE_STOCK := preload("res://data/lantern_tree/tier1_stock.tres")
 const SECTOR_ROUTE := &"sector"
 const TITLE_ROUTE := &"attract"
+## The Ruins room tone (AUDIO-001 §2.2 layer B, §12.19). No Choir chant in the hub: the chant means a
+## procession is near (L3), and the hub has none (TECH-001 §11.2, 2026-11-19).
+const ROOM_TONE := &"ruins_hall"   ## = AMBIENCE_ID, the hall bed with the clock running
+const FIRST_VISIT_TONE := &"ruins_first_visit"
 ## ✱ seconds before ui_cancel can leave for the title (a stray press on arrival never quits).
 const PAUSE_SCENE := preload("res://scenes/sector/pause_screen.tscn")
 ## The Ruins hall's ambience bed id (AUDIO-001; Q-T194). Level drops with the pilot lamp down.
@@ -140,8 +144,6 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	# Deferred: runs once, after on_route_entered (or without it when the scene is run directly).
 	_arrive.call_deferred()
-	AudioService.set_chant(0.08)
-	AudioService.set_ambience(AMBIENCE_ID, AMBIENCE_LEVEL)
 	_overlays.emptied.connect(_on_overlays_emptied)
 
 
@@ -169,6 +171,7 @@ func _arrive() -> void:
 		if paid > 0:
 			vi = session.act0_vi_banked
 	var first := _bool_param(_params, "first_visit") or paid > 0
+	AudioService.set_ambience(room_tone_id(first), AMBIENCE_LEVEL)
 	if look != null:
 		look.set_first_visit(first)
 	onboarding = RuinsOnboarding.new(stats)
@@ -361,9 +364,16 @@ func _set_codex_paused(on: bool) -> void:
 		session.resume_clock(RunSessionCore.PAUSE_CODEX)
 
 
+## The first visit hears the wreck settling with the clock stopped (its sand is held); later visits hear
+## the same room with the clock running.
+static func room_tone_id(first_visit: bool) -> StringName:
+	return FIRST_VISIT_TONE if first_visit else ROOM_TONE
+
+
 func _exit_tree() -> void:
-	AudioService.set_chant(0.0)
-	AudioService.set_ambience(&"")
+	# fade the room out unless the next scene already took the slot (the sector sets its own bed)
+	if AudioService.ambience_id() in [ROOM_TONE, FIRST_VISIT_TONE]:
+		AudioService.set_ambience(&"")
 	_release_menu_pause()
 	if onboarding != null and onboarding.codex_open:
 		_set_codex_paused(false)
@@ -446,7 +456,10 @@ func _mirror(delta: float) -> void:
 		(_marks[k] as StationMark).visible = ob.can_move   # Sable's marks show with the lamp
 	_lamp.down = ob.lamp_down
 	_lamp.walk_speed = Input.get_axis(&"move_left", &"move_right") if ob.can_move and not ob.codex_open else 0.0
-	AudioService.set_ambience(AMBIENCE_ID, AMBIENCE_LEVEL_DARK if ob.lamp_down else AMBIENCE_LEVEL)
+	# level only: keep whichever hall tone this visit plays (first visit: no clock yet)
+	var tone := AudioService.ambience_id()
+	AudioService.set_ambience(tone if tone in [ROOM_TONE, FIRST_VISIT_TONE] else AMBIENCE_ID,
+		AMBIENCE_LEVEL_DARK if ob.lamp_down else AMBIENCE_LEVEL)
 	var near := ob.focus()
 	if near != _last_focus and near != &"":
 		_cue(&"ruins_station_near")

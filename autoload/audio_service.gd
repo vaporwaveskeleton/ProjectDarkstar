@@ -26,9 +26,29 @@ const SUBTRACTION_OPEN_HZ := 20000.0   ## ✱ low-pass cutoff at subtraction 0 (
 const SUBTRACTION_CLOSED_HZ := 500.0   ## ✱ low-pass cutoff at subtraction 1
 const SUBTRACTION_CUT_DB := -18.0      ## ✱ BUS-AMB / BUS-MUS volume offset at subtraction 1
 const SUBTRACTION_BUSES: Array[StringName] = [&"BUS-AMB", &"BUS-MUS"]   ## the only buses sound is removed from (L3)
+const MIX_STATS_PATH := "res://data/audio/mix_stats.tres"
+## Buses the §7.2 sidechain may duck. BUS-CHO and BUS-ENT are never ducked (§7.3).
+const DUCK_BUSES: Array[StringName] = [&"BUS-MUS", &"BUS-AMB", &"BUS-UI", &"BUS-FLY"]
+## AUDIO-001 §7.2: the buses a sounding cue of each priority ducks (depths in AudioMixStats).
+const DUCK_TARGETS := {
+	0: [&"BUS-MUS", &"BUS-AMB", &"BUS-UI", &"BUS-FLY"],
+	1: [&"BUS-MUS", &"BUS-AMB", &"BUS-UI"],
+	2: [&"BUS-MUS"],
+	3: [&"BUS-MUS", &"BUS-AMB"],
+	4: [&"BUS-MUS"],
+	5: [&"BUS-AMB"],
+}
+## A bus carrying a sounding cue at this priority or more important is never ducked (§7.3: the glass
+## chime, hull damage, the lie-tell ticks are never hidden).
+const DUCK_PROTECT_BELOW := 2
+const FLIGHT_CREAK := &"flight_creak"
+const FLIGHT_BALLAST := &"flight_ballast"
+const MAX_THREAT_STEMS := 2
 
 var cue_ids: CueIds
 var policy: CuePolicy
+## Ducking, flight-layer and threat-stem tunables (AUDIO-001 §7.2, §12.19).
+var mix: AudioMixStats
 ## Cues built by the runtime SfxSynth fallback at boot (0 when every render exists).
 var synth_cue_count := 0
 ## Tests set this (>= 0) to drive the clock, in ms; -1 uses Time.get_ticks_msec().
@@ -63,8 +83,23 @@ var _sub_target := 0.0
 var _sub_ramp_s := 0.0
 var _sub_t := 0.0
 var _sub_fx: Dictionary = {}           # StringName bus -> AudioEffectLowPassFilter index on that bus
-var _sub_base_db: Dictionary = {}      # StringName bus -> volume_db before any subtraction
 var _touch_ms := -1000000              # wall-clock ms of the last playback start or stop (shutdown drain)
+var _bus_base_db: Dictionary = {}      # StringName bus -> volume_db before subtraction and ducking
+var _duck_cur: Dictionary = {}         # StringName bus -> current duck offset, dB (<= 0)
+var _flight_streams: Dictionary = {}   # StringName layer -> AudioStream (FlightMix.LAYERS)
+var _flight: Dictionary = {}           # StringName layer -> AudioStreamPlayer on BUS-FLY
+var _flight_db: Dictionary = {}        # StringName layer -> smoothed volume_db
+var _flight_pitch: Dictionary = {}     # StringName layer -> smoothed pitch_scale
+var _flight_on := false
+var _flight_lantern_up := true          # the hiss is the lantern: cut while it is down (Q-T223)
+var _flight_in := Vector3.ZERO         # speed, thrust, turn (0..1)
+var _flight_return := 1.0              # 0..1 return ramp after a silence
+var _creak_armed := true
+var _was_braking := false
+var _stems: Array[AudioStreamPlayer] = []   # threat stems, locked to the active bed's playhead
+var _stem_ids: Array[StringName] = []
+var _threat := 0.0
+var _threat_cur := 0.0
 
 
 func _ready() -> void:
@@ -78,6 +113,10 @@ func _ready() -> void:
 		policy = load(CUE_POLICY_PATH) as CuePolicy
 		if policy == null:
 			policy = CuePolicy.new()
+	if mix == null:
+		mix = load(MIX_STATS_PATH) as AudioMixStats
+		if mix == null:
+			mix = AudioMixStats.new()
 	_load_cues()
 	_setup_subtraction()
 	for i in VOICES:
@@ -101,6 +140,23 @@ func _ready() -> void:
 		a.volume_db = -80.0
 		add_child(a)
 		_amb.append(a)
+	for i in MAX_THREAT_STEMS:
+		var s := AudioStreamPlayer.new()
+		s.bus = &"BUS-AMB"
+		s.volume_db = -80.0
+		add_child(s)
+		_stems.append(s)
+	for id: StringName in FlightMix.LAYERS:
+		if not _flight_streams.has(id):
+			continue
+		var f := AudioStreamPlayer.new()
+		f.bus = &"BUS-FLY"
+		f.volume_db = -80.0
+		f.stream = _flight_streams[id]
+		add_child(f)
+		_flight[id] = f
+		_flight_db[id] = -80.0
+		_flight_pitch[id] = 1.0
 
 
 ## Renders first; the SfxSynth set is built once, and only when a fallback cue lacks its render.
@@ -113,7 +169,10 @@ func _load_cues() -> void:
 			if e.id != &"chant":
 				var bed := chirp_stream(e.id)
 				if bed != null:
-					_beds[e.id] = bed
+					if e.id in FlightMix.LAYERS:
+						_flight_streams[e.id] = bed   # the ship's layers: never an ambience bed
+					else:
+						_beds[e.id] = bed
 			continue
 		var rendered := chirp_stream(e.id)
 		if rendered != null:
@@ -252,12 +311,19 @@ func silence(seconds: float) -> void:
 ## Ambience slot (AUDIO-001 §12.12): crossfades to the loop cue `id` over AMBIENCE_FADE_S on BUS-AMB.
 ## `level` 0..1 maps to -40..AMBIENCE_MAX_DB dB. &"" fades out. The current id only changes level.
 ## An unknown or non-loop id is a silent no-op (the gallery may call before cues land).
-func set_ambience(id: StringName, level: float = 1.0) -> void:
+## `stems` (at most MAX_THREAT_STEMS loop ids, the bed's length) are threat layers locked to the bed's
+## playhead and driven by set_threat(); a new bed replaces them (empty = none). Same id: only a
+## non-empty `stems` replaces them.
+func set_ambience(id: StringName, level: float = 1.0, stems: Array[StringName] = []) -> void:
 	_amb_level = clampf(level, 0.0, 1.0)
 	if id == _amb_id:
+		if not stems.is_empty():
+			_set_stems(stems)
 		return
 	if id != &"" and not _beds.has(id):
 		return
+	if id != &"":
+		_set_stems(stems)
 	var old := _amb_active
 	if id != &"":
 		_amb_active = 1 - _amb_active
@@ -275,6 +341,200 @@ func set_ambience(id: StringName, level: float = 1.0) -> void:
 ## The id the ambience slot is heading for (&"" = none).
 func ambience_id() -> StringName:
 	return _amb_id
+
+
+## Threat 0..1 for the ambience stems (AUDIO-001 §12.19): each stem owns an equal slice of the range
+## and the bed gives way by `mix.threat_bed_dip_db` at full threat, so threat adds layers, not level
+## (§1.1). Reached over `mix.threat_rise_s` going up and `threat_fall_s` going down.
+func set_threat(level: float) -> void:
+	_threat = clampf(level, 0.0, 1.0)
+
+
+## Current (smoothed) threat 0..1 (tests, diagnostics).
+func threat() -> float:
+	return _threat_cur
+
+
+## The stem ids the ambience slot carries (tests, diagnostics).
+func ambience_stems() -> Array[StringName]:
+	return _stem_ids.duplicate()
+
+
+func _set_stems(stems: Array[StringName]) -> void:
+	var ids: Array[StringName] = []
+	for s in stems:
+		if _beds.has(s) and ids.size() < MAX_THREAT_STEMS:
+			ids.append(s)
+	_stem_ids = ids
+	for i in _stems.size():
+		var want: AudioStream = _beds[ids[i]] if i < ids.size() else null
+		if _stems[i].stream != want:
+			_stems[i].stop()
+			_stems[i].stream = want
+			_touch()
+
+
+func _threat_dip_db() -> float:
+	return mix.threat_bed_dip_db * _threat_cur if not _stem_ids.is_empty() else 0.0
+
+
+func _step_stems(delta: float) -> void:
+	var span := mix.threat_rise_s if _threat > _threat_cur else mix.threat_fall_s
+	_threat_cur = move_toward(_threat_cur, _threat, delta / maxf(span, 0.001))
+	var bed := _amb[_amb_active]
+	var bed_gain := sin(_amb_fade[_amb_active] * PI * 0.5)
+	for i in _stems.size():
+		var p := _stems[i]
+		var g := FlightMix.stem_gain(_threat_cur, i, _stem_ids.size()) if i < _stem_ids.size() else 0.0
+		var on := g > 0.001 and bed.playing and p.stream != null and not muted_for_tests and _silence <= 0.0
+		if not on:
+			if p.playing:
+				p.stop()
+				_touch()
+			continue
+		if not p.playing:
+			p.play(bed.get_playback_position())   # locked to the bed: same length, same playhead
+			_touch()
+		p.volume_db = lerpf(-40.0, AMBIENCE_MAX_DB, _amb_level_cur) + mix.threat_stem_db \
+			+ linear_to_db(maxf(g * bed_gain, 0.0001))
+
+
+# --- flight: the Aether Vigil's engine, boiler, rigging and lantern (AUDIO-001 §12.19) ----------------
+
+## The ship's motion as fractions of its own SYS-001 values (VigilFlightVoice computes them): speed /
+## max_speed, thrust 0..1 (0 while braking), turn rate / snap_turn, and whether the brake is held.
+## Starts the flight layers; the rigging creak fires as a hard turn begins and the ballast as the brake
+## engages at speed. `lantern_up` false (running dark) cuts the lantern hiss. Gameplay never sets a
+## level: FlightMix maps these through `mix`.
+func set_flight(speed01: float, thrust01: float, turn01: float, braking: bool, lantern_up: bool = true) -> void:
+	_flight_on = true
+	_flight_lantern_up = lantern_up
+	_flight_in = Vector3(clampf(speed01, 0.0, 1.0), clampf(thrust01, 0.0, 1.0), clampf(turn01, 0.0, 1.0))
+	if _flight_in.z >= mix.creak_turn_on and _creak_armed:
+		_creak_armed = false
+		play(FLIGHT_CREAK)
+	elif _flight_in.z <= mix.creak_turn_off:
+		_creak_armed = true
+	if braking and not _was_braking and _flight_in.x >= mix.ballast_min_speed:
+		play(FLIGHT_BALLAST)
+	_was_braking = braking
+
+
+## The ship stops being heard (left the sector, hull lost): the layers release over `flight_release_s`.
+func stop_flight() -> void:
+	_flight_on = false
+	_was_braking = false
+	_creak_armed = true
+
+
+## True while the flight layers are asked for (tests, diagnostics).
+func flight_active() -> bool:
+	return _flight_on
+
+
+## Current smoothed level (dB) of flight layer `id` (-80 when silent or unknown).
+func flight_layer_db(id: StringName) -> float:
+	return float(_flight_db.get(id, -80.0))
+
+
+func _step_flight(delta: float) -> void:
+	if _flight.is_empty():
+		return
+	var quiet := muted_for_tests or _silence > 0.0
+	if quiet:
+		_flight_return = 0.0
+	else:
+		_flight_return = move_toward(_flight_return, 1.0, delta / maxf(mix.flight_return_s, 0.001))
+	var targets := FlightMix.targets(_flight_in.x, _flight_in.y, _flight_in.z, mix, _flight_lantern_up) if _flight_on else {}
+	for id: StringName in _flight:
+		var p: AudioStreamPlayer = _flight[id]
+		if quiet:
+			if p.playing:
+				p.stop()
+				_touch()
+			_flight_db[id] = -80.0
+			continue
+		var want := Vector2(-80.0, 1.0)
+		if targets.has(id):
+			want = targets[id]
+			want.x += linear_to_db(maxf(_flight_return, 0.0001))
+		var cur: float = _flight_db[id]
+		var tau := mix.flight_attack_s if want.x > cur else mix.flight_release_s
+		cur = lerpf(cur, want.x, 1.0 - exp(-delta / maxf(tau, 0.001)))
+		_flight_db[id] = cur
+		var pitch: float = _flight_pitch[id]
+		pitch = lerpf(pitch, want.y, 1.0 - exp(-delta / maxf(mix.flight_attack_s * 2.0, 0.001)))
+		_flight_pitch[id] = pitch
+		if cur <= mix.flight_floor_db:
+			if p.playing:
+				p.stop()
+				_touch()
+			continue
+		if not p.playing:
+			p.play()
+			_touch()
+		p.volume_db = cur
+		p.pitch_scale = clampf(pitch, BED_PITCH_MIN, 4.0)
+
+
+# --- ducking: the §7.2 priority chain, a sidechain per bus -------------------------------------------
+
+## Duck offset (dB, <= 0) bus `bus` wants now: the deepest §7.2 duck of any sounding cue (and the chant,
+## P2, scaled by its level). A bus carrying a P0/P1 cue is never ducked (§7.3).
+func duck_target(bus: StringName) -> float:
+	if not (bus in DUCK_BUSES):
+		return 0.0
+	var now := _now_ms()
+	var worst := 0.0
+	for i in _voices.size():
+		if _voice_end_ms[i] <= now:
+			continue
+		var pr := _voice_priority[i]
+		if _voices[i].bus == bus:
+			if pr < DUCK_PROTECT_BELOW:
+				return 0.0
+			continue
+		var hit: Array = DUCK_TARGETS.get(pr, [])
+		if bus in hit:
+			worst = minf(worst, mix.duck_db(pr))
+	var chant_hit: Array = DUCK_TARGETS[2]
+	if _chant_level > 0.0 and _chant.playing and bus in chant_hit:
+		worst = minf(worst, mix.duck_db(2) * _chant_level)
+	return worst
+
+
+## Current duck offset (dB) on `bus` (tests, diagnostics).
+func duck_db(bus: StringName) -> float:
+	return float(_duck_cur.get(bus, 0.0))
+
+
+func _step_ducking(delta: float) -> void:
+	var changed := false
+	for bus in DUCK_BUSES:
+		var target := duck_target(bus)
+		var cur: float = _duck_cur.get(bus, 0.0)
+		if cur == target:
+			continue
+		var tau := mix.duck_attack_s if target < cur else mix.duck_release_s
+		var nxt := lerpf(cur, target, 1.0 - exp(-delta / maxf(tau, 0.001)))
+		if absf(nxt - target) < 0.05:   # inaudible: snap, so the bus returns to exactly its own level
+			nxt = target
+		_duck_cur[bus] = nxt
+		changed = true
+	if changed:
+		_apply_bus_volumes()
+
+
+## Every shared bus's volume = its layout volume + subtraction (AMB, MUS) + its duck.
+func _apply_bus_volumes() -> void:
+	for bus: StringName in _bus_base_db:
+		var b := AudioServer.get_bus_index(bus)
+		if b < 0:
+			continue
+		var v: float = float(_bus_base_db[bus]) + float(_duck_cur.get(bus, 0.0))
+		if bus in SUBTRACTION_BUSES:
+			v += SUBTRACTION_CUT_DB * _sub_cur
+		AudioServer.set_bus_volume_db(b, v)
 
 
 func _stop_ambience_players() -> void:
@@ -303,7 +563,7 @@ func _step_ambience(delta: float) -> void:
 			_touch()
 		_amb_fade[i] = move_toward(_amb_fade[i], 1.0 if wanted else 0.0, delta / AMBIENCE_FADE_S)
 		var gain := sin(_amb_fade[i] * PI * 0.5)
-		p.volume_db = lerpf(-40.0, AMBIENCE_MAX_DB, _amb_level_cur) + linear_to_db(maxf(gain, 0.0001))
+		p.volume_db = lerpf(-40.0, AMBIENCE_MAX_DB, _amb_level_cur) + _threat_dip_db() + linear_to_db(maxf(gain, 0.0001))
 		if not wanted and _amb_fade[i] <= 0.0 and p.playing:
 			p.stop()
 			_touch()
@@ -321,7 +581,8 @@ func _stop_voices() -> void:
 ## tick. A voice still sounding at exit would leave the playback and its stream alive past
 ## engine teardown ("ObjectDB instances leaked", TECH-001 Q-T79), so wait one mixer tick.
 func _exit_tree() -> void:
-	_apply_subtraction(0.0)   # never leave the shared buses filtered or cut
+	_duck_cur.clear()
+	_apply_subtraction(0.0)   # never leave the shared buses filtered, cut or ducked
 	# children leave the tree first, so Player.playing is already false here: use our own books
 	# our books lie after silence()/stop_all() zero them while the mixer still holds the playbacks,
 	# so the drain is keyed to the wall-clock time since the last start or stop instead
@@ -331,6 +592,9 @@ func _exit_tree() -> void:
 	var players: Array[AudioStreamPlayer] = []
 	players.append_array(_voices)
 	players.append_array(_amb)
+	players.append_array(_stems)
+	for id: StringName in _flight:
+		players.append(_flight[id] as AudioStreamPlayer)
 	if _chant != null:
 		players.append(_chant)
 	for p in players:
@@ -338,6 +602,7 @@ func _exit_tree() -> void:
 		p.stream = null
 	_cues.clear()
 	_beds.clear()
+	_flight_streams.clear()
 	_trim.clear()
 	_rendered.clear()
 	if drain_ms > 0:
@@ -354,6 +619,10 @@ func stop_all() -> void:
 	_touch()
 	_bed_pitch_target = 1.0
 	_chant.pitch_scale = 1.0
+	stop_flight()
+	_threat = 0.0
+	_threat_cur = 0.0
+	_set_stems([])
 
 
 ## Slow-mo bend of the chant bed only (AUDIO-001 §12.11). The caller passes a scale; the bed glides
@@ -383,6 +652,9 @@ func _process(delta: float) -> void:
 	_step_bed_pitch(delta)
 	_silence = maxf(0.0, _silence - delta)
 	_step_ambience(delta)
+	_step_stems(delta)
+	_step_flight(delta)
+	_step_ducking(delta)
 	var target := -80.0
 	if _chant_level > 0.0 and _silence <= 0.0:
 		target = lerpf(-40.0, CHANT_MAX_DB, _chant_level)
@@ -440,7 +712,10 @@ func _setup_subtraction() -> void:
 			AudioServer.add_bus_effect(b, lp)
 			fx = AudioServer.get_bus_effect_count(b) - 1
 		_sub_fx[bus] = fx
-		_sub_base_db[bus] = AudioServer.get_bus_volume_db(b)
+	for bus in DUCK_BUSES:
+		var b := AudioServer.get_bus_index(bus)
+		if b >= 0:
+			_bus_base_db[bus] = AudioServer.get_bus_volume_db(b)
 	_apply_subtraction(0.0)
 
 
@@ -453,4 +728,4 @@ func _apply_subtraction(amount: float) -> void:
 		if lp != null:
 			lp.cutoff_hz = SUBTRACTION_OPEN_HZ * pow(SUBTRACTION_CLOSED_HZ / SUBTRACTION_OPEN_HZ, amount)
 		AudioServer.set_bus_effect_enabled(b, fx, amount > 0.0)
-		AudioServer.set_bus_volume_db(b, float(_sub_base_db[bus]) + SUBTRACTION_CUT_DB * amount)
+	_apply_bus_volumes()
