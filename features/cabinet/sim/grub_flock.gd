@@ -9,7 +9,7 @@ extends ArcadeLayer
 
 const SEEK_SPEED := 160.0     ## ✱ between the carry (130) and flee (190) speeds of SYS-001 §3
 
-enum State { SEEK, CARRY, FLEE, IDLE, WORSHIP }
+enum State { SEEK, CARRY, FLEE, IDLE, WORSHIP, INTERCEPT }
 
 class Grub:
 	var pos: Vector2
@@ -64,6 +64,8 @@ func tick(delta: float) -> void:
 		var scared := world.vigil.alive and to_vigil.length() < t.grub_flee_radius and not g.carrying
 		if world.ritual.awake:
 			g.state = State.WORSHIP
+		elif not g.carrying and _charge_to_intercept(g) != null:
+			g.state = State.INTERCEPT           # F-3: dive into a Charge flying at the Sepulchre (devotion beats fear)
 		elif scared:
 			g.state = State.FLEE
 		elif g.carrying:
@@ -96,6 +98,11 @@ func tick(delta: float) -> void:
 				var dir := 1.0 if g.id % 2 == 0 else -1.0
 				target = world.torus.wrap(world.vigil.pos + Vector2.from_angle(g.id * 2.4 + dir * world.time * 0.35) * ring)
 				speed = clampf(60.0 + 1.5 * world.torus.distance(g.pos, target), 70.0, 200.0)   # catches up with a Vigil on the move, settles to a slow orbit
+			State.INTERCEPT:
+				var c := _charge_to_intercept(g)
+				if c != null:
+					target = world.torus.wrap(c.pos + c.dir * 40.0)     # aim a little ahead of the Charge
+				speed = t.grub_intercept_speed
 			State.WORSHIP:
 				if not world.neighbourhood.outside(world.ritual.pos):
 					target = world.torus.wrap(world.ritual.pos + Vector2.from_angle(world.time * 0.6 + g.id * 1.3) * 70.0)
@@ -122,6 +129,34 @@ func tick(delta: float) -> void:
 			_respawn_timers.remove_at(i)
 			if not world.ritual.awake or world.stage.grubs_after_wake:   # P2: some stages keep birthing after the wake
 				_spawn(world.neighbourhood.random_spot(world.tuning.size_grub_px))   # SYS-001 §1.7: births land in the box, off view
+
+
+## F-3 (Sinibomb-intercept analogue): the nearest Charge in flight at the not-yet-awake Sepulchre
+## within grub_intercept_range of `g`, or null. Once the entity wakes the Grubs worship instead.
+func _charge_to_intercept(g: Grub) -> GlassField.Charge:
+	var r := world.ritual
+	if r.awake or r.phase >= SepulchreRitual.Phase.AWAKENING or r.segments <= 0:
+		return null
+	var range_px := world.tuning.grub_intercept_range
+	var best: GlassField.Charge = null
+	var best_d := range_px
+	for c in world.glass.charges_flying:
+		if not c.alive:
+			continue
+		var d := world.torus.distance(g.pos, c.pos)
+		if d < best_d:
+			best_d = d
+			best = c
+	return best
+
+
+## F-3: a Grub took a Charge meant for the Sepulchre. The Grub dies (no score, no service-record kill:
+## it chose it), the Charge is lost, and the cabinet says so (CAB_CAPTION_GRUB_INTERCEPT).
+func sacrifice(g: Grub) -> void:
+	kill(g, false)
+	world.sfx(&"grub_die", -4.0)
+	world.fx.burst(g.pos, Look.c(Pal.CHOIR_4), world.fx_tuning.grub_death_burst_count, world.fx_tuning.grub_death_burst_speed)
+	world.caption.emit("CAB_CAPTION_GRUB_INTERCEPT")
 
 
 func _claim(g: Grub) -> void:

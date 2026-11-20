@@ -225,8 +225,7 @@ func sfx(id: StringName, volume_db: float = 0.0) -> void:
 
 
 func award(points: int, at: Vector2) -> void:
-	score_awarded.emit(points, at)
-	fx.float_text(at, str(points))
+	score_awarded.emit(points, at)   # the HUD strip shows the score; no floating numbers on the arcade screen (owner F-2, 2026-11-20)
 
 
 ## A random point at least `clear` px from `avoid` (spawning away from the Vigil).

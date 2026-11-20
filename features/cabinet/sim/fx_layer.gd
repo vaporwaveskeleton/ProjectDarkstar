@@ -1,10 +1,10 @@
 class_name FxLayer
 extends ArcadeLayer
-## Small, physical VFX (ART-001 §7): 1 px chalk flecks, shock rings, floating score numbers.
+## Small, physical VFX (ART-001 §7): 1 px chalk flecks, shock rings. No floating score or damage numbers (owner F-2, 2026-11-20).
 ## Pooled and capped; purely cosmetic, never gameplay truth.
 
 const MAX_PARTICLES := 600       ## ✱
-const MAX_TEXTS := 24            ## ✱
+const MAX_TEXTS := 24            ## ✱ (caps the chalk ticks)
 const MIN_RING_GAP_PX := 2.0     ## ✱ the S6 chalk ring clears the killer silhouette by at least this
 const DASH_RING_ON := 3.0       ## px ✱ S6 coarse rhythm: only the big silhouette ring round a shot (when bigger than the hull)
 const DASH_RING_OFF := 3.0      ## px ✱
@@ -28,11 +28,6 @@ class Ring:
 	var life: float
 	var max_life: float
 	var color: Color
-
-class FloatText:
-	var pos: Vector2
-	var text: String
-	var life: float
 
 class Fleck:
 	var pos: Vector2
@@ -59,7 +54,6 @@ var flecks: Array[Fleck] = []
 var chalk_ticks: Array[ChalkTick] = []
 var sparks: Array[Spark] = []
 var rings: Array[Ring] = []
-var texts: Array[FloatText] = []
 
 
 func reset() -> void:
@@ -67,7 +61,6 @@ func reset() -> void:
 	flecks.clear()
 	chalk_ticks.clear()
 	rings.clear()
-	texts.clear()
 	death_marks.clear()
 
 
@@ -172,22 +165,6 @@ func ring(at: Vector2, color: Color, radius: float) -> void:
 	rings.append(r)
 
 
-func float_text(at: Vector2, text: String) -> void:
-	if texts.size() >= MAX_TEXTS:
-		texts.remove_at(0)
-	var t := FloatText.new()
-	t.pos = at
-	t.text = text
-	t.life = 0.8
-	texts.append(t)
-
-
-## Move the float text just created (S2: keeps a hit's score popup clear of the true-body silhouette).
-func place_last_text(at: Vector2) -> void:
-	if not texts.is_empty():
-		texts[texts.size() - 1].pos = at
-
-
 func tick(delta: float) -> void:
 	for s in sparks:
 		s.life -= delta
@@ -206,10 +183,6 @@ func tick(delta: float) -> void:
 	for r in rings:
 		r.life -= delta
 	rings.assign(rings.filter(func(r: Ring) -> bool: return r.life > 0.0))
-	for t in texts:
-		t.life -= delta
-		t.pos += Vector2(0, -18.0 * delta)
-	texts.assign(texts.filter(func(t: FloatText) -> bool: return t.life > 0.0))
 
 
 func _draw() -> void:
@@ -237,11 +210,6 @@ func _draw() -> void:
 		var k := 1.0 - r.life / r.max_life
 		draw_arc(world.to_screen(r.pos).round(), maxf(1.0, r.radius * k), 0.0, TAU, 32, r.color, 1.0)
 	_draw_death_marks()
-	for t in texts:
-		if not visible_at(t.pos, 20.0):
-			continue
-		var p := world.to_screen(t.pos).round() + Vector2(-PixelText.width(t.text) * 0.5, -12)
-		PixelText.draw(self, p, t.text, Look.c(Pal.BONE_4) if t.life > 0.3 else Look.c(Pal.BONE_1))
 
 
 ## Killers drawn larger than death_big_killer_px (the entity) are tracked live through DEAD.

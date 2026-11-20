@@ -222,34 +222,11 @@ func test_only_null_and_bone_3_are_used() -> void:
 	assert_int(body.find("PHOS")).is_equal(-1)          # no eye, veins
 
 
-func test_the_score_popup_stays_outside_the_silhouette() -> void:
-	_awake()
-	var text := "500"
-	var view := world.view_rect
-	var spots: Array[Vector2] = [
-		Vector2(view.position.x + 200, view.position.y + 30),       # near the top: column trails down
-		Vector2(view.position.x + 200, view.end.y - 30),            # near the bottom: column trails up
-		Vector2(view.position.x + 14, view.get_center().y - 5),     # at the left edge
-		view.get_center()]
-	for c in spots:
-		ritual._true_dir = ritual.true_frame_dir_for(c)
-		var p := ritual.true_frame_popup_pos(c, text)
-		var box := ritual.true_frame_box(c)
-		assert_bool(box.intersects(ritual.popup_rect(p, text))).is_false()
-	# and the real hit's popup, as FxLayer will draw it
-	ritual._hit_entity(ritual.entity_pos)
-	var ft: FxLayer.FloatText = world.fx.texts[world.fx.texts.size() - 1]
-	var head := world.to_screen(ritual.entity_pos).round()
-	var rect := ritual.popup_rect(world.to_screen(ft.pos).round(), ft.text)
-	assert_bool(ritual.true_frame_box(head).intersects(rect)).is_false()
-
-
 func test_no_rng_is_consumed() -> void:
 	_awake()
 	ritual._hit_entity(ritual.entity_pos)     # the hit's own bursts use fx rng; the true frame adds none
 	var before := world.rng.state
 	ritual.true_frame_polygon(Vector2(50, 50))
-	ritual.true_frame_popup_pos(Vector2(50, 50), "500")
 	ritual.advance_draw_frame()
 	ritual.queue_redraw()
 	await get_tree().process_frame
