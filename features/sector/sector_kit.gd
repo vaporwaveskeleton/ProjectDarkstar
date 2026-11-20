@@ -29,7 +29,7 @@ extends TunableResource
 @export var dark_ambient: Color = Color(1, 1, 1, 1)
 ## ✱ Multiplier on a Grub's halo outside the light pocket (1 = unchanged).
 @export var dark_halo: float = 1.0
-## ✱ Extra dimming inside the unlit corridor (1 = none).
+## ✱ Extra dimming inside the unlit corridor (1 = none). Not applied by the current lighting model (TECH-001 §2.9).
 @export var corridor_dim: float = 1.0
 ## ✱ The light pocket: a cold pool of light at this point and radius (px).
 @export var light_pocket_pos: Vector2 = Vector2.ZERO
