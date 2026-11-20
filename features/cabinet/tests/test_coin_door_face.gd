@@ -22,6 +22,8 @@ const KEYS := [
 	"backdrop_exposure", "backdrop_blur", "backdrop_grain", "backdrop_grain_fps", "backdrop_desaturate", "backdrop_cabinet_shadow", "backdrop_haze",
 	"backdrop_wall_color", "backdrop_carpet_color", "backdrop_tungsten_color", "backdrop_neon", "backdrop_ceiling_color", "backdrop_warmth",
 	"print_art_cell", "print_art_steps", "print_art_misregister", "print_art_misregister_ink",
+	"texture_detail", "laminate_tile", "side_tile", "steel_tile", "trim_tile", "smudge_tile", "glass_prints", "panel_worn_through",
+	"panel_core_color", "door_edge_grime", "panel_rust_color", "door_slot_polish", "door_lock_scratches", "door_low_grime",
 ]
 
 

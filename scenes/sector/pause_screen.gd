@@ -1,6 +1,7 @@
 extends Screen
 ## Real pause screen. With Steady Ledger on, Esc always opens this (WARP-001 §4.4, W4-07).
 ## Pauses the tree while open; process_mode = ALWAYS so it still receives input.
+## Costume (MenuSkin): the cabinet service screen in Act 0, brass instrument plates in the Aether.
 
 signal abandon_requested
 ## The Ruins variant (TECH-001 Q-T190): the third row leaves for the title instead of abandoning.
@@ -11,16 +12,16 @@ var leave_to_title := false
 
 const SETTINGS_SCENE := preload("res://scenes/settings/settings_screen.tscn")
 
-@onready var _resume: Button = %Resume
-@onready var _settings: Button = %Settings
-@onready var _abandon: Button = %Abandon
+@onready var _resume: MenuRow = %Resume
+@onready var _settings: MenuRow = %Settings
+@onready var _abandon: MenuRow = %Abandon
 
 
 func _ready() -> void:
 	_resume.pressed.connect(close)
 	_settings.pressed.connect(func(): stack.push(SETTINGS_SCENE.instantiate()))
 	if leave_to_title:
-		_abandon.text = "MENU_LEAVE_TO_TITLE"
+		_abandon.key = &"MENU_LEAVE_TO_TITLE"
 		_abandon.pressed.connect(_on_leave)
 	else:
 		_abandon.pressed.connect(_on_abandon)

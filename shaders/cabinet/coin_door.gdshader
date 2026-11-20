@@ -8,6 +8,8 @@ shader_type canvas_item;
 // bright place, the coin slot's lip. The lit plate is the reject / price plate. Wear is causal: where
 // coins, keys, hands, thumbs and feet go.
 #include "res://shaders/cabinet/cabinet_material.gdshaderinc"
+// The painted steel's orange-peel, dents, rubbed-through scuffs and grime are a loom texture (ds_cab_steel).
+#include "res://shaders/cabinet/cabinet_detail.gdshaderinc"
 
 uniform vec2 plate_size = vec2(56.0, 80.0);
 uniform vec2 rig_origin = vec2(0.0);
@@ -27,6 +29,10 @@ uniform float dust : hint_range(0.0, 1.0) = 0.7;
 uniform float finger_halo : hint_range(0.0, 1.0) = 0.85;
 uniform float thumb_wear : hint_range(0.0, 1.0) = 0.85;
 uniform float micro_texture : hint_range(0.0, 1.0) = 0.55;
+uniform float door_edge_grime : hint_range(0.0, 1.0) = 0.85;
+uniform float slot_polish : hint_range(0.0, 1.0) = 0.8;     // the entry plate rubbed bright round the slot by fingers feeding coins
+uniform float lock_scratches : hint_range(0.0, 1.0) = 0.8;  // bright key scratches in a ring round the lock
+uniform float low_grime : hint_range(0.0, 1.0) = 0.7;       // grime thickening toward the bottom of the door (feet, mop water)
 uniform float lamp_spill = 0.6;
 uniform float lamp_spill_radius = 13.0;
 uniform vec2 slot_c = vec2(28.0, 20.0);
@@ -156,10 +162,9 @@ void fragment() {
 		float grain_fade = smoothstep(1.5, 3.5, 1.0 / (3.0 * px));
 		vec2 gr = vec2(vnoise(p * 3.0 + 3.1), vnoise(p * 3.0 + 11.7)) - 0.5;
 		n.xy += gr * 0.14 * grain_fade;
-		float fine_fade = smoothstep(1.5, 3.5, 1.0 / (11.0 * px));
-		vec2 gf = vec2(vnoise(p * 11.0 + 5.3), vnoise(p * 11.0 + 17.9)) - 0.5;
-		n.xy += gf * 0.1 * micro_texture * fine_fade;
-		col *= 1.0 + (vnoise(p * 17.0 + 2.0) - 0.5) * 0.35 * micro_texture * fine_fade;
+		// the steel itself (loom ds_cab_steel, mipmapped so it never aliases): dents, scuffs, grime in the low spots
+		n.xy += detail_tilt(rp, 1.6 * micro_texture);
+		col *= detail_tone(rp, 3.0 * micro_texture);
 
 		// dull zinc-plated steel: the entry plate (brushed), lock collar, screws, flap
 		float brush_fade = smoothstep(1.5, 3.5, 1.0 / (16.0 * px));
@@ -167,7 +172,7 @@ void fragment() {
 		brush += 0.5 * (vnoise(vec2(p.x * 1.4 + 9.0, p.y * 38.0)) - 0.5) * smoothstep(1.5, 3.5, 1.0 / (38.0 * px));
 		vec3 zinc = zinc_color.rgb * (0.82 + 0.3 * nz2);
 		float m_zinc = max(max(m_ent, m_lockc), max(m_screw * 0.9, m_flap));
-		col = mix(col, zinc * (1.0 + brush * 0.4 * brush_fade * m_ent), m_zinc);
+		col = mix(col, zinc * (1.0 + brush * 0.4 * brush_fade * m_ent) * mix(1.0, trim_tone(rp, 1.8), m_ent), m_zinc);
 		n.y += brush * 0.12 * brush_fade * m_ent;
 		metal = max(metal, m_zinc * 0.75);
 		rough = mix(rough, 0.58, m_zinc);
@@ -337,6 +342,9 @@ void fragment() {
 		vec3 lit = mix(diffuse + keyc * spec * spec_gain * 0.4, metal_col, metal);
 		// the polished lip is the bright place: it catches the key hard
 		lit += m_lip * keyc * (0.5 + 1.2 * pow(max(dot(n, Hh), 0.0), 18.0)) * lip_color.rgb;
+		// finger-polished: a bright band on the entry plate round the slot, widest below it where thumbs push coins in
+		float fpol = smoothstep(3.8, 0.9, dsl + jit * 0.6 - max(p.y - slot_c.y, 0.0) * 0.15) * (1.0 - m_lip) * (1.0 - dark) * m_ent * slot_polish;
+		lit += lip_color.rgb * keyc * fpol * (0.35 + 0.9 * pow(max(dot(n, Hh), 0.0), 8.0));
 		// the satin paint's faint clear sheen
 		lit += (1.0 - metal) * keyc * pow(max(dot(n, Hh), 0.0), 7.0) * 0.03 * (1.0 - rough * 0.5) * (1.0 - dark);
 		lit *= 1.0 - 0.6 * cav * (1.0 - m_lens);
@@ -366,6 +374,23 @@ void fragment() {
 		float sc_spill = exp(-max(length(plate_c - sc) - plate_half.x, 0.0) / (lamp_spill_radius * 1.8)) * glow * lamp_spill;
 		float catch_light = smoothstep(1.0, 0.0, length(p - (sc + to_plate * 0.9))) * m_screw;
 		lit += lens_color.rgb * catch_light * sc_spill * 2.2;
+
+		// key scratches: a ring of bright arcs round the lock where the key missed, on the collar and the paint
+		float dlk = length(p - LOCK_C);
+		float kring = smoothstep(1.6, 2.6, dlk) * (1.0 - smoothstep(6.5, 9.5, dlk));
+		float ks = scratches(p, LOCK_C, vec2(1.0), 30.0, 7.0, px, lxy) * kring * (1.0 - dark);
+		lit = mix(lit, max(lit, lip_color.rgb * (keyc * 1.2 + 0.25)), clamp(ks * 3.0, 0.0, 1.0) * lock_scratches);
+		// grime thickening toward the bottom: a gradient of dirt from the door's middle to its foot
+		float lowg = smoothstep(plate_size.y * 0.45, plate_size.y, p.y) * (0.7 + 0.6 * nz1);
+		lit = mix(lit, lit * vec3(0.38, 0.34, 0.3), clamp(lowg, 0.0, 1.0) * low_grime * (1.0 - 0.6 * m_lens));
+		// dirt packed along the door's edge and into its corners (thickest at the bottom, where feet scuff),
+		// ragged by the steel texture's own low spots
+		float edge_in = 1.0 - smoothstep(0.0, 5.5, -dd);
+		vec2 cq = abs(p - plate_size * 0.5) - plate_size * 0.5 + 7.0;
+		float door_corner = smoothstep(0.0, 6.0, min(cq.x, cq.y) + 4.0);
+		float low = 1.0 - smoothstep(0.6, 1.05, detail_luma(rp) / max(detail_mean, 1e-3));
+		float packed = clamp((edge_in * (0.55 + 0.45 * p.y / plate_size.y) + door_corner * 0.8) * (0.45 + 0.9 * low), 0.0, 1.0);
+		lit = mix(lit, lit * vec3(0.32, 0.29, 0.26), packed * door_edge_grime * detail_gain);
 
 		COLOR = vec4(clamp(lit, 0.0, 1.0), cover);
 	}
