@@ -362,11 +362,10 @@ func test_the_stranger_is_an_extra_row_tied_with_you_shown_once() -> void:
 func test_the_marquee_letters_never_move_fall_or_reorder_they_only_wear() -> void:
 	var sign := BezelMarquee.new()
 	add_child(sign)
-	var before := sign.lettering_override
 	var w := CabinetMarqueeWear.new()
 	w.attach(sign)
 	w.set_state(1.0, 1.0, 1.0, 1.0, 3.7)
-	assert_str(sign.lettering_override).is_equal(before)          # the printed title is never replaced
+	assert_bool("lettering_override" in sign).is_false()          # #101 dropped the override: the title can never be replaced
 	assert_str(tr(BezelMarquee.KEY)).is_equal("DARKSTAR")
 	var surf := CabinetSurface.default() as CabinetSurface
 	var anchor := sign.lettering_anchor()

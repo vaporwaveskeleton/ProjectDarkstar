@@ -147,10 +147,12 @@ func patches() -> Array[Dictionary]:
 	return _patches
 
 
-## The printed eye's rect in rig units from the bezel art's haunt anchors (Rect2() when the art has none).
+## Where the cursed turn's wear-through starts, in rig units, from the bezel art's haunt anchors: `wear_origin`
+## (#101 Fable pass, Q-T295: the ringed world's middle band; the world has no eye, N4), falling back to the old
+## `eye` anchor when the art predates the rename. Rect2() when the art has neither.
 static func eye_anchor() -> Rect2:
 	var a: Dictionary = BezelArt.haunt_anchors()
-	var v: Variant = a.get(&"eye", Rect2())
+	var v: Variant = a.get(&"wear_origin", a.get(&"eye", Rect2()))
 	return v as Rect2 if v is Rect2 else Rect2()
 
 
