@@ -5,8 +5,8 @@ extends RefCounted
 ##
 ## Honesty seam: the drawing code reads `presented()`, never the world. With `SettingsService`
 ## `steady_ledger` on (the default, WARP-001 §4.4) that is this honest model, always. With it off,
-## the state passes through `lie_hook()`, the place where `HudLiar` will plug in later; `HudLiar` is
-## not built, so the hook returns the honest state unchanged. The own-position readout never lies
+## the state passes through `lie_hook()`, the place where `HudLiar` will plug in later; `HudLiar`
+## (T1 slice: Smear and Glyph only, no Lie class) plugs in through `liar`. The own-position readout never lies
 ## (WARP-001 §4.7): a lie hook may not change `own_position`.
 ##
 ## Entity marker: no entity exists in M1, so `entity_marker_visible` is false and the compass draws
@@ -25,6 +25,12 @@ var entity_marker_visible: bool = false
 ## Sector list: a one-cell STUB. No doc specifies a sector entry's fields yet, so the list holds only
 ## how many cells to draw (1: the current sector). Fields are added when ZONES-001 names them.
 var sector_list_cells: int = 1
+## W1-09 Smudged Blip (Smear class, set only on a HudLiar copy): the smeared marker slot (-1 none) and
+## where that target truly is now; the view draws the blip at its lagged spot with a streak to here.
+var smear_slot: int = -1
+var smear_tail: Vector2 = Vector2.ZERO
+## The filter stage (TECH-001 §5.2). Null = no liar: the lie hook returns the honest state.
+var liar: HudLiar = null
 
 
 ## Samples the registered compass targets from the tree: the Vigil (group `vigil_group`) first,
@@ -46,10 +52,13 @@ func sample_compass(vigils: Array[Node], ranked: Array[Node], torus: Torus, cap:
 		marker_kinds.append(kind)
 
 
-## What the view may draw. Steady Ledger on: this honest model. Off: the lie hook (honest for now).
+## What the view may draw. Steady Ledger on: this honest model, always. Off: the liar's filtered
+## copy when a HudLiar is plugged in (the WarpComposer does that at T1+), else the lie hook (honest).
 func presented() -> HudModel:
 	if steady_ledger_on():
 		return self
+	if liar != null:
+		return liar.apply(self)
 	return lie_hook(self)
 
 
