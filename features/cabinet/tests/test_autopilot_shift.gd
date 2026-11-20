@@ -13,13 +13,13 @@ const State := CabinetGame.State
 
 ## The fixed seeds this suite plays, and the honest floor: at least MIN_REACHED of them clear all
 ## MIN_STAGES stages (the whole shift, a0_1–a0_5) with the default lives. Measured 2026-11-19 on seeds
-## +0…+7 at the Act 0 scale (65,536 px field, Vigil neighbourhood, Grubs and Acolytes spawning in the box;
-## SYS-001 §1.7, PROPOSED): 4/8 full shifts cleared (+3, +4, +5, +6), 0 games lost; the other four stall in
-## a0_2 (Acolytes and 7 pilfering Grubs keep the bot in a duel with 2 Charges) or a0_5. At the old 1,920 px
-## field it was 19/20. A smarter bot is open work; stages take 20–390 sim s here.
-const SEEDS: Array[int] = [0, 1, 2, 3, 4, 5, 6, 7]
+## +0…+19 at the Act 0 scale (65,536 px field, 1,536 px Vigil neighbourhood; SYS-001 §1.7, PROPOSED):
+## 17/20 full shifts cleared, 0 games lost; +9, +15 and +17 stall in a0_2. Typical stage sim times (s):
+## a0_1 20–60, a0_2 20–130, a0_3 230–380, a0_4 160–330 (slower than §1.7's skilled targets). At the old
+## 1,920 px field it was 19/20. The bot presses the stage card the moment it opens. Takes ~5 min headless.
+const SEEDS: Array[int] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
 const MIN_STAGES := 5
-const MIN_REACHED := 4
+const MIN_REACHED := 16
 
 
 func before_test() -> void:
@@ -66,6 +66,8 @@ func play_shift(k: int, roster: CabinetStageRoster = null) -> Dictionary:
 	var result := {"cleared": false, "stage": 0, "lives": 0, "seconds": 0.0, "stalled": false}
 	var stage_secs := PackedStringArray()      # sim seconds each stage took (for the test log)
 	while true:
+		if game.state == State.BRIEFING:
+			game.dismiss_brief()        # the stage card waits for a fire press; the bot presses it at once
 		pilot._physics_process(DT)
 		world.step(DT)
 		# CabinetGame._process's timer, without the CRT/clear-colour presentation

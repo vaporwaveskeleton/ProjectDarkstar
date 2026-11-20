@@ -29,8 +29,8 @@ const STANDOFF_MINE := 190.0      ## px ✱ mine from here when the glass is for
 const GRUB_ROOM := 90.0           ## px ✱ beyond the Grubs' flee radius the bot keeps clear while the Choir builds
 const FEED_ENOUGH := 3            ## ✱ loose shards that keep the Grubs busy: the bot stops mining for them
 const CULL_RANGE := 600.0         ## px ✱ how far the bot goes to put down a stuck Grub
-const SEPULCHRE_FAR := 1800.0      ## px ✱ farther than this from the Sepulchre the bot heads for it (the field is 65,536 px wide; Grubs would carry glass the whole way)
-const SEPULCHRE_NEAR := 900.0      ## px ✱ …and keeps heading for it until it is this close (hysteresis: no tug-of-war with the geodes)
+const SEPULCHRE_FAR := 1000.0      ## px ✱ farther than this from the Sepulchre the bot heads for it (the field is 65,536 px wide; Grubs would carry glass the whole way)
+const SEPULCHRE_NEAR := 450.0       ## px ✱ …and keeps heading for it until it is this close (hysteresis: no tug-of-war with the geodes)
 
 @export var world: ArcadeWorld
 var enabled := false
@@ -90,13 +90,14 @@ func _physics_process(delta: float) -> void:
 	var target: Variant = r.charge_target()
 	if target != null and world.glass.charges > 0 and not building:
 		var to_t := t.delta(v.pos, target as Vector2)
-		var keen := hunting or forming or world.glass.charges >= 3 or full
+		# a cold Sepulchre is cleared with a full magazine in hand (a0_2: mine first, then push to it); a waking one as soon as 3 are held
+		var keen := hunting or forming or (world.glass.charges >= (2 if not wake_goal else 3))
 		if keen:
 			if to_t.length() < THROW_RANGE and _launch_cd <= 0.0 and _line_clear(v.pos, target as Vector2):
 				v.scripted_aim = to_t
 				world.glass.launch(v.pos, to_t)
 				_launch_cd = THROW_CD
-			elif threat == Vector2.INF and not hunting:
+			elif (threat == Vector2.INF or not wake_goal) and not hunting:   # armed and clearing a cold Sepulchre: press on, shooting on the way
 				move = to_t.normalized() * clampf((to_t.length() - 120.0) / 60.0, -1.0, 1.0)
 
 	# 2b — far from the Sepulchre: head for it by world knowledge and mine on the way. The Neighbourhood keeps

@@ -85,7 +85,7 @@ extends TunableResource
 @export var hitbox_radius: float = 6.0           ## px — 12 px diameter (SYS-001 §9, R-04)
 
 # --- Act 0 scale (SYS-001 §1.7, Q-T365–Q-T377; every row PROPOSED ✱, retuned after a human plays it) ---
-@export var field_neighbourhood_half_px: float = 1024.0   ## px ✱ half-size of the box round the Vigil the free units live in (8 × 8 screens)
+@export var field_neighbourhood_half_px: float = 768.0    ## px ✱ half-size of the box round the Vigil the free units live in (6 × 6 screens; 1,536 px box)
 @export var field_sepulchre_start_px: float = 2560.0      ## px ✱ the Sepulchre starts this far straight ahead of the Vigil's heading
 @export var field_sepulchre_leash_px: float = 4096.0      ## px ✱ beyond this Vigil↔Sepulchre distance the Sepulchre drifts toward the Vigil…
 @export var field_sepulchre_drift_px_s: float = 90.0      ## px/s ✱ …at this speed (slower than the Vigil, so it is never escaped for good)
@@ -95,8 +95,15 @@ extends TunableResource
 @export var size_geode_radii: Array[float] = [9.0, 12.0, 15.0]   ## px ✱ geode radius by size class 0..2
 @export var size_shard_px: float = 5.0                    ## px ✱ Mourning Glass shard's drawn length (pickup and magnet unchanged)
 @export var acolyte_enter_hold_s: float = 1.0             ## s ✱ an Acolyte entering the view holds fire this long before its tell
-@export var acolyte_mine_range_px: float = 1024.0         ## px ✱ ENGINEERING (not a SYS-001 §1.7 row): how far an Acolyte looks for a geode to mine; = the neighbourhood half-size
+@export var acolyte_mine_range_px: float = 768.0          ## px ✱ ENGINEERING (not a SYS-001 §1.7 row): how far an Acolyte looks for a geode to mine; = the neighbourhood half-size
 @export var acolyte_mine_standoff_px: float = 36.0           ## px ✱ ENGINEERING (not a SYS-001 §1.7 row): a mining Acolyte hovers this far beyond the geode's edge
+@export var unmakings_required: int = 3                         ## Act 0 ends at the third Unmaking (SYS-001 §1.7, Q-T365); = the roster's UNMAKE_ENTITY stages (a test asserts it)
+
+# --- The stage card (SYS-001 §1.7, Q-T371–Q-T374; UI-001 §10; PROPOSED ✱) ---
+@export var brief_arm_s: float = 0.35                    ## s ✱ fire_lance is ignored until the card has been up this long (and it needs a fresh press)
+@export var brief_prompt_blink_hz: float = 1.5            ## Hz ✱ PRESS FIRE blinks (under the 3 Hz flash rule); steady under photosensitivity or reduced motion
+@export var brief_ready_after_s: float = 1.5              ## s ✱ the READY card after the press (was 2.5 s)
+@export var brief_autopilot_s: float = 1.0                ## s ✱ --autopilot and --smoke dismiss the card after this long
 
 
 func tunable_properties() -> PackedStringArray:

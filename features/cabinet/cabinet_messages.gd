@@ -121,6 +121,7 @@ func held_screen() -> String:
 
 
 func clear() -> void:
+	_brief = {}
 	roll_page = false
 	_hold = ""
 	_ready_t = 0.0
@@ -164,6 +165,110 @@ func block_height(s: String, scale: int) -> float:
 	return PixelText.wrap(s, scale, size.x - 2.0 * MARGIN).size() * float(PixelText.H * scale + 3 * scale)
 
 
+# --- The stage card (SYS-001 §1.7, UI-001 §10) ------------------------------------------------------
+# Drawn in the play view with PixelText and the existing Look.c(Pal.*) registers; never over the marquee
+# (the marquee is a bezel screenprint, outside the screen). One layout for _draw and the tests.
+
+const BRIEF_ROW_H := 20.0        ## ✱ px per unit row (the tallest icon, the Acolyte, is 15 px)
+const BRIEF_ICON_X := 74.0       ## ✱ icon column centre
+const BRIEF_NAME_X := 94.0       ## ✱ unit name starts here
+const BRIEF_COUNT_RIGHT := 182.0 ## ✱ counts are right-aligned to here
+const BRIEF_PROMPT_UP := 34.0    ## px from the view foot to the prompt's top (clear of the maker band)
+const BRIEF_TOP := 8.0           ## ✱ px above the zone line
+
+var _brief := {}                 ## the open card: {zone, title, order, reminders, roster, rows, unmakings, prompt, blink_hz, tuning}; empty = none
+var _brief_icons_t: CabinetTuning
+
+
+## Open the stage card. `card` keys: zone, title, order, reminders (PackedStringArray), roster (heading),
+## rows (Array of {kind: StringName, name: String, count: int}), unmakings ("" = none), prompt, blink_hz.
+func show_brief(card: Dictionary, tuning: CabinetTuning) -> void:
+	_brief = card
+	_brief_icons_t = tuning
+
+
+func hide_brief() -> void:
+	_brief = {}
+
+
+func brief_open() -> bool:
+	return not _brief.is_empty()
+
+
+## The open card's data (empty when none): tests read the rows and lines from it.
+func brief() -> Dictionary:
+	return _brief
+
+
+## Is the PRESS FIRE prompt lit right now? Steady under photosensitivity or reduced motion, else it blinks at blink_hz.
+func brief_prompt_lit() -> bool:
+	if _brief.is_empty():
+		return false
+	if bool(SettingsService.get_value(&"photosensitivity")) or bool(SettingsService.get_value(&"reduced_motion")):
+		return true
+	return fmod(_t * float(_brief.get("blink_hz", 1.5)), 1.0) < 0.5
+
+
+## The y of the card's elements, top to bottom (play-view px), for _draw and the fit test. `bottom` is the
+## bottom of the last unit row (or of the roster heading when there are no rows).
+func brief_layout() -> Dictionary:
+	var out := {}
+	var y := BRIEF_TOP
+	var zone: String = _brief.get("zone", "")
+	if not zone.is_empty():
+		out["zone"] = y
+		y += block_height(zone, 1) + ZONE_GAP
+	out["title"] = y
+	y += block_height(str(_brief.get("title", "")), 2) + 6.0
+	out["order"] = y
+	y += block_height(str(_brief.get("order", "")), 1) + 6.0
+	var rem: PackedStringArray = _brief.get("reminders", PackedStringArray())
+	var rem_y := PackedFloat32Array()
+	for r in rem:
+		rem_y.append(y)
+		y += block_height(r, 1)
+	out["reminders"] = rem_y
+	y += 8.0
+	out["roster"] = y
+	y += block_height(str(_brief.get("roster", "")), 1) + 6.0
+	var rows: Array = _brief.get("rows", [])
+	out["rows"] = y
+	y += BRIEF_ROW_H * rows.size()
+	out["bottom"] = y
+	out["unmakings"] = size.y - BRIEF_PROMPT_UP - 14.0
+	out["prompt"] = size.y - BRIEF_PROMPT_UP
+	return out
+
+
+func _draw_brief() -> void:
+	draw_rect(Rect2(Vector2.ZERO, size), Look.c(Pal.VOID_0))     # a pause: the field is not on the tube behind the card
+	var lay := brief_layout()
+	var zone: String = _brief.get("zone", "")
+	if not zone.is_empty():
+		_block(float(lay["zone"]), zone, 1, Look.c(Pal.GAS_4))
+	_block(float(lay["title"]), str(_brief["title"]), 2, Look.c(Pal.BONE_5))
+	_block(float(lay["order"]), str(_brief["order"]), 1, Look.c(Pal.PHOS_4))      # phosphor = truth
+	var rem: PackedStringArray = _brief.get("reminders", PackedStringArray())
+	var rem_y: PackedFloat32Array = lay["reminders"]
+	for i in rem.size():
+		_block(rem_y[i], rem[i], 1, Look.c(Pal.BONE_3))
+	_block(float(lay["roster"]), str(_brief["roster"]), 1, Look.c(Pal.GAS_4))
+	var rows: Array = _brief.get("rows", [])
+	var y := float(lay["rows"])
+	for row: Dictionary in rows:
+		var mid := y + BRIEF_ROW_H * 0.5
+		CabinetBriefIcons.draw(self, row["kind"], Vector2(BRIEF_ICON_X, mid), _brief_icons_t)
+		PixelText.draw(self, Vector2(BRIEF_NAME_X, mid - PixelText.H * 0.5), str(row["name"]), Look.c(Pal.BONE_5))
+		var cnt := str(row["count"])
+		PixelText.draw(self, Vector2(BRIEF_COUNT_RIGHT - PixelText.width(cnt), mid - PixelText.H * 0.5), cnt, Look.c(Pal.BONE_4))
+		y += BRIEF_ROW_H
+	var unm: String = _brief.get("unmakings", "")
+	if not unm.is_empty():
+		_centered(float(lay["unmakings"]), unm, 1, Look.c(Pal.BONE_2))
+	if brief_prompt_lit():
+		_centered(float(lay["prompt"]), str(_brief["prompt"]), 1, Look.c(Pal.GAS_4))
+
+
 func _draw() -> void:
 	var cy := size.y * 0.5
 	# the machine is back in attract (or showing Theodora's screens): the paused field is not on the tube
@@ -173,6 +278,8 @@ func _draw() -> void:
 		_draw_roll()
 	if not _hold.is_empty():
 		_block(cy - block_height(_hold, 1) * 0.5, _hold, 1, Look.c(Pal.BONE_5))
+	if not _brief.is_empty():
+		_draw_brief()
 	if _ready_t > 0.0:
 		if not _ready_zone.is_empty():
 			_block(ready_zone_top(), _ready_zone, 1, Look.c(Pal.GAS_4))

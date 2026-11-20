@@ -106,24 +106,24 @@ func test_sizes_come_from_tuning() -> void:
 func test_a_free_object_beyond_the_box_re_enters_on_the_opposite_edge() -> void:
 	_start(_stage())
 	var v := world.vigil.pos
-	var g := world.geodes.add_geode(v + Vector2(1100, 300), 1)
+	var g := world.geodes.add_geode(v + Vector2(900, 300), 1)
 	world.neighbourhood.step()
 	var d := world.torus.delta(v, g.pos)
-	assert_float(d.x).is_equal_approx(1100.0 - 2.0 * t.field_neighbourhood_half_px, 0.01)
+	assert_float(d.x).is_equal_approx(900.0 - 2.0 * t.field_neighbourhood_half_px, 0.01)
 	assert_float(d.y).is_equal_approx(300.0, 0.01)
-	var s := world.glass.spawn_shard(v + Vector2(-200, -1500), Vector2.ZERO)
-	var gr := world.grubs._spawn(v + Vector2(1030, 0))
-	var a := world.acolytes.spawn(v + Vector2(0, 1200))
+	var s := world.glass.spawn_shard(v + Vector2(-200, -1000), Vector2.ZERO)
+	var gr := world.grubs._spawn(v + Vector2(830, 0))
+	var a := world.acolytes.spawn(v + Vector2(0, 900))
 	world.neighbourhood.step()
-	assert_float(world.torus.delta(v, s.pos).y).is_equal_approx(-1500.0 + 2048.0, 0.01)
-	assert_float(world.torus.delta(v, gr.pos).x).is_equal_approx(1030.0 - 2048.0, 0.01)
-	assert_float(world.torus.delta(v, a.pos).y).is_equal_approx(1200.0 - 2048.0, 0.01)
+	assert_float(world.torus.delta(v, s.pos).y).is_equal_approx(-1000.0 + 1536.0, 0.01)
+	assert_float(world.torus.delta(v, gr.pos).x).is_equal_approx(830.0 - 1536.0, 0.01)
+	assert_float(world.torus.delta(v, a.pos).y).is_equal_approx(900.0 - 1536.0, 0.01)
 
 
 func test_inside_the_box_nothing_moves() -> void:
 	_start(_stage())
 	var v := world.vigil.pos
-	var p := v + Vector2(900, -900)
+	var p := v + Vector2(700, -700)
 	var g := world.geodes.add_geode(p, 0)
 	world.neighbourhood.step()
 	assert_vector(g.pos).is_equal(p)
@@ -153,12 +153,12 @@ func test_laden_grubs_escorts_guards_the_sepulchre_and_carried_glass_are_never_m
 func test_a_re_wrapped_object_never_lands_in_the_view() -> void:
 	_start(_stage())
 	var v := world.vigil.pos
-	# 1,100 px left of the Vigil re-enters 948 px right of it (out of view) ...
-	var ok := world.geodes.add_geode(v + Vector2(-1100, 0), 0)
+	# 900 px left of the Vigil re-enters 636 px right of it (out of view) ...
+	var ok := world.geodes.add_geode(v + Vector2(-900, 0), 0)
 	world.neighbourhood.step()
 	assert_bool(world.on_screen(ok.pos, 0.0)).is_false()
-	# 2,098 px away (a Vigil teleport) the local wrap would land 50 px from the Vigil, inside the view: it is pushed to the view edge
-	for off: Vector2 in [Vector2(2098, 20), Vector2(-2098, -20), Vector2(30, 2090), Vector2(20, -2060)]:
+	# 1,586 px away (a Vigil teleport) the local wrap would land 50 px from the Vigil, inside the view: it is pushed to the view edge
+	for off: Vector2 in [Vector2(1586, 20), Vector2(-1586, -20), Vector2(30, 1580), Vector2(20, -1560)]:
 		var g := world.geodes.add_geode(v + off, 2)
 		world.neighbourhood.step()
 		assert_bool(world.on_screen(g.pos, 0.0)).override_failure_message("geode landed in view for %s" % off).is_false()

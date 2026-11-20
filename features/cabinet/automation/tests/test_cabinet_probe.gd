@@ -55,7 +55,7 @@ func _val(id: String, prop: String) -> Variant:
 # --- ids and props -----------------------------------------------------------------------------
 
 func test_singleton_props() -> void:
-	assert_str(_val("cabinet/game", "state")).is_equal("intro")
+	assert_str(_val("cabinet/game", "state")).is_equal("briefing")
 	assert_int(_val("cabinet/game", "stage_index")).is_equal(0)
 	assert_bool(_val("cabinet/game", "demo")).is_false()
 	assert_int(_val("cabinet/score", "lives")).is_equal(game.score.lives)
@@ -185,11 +185,11 @@ func test_set_lives_emits_and_validates() -> void:
 	assert_int(game.score.lives).is_equal(5)
 
 
-func test_set_stage_returns_to_intro() -> void:
+func test_set_stage_returns_to_the_stage_card() -> void:
 	game._enter(game.State.PLAY)
 	assert_str(_val("cabinet/game", "state")).is_equal("play")
 	assert_str(probe.dev_op("set_stage", {"index": 1})).is_empty()
-	assert_str(_val("cabinet/game", "state")).is_equal("intro")
+	assert_str(_val("cabinet/game", "state")).is_equal("briefing")
 	assert_int(_val("cabinet/game", "stage_index")).is_equal(1)
 	assert_str(probe.dev_op("set_stage", {"index": 99})).contains("outside")
 
@@ -244,7 +244,7 @@ func test_pause_and_step_sim() -> void:
 	assert_float(world.time).is_equal_approx(0.5, 0.001)
 	assert_str(probe.dev_op("step_sim", {"frames": 0})).contains("1..")
 	assert_str(probe.dev_op("step_sim", {"frames": 4000})).contains("1..")
-	assert_int(game.state).is_equal(game.State.INTRO)   # the state machine did not run
+	assert_int(game.state).is_equal(game.State.BRIEFING)   # the state machine did not run
 
 
 func test_unknown_op_and_not_ready() -> void:
@@ -264,7 +264,7 @@ func test_snapshot_shape_and_caps() -> void:
 	var s: Dictionary = probe.snapshot()
 	for k in ["route", "game", "score", "record", "vigil", "world", "acolytes", "grubs", "geodes"]:
 		assert_bool(s.has(k)).override_failure_message(k).is_true()
-	assert_str(s.game.state).is_equal("intro")
+	assert_str(s.game.state).is_equal("briefing")
 	assert_int(s.acolytes.size()).is_equal(1)
 	var a: Dictionary = s.acolytes[0]
 	assert_array(a.keys()).contains(["id", "alive", "hp", "pos_x", "pos_y", "on_screen", "dx", "dy"])
