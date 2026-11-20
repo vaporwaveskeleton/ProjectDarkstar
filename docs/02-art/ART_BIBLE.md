@@ -762,11 +762,11 @@ Supersede the matching pass 4 lines where they differ.
 ### 16.6e Pass 6 rules (2026-11-19)
 Supersede the matching pass 5 lines where they differ. Tests: `features/aether/tests/test_aether_pass6.gd`. Evidence status: the model-viewer pilot (below) and the cost sweep are the only measurements; no human has sorted the tiers yet.
 
-**Tier sort (G-2).** A model-viewer pilot (5 fresh AI agents, not humans; write-up in the shared notes `aether_sort_pilot_proxy.md`) gave 0 of 5 exact orders on pass 5; T5 was placed last 5 of 5; T1 was misread because of a dark orrery disc. Model-viewer pilots are evidence for direction only; the human cold-viewer sort is scheduled with the owner's M2 test round (PROD-001 §4.1, TECH-001 §11.2). The pass 6 re-run gave 0 of 5 valid exact orders, with 2 of 5 viewers invalid (label mix-ups): a smoke test only. Open (TECH-001 Q-T126): the five exhibits are five biomes, so viewers sort places by mood, not tiers by damage; proposed G-2 wording is one biome at every tier, and the principle that each tier is the previous tier plus one more kind of damage to the same elements. Owner to decide.
+**Tier sort (G-2).** A model-viewer pilot (5 fresh AI agents, not humans; write-up in the shared notes `aether_sort_pilot_proxy.md`) gave 0 of 5 exact orders on pass 5; T5 was placed last 5 of 5; T1 was misread because of a dark orrery disc. Model-viewer pilots are evidence for direction only; the human cold-viewer sort is scheduled with the owner's M2 test round (PROD-001 §4.1, TECH-001 §11.2). The pass 6 re-run gave 0 of 5 valid exact orders, with 2 of 5 viewers invalid (label mix-ups): a smoke test only. Open (TECH-001 Q-T126): the five exhibits are five biomes, so viewers sort places by mood, not tiers by damage; proposed G-2 wording is one biome at every tier, and the principle that each tier is the previous tier plus one more kind of damage to the same elements. Ruled 2026-11-19 (PM under the owner autonomy grant): adopted (§16.6i, TECH-001 §11.2).
 
 **Monotonic "missing" cue (§15.4).** `AetherLook.missing` ✱ (0 / 0.2 / 0.4 / 0.6 / 0.85 for T1 to T5, dev placeholders) drives: saturation drain (`A_MISS_DESAT` 0.9 ✱, luminance kept); star dropout along the same curve; and a flat VOID slice (`a_missing()` in `aether_common.gdshaderinc`) with `A_MISS_SEAM` -44, `A_MISS_X` 170, `A_MISS_LEN` (30, 130), `A_MISS_INWARD` 0.4, `A_MISS_W` (0.7, 16) ✱. The slice starts at a far-layer seam inside the picture, never the frame edge (NARR-001 N8), widens by tier, is flat VOID (`mix(void_lo, void_hi, 0.22)`), never black, and stops short of the entity's mid loss step. Tested: zero at T1 and strictly growing; drives saturation, slice and stars together; starts off-centre and never reaches the frame edge or the play core.
 
-**T1 lit sun.** The dark orrery globe is now a lit brass sun (BONE_3 body, BONE_4 bloom); rings calmer (`ORRERY_CALM` 0.72 ✱). Rule: no dark, round, centred object in T1 (it pre-empts the entity). Open (TECH-001 Q-T124): §15.4's T1 row asks for "one dark smudge in the fog that is a little too still", while the pass 6 brief said "nothing in T1 darker than the fog". The smudge was kept pending an owner ruling.
+**T1 lit sun.** The dark orrery globe is now a lit brass sun (BONE_3 body, BONE_4 bloom); rings calmer (`ORRERY_CALM` 0.72 ✱). Rule: no dark, round, centred object in T1 (it pre-empts the entity). Open (TECH-001 Q-T124): §15.4's T1 row asks for "one dark smudge in the fog that is a little too still", while the pass 6 brief said "nothing in T1 darker than the fog". The smudge was kept; ruled 2026-11-19: §15.4 wins (§16.6i).
 
 **No closed circles (pareidolia extension, §16.6c).** Loss steps follow two spiral arms broken every half turn (`A_LOSS_ARM` 0.2 ✱) with a soft side toward the frame centre (`A_LOSS_SOFT` 0.08 ✱); the drain stretch is twisted off the radial (`A_DRAIN_TWIST` 0.5 ✱); `A_LOSS_REACH` 1.75 to 2.02 keeps the early-out provably conservative. Test: a CPU mirror of the loss boundary: at least 2 breaks per turn, no unbroken arc longer than π × 1.02, radius varies at least 0.9 × the arm. Same limits as §16.6c (CPU mirror, not a shader render).
 
@@ -790,7 +790,7 @@ Slice part A (`AetherFarLayer`, `FrostPresence`, the reveal, the ladder; TECH-00
 
 **The Presence (ZONES-001 §2.3).** The Pale Marches Presence is a frost-drifting shelf of ice, bigger than the playfield (`FrostPresence` quad 1700×1000 ✱), only ever seen cropped, with a slow heartbeat of glass light (PHOS-4) travelling its veins. The leviathan stays the T3 Presence (PM ruling 2026-11-19, TECH-001 §11.2). Rules: far layer only; never a hitbox (no physics body under it); never adds light to the play layer; never black (body `far_silhouette`, `presence_pearl` AETHER-4, `presence_frost` BONE-3); it flees the entity (turns, accelerates away and dims over `FLEE_S` 6 s ✱, also on its own when the entity drains the world); heartbeat at most 1 Hz (built at one beat per 4 s ✱); under reduced motion and photosensitivity the pulse is held steady and the flee only dims in place.
 
-**Lantern-down reveal (CH-3, ZONES-001 §2.3).** Lantern down fades the warm pool out and, over `REVEAL_FADE_S` 0.8 s ✱ (monotonic, no flicker), the far-band life (`reveal_life_count`) and the Presence's full lit pattern in. Far layer only: it changes nothing in the play layer. Lantern up, the Presence is a vague mass. The T3+ part (showing where the Aether is already gone) is not built: TECH-001 Q-T129.
+**Lantern-down reveal (CH-3, ZONES-001 §2.3).** Lantern down fades the warm pool out and, over `REVEAL_FADE_S` 0.8 s ✱ (monotonic, no flicker), the far-band life (`reveal_life_count`) and the Presence's full lit pattern in. Far layer only: it changes nothing in the play layer. Lantern up, the Presence is a vague mass. The T3+ part (showing where the Aether is already gone) is built in pass 7 (§16.6i; Q-T129 ruled).
 
 **One-biome damage ladder (G-2, TECH-001 Q-T126; `data/aether/ladder/pm_t1..t5.tres`).** Each rung is the previous one plus one more kind of damage, so a still sorts cold: T1 intact (Presence here, rings turning); T2 life thinner and 1 ring stalled; T3 plus the Presence fleeing (35% gone) and the first sky crack; T4 plus the Presence gone, rings broken (1 snapped open) and panes open; T5 plus subtraction. Role laws (faction hues, phosphor = truth, SIGNAL ≤ 3) hold on every rung. The ladder is a capture aid, not the shipped tier table.
 
@@ -829,6 +829,10 @@ The look of the Ruins of the Ninth Sky on the first visit (NARR-001 §5.7, GDD �
 - No occlusion shadows (`shadow_enabled` is false on every light).
 - The torn vault shows mostly the navy far band of the Aether.
 - Before any Tree lamp the hangar mouth is near-black by default (`mouth_veil_dark` 1.0 ✱, NARR-001 §5.7 "dark"); `mouth_aether_hint` (0..1, default 0 ✱) lets the owner bring back a faint glimpse of the Aether without code (TECH-001 Q-T156, agreed with M1, pending the owner).
+- The left side is cluttered: the telescope crosses the chalk star chart.
+- The orrery can read as an atom symbol.
+- The flash and lantern-law tests are structural, not pixel-measured (TECH-001 §9.1, Q-T64).
+- Authored for 640×360; wider aspects not designed (TECH-001 Q-T159).
 
 ### 16.6h The sector at Aether tier (sector slice look, 2026-11-19)
 How the M1 sector reads once it wears the Aether. Built; not yet scored by The Reviewer, and the captures (scenario `m1_sector_look_capture`) are not evaluated here. Implementation: TECH-001 §2.5, §2.9, §5.4. Every value is an engineering ✱ drawing parameter, in `Pal` colours.
@@ -838,11 +842,44 @@ How the M1 sector reads once it wears the Aether. Built; not yet scored by The R
 **Brass instrument HUD.** The sector HUD is a set of riveted brass plates and studs (the Ledger Compass bezel, the Composure wick bracket, the Steady Ledger tier, the Vigil Index, the Charge strip, the Seam index). Lamps are glass: lit = phosphor = truth (loaded Charge, honest state); to-come items are chalk rings; the current Seam stud is lit gold. Text is `VectorLabel` stroke glyphs. SIGNAL stays at most 3 on screen; the HUD adds none.
 
 **Actors.** The Grub, the geodes and the Sepulchre have filled bodies, a rim light, a soft glow halo in faction hue (Choir hue for Choir bodies) and crystal facets with a slow shimmer (off under Reduced Motion). The geodes read as crystal spheres' cousins, not as pickups. Collision shapes are unchanged. Nothing in the sector is true black: the only true black remains the entity (§16.1).
-- The left side is cluttered: the telescope crosses the chalk star chart.
-- The orrery can read as an atom symbol.
-- The flash and lantern-law tests are structural, not pixel-measured (TECH-001 §9.1, Q-T64).
-- Authored for 640×360; wider aspects not designed (TECH-001 Q-T159).
 
+### 16.6i Pass 7: the Pale Marches escalation (2026-11-19, PM under the owner autonomy grant)
+PM rulings of 2026-11-19 (TECH-001 §11.2): Q-T124 (§15.4 wins: T1 keeps the dark smudge, a VOID fog tone, never black, round or centred), Q-T126 (G-2 is the one-biome Pale Marches ladder; each tier is the previous tier plus one more kind of damage to the same elements), Q-T129 (built, below). Tests: `features/aether/tests/test_aether_lavish.gd`. Evidence: one windowed `aether_ladder_capture` run, judged by eye. There is no Reviewer score and no human sort yet.
+
+**The other heavens (`SisterSpheres`, far band).** Five small, far crystal spheres float in the far fog. Each holds:
+- its own lit sky (AETHER-4, AETHER-5, AETHER-3, BONE-3, PHOS-4);
+- a PHOS glass rim with a BONE-5 window highlight;
+- a brass meridian;
+- three motes of life.
+
+They are cropped by the frame, off-centre and never in the play core: each clears the lantern pool by its own radius (tested).
+
+**The entity eats the sky in order of beauty** (GDD, the Eating of a Sky). The ladder loses one sister per tier, largest first (`sister_spheres_eaten` 0 / 1 / 2 / 3 / 4 ✱), so a cold viewer can count the tier.
+- **An eaten sister** is the missing slice's flat cold VOID: never black, no glow, no texture. Its rim is in pieces and its meridian is snapped and slid.
+- **The last, smallest sister** is never eaten by the ladder (T5's last pearl).
+- **A fractional `eaten`** part-eats the next sister, ready for the Eating of a Sky to animate.
+- **Lantern down** brightens their life (the lantern hides small light).
+- **Drain** dims them.
+- **Reduced motion** holds them still.
+- **The twinkle period** is 5 s ✱, far under the flicker cap.
+- **The low rung** keeps them: they are cheap vector and they carry the ladder.
+
+**The reveal shows what is gone (Q-T129, ZONES-001 §2.3).** From T3 (`GHOST_FROM_TIER` ✱), with the lantern down, the missing slice shows a faint phosphor engraving of the fog it replaced, like an astronomical plate:
+- contour lines of the vanished fog's value (`A_GHOST_LINES` 9 ✱);
+- a hairline on the slice's torn rim;
+- strength `A_GHOST_K` 0.42 ✱.
+
+It follows the reveal's monotonic ramp, so there is no flicker. It is PHOS-4 (truth: it was there). It never touches the entity: no rim, glow or outline on the entity's loss, because the entity has none of its own (§15.4).
+
+**The Presence more present (ladder only).** `presence_lit` ✱ shows part of the Presence's lit pattern with the lantern up: 0.2 at T1 and 0.6 from T2. At T2 the Presence is uneasy and its heartbeat shows through the fog, the last bright thing before it flees at T3. The sector look (PM-01) keeps 0, the lantern-up law: a vague mass. Lantern down still brings the full pattern.
+
+**Life in the fog.** Every rung of the Pale Marches ladder now carries 8 ✱ jelly-lanterns, 3 ✱ vast far jellies and a school of 28 ✱. `life_density` thins them down the ladder (1 / 0.55 / 0.45 / 0.35 / 0.2), so T1 is the most alive.
+
+**Known weaknesses (pass 7, by eye).**
+1. An eaten sister reads more as an empty glass ring than as erased.
+2. T1 is now busy at the top: the Presence, the orrery, two sisters and jellies.
+3. PM-01 does not have the sisters yet. The sector look belongs to the sector-slice session; switching them on there is a data change (`sister_spheres`).
+4. Pass 7 has no cost measurement (TECH-001 §8.5).
 
 ### 16.6j The Ruins objects (Q-T193, 2026-11-19)
 Ruling Q-T193 (PM under the owner autonomy grant, TECH-001 §11.2): the Ruins objects are runtime vector art, drawn in `RuinsLook`'s lit hall at the existing markers. `RuinsObjects` (`features/aether`) draws the Chalk Desk, the Cabinet, the Codex desk, the Hourglass and the hangar gate. The Tree lands with the Tree feature; until then `RuinsPlaceholders` draws only the stand-in Tree. Tests: `features/aether/tests/test_ruins_look.gd` (Q-T193 block). Evidence: windowed `aether_ruins_look` and `ruins_onboarding_first_visit` captures, checked by eye; no Reviewer score.
