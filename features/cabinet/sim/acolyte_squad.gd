@@ -144,6 +144,10 @@ func _tick_reinforcements(delta: float) -> void:
 	var st := world.stage
 	if st.acolyte_reinforce_s <= 0.0:
 		return
+	if not st.reinforce_after_wake and world.ritual.awake:   # the bells fall silent at the wake
+		_reinforce_left = -1.0
+		_reinforce_edge = Vector2.ZERO
+		return
 	if _reinforce_left >= 0.0:
 		_reinforce_left -= delta
 		if _reinforce_left <= 0.0:

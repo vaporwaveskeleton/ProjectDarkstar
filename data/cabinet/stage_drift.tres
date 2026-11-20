@@ -18,6 +18,7 @@ sepulchre_wakes = false
 chant = true
 goal = 0
 seed = 1984
+backdrop = &"currents"
 acolyte_reinforce_s = 40.0
 acolyte_cap = 2
 geode_drift_s = 20.0

@@ -28,6 +28,7 @@ const SLOT_RUN := &"run"
 const REASON_RUINS_ENTRY := &"ruins_entry"
 const REASON_SEAM_BOUNDARY := &"seam_boundary"
 const REASON_RUN_END := &"run_end"
+const REASON_TREE_PURCHASE := &"tree_purchase"
 
 const OUTCOME_DIED := &"died"
 const OUTCOME_WON := &"won"
@@ -114,6 +115,24 @@ func arrive_at_ruins(params: Dictionary = {}) -> int:
 	_save(SLOT_PROFILE, REASON_RUINS_ENTRY)
 	_save(SLOT_ITERATION, REASON_RUINS_ENTRY)
 	return paid
+
+
+# --- the Lantern Tree station (Q-T191) -------------------------------------------------------------
+
+## Buys the next unbought node of `stock` at its tier-1 price from the banked Ember (LOOP-001 §3.8).
+## Only in the Ruins (never mid-run). Returns the node id, or &"" when nothing was bought (all
+## owned, not enough Ember, a run is live, or the profile on disk is unreadable). One profile
+## write, reason `tree_purchase`: the spend and the node commit together.
+func buy_tree_node(stock: LanternTreeStock) -> StringName:
+	if stock == null or _run.is_active() or not _profile_writable:
+		return &""
+	var id := stock.next_unbought(_profile.tree_nodes)
+	if id == &"" or _profile.ember_banked < stock.price_tier1:
+		return &""
+	_profile.ember_banked -= stock.price_tier1
+	_profile.tree_nodes.append(id)
+	_save(SLOT_PROFILE, REASON_TREE_PURCHASE)
+	return id
 
 
 ## The Cabinet or attract mode may have written the profile since boot: take their keys, keep ours.

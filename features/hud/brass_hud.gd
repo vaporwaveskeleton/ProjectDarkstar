@@ -8,6 +8,9 @@ extends Control
 ##   top-right      Vigil Index (score, SYS-001 §7.1)
 ##   bottom-left    Charge pip strip (one glass lamp per magazine slot, lit = loaded; phosphor = truth)
 ##   bottom-centre  Seam index (one stud per Seam of the run, the current one lit)
+##   bottom, right of the Seam plate  Handling plate (Aether only): Surgelight pips (lit = ready, dim =
+##                  recharging, count = max) and the lantern glyph (flame = Up, dark = Down). GAS light,
+##                  never CHOIR/SIGNAL; both are honest reads of the Vigil (no lie seam; Steady Ledger-safe).
 ## Plus the hull line: shown only when the hull has more than one point (D-08 stays data-switchable)
 ## or when it is breached. Values are pushed in by the sector (`set_values`), never read from the
 ## world here, and never lied about: nothing in this control has a lie seam (L6: Charges are a
@@ -25,6 +28,9 @@ const STRIP_H := 18.0
 const LAMP_R := 3.0
 const LAMP_STEP := 10.0
 const SEAM_STEP := 12.0
+const PIP_STEP := 10.0
+const PIP_R := 2.5
+const HANDLING_GAP := 8.0
 
 var score: int = 0
 var charges: int = 0
@@ -32,6 +38,11 @@ var charge_capacity: int = 0
 var seam_index: int = 0
 var seams_per_run: int = 0
 var tier: int = 0
+## Surgelight Charges ready and the most the hull holds (0 max = no Aether handling: plate hidden).
+var surge_ready: int = 0
+var surge_max: int = 0
+## The Vigil's lantern is Up (lit).
+var lantern_up := true
 var hull: int = 0
 var hull_max: int = 0
 var hull_breached := false
@@ -49,6 +60,7 @@ var _index_label: VectorLabel
 var _index_value: VectorLabel
 var _charges_label: VectorLabel
 var _seam_label: VectorLabel
+var _surge_label: VectorLabel
 var _ledger_label: VectorLabel
 ## The hull line (named HullLabel so tests and the probe find it).
 var hull_label: VectorLabel
@@ -62,6 +74,8 @@ func _ready() -> void:
 	_index_value.alignment = VectorText.Align.RIGHT
 	_charges_label = _label(&"ChargesLabel", SMALL, Pal.GAS_5, &"HUD_PLATE_CHARGES")
 	_seam_label = _label(&"SeamLabel", SMALL, Pal.GAS_5, &"HUD_PLATE_SEAM")
+	_surge_label = _label(&"SurgeLabel", SMALL, Pal.GAS_5, &"HUD_PLATE_SURGE")
+	_surge_label.visible = false
 	_ledger_label = _label(&"LedgerLabel", SMALL, Pal.PHOS_5, &"")
 	hull_label = _label(&"HullLabel", FACE, Pal.BONE_5, &"")
 	resized.connect(_layout)
@@ -110,6 +124,29 @@ func set_values(p_score: int, p_charges: int, p_capacity: int, p_seam: int, p_se
 	hull_label.visible = hull_label.text != ""
 	_layout()
 	return true
+
+
+## Pushes the Vigil's handling read (Surgelight Charges and the lantern); redraws only on a change.
+## Returns true on a change. `p_max` 0 hides the plate (the Cabinet hull has neither).
+func set_handling(p_ready: int, p_max: int, p_lantern_up: bool) -> bool:
+	var r := clampi(p_ready, 0, maxi(0, p_max))
+	var m := maxi(0, p_max)
+	if r == surge_ready and m == surge_max and p_lantern_up == lantern_up:
+		return false
+	surge_ready = r
+	surge_max = m
+	lantern_up = p_lantern_up
+	_layout()
+	return true
+
+
+func handling_shown() -> bool:
+	return surge_max > 0
+
+
+func handling_rect() -> Rect2:
+	var w := 50.0 + float(surge_max) * PIP_STEP + 14.0
+	return Rect2(Vector2(seam_rect().end.x + HANDLING_GAP, size.y - MARGIN - STRIP_H), Vector2(w, STRIP_H))
 
 
 func index_rect() -> Rect2:
@@ -164,6 +201,10 @@ func _layout() -> void:
 	var mr := seam_rect()
 	_seam_label.position = mr.position + Vector2(7.0, 6.0)
 	_seam_label.size = Vector2(26.0, 8.0)
+	var hr := handling_rect()
+	_surge_label.position = hr.position + Vector2(7.0, 6.0)
+	_surge_label.size = Vector2(36.0, 8.0)
+	_surge_label.visible = handling_shown()
 	hull_label.position = Vector2(MARGIN + 2.0, sr.position.y - 14.0)
 	hull_label.size = Vector2(160.0, 12.0)
 	queue_redraw()
@@ -181,6 +222,12 @@ func _draw() -> void:
 	Brass.plate(self, sr, Pal.VOID_1)
 	for i in charge_capacity:
 		Brass.lamp(self, sr.position + Vector2(54.0 + LAMP_STEP * i, sr.size.y * 0.5), LAMP_R, i < charges)
+	if handling_shown():
+		var hr := handling_rect()
+		Brass.plate(self, hr, Pal.VOID_1)
+		for i in surge_max:
+			_draw_pip(hr.position + Vector2(52.0 + PIP_STEP * i, hr.size.y * 0.5), i < surge_ready)
+		_draw_lantern(hr.position + Vector2(hr.size.x - 11.0, hr.size.y * 0.5), lantern_up)
 	var mr := seam_rect()
 	Brass.plate(self, mr, Pal.VOID_1)
 	for i in seams_per_run:
@@ -193,6 +240,30 @@ func _draw() -> void:
 			draw_circle(c, 2.0, Pal.GAS_2)   # passed: brass, spent
 		else:
 			draw_arc(c, 2.0, 0.0, TAU, 12, Pal.BONE_3, 1.0)   # to come: a chalk ring
+
+
+## A Surgelight pip: lit (ready) = a GAS flame in glass, dim (recharging) = smoked glass.
+func _draw_pip(c: Vector2, ready: bool) -> void:
+	draw_circle(c, PIP_R + 1.0, Pal.GAS_0)
+	if ready:
+		draw_circle(c, PIP_R + 2.0, Color(Pal.GAS_4, 0.22))
+		draw_circle(c, PIP_R, Pal.GAS_4)
+		draw_circle(c, PIP_R * 0.5, Pal.GAS_5)
+	else:
+		draw_circle(c, PIP_R, Pal.VOID_2)
+		draw_arc(c, PIP_R, 0.0, TAU, 10, Pal.GAS_2, 0.7)
+
+
+## The lantern glyph: a brass cage with a GAS flame when Up, the same cage dark when Down.
+func _draw_lantern(c: Vector2, up: bool) -> void:
+	var cage := Rect2(c + Vector2(-3.0, -3.0), Vector2(6.0, 7.0))
+	draw_rect(cage, Pal.VOID_2)
+	draw_rect(cage, Pal.GAS_3 if up else Pal.GAS_2, false, 1.0)
+	draw_line(c + Vector2(-3.0, -4.0), c + Vector2(3.0, -4.0), Pal.GAS_3, 1.0)
+	draw_arc(c + Vector2(0.0, -4.0), 2.0, PI, TAU, 6, Pal.GAS_3, 0.8)
+	if up:
+		draw_circle(c + Vector2(0.0, 0.5), 3.2, Color(Pal.GAS_4, 0.25))
+		draw_circle(c + Vector2(0.0, 0.5), 1.6, Pal.GAS_5)
 
 
 ## A brass-capped sand-glass: sand in the upper bulb = the budget left, the rest heaped below.

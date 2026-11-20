@@ -537,7 +537,7 @@ First asset (2026-11-18): `ds_ui_paletteSwatch` (`art/src/reference.px.js`), the
 
 ## 15. The visual fidelity ladder (owner direction, 2026-11-18)
 
-**The game starts as a neon arcade machine and becomes something richer as it reveals itself.** Act 0 looks like a classic 1983 cabinet: neon colours on black, flat vector shapes, no lighting. After THE PRETENCE the Aether look takes over (§16: retro-future Victorian space), and the graphics are allowed to *transcend* arcade limits: real 2D lighting with the lantern as the key light, shadows, fog and volumetric haze, bloom, complex particle systems, normal-mapped and shader-rich bodies. Gameplay stays top-down 2D throughout; the Act 0 screen's pixel grid is 256×304 (TECH-001 §1.1) and 640×360 is the logical space, which renders at native resolution after Act 0 (owner, 2026-11-18). This section governs; where §4–§5 or §14 read as a hard cap on colours or lighting, this section wins.
+**The game starts as a neon arcade machine and becomes something richer as it reveals itself.** Act 0 looks like a classic 1983 cabinet: neon colours on black, flat vector shapes, no lighting. Each Act 0 stage carries a dim VOID-register backdrop signature behind the stars (currents, censer chains, a shoal of glass motes, a still horizon; never a faction hue; TECH-001 §2.10). After THE PRETENCE the Aether look takes over (§16: retro-future Victorian space), and the graphics are allowed to *transcend* arcade limits: real 2D lighting with the lantern as the key light, shadows, fog and volumetric haze, bloom, complex particle systems, normal-mapped and shader-rich bodies. Gameplay stays top-down 2D throughout; the Act 0 screen's pixel grid is 256×304 (TECH-001 §1.1) and 640×360 is the logical space, which renders at native resolution after Act 0 (owner, 2026-11-18). This section governs; where §4–§5 or §14 read as a hard cap on colours or lighting, this section wins.
 
 **Neon Cabinet video limits (owner, 2026-11-18; layer one only, never the bezel, never after Act 0; built 2026-11-18).** Act 0 screen colours must fit 16 RGB332 registers (`VideoRegisters`, table in §15.2a). Breaking the limit during THE PRETENCE reveal is in-fiction. The limits are: 16 colours on screen at once from a 256-colour palette (3 bits red, 3 green, 2 blue); registers writable at any time, so colour cycling and fades are register writes; frame time 16.64 ms (counter arithmetic in TECH-001 §1.1). The quantize pass runs in the CRT shaders of the arcade screen and the attract hole only; the limits fade out as `Look.t` goes 0 to 1 (THE PRETENCE).
 
@@ -844,9 +844,34 @@ How the M1 sector reads once it wears the Aether. Built; not yet scored by The R
 - Authored for 640×360; wider aspects not designed (TECH-001 Q-T159).
 
 
+### 16.6j The Ruins objects (Q-T193, 2026-11-19)
+Ruling Q-T193 (PM under the owner autonomy grant, TECH-001 §11.2): the Ruins objects are runtime vector art, drawn in `RuinsLook`'s lit hall at the existing markers. `RuinsObjects` (`features/aether`) draws the Chalk Desk, the Cabinet, the Codex desk, the Hourglass and the hangar gate. The Tree lands with the Tree feature; until then `RuinsPlaceholders` draws only the stand-in Tree. Tests: `features/aether/tests/test_ruins_look.gd` (Q-T193 block). Evidence: windowed `aether_ruins_look` and `ruins_onboarding_first_visit` captures, checked by eye; no Reviewer score.
+
+| Object | What it is |
+|---|---|
+| Chalk Desk | a schoolmaster's slant desk on turned legs with brass feet; a framed slate on an easel arm with brass corner caps and an old chalk sketch (an orbit round a dot, two stars: no words); three chalk sticks on the ledge; an ink well with a quill |
+| Cabinet | a dark-wood automaton cabinet between brass pilasters, a crest pediment with a brass boss, a brass-framed marquee panel (its words are the Ruins scene's), phosphor glass in a brass bezel with one soft rolling band and a curved glint, a control deck (a violet ball-top stick, two brass buttons), a coin plate and a brass payout tray at the foot |
+| Codex desk | a lectern on a fluted column with brass claw feet, the great book open with curled pages and faint lines, a violet ribbon that sways, a reading glass on a chain |
+| Hourglass | finialled brass plates, two turned spindles, two glass bulbs with a rim and glints; the sand follows `set_sand` (unchanged API) and grains fall through the neck while the clock runs |
+| Gate | the hangar door gathered back: a folded brass lattice leaf on each track (X lattice, rivets, spear finials) and a riveted arched header with a keystone; nothing stands in the mouth |
+
+**Rules.**
+- **Lit by the hall.** The objects take the lantern, the Tree lamps and the object lights. They emit no light of their own except the Cabinet's phosphor glass.
+- **Colours.** Pal roles only: BONE wood, BONE brass from `RuinsLookData`, a VOID-2 slate, BONE paper, AETHER-1 velvet, PHOS glass. Never GAS (the lantern's), CHOIR, SIGNAL or NULL; never black. Tested.
+- **Layout.** Each object stays at its marker, inside the frame, out of the hangar mouth and apart from the others. Tested.
+- **Motion.** Slow and steady, never a flicker: the Cabinet's band rolls once per 7 s ✱, the ribbon swings every 6 s ✱, and the grains fall at 9 px/s ✱. Reduced motion holds all of it still.
+
+**Known weaknesses (by eye).**
+1. The objects are small and dark away from the lights; the Chalk Desk and the Cabinet sit outside the lantern pool.
+2. The slate can still read as a screen.
+3. The gate's header is faint against the mouth's own arch.
+4. Authored for 640×360 (Q-T159, not built).
+
 ### 16.7 The Aether Vigil: a brass lantern skiff with visible systems (ruled, PM under owner autonomy grant, 2026-11-19)
 
 > **Status: ruled, PM under owner autonomy grant, 2026-11-19** (TECH-001 Q-T170; queued for the owner's later review). It goes with the Aether handling profile (GDD §4.2a, SYS-001 §1.1a). Act 0's neon Vigil (§3, §15.2) is unchanged.
+>
+> **Built 2026-11-19** as `AetherVigilRig` (runtime `_draw`); visual values are ✱ in `ds_vigil.aether_look` (TECH-001 §3.4). Palette: brass from BONE/VOID mixes, GAS only for lamp, glass, flue and sparks; no CHOIR, SIGNAL or PHOS.
 
 **Intent.** In the Cabinet the Vigil is a simple wedge and a lamp. After THE PRETENCE the player should see the ship it always was: a hand-built Victorian lantern skiff with a keel, bellows and vanes. It is heavy, riveted and engraved, and every system the Lantern Tree brings online is a part you can see. The weight in the hands (GDD §4.2a) and the complexity in the art are the same idea.
 
