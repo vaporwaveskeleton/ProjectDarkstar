@@ -1,0 +1,20 @@
+{
+	"format": "darkstar.scenario",
+	"version": 1,
+	"id": "perf_sector",
+	"profile": "dev",
+	"args": [],
+	"fixtures": {},
+	"timeout_frames": 1200,
+	"steps": [
+		{"do": "wait_route", "route": "attract", "within": 240},
+		{"do": "goto", "route": "sector"},
+		{"do": "wait_route", "route": "sector", "within": 240},
+		{"do": "wait_frames", "frames": 60},
+		{"do": "perf_begin", "name": "pm01_sector"},
+		{"do": "hold", "action": "move_right", "frames": 300},
+		{"do": "hold", "action": "move_left", "frames": 300},
+		{"do": "perf_end", "name": "pm01_sector", "budget_ms": 8},
+		{"do": "quit"}
+	]
+}
