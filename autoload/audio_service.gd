@@ -86,7 +86,9 @@ var _sub_t := 0.0
 var _sub_fx: Dictionary = {}           # StringName bus -> AudioEffectLowPassFilter index on that bus
 var _touch_ms := -1000000              # wall-clock ms of the last playback start or stop (shutdown drain)
 var _bus_base_db: Dictionary = {}      # StringName bus -> volume_db before subtraction and ducking
-var _duck_cur: Dictionary = {}         # StringName bus -> current duck offset, dB (<= 0)
+var _layout_db: Dictionary = {}        # StringName bus -> layout volume_db, before the player's slider (§8.4)
+var _user_db: Dictionary = {}          # StringName bus -> the player's slider offset, dB (SILENT_DB at 0)
+var _duck_cur: Dictionary = {}       # StringName bus -> current duck offset, dB (<= 0)
 var _flight_streams: Dictionary = {}   # StringName layer -> AudioStream (FlightMix.LAYERS)
 var _flight: Dictionary = {}           # StringName layer -> AudioStreamPlayer on BUS-FLY
 var _flight_db: Dictionary = {}        # StringName layer -> smoothed volume_db
@@ -534,7 +536,7 @@ func _apply_bus_volumes() -> void:
 		var b := AudioServer.get_bus_index(bus)
 		if b < 0:
 			continue
-		var v: float = float(_bus_base_db[bus]) + float(_duck_cur.get(bus, 0.0))
+		var v: float = float(_bus_base_db[bus]) + float(_duck_cur.get(bus, 0.0)) + float(_user_db.get(bus, 0.0))
 		if bus in SUBTRACTION_BUSES:
 			v += SUBTRACTION_CUT_DB * _sub_cur
 		AudioServer.set_bus_volume_db(b, v)
@@ -586,6 +588,12 @@ func _stop_voices() -> void:
 func _exit_tree() -> void:
 	_duck_cur.clear()
 	_apply_subtraction(0.0)   # never leave the shared buses filtered, cut or ducked
+	_user_db.clear()
+	for bus: StringName in _layout_db:   # and hand the next service the layout's own levels
+		var b := AudioServer.get_bus_index(bus)
+		if b >= 0:
+			AudioServer.set_bus_mute(b, false)
+			AudioServer.set_bus_volume_db(b, float(_layout_db[bus]))
 	# children leave the tree first, so Player.playing is already false here: use our own books
 	# our books lie after silence()/stop_all() zero them while the mixer still holds the playbacks,
 	# so the drain is keyed to the wall-clock time since the last start or stop instead
@@ -719,7 +727,50 @@ func _setup_subtraction() -> void:
 		var b := AudioServer.get_bus_index(bus)
 		if b >= 0:
 			_bus_base_db[bus] = AudioServer.get_bus_volume_db(b)
+	for e in UserVolume.SLIDERS:
+		for bus: StringName in e["buses"]:
+			var b := AudioServer.get_bus_index(bus)
+			if b >= 0 and not _layout_db.has(bus):
+				_layout_db[bus] = _bus_base_db.get(bus, AudioServer.get_bus_volume_db(b))
 	_apply_subtraction(0.0)
+	apply_user_volumes()
+	if not SettingsService.setting_changed.is_connected(_on_setting_changed):
+		SettingsService.setting_changed.connect(_on_setting_changed)
+
+
+func _on_setting_changed(key: StringName, _value: Variant) -> void:
+	if not UserVolume.entry_for_key(key).is_empty():
+		apply_user_volumes()
+
+
+## AUDIO-001 §8.4: set every slider's bus(es) from SettingsService. A slider at 0 mutes its bus;
+## otherwise the bus sits at its layout volume plus the curve's dB, under any subtraction or duck.
+func apply_user_volumes() -> void:
+	for e in UserVolume.SLIDERS:
+		var v: int = int(SettingsService.get_value(e["key"]))
+		var db := UserVolume.to_db(v)
+		for bus: StringName in e["buses"]:
+			var b := AudioServer.get_bus_index(bus)
+			if b < 0:
+				continue
+			_user_db[bus] = db
+			AudioServer.set_bus_mute(b, v <= 0)
+			if not _bus_base_db.has(bus):   # not a duck bus (Master, BUS-CHO, BUS-ENT): nothing else moves it
+				AudioServer.set_bus_volume_db(b, float(_layout_db.get(bus, 0.0)) + db)
+	_apply_bus_volumes()
+
+
+## The bus volume (dB) the slider for `bus` is asking for on top of the layout (tests, diagnostics).
+func user_db(bus: StringName) -> float:
+	return float(_user_db.get(bus, 0.0))
+
+
+## Play slider `key`'s preview cue, if it has one, so the player hears the bus they just moved.
+## Goes through play(), so the cue's own concurrency and retrigger rules apply.
+func preview_volume(key: StringName) -> void:
+	var cue: StringName = UserVolume.entry_for_key(key).get("preview", &"")
+	if cue != &"":
+		play(cue)
 
 
 func _apply_subtraction(amount: float) -> void:

@@ -43,6 +43,8 @@
 		{"do": "screenshot", "name": "warp_t1_07_photosensitive", "target": "window"},
 		{"do": "set_setting", "key": "photosensitivity", "value": false},
 		{"do": "set_setting", "key": "steady_ledger", "value": true},
+		{"do": "wait_frames", "frames": 10},
+		{"do": "screenshot", "name": "warp_t1_08_steady_ledger_tier_plate", "target": "window"},
 		{"do": "quit"}
 	]
 }

@@ -1,0 +1,20 @@
+{
+ "name": "ds_cab_side",
+ "size": 256,
+ "normal": "gl",
+ "depth": 0.02,
+ "seam": {
+  "worst": 0.21,
+  "map": "normal"
+ },
+ "maps": {
+  "albedo": "ds_cab_side_albedo.png",
+  "normal": "ds_cab_side_normal.png",
+  "height": "ds_cab_side_height.png",
+  "roughness": "ds_cab_side_roughness.png",
+  "metallic": "ds_cab_side_metallic.png",
+  "ao": "ds_cab_side_ao.png",
+  "orm": "ds_cab_side_orm.png",
+  "emissive": null
+ }
+}

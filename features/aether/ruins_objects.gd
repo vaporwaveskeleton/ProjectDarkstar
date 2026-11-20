@@ -22,6 +22,8 @@ const SWAY_PX := 1.2
 ## ✱ how far each folded gate leaf reaches in from its track (px) and its lattice cells.
 const GATE_FOLD_PX := 12.0
 const GATE_CELLS := 7
+## ✱ smallest sand change that redraws the Hourglass (well under one pixel of pile).
+const SAND_STEP := 0.002
 
 var chalk_desk := Vector2(204, 300)
 var cabinet := Vector2(74, 214)
@@ -47,18 +49,30 @@ var sand_col := Pal.BONE_3
 ## The Hourglass's sand above the neck, 0…1 (the Ruins sets it from RunSession; 1 = full).
 var sand := 1.0:
 	set(v):
-		sand = clampf(v, 0.0, 1.0)
-		queue_redraw()
+		var nv := clampf(v, 0.0, 1.0)
+		if absf(nv - sand) < SAND_STEP and not (nv == 0.0 and sand != 0.0):
+			return
+		sand = nv
+		_redraw_live()
 ## Sand is falling (the clock runs): grains stream through the neck.
 var sand_falling := false:
 	set(v):
+		if v == sand_falling:
+			return
 		sand_falling = v
-		queue_redraw()
+		_redraw_live()
 var still := false
 var _t := 0.0
+## Perf (Q-T248, Ruins): the objects are drawn once on this node; only what moves (the Cabinet's
+## rolling band, the Codex ribbon, the Hourglass sand and its glass) lives on this child and redraws.
+var _live: Node2D
 
 
 func _ready() -> void:
+	_live = Node2D.new()
+	_live.name = "Live"
+	add_child(_live)
+	_live.draw.connect(_draw_live)
 	if SettingsService.DEFAULTS.has(&"reduced_motion"):
 		still = bool(SettingsService.get_value(&"reduced_motion"))
 
@@ -86,7 +100,17 @@ func set_time(t: float) -> void:
 	if still:
 		return
 	_t = t
-	queue_redraw()
+	_redraw_live()
+
+
+func _redraw_live() -> void:
+	if _live != null:
+		_live.queue_redraw()
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_DRAW:
+		_redraw_live()
 
 
 ## Every colour this layer can draw with (tests: Pal roles only, never black, no GAS/CHOIR/SIGNAL).
@@ -111,6 +135,12 @@ func _draw() -> void:
 	_draw_chalk_desk()
 	_draw_codex_desk()
 	_draw_hourglass()
+
+
+func _draw_live() -> void:
+	_draw_cabinet_live()
+	_draw_codex_live()
+	_draw_hourglass_live()
 
 
 # --- the hangar gate: a folding brass lattice gate gathered back on its tracks, an arched header ------
@@ -181,12 +211,7 @@ func _draw_cabinet() -> void:
 	draw_rect(scr.grow(1.5), brass_shadow)
 	draw_rect(scr.grow(0.6), brass)
 	draw_rect(scr, glass)
-	var roll := fposmod(_t / ROLL_S, 1.0)
-	var by := scr.position.y + scr.size.y * roll
-	draw_rect(Rect2(scr.position.x, maxf(by - 2.0, scr.position.y), scr.size.x, minf(4.0, scr.end.y - by + 2.0)),
-		Color(glass_lit, ROLL_K * 2.0))
 	draw_rect(scr.grow(-2.0), Color(glass_lit, 0.35))
-	draw_arc(scr.get_center() + Vector2(-3, -3), 7.0, -2.6, -1.8, 8, Color(glint, 0.5), 0.8, true)
 	# control deck: two brass buttons and a ball-top stick
 	draw_colored_polygon(PackedVector2Array([Vector2(c.x - 12, c.y + 1), Vector2(c.x + 12, c.y + 1),
 		Vector2(c.x + 13, c.y + 6), Vector2(c.x - 13, c.y + 6)]), wood_dark)
@@ -280,8 +305,6 @@ func _draw_codex_desk() -> void:
 	for k in 3:
 		draw_line(b + Vector2(-13 + 4 * k, -26.5 - 0.6 * k), b + Vector2(-5 + 4 * k, -28.6 - 0.6 * k),
 			Color(ink, 0.35), 0.5)
-	var sway := sin(TAU * _t / SWAY_S) * SWAY_PX
-	draw_polyline(PackedVector2Array([spine, spine + Vector2(0.5, 5), spine + Vector2(sway, 10)]), velvet, 1.1, true)
 	# the reading glass on its chain
 	var lens := b + Vector2(12, -21)
 	draw_line(b + Vector2(17, -27), lens + Vector2(1, -2), brass, 0.6, true)
@@ -313,26 +336,52 @@ func _draw_hourglass() -> void:
 		b + Vector2(0.9, -16), b + Vector2(5, -10), b + Vector2(6, -3), b + Vector2(-6, -3), b + Vector2(-5, -10),
 		b + Vector2(-0.9, -16), b + Vector2(-5, -22)])
 	draw_colored_polygon(bulb, Color(glass, 0.3))
+
+
+# --- the live layer: the parts that move ------------------------------------------------------------
+
+func _draw_cabinet_live() -> void:
+	var c := cabinet
+	var scr := Rect2(c.x - 9, c.y - 19, 18, 15)
+	var roll := fposmod(_t / ROLL_S, 1.0)
+	var by := scr.position.y + scr.size.y * roll
+	_live.draw_rect(Rect2(scr.position.x, maxf(by - 2.0, scr.position.y), scr.size.x, minf(4.0, scr.end.y - by + 2.0)),
+		Color(glass_lit, ROLL_K * 2.0))
+	_live.draw_arc(scr.get_center() + Vector2(-3, -3), 7.0, -2.6, -1.8, 8, Color(glint, 0.5), 0.8, true)
+
+
+func _draw_codex_live() -> void:
+	var spine := codex_desk + Vector2(0, -30)
+	var sway := sin(TAU * _t / SWAY_S) * SWAY_PX
+	_live.draw_polyline(PackedVector2Array([spine, spine + Vector2(0.5, 5), spine + Vector2(sway, 10)]), velvet, 1.1,
+		true)
+
+
+func _draw_hourglass_live() -> void:
+	var b := hourglass
+	var bulb := PackedVector2Array([b + Vector2(-6, -29), b + Vector2(6, -29), b + Vector2(5, -22),
+		b + Vector2(0.9, -16), b + Vector2(5, -10), b + Vector2(6, -3), b + Vector2(-6, -3), b + Vector2(-5, -10),
+		b + Vector2(-0.9, -16), b + Vector2(-5, -22)])
 	# the sand above the neck shrinks toward it as the clock is spent; the rest heaps below
 	var top := lerpf(-16.5, -27.0, sand)
 	var w := lerpf(0.9, 5.0, sand)
 	if sand > 0.03:
-		draw_colored_polygon(PackedVector2Array([b + Vector2(-w, top), b + Vector2(w, top), b + Vector2(0.9, -16.5),
+		_live.draw_colored_polygon(PackedVector2Array([b + Vector2(-w, top), b + Vector2(w, top), b + Vector2(0.9, -16.5),
 			b + Vector2(-0.9, -16.5)]), sand_col)
 	var low := 1.0 - sand
 	if low > 0.03:
 		var h := lerpf(0.0, 11.0, low)
 		var hw := lerpf(1.0, 4.6, low)
-		draw_colored_polygon(PackedVector2Array([b + Vector2(-5.5, -3.5), b + Vector2(5.5, -3.5),
+		_live.draw_colored_polygon(PackedVector2Array([b + Vector2(-5.5, -3.5), b + Vector2(5.5, -3.5),
 			b + Vector2(hw * 0.5, -3.5 - h), b + Vector2(-hw * 0.5, -3.5 - h)]), sand_col)
 	if sand_falling and sand > 0.0:
-		draw_line(b + Vector2(0, -16), b + Vector2(0, -4), Color(sand_col, 0.55), 0.5)
+		_live.draw_line(b + Vector2(0, -16), b + Vector2(0, -4), Color(sand_col, 0.55), 0.5)
 		for k in GRAINS:
 			var y := -16.0 + fposmod(_t * GRAIN_SPEED + float(k) * 12.0 / float(GRAINS), 12.0)
-			draw_circle(b + Vector2(0, y), 0.55, sand_col)
+			_live.draw_circle(b + Vector2(0, y), 0.55, sand_col)
 	# the glass: a rim and two curved glints
 	var rim := bulb.duplicate()
 	rim.append(bulb[0])
-	draw_polyline(rim, Color(glass_lit, 0.45), 0.7, true)
-	draw_line(b + Vector2(-4, -27), b + Vector2(-3.2, -22), Color(glint, 0.55), 0.6, true)
-	draw_line(b + Vector2(-4, -9), b + Vector2(-4.6, -5), Color(glint, 0.4), 0.6, true)
+	_live.draw_polyline(rim, Color(glass_lit, 0.45), 0.7, true)
+	_live.draw_line(b + Vector2(-4, -27), b + Vector2(-3.2, -22), Color(glint, 0.55), 0.6, true)
+	_live.draw_line(b + Vector2(-4, -9), b + Vector2(-4.6, -5), Color(glint, 0.4), 0.6, true)
