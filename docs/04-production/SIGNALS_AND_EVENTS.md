@@ -63,6 +63,9 @@ Rules: signal names are past tense (`hull_breached`, `save_failed`), payloads ar
 | `RunSessionCore` | `run_ended` | `outcome: StringName` (`died`, `won`, `abandoned`, `ninth_sky`) | tests; future Ruins return flow | built |
 | `RunSessionCore` | `sky_darkened` | `skies_dark: int` (1–9; one emit per sky crossed, a lump can emit two) | tests; future sky presentation (HUD polls, never listens) | built |
 | `RunSessionCore` | `iteration_ended` | — (the ninth sky) | tests; future Hard Unmaking flow | built |
+| `WarpComposer` | `warp_tier_set` | `tier: int` (0–5; the effective tier: world tier + a Hollowed forced rise) | tests; future HUD (Steady Ledger tier number, WARP-001 §4.4), music | built |
+| `WarpComposer` | `warp_effect_started` | `effect_id: StringName` (WARP-001 W-code, e.g. `&"W1-09"`) | tests; future Codex witnessed-effect log, AudioService tells | built |
+| `WarpComposer` | `warp_effect_ended` | `effect_id: StringName` | tests | built |
 | `ScenarioRunner` (dev/QA only, `core/automation`) | `scenario_finished` | `outcome: StringName` (`pass`, `fail`, `timeout`, `invalid`, `refused`) | GdUnit adapter (`tests/test_scenarios.gd`), dev/QA builds only | built |
 
 Add a row before you add a signal. Remove the row when you remove the signal.

@@ -66,6 +66,7 @@ var _last_start_ms: Dictionary = {}    # StringName -> int
 var _jitter_rng := RandomNumberGenerator.new()   # cosmetic only; never the seeded run RNG
 var _chant: AudioStreamPlayer
 var _chant_level := 0.0
+var _chant_started := false   # the bed loops until exit, so its playback always needs the shutdown drain
 var _beds: Dictionary = {}             # StringName -> AudioStream (loop cues except the chant; ambience slot only)
 var _amb: Array[AudioStreamPlayer] = []   # A/B crossfade pair on BUS-AMB
 var _amb_fade: Array[float] = [0.0, 0.0]  # per-player fade position 0..1 (equal-power gain = sin(f * PI/2))
@@ -295,6 +296,7 @@ func set_chant(level: float) -> void:
 	_chant_level = clampf(level, 0.0, 1.0)
 	if _chant_level > 0.0 and not _chant.playing and not muted_for_tests:
 		_chant.play()
+		_chant_started = true
 		_touch()
 
 
@@ -585,6 +587,8 @@ func _exit_tree() -> void:
 	# our books lie after silence()/stop_all() zero them while the mixer still holds the playbacks,
 	# so the drain is keyed to the wall-clock time since the last start or stop instead
 	var drain_ms := SHUTDOWN_DRAIN_MS - (Time.get_ticks_msec() - _touch_ms)
+	if _chant_started:
+		drain_ms = SHUTDOWN_DRAIN_MS   # the looping bed is stopped only here, so wait one mixer tick
 	var players: Array[AudioStreamPlayer] = []
 	players.append_array(_voices)
 	players.append_array(_amb)
