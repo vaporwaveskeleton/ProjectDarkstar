@@ -70,6 +70,9 @@ var _has_early_params := false
 ## Whether the Pretence had been seen before this reveal started (read before the reveal's save sets it):
 ## the Unmaking that follows is skippable on the same terms as the reveal (Q-T153, TECH-001 §11.1).
 var _reveal_seen_before := false
+## The Unmaking's spread warm-up (Q-T344): `_warm["done"]` once drawn; `_warm_started` once begun.
+var _warm: Dictionary = {}
+var _warm_started := false
 ## The printed bezel wearing out (W0-11 Wear at stage start, then the Decay; ART-001 §12.7b). Built in _ready.
 var bezel_decay: BezelDecay
 var decay_tuning: CabinetDecayTuning = preload("res://data/cabinet/cabinet_decay.tres")
@@ -351,6 +354,7 @@ func _process(delta: float) -> void:
 	var mat := screen.crt_material()
 	if mat:
 		mat.set_shader_parameter(&"time_s", world.shader_time)
+	_poll_unmaking_warmup()
 	if demo:
 		_demo_t -= delta
 		if _demo_t <= 0.0 or state == State.GAME_OVER:
@@ -397,6 +401,17 @@ func _on_timer() -> void:
 				_reveal_seen_before = bool(_profile.get("pretence_seen", false))
 				reveal.play(self, _reveal_seen_before, clean_hands and not demo)
 				SceneRouter.prewarm(UNMAKING_ROUTE)   # Q-T243: load the Unmaking while the reveal plays
+
+
+## Starts the spread warm-up once the Decay reaches D3 (mostly dark, no input needed) and the
+## Unmaking has finished loading. Never blocks.
+func _poll_unmaking_warmup() -> void:
+	if _warm_started or state != State.REVEAL or reveal.decay == null or not reveal.decay.running:
+		return
+	if reveal.decay.t < reveal.decay.tuning.marks()[2] or not SceneRouter.prewarm_ready(UNMAKING_ROUTE):
+		return
+	_warm_started = true
+	SceneWarmup.warm_spread(self, SceneRouter.table.path_for(UNMAKING_ROUTE), _warm)
 
 
 ## A mid-shift stage end (PM 2026-11-19): banner only, no roll. The stage-end banner stays up for
@@ -449,8 +464,13 @@ func _on_extra_life() -> void:
 
 func _on_reveal_finished() -> void:
 	_save_act0_complete()
-	# Q-T243: draw the Unmaking's materials once off-camera while the maw holds its full black.
-	await SceneWarmup.warm(self, SceneRouter.prewarmed(UNMAKING_ROUTE))
+	# Q-T243 / Q-T344: the Unmaking's materials are drawn off-camera a few per frame from the Decay's
+	# D3 on; only what is still undrawn here is waited for (or, if it never began, drawn at once).
+	if not _warm_started:
+		_warm_started = true
+		await SceneWarmup.warm(self, SceneRouter.prewarmed(UNMAKING_ROUTE))
+	while not bool(_warm.get("done", true)):
+		await get_tree().process_frame
 	SceneRouter.go_to(UNMAKING_ROUTE, unmaking_params())
 
 

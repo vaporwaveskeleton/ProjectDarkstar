@@ -120,6 +120,16 @@ func prewarmed(route_id: StringName) -> PackedScene:
 	return res
 
 
+## True when `prewarmed(route_id)` would return at once: the worker has finished (or the scene was
+## already taken). Never blocks, so a caller can wait for it a frame at a time.
+func prewarm_ready(route_id: StringName) -> bool:
+	if _prewarmed.has(route_id):
+		return true
+	if not _prewarm.has(route_id):
+		return false
+	return ResourceLoader.load_threaded_get_status(str(_prewarm[route_id])) == ResourceLoader.THREAD_LOAD_LOADED
+
+
 func _exit_tree() -> void:
 	release_prewarms()
 
