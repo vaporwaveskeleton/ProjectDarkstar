@@ -13,7 +13,11 @@ const SPIN_PER_SEGMENT := 0.02
 const HALO_RINGS := 4            ## ✱ drawing
 const HALO_RADIUS_PX := 34.0     ## ✱ drawing: outermost halo ring
 const HALO_ALPHA := 0.05         ## ✱ drawing: per-ring opacity
-const BODY_FILL_ALPHA := 0.6     ## ✱ drawing: disc and slab fill opacity
+const BODY_FILL_ALPHA := 0.85    ## ✱ drawing: disc and slab fill opacity (pass 8 from 0.6: the far layer no longer shows through)
+## ✱ drawing, pass 8 (Q-T304): dark VOID fog pocket behind it and the rim light's direction.
+const BACKING_RADIUS_PX := 38.0
+const BACKING_ALPHA := 0.5
+const RIM_DIR := Vector2(-0.6, -0.8)
 const ORNAMENT_RING_PX := 14.0   ## ✱ drawing: brass ring radius
 const ORNAMENT_STUDS := 8        ## ✱ drawing: brass studs on the ring
 const PLATE_PX := 3.0            ## ✱ drawing: segment plate size
@@ -33,6 +37,9 @@ func _process(delta: float) -> void:
 func _draw() -> void:
 	if sepulchre == null or sepulchre.stats == null:
 		return
+	# pass 8 (Q-T304): a pocket of dark fog behind it, so it reads above the far layer
+	for r in 4:   # soft-edged: stacked discs, darkest at the core
+		draw_circle(Vector2(0, 4), BACKING_RADIUS_PX * (1.0 - 0.12 * r), Color(Pal.VOID_1, BACKING_ALPHA * 0.4))
 	for r in HALO_RINGS:
 		draw_circle(Vector2.ZERO, HALO_RADIUS_PX * float(r + 1) / HALO_RINGS, Color(Pal.CHOIR_2, HALO_ALPHA))
 	var slab := PackedVector2Array()
@@ -42,6 +49,8 @@ func _draw() -> void:
 	Pal.glow_polyline(self, slab, Pal.BONE_3, Pal.BONE_0)
 	draw_circle(Vector2.ZERO, SLOT_RING_PX + 3.0, Color(Pal.BONE_0, BODY_FILL_ALPHA))
 	draw_arc(Vector2.ZERO, SLOT_RING_PX + 3.0, 0.0, TAU, 32, Pal.BONE_2, 1.0)
+	# rim light on the lit flank (upper left, as every Aether actor)
+	draw_arc(Vector2.ZERO, SLOT_RING_PX + 3.0, RIM_DIR.angle() - 0.9, RIM_DIR.angle() + 0.9, 12, Pal.BONE_4, 1.5)
 	# brass ornament ring with studs
 	draw_arc(Vector2.ZERO, ORNAMENT_RING_PX, 0.0, TAU, 32, Pal.GAS_2, 1.0)
 	for i in ORNAMENT_STUDS:

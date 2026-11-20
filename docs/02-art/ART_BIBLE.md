@@ -856,7 +856,7 @@ Dev-route gating tests: `tests/test_dev_routes_gate.gd`. Backdrop and gallery lo
 ### 16.6f M2 slice: Pale Marches (2026-11-19)
 Slice part A (`AetherFarLayer`, `FrostPresence`, the reveal, the ladder; TECH-001 §2.9, §3.4). Rules in force:
 
-**The Presence (ZONES-001 §2.3).** The Pale Marches Presence is a frost-drifting shelf of ice, bigger than the playfield (`FrostPresence` quad 1700×1000 ✱), only ever seen cropped, with a slow heartbeat of glass light (PHOS-4) travelling its veins. The leviathan stays the T3 Presence (PM ruling 2026-11-19, TECH-001 §11.2). Rules: far layer only; never a hitbox (no physics body under it); never adds light to the play layer; never black (body `far_silhouette`, `presence_pearl` AETHER-4, `presence_frost` BONE-3); it flees the entity (turns, accelerates away and dims over `FLEE_S` 6 s ✱, also on its own when the entity drains the world); heartbeat at most 1 Hz (built at one beat per 4 s ✱); under reduced motion and photosensitivity the pulse is held steady and the flee only dims in place.
+**The Presence (ZONES-001 §2.3).** The Pale Marches Presence is a frost-drifting shelf of ice, bigger than the playfield (`FrostPresence` quad 1700×1000 ✱), only ever seen cropped, with a slow heartbeat of glass light (PHOS-4) travelling its veins. The leviathan stays the T3 Presence (PM ruling 2026-11-19, TECH-001 §11.2). Rules: far layer only; never a hitbox (no physics body under it); never adds light to the play layer; never black (body `far_silhouette`, `presence_pearl` AETHER-4, `presence_frost` BONE-3); it flees the entity (turns, accelerates away and dims over `FLEE_S` 6 s ✱, also on its own when the entity drains the world); heartbeat at most 1 Hz (built at one beat per 4 s ✱); under reduced motion and photosensitivity the pulse is held steady and the flee only dims in place. Amended by §16.6k (pass 8): it subtracts, breathes and watches the Vigil with one eye.
 
 **Lantern-down reveal (CH-3, ZONES-001 §2.3).** Lantern down fades the warm pool out and, over `REVEAL_FADE_S` 0.8 s ✱ (monotonic, no flicker), the far-band life (`reveal_life_count`) and the Presence's full lit pattern in. Far layer only: it changes nothing in the play layer. Lantern up, the Presence is a vague mass. The T3+ part (showing where the Aether is already gone) is built in pass 7 (§16.6i; Q-T129 ruled).
 
@@ -909,7 +909,7 @@ How the M1 sector reads once it wears the Aether. Built; not yet scored by The R
 
 **Brass instrument HUD.** The sector HUD is a set of riveted brass plates and studs (the Ledger Compass bezel, the Composure wick bracket, the Steady Ledger tier, the Vigil Index, the Charge strip, the Seam index). Lamps are glass: lit = phosphor = truth (loaded Charge, honest state); to-come items are chalk rings; the current Seam stud is lit gold. Text is `VectorLabel` stroke glyphs. SIGNAL stays at most 3 on screen; the HUD adds none.
 
-**Actors.** The Grub, the geodes and the Sepulchre have filled bodies, a rim light, a soft glow halo in faction hue (Choir hue for Choir bodies) and crystal facets with a slow shimmer (off under Reduced Motion). The geodes read as crystal spheres' cousins, not as pickups. Collision shapes are unchanged. Nothing in the sector is true black: the only true black remains the entity (§16.1).
+**Actors.** The Grub, the geodes and the Sepulchre have filled bodies, a rim light, a soft glow halo in faction hue (Choir hue for Choir bodies) and crystal facets with a slow shimmer (off under Reduced Motion). The geodes read as crystal spheres' cousins, not as pickups. Collision shapes are unchanged. Nothing in the sector is true black: the only true black remains the entity (§16.1). Amended by §16.6k (pass 8): Grubs, the Sepulchre and the geodes are lifted above the capped far layer.
 
 ### 16.6i Pass 7: the Pale Marches escalation (2026-11-19, PM under the owner autonomy grant)
 PM rulings of 2026-11-19 (TECH-001 §11.2): Q-T124 (§15.4 wins: T1 keeps the dark smudge, a VOID fog tone, never black, round or centred), Q-T126 (G-2 is the one-biome Pale Marches ladder; each tier is the previous tier plus one more kind of damage to the same elements), Q-T129 (built, below). Tests: `features/aether/tests/test_aether_lavish.gd`. Evidence: one windowed `aether_ladder_capture` run, judged by eye. There is no Reviewer score and no human sort yet.
@@ -971,6 +971,53 @@ Ruling Q-T193 (PM under the owner autonomy grant, TECH-001 §11.2): the Ruins ob
 2. The slate can still read as a screen.
 3. The gate's header is faint against the mouth's own arch.
 4. Authored for 640×360 (Q-T159, not built).
+
+### 16.6k Pass 8: readability, the Presence and the lantern-down reveal (2026-11-19, PM under owner direction, overnight push)
+Answers The Reviewer v3, gap 4 ("the Aether's horror doesn't read in stills": the Presence reads as rock, lantern down shows only faint jellyfish, the far layer outshines the play layer, the Grubs are the faintest thing on screen). Rulings Q-T295 to Q-T306, open Q-T307 to Q-T309 (TECH-001 §11.1, §11.2). Tests: `features/aether/tests/test_aether_readability.gd`, `features/sector/tests/test_sector_far_lantern.gd`. Evidence: one windowed before/after capture pass (scenario `aether_readability_capture` plus `m1_sector_look_capture`), judged by eye by the builder; no Reviewer score and no cold-viewer test yet. Every number is an engineering ✱ placeholder.
+
+**The play layer wins (§16.3 enforced).**
+- **The far layer is capped.** The presenter (since pass 8 b; first built in the grade) applies an atmospheric value cap to the whole far layer: luma above a knee is compressed, colour is desaturated a little, and a thin veil of the look's deepest fog sits between the far layer and the play layer. The lantern pool is spared (it stays the warmest light), the floor stays VOID-0 and the entity's black is untouched. PM-01 only (`far_value_cap` and friends); every quality rung keeps it.
+- **The actors are lifted.** Grubs are drawn 1.3× (collision unchanged), with a CHOIR-4 body, a CHOIR-5 rim on the lit flank and a stronger Choir halo. Grubs, the Sepulchre and the geodes sit on a soft pocket of VOID-1 fog (darkest at the core, never black), so they separate from the violet fog by value before hue. The Sepulchre's body is more opaque (the far layer no longer shows through it) and gets a BONE-4 rim. Amends the §16.6h actor line.
+- **Rule:** a Grub is never the faintest thing on screen. Guarded analytically (linear luma against the capped far layer); a capture luminance check is still open (TECH-001 Q-T64, Q-T305).
+
+**The Presence is a presence, not rock (the horror is subtraction, §16.2).**
+- **It drinks.** Behind and around its front and its eye the Aether loses colour and light (the Presence reads the screen behind it through a back-buffer copy), and the fog and the sphere band bend in toward it. Its plates keep less of their cut-stone contrast and value; the light that is left lives in the rim, the veins and the eye.
+- **It breathes.** Its front swells slowly (7 s ✱) with a crawling ripple, and it reaches toward the Vigil along its front.
+- **It watches.** One eye-like void inside its body near the front, at the frame's upper left: a torn almond of VOID tones, a slit pupil at VOID-0, a soft PHOS glow that strengthens when the lantern is down (it opens: it is looking for you). The pupil turns toward the Vigil slowly (at most 0.35 rad/s ✱). One eye only, never a pair or a face; never black; outside the play core. The entity's face rule (N4) and the pareidolia rule (§16.6c) are unchanged. Amends §16.6f: the Presence is no longer indifferent; it still never hunts, never hurts and still flees the entity.
+- Reduced motion freezes the breathing, the reach and the gaze (held at rest); photosensitivity keeps the heartbeat steady as before.
+
+**Lantern down is terrifying (CH-3).**
+- **The sector now feeds the Vigil's lantern to the far layer** (Q-T295): the warm pool follows the ship and lantern down drives the reveal in play, not only in the gallery.
+- **Vast life the lantern hides** (`RevealVast`): up to three bodies, each longer than the frame is tall (470 to 780 px ✱), hang close around the Vigil behind the play layer: a rounded bell of a head, a scalloped mantle, a long tapering trunk with translucent rib bands. They are always there; the lantern's light washes them out, so lantern down shows them at once.
+- **Silhouettes against distant light.** Each is a dark VOID body cut out against a soft AETHER-2 glow of light far behind it, rim-lit in AETHER-3 on the flank facing that light.
+- **Being watched.** Slow rows of PHOS-4 photophores (a 0.2 Hz ✱ wave, head to tail) and one PHOS-5 head light (never a pair) that grows brighter the more the head is turned toward the Vigil. Their heads turn toward the lantern at most 0.12 rad/s ✱; they lag the camera when the ship flies and drift back in after it.
+- **Laws.** Far layer only: never a hitbox, no light in the play layer, never black, gone inside the entity's loss, no colour outside Pal. The reveal keeps its monotonic 0.8 s ramp (no flash, no full-field step). Reduced motion: fixed places, no drift or turn; reduced motion or photosensitivity: steady lights.
+
+**Known weaknesses (pass 8, by eye).**
+1. Lantern up, the Presence's plates still read partly as faceted stone; the eye carries the "presence" (Q-T307).
+2. The vast shapes read as dark looming heads more than as whole animals, since only their front halves enter the frame; tier scaling is open (Q-T308).
+3. With the lantern down the far layer reads lavender and soft overall; the cap compresses the reveal's light too.
+4. The dark fog pockets behind actors read as soft discs when an actor is still.
+5. Cost: only the golden-path perf sample was run; the rungs are unmeasured (Q-T309, TECH-001 §8.5).
+
+#### Pass 8 b: darker, colder, and things with a shape (2026-11-19, PM review of #106)
+Rulings Q-T310 to Q-T317 (TECH-001 §11.2). Supersede the matching pass 8 lines above.
+- **Lantern down is night.** The fog closes to near-VOID and turns cold; only lights keep their value: a dim distant AETHER glow on the horizon, rims, portholes and the eye. The warm pool dies. It follows the reveal's 0.8 s ramp, so there is no flash. The play layer keeps its full read; in the sector the near depth behind play fades with the night.
+- **The bodies have identity.** A small skull on a long ribbed neck, a deep body with two pairs of trailing fins, a tapering tail with trailing tendrils and small dorsal spines. Near-VOID bodies, rim-lit hard (AETHER-5) on the flank facing the distant glow; one crosses in front of the glow so its whole outline shows. Rows of paired PHOS portholes run along both flanks like the lit windows of a ship that is alive; on the near giant a single light is a large fraction of the Vigil's size, so the scale reads at once. Their necks bend so the heads turn toward the Vigil.
+- **The eye is alive.** A PHOS iris of concentric rings with fine fibres, wet BONE-5 glints, a slit pupil that contracts when the gaze locks on the Vigil, a ring of drained, colourless plate round it. Lantern down, the iris is the brightest thing the Presence has.
+- **Chitin, not stone.** While it subtracts, the Presence's plates are dark shells with a narrow wet sheen in a thin-film tint (AETHER-3 to PHOS-4) and fine PHOS veins.
+- **Cost.** The value cap now lives in the present pass (no extra copy). In pass 8 the cap's veil and floor colours were passed in the wrong colour space, which caused the soft lavender wash; fixed.
+
+**Known weaknesses (pass 8 b, by eye).** The near giant's back ridge can still read as a jagged horizon line when its head is off-frame; the sector's front motes (DepthFront) still sprinkle bright points over the silhouettes; the drained ring round the eye is subtle lantern up; the eye's iris is a full disc when the lids are wide open. No cold-viewer test yet (Q-T307, Q-T308).
+
+#### Pass 8 c: no eye reads, a coloured night, three hues (2026-11-19, Fable art-direction review)
+Rulings Q-T400 to Q-T407 (TECH-001 §11.2). Supersede the matching pass 8 and 8 b lines above.
+- **No eye anywhere.** The Presence's eye is gone: no iris, pupil or glint. What is left is a lightless disc inside its body that gives back no light, seen only by what it covers and by the drained, colourless ring round it, with the fog bending in. It is never black (VOID floor) and leans a little toward the Vigil. The serpents carry no light where an eye would be: their porthole rows run up the lit flank of the neck (single there, paired only along the body). The Presence is not the entity (it flees the entity), but no eye reads are allowed on it either.
+- **Rims are directional.** Only the edges that face the distant glow catch it; the rim is widest at the head and thins to the tail; far from the glow the fog swallows it; the far ends of the bodies sink into the fog.
+- **Night is coloured.** Lantern down, the fog sinks to a deep indigo, never a neutral near-black; lights keep their own hue. The Vigil keeps a dim gaslight ember in its lantern housing and a faint warm rim along its upper hull, so it stays the clearest shape. The geodes sink to about 30% with a thin facet glint on their lit edge.
+- **Three hues in the normal state.** Teal in the deep fog, rose-pearl on lit fog, amber only in the lantern's own pool, so lavender is one hue of three. The upper-left crags read as one dark, cool mass.
+
+**Known weaknesses (pass 8 c, by eye).** The lightless disc is subtle in a still (it is meant to be found, not shown); the crag veins can read as thin worms at full size; the lantern-down indigo is a mid-deep value, not the deepest the palette allows. Not re-measured: perf and the flash pass (pass 8 b figures stand in TECH-001 §8.5).
 
 ### 16.7 The Aether Vigil: a brass lantern skiff with visible systems (ruled, PM under owner autonomy grant, 2026-11-19)
 

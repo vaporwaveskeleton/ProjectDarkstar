@@ -229,6 +229,7 @@ func _show(index: int) -> void:
 	_silenced = false
 	var look := _looks[index]
 	_backdrop.apply_look(look)
+	AetherView.grade_material(_screen.material as ShaderMaterial, look)
 	_backdrop.reset_travel()
 	_flight_t = 0.0
 	_flight_on = false
@@ -260,6 +261,7 @@ func _process(delta: float) -> void:
 	_step_flight(delta)
 	_backdrop.set_time(exhibit_time)
 	_backdrop.set_lantern(CAMERA_HOME + LANTERN_OFFSET, look.lantern_radius, _lantern.light.color, _lantern.light.energy)
+	AetherView.night_material(_screen.material as ShaderMaterial, _backdrop)
 	if _flee_at >= 0.0 and not _flee_fired and exhibit_time >= _flee_at:
 		_flee_fired = true
 		_backdrop.presence_flee()

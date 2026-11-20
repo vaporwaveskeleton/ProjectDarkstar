@@ -9,6 +9,8 @@ extends Node2D
 ## Cabinet stage's `field_size` (`arena_source`); real kit bounds come from ZONES-001 later.
 
 const PAUSE_SCENE := preload("res://scenes/sector/pause_screen.tscn")
+## ✱ pass 8 b (Q-T310): share of the near depth behind play (DepthBack) faded out at full night.
+const DEPTH_NIGHT_DIM := 0.75
 const EXIT_STATS := preload("res://data/sector/seam_exit.tres")
 ## Race edge marker layout (`ds_hud.race_marks`, Q-T357).
 const RACE_MARKS := preload("res://data/hud/race_edge_markers.tres")
@@ -326,8 +328,7 @@ func _start_far() -> void:
 	far_centre = _far_last
 	_far.set_field(torus.size)
 	_far.set_camera(far_centre, _camera.zoom.x)
-	# TODO(M1 lantern API, TECH-001 §2.9): call _far.set_lantern(vigil.lantern_world_pos(),
-	# vigil.lantern_radius, vigil.lantern_lit) each frame once the Vigil exposes them.
+	_step_lantern(_far_last)
 
 
 func _process(delta: float) -> void:
@@ -355,8 +356,28 @@ func _step_far() -> void:
 	far_centre += torus.delta(_far_last, now)
 	_far_last = now
 	_far.set_camera(far_centre, _camera.zoom.x)
+	_step_lantern(now)
+	# lantern down (Q-T310): the near depth behind play darkens with the far layer's night, so the
+	# vast shapes' silhouettes are not broken up by bright motes (the play layer is untouched)
+	var night := _far.reveal() * (_far.look.lantern_night if _far.look else 0.0)
+	_depth_back.modulate.a = 1.0 - DEPTH_NIGHT_DIM * night
+	# the geodes sink too, keeping a thin facet glint (pass 8 c, Q-T407; drawing only)
+	if _geodes:
+		for g in _geodes.geodes:
+			if is_instance_valid(g):
+				g.set_dark(night)
 	_depth_back.set_camera(far_centre)
 	_depth_front.set_camera(far_centre)
+
+
+## The Vigil's lantern for the far layer (pass 8, Q-T295; TECH-001 §2.9): its pool follows the ship
+## and lantern down (CH-3) drives the reveal. Position in the far layer's continuous space (the
+## camera's continuous centre plus the shortest camera → Vigil step); radius from the look.
+func _step_lantern(camera_now: Vector2) -> void:
+	if not is_instance_valid(vigil) or vigil.lantern == null or _far.look == null:
+		return
+	var at := far_centre + torus.delta(camera_now, vigil.global_position)
+	_far.set_lantern(at, _far.look.lantern_radius, vigil.lantern.is_up)
 
 
 ## The race this frame (world px): every Charge in flight, every Grub carrying glass, and the
