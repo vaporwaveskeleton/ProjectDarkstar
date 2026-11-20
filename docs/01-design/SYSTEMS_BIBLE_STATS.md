@@ -241,7 +241,7 @@ Owner direction 2026-11-19 ("Act 0 is too simple"), measured against the 1983 re
 | Key | Value | Notes |
 |---|---|---|
 | `ds_cabinet.field.size` | **65,536 × 65,536 px**, wrapping | 256 × 256 screens of 256 px. Owner: matches the reference's 16-bit field. 65,536 ÷ 340 px/s (Vigil top speed, §1.1) ≈ **193 s to cross** |
-| `ds_cabinet.field.neighbourhood_half_px` | 1,024 px ✱ | The units live in a 2,048 × 2,048 box centred on the Vigil (8 × 8 screens). A geode, an empty-handed Grub, an idle Acolyte or loose glass that leaves the box on one axis re-enters on the opposite edge of the box (a local wrap round the Vigil). It is never placed inside the view. Laden Grubs, their escorts, the Sepulchre and the awake entity are never moved |
+| `ds_cabinet.field.neighbourhood_half_px` | **768 px** ✱ | The units live in a 1,536 × 1,536 box centred on the Vigil (≈ 6 × 6 screens; about 1.7× the old 1920 × 720 torus area, so density stays close to the old stages; was 1,024 / 2,048 in the first draft). A geode, an empty-handed Grub, an idle Acolyte or loose glass that leaves the box on one axis re-enters on the opposite edge of the box (a local wrap round the Vigil). It is never placed inside the view. Laden Grubs, their escorts, the Sepulchre and the awake entity are never moved |
 | `ds_cabinet.field.sepulchre_start_px` | 2,560 px ✱ | The Sepulchre is placed this far from the Vigil's start, **straight ahead** of its starting heading: two scanner widths, so it begins just off the Compass, and the edge pip points the way (the 1983 game starts each zone with the boss "about two scanner widths away", straight ahead) |
 | `ds_cabinet.field.sepulchre_leash_px` | 4,096 px ✱ | While the Vigil is farther than this from the Sepulchre (16 screens), the Sepulchre drifts toward it… |
 | `ds_cabinet.field.sepulchre_drift_px_s` | 90 px/s ✱ | …at this speed: always slower than the Vigil, so the Sepulchre can never be escaped for good, and never catches you up |
@@ -254,7 +254,7 @@ Owner direction 2026-11-19 ("Act 0 is too simple"), measured against the 1983 re
 |---|---|---|
 | Compass box | 44 × 44 px, centred at the top of the HUD band (x 106, y 2) | Square, like the reference scanner (~51 px) |
 | `ds_cabinet.compass.px_per_dot` | 32 world px per Compass px ✱ | The inner 40 × 40 px therefore shows **1,280 × 1,280 px ≈ 5 × 5 screens**, centred on the Vigil (the reference shows about 4 screens across). The view box is 8 × 8 px |
-| Off-range Sepulchre | a 3 × 3 pip on the Compass edge, along the true bearing | Honest at T0, like every Compass mark. Nothing else is drawn off-range |
+| Off-range Sepulchre | a 3 × 3 pip on the Compass edge, along the true bearing | Honest at T0, like every Compass mark. Nothing else is drawn off-range. ✱ ENGINEERING: the pip's centre sits 1.5 px inside the edge |
 
 **Proportions (Q-T369; the drawing rules are ART-001 §12.7c).** Longest drawn extent as a share of the 256 px view width. The 1983 reference is in brackets.
 
@@ -264,12 +264,12 @@ Owner direction 2026-11-19 ("Act 0 is too simple"), measured against the 1983 re
 | Grub | **11 px** (was 7–9) | 4.3 % (4.6 %) | `ds_cabinet.size.grub_px` |
 | Acolyte | **15 px** (was 10–12) | 5.9 % (6.3 %) | `ds_cabinet.size.acolyte_px` |
 | Geode, size classes 0 / 1 / 2 | radius **9 / 12 / 15 px** (was 10 / 15 / 21), 18 / 24 / 30 px across | 7.0–11.7 % (7.5–11.7 %) | `ds_cabinet.size.geode_radii` |
-| Mourning Glass shard | 2–3 px (unchanged) | ~1 % (~1 %) | — |
+| Mourning Glass shard | **5 px** (was 2–3; PM direction 2026-11-19, matching the reference crystals ~5 px; pickup and magnet radius unchanged) | ~2 % (~2 %) | `ds_cabinet.size.shard_px` (`size_shard_px`) |
 | Sepulchre / awake entity | ~52–60 px (unchanged) | 20–23 % (20 %) | — |
 
 Hurt radii follow the drawn size: half the drawn extent minus 1 px ✱. Collision stays separate from drawing (CLAUDE.md §3).
 
-**Mix (Q-T370).** New `CabinetStage` switch `acolyte_mine` (default off): an Acolyte with no Vigil inside `acolyte_range` and no escort job lances the nearest geode at its normal fire cycle. The glass it breaks is loose, and anyone can take it. **On for a0_3, a0_4 and a0_5.** The §1.6 counts are unchanged; they now mean "live in the neighbourhood".
+**Mix (Q-T370).** New `CabinetStage` switch `acolyte_mine` (default off): an Acolyte with no Vigil inside `acolyte_range` and no escort job lances the nearest geode at its normal fire cycle. The glass it breaks is loose, and anyone can take it. **On for a0_3, a0_4 and a0_5.** The §1.6 counts are unchanged; they now mean "live in the neighbourhood". ✱ ENGINEERING rows (built, not design numbers): `acolyte_mine_range_px` = 768 px (how far an Acolyte looks for a geode; equals the neighbourhood half-size) and `acolyte_mine_standoff_px` = 36 px (a mining Acolyte hovers this far beyond the geode's edge).
 
 **Stage identities follow the 1983 zone-trait cycle** (Q-T378). The reference cycles worker-heavy → warrior-heavy → planetoid-heavy → void (few planetoids, hardest). §1.6 already maps onto it, so no count changes: a0_1 soft open (cold), **a0_2 Drift = Grub-heavy**, **a0_3 Censer Watch = Acolyte-heavy**, **a0_4 Shoal = geode-rich**, **a0_5 Stillwater = the void** (geode-scarce, last). Each stage card names its trait in the first reminder line.
 
@@ -283,6 +283,9 @@ Hurt radii follow the drawn size: half the drawn extent minus 1 px ✱. Collisio
 | `ds_cabinet.brief.prompt_blink_hz` | 1.5 Hz ✱ | PRESS FIRE TO CONTINUE blinks (under the 3 Hz flash rule). It is steady under photosensitivity or reduced motion |
 | `ds_cabinet.brief.ready_after_s` | 1.5 s ✱ | After the press, a short READY card (was 2.5 s), then play |
 | `ds_cabinet.brief.autopilot_s` | 1.0 s ✱ | `--autopilot` and `--smoke` dismiss the card themselves after this long |
+| Sepulchre card icon radius | 8 px ✱ ENGINEERING | `CabinetBriefIcons` draws the Sepulchre icon on the card at this radius |
+
+Built key names (`CabinetTuning`, `features/cabinet/cabinet_tuning.gd`): `field_neighbourhood_half_px` 768, `field_sepulchre_start_px` 2560, `field_sepulchre_leash_px` 4096, `field_sepulchre_drift_px_s` 90, `compass_px_per_dot` 32, `size_grub_px` 11, `size_acolyte_px` 15, `size_geode_radii` [9, 12, 15], `size_shard_px` 5, `acolyte_enter_hold_s` 1.0, `acolyte_mine_range_px` 768 ✱, `acolyte_mine_standoff_px` 36 ✱, `unmakings_required` 3, `brief_arm_s` 0.35, `brief_prompt_blink_hz` 1.5, `brief_ready_after_s` 1.5, `brief_autopilot_s` 1.0. (`ds_cabinet.…` names above map to these flat property names.)
 
 ## 2. The Dark Star — Waking lifecycle numbers
 

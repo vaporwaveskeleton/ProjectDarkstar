@@ -329,14 +329,14 @@ The "THAT WAS A PRETENCE." title card is replaced by a wordless Decay of the arc
 The owner found Act 0 "a bit too simple". Ruled by the PM under owner direction, 2026-11-19 overnight push (TECH-001 Q-T365–Q-T377). Numbers: SYS-001 §1.7 (all PROPOSED). Study: `research/arcade_layer_study.md` §10.
 
 1. ✅ Docs: GDD §6.1/§19, SYS-001 §1.7, ART-001 §12.7c, UI-001 §10, NARR-001 §7.5, TECH-001 §2.10/§11 (docs-only PR).
-2. ⏳ The 65,536 px field with a travelling neighbourhood; Sepulchre start, leash and drift.
-3. ⏳ HUD band 48 px, play view 256 × 256; local square Ledger Compass with an off-range pip.
-4. ⏳ Re-proportioned Grubs, Acolytes and geodes (`ds_cabinet.size.*`).
-5. ⏳ `acolyte_mine` on a0_3–a0_5.
-6. ⏳ Three-Unmaking count (`unmakings_required` = 3, asserted against the roster).
-7. ⏳ Stage card: paused, PRESS FIRE TO CONTINUE on `fire_lance`, `pause`/`ui_cancel` open the pause overlay; `CAB_BRIEF_*` keys in `locale/en.po`.
-8. ⏳ Autopilot clears Act 0 at the new scale; tests; one headless golden path; one windowed capture pass (card, scale, scanner, an Unmaking).
-9. ⏳ Reconcile with the cursed-cabinet Hauntings on the READY moment (Q-T374) and with #101's bezel.
+2. ✅ The 65,536 px field with a travelling neighbourhood (768 px half-size); Sepulchre start, leash and drift.
+3. ✅ HUD band 48 px, play view 256 × 256; local square Ledger Compass with an off-range pip.
+4. ✅ Re-proportioned Grubs, Acolytes, geodes and shards (`ds_cabinet.size.*`; shards 5 px).
+5. ✅ `acolyte_mine` on a0_3–a0_5.
+6. ✅ Three-Unmaking count (`unmakings_required` = 3, asserted against the roster).
+7. ✅ Stage card: paused, PRESS FIRE TO CONTINUE on `fire_lance`, `pause`/`ui_cancel` open the pause overlay; `CAB_BRIEF_*` keys in `locale/en.po`.
+8. ✅ Autopilot clears Act 0 at the new scale (17/20 seeds, Q-T379); tests; headless golden path. ⏳ windowed capture pass (card, scale, scanner, an Unmaking).
+9. ✅ Hauntings reconciled, no change needed (Q-T374: they run at stage start, the card's opening); #101's bezel unaffected.
 
 ---
 
