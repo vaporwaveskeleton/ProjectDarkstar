@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="SectorCameraAetherStats" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://features/sector/sector_camera_aether_stats.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+ds_namespace = "ds_camera.aether"
+source_section = "SYS-001 §1.1a (camera velocity lead)"
+velocity_lead_s = 0.25
+velocity_lead_max_px = 48.0

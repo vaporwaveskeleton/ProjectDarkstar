@@ -32,6 +32,9 @@ signal credits_stat_shown(index: int)       ## stat line `index` (0..3) just scr
 const MARGIN := 4.0              ## text keeps this far from the screen edge
 const ZONE_GAP := 6.0            ## ✱ px between the zone line and the READY title below it
 const READY_CLEAR := 14.0     ## ✱ px between the READY card and the play-view centre (Vigil hull 12 px + margin)
+const CREDIT_LINE_H := float(PixelText.H * 2)   ## a credits line's glyph height (scale 2)
+const CREDIT_PITCH := 18.0       ## px from one credits line to the next (unchanged layout pitch)
+const CREDIT_ENTRY_GAP := 4.0    ## extra px between credits entries
 
 
 func _ready() -> void:
@@ -161,13 +164,45 @@ func _draw() -> void:
 		_block(top + 8.0, _line, 3, Look.c(Pal.BONE_5))
 
 
+## The credits window (play-view y): from MARGIN below the HUD rule down to READY_CLEAR above the
+## play-view centre, where the Vigil sits, the same clearance as the READY card. A credits line is
+## drawn only while it is wholly inside it, so the roll never crosses the HUD rule, the Vigil or the
+## footer (Reviewer v2 §I; PM under owner autonomy grant, 2026-11-19).
+func credits_top() -> float:
+	return MARGIN
+
+
+func credits_bottom() -> float:
+	return size.y * 0.5 - READY_CLEAR
+
+
+
 ## Top edge (play-view y) of credits entry `i` when the roll has run `t` seconds. One layout for
 ## drawing and for `credits_stat_shown`, so they cannot disagree (wrap and pitch match _draw_credits).
+## Entries rise from the window's bottom edge.
 func credit_entry_top(i: int, t: float) -> float:
-	var y := size.y - t * _tuning().credits_scroll_px_per_s
+	var y := credits_bottom() - t * _tuning().credits_scroll_px_per_s
 	for k in mini(i, credits.size()):
-		y += PixelText.wrap(credits[k], 2, size.x - 2.0 * MARGIN).size() * 18.0 + 4.0
+		y += PixelText.wrap(credits[k], 2, size.x - 2.0 * MARGIN).size() * CREDIT_PITCH + CREDIT_ENTRY_GAP
 	return y
+
+
+## True when a credits line whose glyphs start at `y` is wholly inside the credits window.
+func credit_line_visible(y: float) -> bool:
+	return y >= credits_top() and y + CREDIT_LINE_H <= credits_bottom()
+
+
+## Every credits line drawn at roll time `t`, as play-view rects (the glyph box, full width).
+func visible_credit_rects(t: float) -> Array[Rect2]:
+	var out: Array[Rect2] = []
+	for i in credits.size():
+		var y := credit_entry_top(i, t)
+		for line in PixelText.wrap(credits[i], 2, size.x - 2.0 * MARGIN):
+			if credit_line_visible(y):
+				var w := float(PixelText.width(line, 2))
+				out.append(Rect2((size.x - w) * 0.5, y, w, CREDIT_LINE_H))
+			y += CREDIT_PITCH
+	return out
 
 
 func _draw_credits() -> void:
@@ -178,17 +213,17 @@ func _draw_credits() -> void:
 		if glitch > 0.0 and (i * 7 + int(_t * 8.0)) % 3 == 0:
 			x_shift = (sin(_t * 40.0 + i) * 12.0) * glitch
 		for line in PixelText.wrap(credits[i], 2, size.x - 2.0 * MARGIN):
-			if y > -16.0 and y < size.y + 2.0:
+			if credit_line_visible(y):
 				PixelText.draw_centered(self, size.x * 0.5 + x_shift, y, line, col, 2)
-			y += 18.0
+			y += CREDIT_PITCH
 
 
-## The stat lines announce themselves the first time their top edge scrolls into the view.
+## The stat lines announce themselves the first time they show (wholly inside the credits window).
 func _emit_stat_lines() -> void:
 	for n in _stat_indices.size():
 		if _stats_emitted.has(n):
 			continue
-		if credit_entry_top(_stat_indices[n], credits_t) < size.y:
+		if credit_entry_top(_stat_indices[n], credits_t) + CREDIT_LINE_H <= credits_bottom():
 			_stats_emitted[n] = true
 			credits_stat_shown.emit(n)
 

@@ -22,10 +22,12 @@ enum Goal { CLEAR_SEPULCHRE, UNMAKE_ENTITY }
 @export var goal: Goal = Goal.UNMAKE_ENTITY
 @export var seed: int = 1
 @export var spine_stars: bool = false                ## S8: 20 faint stars trace the entity's spine (THE LAST NORMAL DAY, a0_5, only)
+@export var backdrop: StringName = &""                 ## stage signature drawn behind the stars (Starfield.BACKDROPS): "" plain, currents, chains, shoal, horizon
 
 # --- P2 "pressure" switches (PM Q-T105, 2026-11-19). Every default reproduces the pre-P2 game. ---
 @export var acolyte_reinforce_s: float = 0.0         ## s of play between censer bells (Acolyte reinforcements); 0 = off (Acolytes never respawn)
 @export var acolyte_cap: int = 0                     ## a bell brings one Acolyte only while fewer than this many live (guard ring included)
+@export var reinforce_after_wake: bool = true         ## false = the bells stop once the Sepulchre wakes (a pending one is called off)
 @export var geode_drift_s: float = 0.0               ## s between drift-in geodes once the field is thinned (CabinetTuning.geode_drift_floor); 0 = off
 @export var grubs_after_wake: bool = false           ## the Sepulchre keeps birthing replacement Grubs after the wake
 @export var grub_pilfer: bool = false                ## Grubs snatch nearby loose glass the Vigil's magnet is not pulling

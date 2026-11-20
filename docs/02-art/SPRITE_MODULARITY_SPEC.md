@@ -94,6 +94,8 @@ Rule: `assets/sprites/generated/**` is **never edited by hand after it is used i
 ### 4.1 The Aether Vigil: modules and sockets (ruled, PM under owner autonomy grant, 2026-11-19)
 
 > **Status: ruled, PM under owner autonomy grant, 2026-11-19** (TECH-001 Q-T170). The look is in ART-001 §16.7, and the node-to-module map is in LOOP-001 §3.8. The `vigil` row in §4 stays the Act 0 Vigil.
+>
+> **Built 2026-11-19** as `AetherVigilRig` (`MODULE_PARTS` map the modules to these sockets; runtime vector, no sprites); ✱ values in `ds_vigil.aether_look`.
 
 The Act 0 Vigil keeps the `vigil` row above. The Aether Vigil uses the same kit id and the same naming (§2: `ds_vigil_<part>[_<variant>]`), with the proposed parts and sockets below. Sockets are named points on the `core`; the §5.1 descriptor's `socket` field refers to them. Each part is symmetric about its socket axis (§6). `z` runs from back to front.
 

@@ -58,6 +58,11 @@ var lamp_down := false
 var dark_t := 0.0
 var dark_revealed := false
 var tree_lit := false
+## The Tree station's purchase: a Callable () -> StringName returning the node bought, or &"" when
+## nothing was (Q-T191). Invalid = the legacy free first lamp (stand-alone tests).
+var tree_buyer: Callable
+## The node the last Tree use bought ("" when none).
+var last_node: StringName = &""
 var codex_open := false
 var codex_read := false
 var guttered := false
@@ -136,7 +141,7 @@ func focus() -> StringName:
 func usable(id: StringName) -> bool:
 	match id:
 		TREE:
-			return tickets_landed and not tree_lit
+			return tickets_landed and (not tree_lit or tree_buyer.is_valid())
 		CODEX_DESK:
 			return true
 		CHALK_DESK, HOURGLASS:
@@ -280,8 +285,13 @@ func use() -> Array[StringName]:
 		return ev
 	match id:
 		TREE:
-			tree_lit = true
-			ev.append(EV_TREE_LIT)
+			var bought: StringName = &"lamp"
+			if tree_buyer.is_valid():
+				bought = StringName(tree_buyer.call())
+			if bought != &"":
+				last_node = bought
+				tree_lit = true
+				ev.append(EV_TREE_LIT)
 		CODEX_DESK:
 			codex_open = true
 			codex_read = true

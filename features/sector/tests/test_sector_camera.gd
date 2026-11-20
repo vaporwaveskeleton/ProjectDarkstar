@@ -154,3 +154,11 @@ func test_reduced_motion_mid_shake_stops_it() -> void:
 func test_zoom_is_fixed_at_data_value() -> void:
 	var cam := _camera(_target(Vector2.ZERO))
 	assert_vector(cam.zoom).is_equal(Vector2.ONE)
+
+
+func test_velocity_lead_is_scaled_and_capped() -> void:
+	var aether := preload("res://data/sector/sector_camera_aether.tres") as SectorCameraAetherStats
+	var slow := SectorCamera.velocity_lead(Vector2(100, 0), aether.velocity_lead_s, aether.velocity_lead_max_px)
+	assert_float(slow.x).is_equal_approx(100.0 * aether.velocity_lead_s, 0.001)
+	var fast := SectorCamera.velocity_lead(Vector2(0, 900), aether.velocity_lead_s, aether.velocity_lead_max_px)
+	assert_float(fast.length()).is_equal_approx(aether.velocity_lead_max_px, 0.001)

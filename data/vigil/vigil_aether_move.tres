@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="VigilAetherStats" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://features/vigil/vigil_aether_stats.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+ds_namespace = "ds_vigil.aether_move"
+source_section = "SYS-001 §1.1a (Aether handling profile)"
+enabled = true
+max_speed = 220.0
+accel = 560.0
+drag = 0.9
+brake = 700.0
+hull_turn = 180.0
+thrust_lateral = 0.45
+thrust_reverse = 0.6
+lantern_down_thrust = 0.7
+lantern_down_drag = 0.6
+surge_impulse = 240.0
+surge_time = 0.22
+surge_cooldown = 2.0
+surge_charges = 1
+surge_cooldown_floor = 0.55
