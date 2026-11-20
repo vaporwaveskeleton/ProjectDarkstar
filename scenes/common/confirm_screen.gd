@@ -2,6 +2,8 @@ class_name ConfirmScreen
 extends Screen
 ## Reusable two-choice confirmation. Default focus is the SAFE choice (cancel), so a mashed
 ## confirm button never triggers the destructive action. ui_cancel = cancel.
+## Costume (MenuSkin): the cabinet service screen in Act 0, brass in the Aether; a caution plate (GAS).
+## Cancel sits first (left) and holds focus; Confirm is the second choice.
 
 signal confirmed
 signal cancelled
@@ -13,10 +15,10 @@ const SCENE_PATH := "res://scenes/common/confirm_screen.tscn"
 @export var confirm_key: String = ""
 @export var cancel_key: String = ""
 
-@onready var _title: Label = %Title
-@onready var _body: Label = %Body
-@onready var _confirm: Button = %Confirm
-@onready var _cancel: Button = %Cancel
+@onready var _title: MenuText = %Title
+@onready var _body: MenuText = %Body
+@onready var _confirm: MenuRow = %Confirm
+@onready var _cancel: MenuRow = %Cancel
 
 
 static func create(p_title: String, p_body: String, p_confirm: String, p_cancel: String) -> ConfirmScreen:
@@ -29,10 +31,10 @@ static func create(p_title: String, p_body: String, p_confirm: String, p_cancel:
 
 
 func _ready() -> void:
-	_title.text = title_key
-	_body.text = body_key
-	_confirm.text = confirm_key
-	_cancel.text = cancel_key
+	_title.key = StringName(title_key)
+	_body.key = StringName(body_key)
+	_confirm.key = StringName(confirm_key)
+	_cancel.key = StringName(cancel_key)
 	_confirm.pressed.connect(_on_confirm)
 	_cancel.pressed.connect(cancel)
 	super()

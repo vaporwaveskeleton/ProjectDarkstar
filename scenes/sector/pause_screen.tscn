@@ -1,7 +1,12 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scenes/sector/pause_screen.gd" id="1"]
 [ext_resource type="Script" path="res://core/ui/fit_scroll_container.gd" id="fit"]
+[ext_resource type="Script" path="res://core/ui/menu_frame.gd" id="frame"]
+[ext_resource type="Script" path="res://core/ui/menu_text.gd" id="text"]
+[ext_resource type="Script" path="res://core/ui/menu_rule.gd" id="rule"]
+[ext_resource type="Script" path="res://core/ui/menu_row.gd" id="row"]
+[ext_resource type="Script" path="res://core/ui/menu_ornament.gd" id="orn"]
 
 [node name="PauseScreen" type="Control" node_paths=PackedStringArray("default_focus")]
 process_mode = 3
@@ -12,7 +17,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1")
-default_focus = NodePath("Center/Panel/Layout/Scroll/Rows/Resume")
+default_focus = NodePath("Center/Panel/Layout/Body/Scroll/Rows/Resume")
 
 [node name="Dim" type="Panel" parent="."]
 layout_mode = 1
@@ -33,41 +38,72 @@ grow_vertical = 2
 
 [node name="Panel" type="PanelContainer" parent="Center"]
 layout_mode = 2
+script = ExtResource("frame")
 
 [node name="Layout" type="VBoxContainer" parent="Center/Panel"]
 layout_mode = 2
+theme_override_constants/separation = 4
 
-[node name="Title" type="Label" parent="Center/Panel/Layout"]
+[node name="Title" type="Control" parent="Center/Panel/Layout"]
+unique_name_in_owner = true
 layout_mode = 2
-theme_type_variation = &"HeaderLabel"
-text = "PAUSE_TITLE"
-horizontal_alignment = 1
+script = ExtResource("text")
+key = &"PAUSE_TITLE"
+role = 0
 
-[node name="Scroll" type="ScrollContainer" parent="Center/Panel/Layout"]
+[node name="HeaderRule" type="Control" parent="Center/Panel/Layout"]
+unique_name_in_owner = true
 layout_mode = 2
+script = ExtResource("rule")
+heavy = true
+
+[node name="Body" type="HBoxContainer" parent="Center/Panel/Layout"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Ornament" type="Control" parent="Center/Panel/Layout/Body"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+script = ExtResource("orn")
+base_min = Vector2(84, 84)
+
+[node name="Divider" type="Control" parent="Center/Panel/Layout/Body"]
+layout_mode = 2
+script = ExtResource("rule")
+vertical = true
+
+[node name="Scroll" type="ScrollContainer" parent="Center/Panel/Layout/Body" node_paths=PackedStringArray("also_reserve")]
+layout_mode = 2
+size_flags_vertical = 4
 script = ExtResource("fit")
+also_reserve = [NodePath("../../Title"), NodePath("../../HeaderRule")]
 
-[node name="Rows" type="VBoxContainer" parent="Center/Panel/Layout/Scroll"]
-custom_minimum_size = Vector2(180, 0)
+[node name="Rows" type="VBoxContainer" parent="Center/Panel/Layout/Body/Scroll"]
+custom_minimum_size = Vector2(170, 0)
 layout_mode = 2
+theme_override_constants/separation = 3
 
-[node name="Resume" type="Button" parent="Center/Panel/Layout/Scroll/Rows"]
+[node name="Resume" type="BaseButton" parent="Center/Panel/Layout/Body/Scroll/Rows"]
 unique_name_in_owner = true
 layout_mode = 2
 focus_neighbor_top = NodePath("../Abandon")
 focus_neighbor_bottom = NodePath("../Settings")
-text = "MENU_RESUME"
+script = ExtResource("row")
+key = &"MENU_RESUME"
 
-[node name="Settings" type="Button" parent="Center/Panel/Layout/Scroll/Rows"]
+[node name="Settings" type="BaseButton" parent="Center/Panel/Layout/Body/Scroll/Rows"]
 unique_name_in_owner = true
 layout_mode = 2
 focus_neighbor_top = NodePath("../Resume")
 focus_neighbor_bottom = NodePath("../Abandon")
-text = "MENU_SETTINGS"
+script = ExtResource("row")
+key = &"MENU_SETTINGS"
 
-[node name="Abandon" type="Button" parent="Center/Panel/Layout/Scroll/Rows"]
+[node name="Abandon" type="BaseButton" parent="Center/Panel/Layout/Body/Scroll/Rows"]
 unique_name_in_owner = true
 layout_mode = 2
 focus_neighbor_top = NodePath("../Settings")
 focus_neighbor_bottom = NodePath("../Resume")
-text = "MENU_ABANDON_RUN"
+script = ExtResource("row")
+key = &"MENU_ABANDON_RUN"

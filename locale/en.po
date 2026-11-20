@@ -100,6 +100,97 @@ msgstr "Weapon Muzzle Flash"
 msgid "SETTINGS_MUZZLE_FLASH_DESC"
 msgstr "Shows a brief spark at the gun each time you fire. Turn it off if flashes bother you."
 
+#. Settings row description (shown under the page when the row has focus).
+msgid "SETTINGS_LARGE_TEXT_DESC"
+msgstr "Doubles the size of menu text."
+
+#. Settings row description.
+msgid "SETTINGS_REDUCED_MOTION_DESC"
+msgstr "Swaps strong motion, such as shakes and sweeps, for calmer versions."
+
+#. Settings row description. Must stay true: the mode never hides information (GDD §10).
+msgid "SETTINGS_PHOTOSENSITIVITY_DESC"
+msgstr "Removes flicker, flashes and strobing. Nothing you need is hidden."
+
+#. Settings row description. Steady Ledger is a glossary name (WARP-001 §4.4).
+msgid "SETTINGS_STEADY_LEDGER_DESC"
+msgstr "Keeps the HUD honest: its readouts never lie, and Esc always pauses."
+
+#. Toggle value: the setting is on.
+msgid "SETTINGS_ON"
+msgstr "On"
+
+#. Toggle value: the setting is off.
+msgid "SETTINGS_OFF"
+msgstr "Off"
+
+#. Settings page tab.
+msgid "SETTINGS_TAB_ACCESSIBILITY"
+msgstr "Accessibility"
+
+msgid "SETTINGS_TAB_ACCESSIBILITY_DESC"
+msgstr "Text size, motion, flashes and an honest HUD."
+
+#. Settings page tab.
+msgid "SETTINGS_TAB_VIDEO"
+msgstr "Video"
+
+msgid "SETTINGS_TAB_VIDEO_DESC"
+msgstr "How weapon effects look on screen."
+
+#. Settings page tab: a read-only reference of the current bindings.
+msgid "SETTINGS_TAB_CONTROLS"
+msgstr "Controls"
+
+msgid "SETTINGS_TAB_CONTROLS_DESC"
+msgstr "What each control does, on keyboard and mouse and on a gamepad."
+
+#. Act 0 only: the cabinet's settings page is its operator service mode (a period arcade term).
+msgid "MENU_SERVICE_MODE"
+msgstr "Service Mode"
+
+#. Controls reference: column headings.
+msgid "CONTROLS_COLUMN_ACTION"
+msgstr "Action"
+
+msgid "CONTROLS_COLUMN_KEYS"
+msgstr "Keyboard"
+
+msgid "CONTROLS_COLUMN_PAD"
+msgstr "Gamepad"
+
+#. Controls reference: an action with no binding on that device.
+msgid "CONTROLS_UNBOUND"
+msgstr "-"
+
+#. Controls reference rows (GDD §4.1 action names; glossary words).
+msgid "CONTROLS_MOVE"
+msgstr "Move"
+
+msgid "CONTROLS_AIM"
+msgstr "Aim"
+
+msgid "CONTROLS_FIRE_LANCE"
+msgstr "Fire Arc-Lance"
+
+msgid "CONTROLS_DEPLOY_CHARGE"
+msgstr "Deploy Charge"
+
+msgid "CONTROLS_SURGELIGHT"
+msgstr "Surgelight"
+
+msgid "CONTROLS_LANTERN"
+msgstr "Lantern"
+
+msgid "CONTROLS_BRAKE"
+msgstr "Brake"
+
+msgid "CONTROLS_CODEX"
+msgstr "Codex"
+
+msgid "CONTROLS_PAUSE"
+msgstr "Pause"
+
 #. HUD readout of the Vigil's remaining hull. {count} is a number.
 msgid "HUD_HULL_COUNT"
 msgid_plural "HUD_HULL_COUNT_PLURAL"
