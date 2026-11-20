@@ -11,7 +11,7 @@ extends RefCounted
 ## Saves happen only here, only at these call sites (§4.2a, §7.2, Q-T139):
 ##   arrive_at_ruins → profile + iteration, `ruins_entry`
 ##   end_seam (not the last) → run, `seam_boundary`
-##   die / win / abandon → run + iteration, `run_end`
+##   die / win / abandon / return_from_frontier → run + iteration, `run_end`
 ## Never from tick, enter_seam, a sky or any mid-Seam moment.
 
 signal iteration_started()
@@ -34,6 +34,9 @@ const OUTCOME_DIED := &"died"
 const OUTCOME_WON := &"won"
 const OUTCOME_ABANDONED := &"abandoned"
 const OUTCOME_NINTH_SKY := &"ninth_sky"
+## Q-T276 (PM 2026-11-19 overnight): the run ends at the slice frontier through the cleared Seam's
+## exit throat (`return_from_frontier`). Banks like a win; costs and refunds no clock.
+const OUTCOME_RETURNED := &"returned"
 
 ## Clock pause reasons (Q-T138). Others may be added by callers; any active reason stops the clock.
 const PAUSE_MENU := &"pause"
@@ -231,8 +234,42 @@ func enter_seam() -> Dictionary:
 ## Seam clear: the one write-back from a sector. Composure and Charges carry unchanged (Q-T140),
 ## Ember +report +Seam clear (SYS-001 §7.2). The last Seam's clear wins the run.
 func end_seam(report: SeamReport) -> bool:
+	if not _write_back(report):
+		return false
+	var cleared := _run.seam_index
+	seam_cleared.emit(cleared)
+	if cleared >= stats.seams_per_run:
+		return win()
+	_run.seam_index += 1
+	_save(SLOT_RUN, REASON_SEAM_BOUNDARY)
+	return true
+
+
+## True when the live run's current Seam is the slice frontier (Q-T276): its exit throat leads back
+## to the Ruins instead of into the next Seam. `slice_last_seam` 0 = no frontier (all five Seams).
+func at_frontier() -> bool:
+	return _run.is_active() and stats.slice_last_seam > 0 \
+		and _run.seam_index >= stats.slice_last_seam and _run.seam_index < stats.seams_per_run
+
+
+## The cleared Seam's exit throat at the slice frontier (Q-T276): write back and pay the Seam clear
+## exactly as `end_seam` (Q-T145), then end the run as `returned`. In-run Ember banks in full; no
+## death lump and no win refund. One write set, `run_end` (no `seam_boundary` write first).
+## Outside the frontier this is `end_seam`.
+func return_from_frontier(report: SeamReport) -> bool:
+	if not at_frontier():
+		return end_seam(report)
+	if not _write_back(report):
+		return false
+	seam_cleared.emit(_run.seam_index)
+	_end_run(OUTCOME_RETURNED)
+	_save_run_end()
+	return true
+
+
+func _write_back(report: SeamReport) -> bool:
 	if not _run.is_active() or not _in_seam or report == null:
-		push_warning("RunSession: end_seam outside a Seam")
+		push_warning("RunSession: Seam write-back outside a Seam")
 		return false
 	_in_seam = false
 	if stats.carry_between_seams:
@@ -242,12 +279,6 @@ func end_seam(report: SeamReport) -> bool:
 		_run.composure = -1.0
 		_run.charges = 0
 	_run.ember_in_run += maxi(0, report.ember_earned) + stats.seam_clear_ember
-	var cleared := _run.seam_index
-	seam_cleared.emit(cleared)
-	if cleared >= stats.seams_per_run:
-		return win()
-	_run.seam_index += 1
-	_save(SLOT_RUN, REASON_SEAM_BOUNDARY)
 	return true
 
 
@@ -285,6 +316,16 @@ func abandon() -> bool:
 	consume_clock(cost, &"abandon")
 	_save_run_end()
 	return true
+
+
+## Abandon Run from the sector's pause menu, mid-Seam (Q-T277, amends Q-T144 "refused mid-Seam"):
+## the Seam ends unwon and the run is abandoned at the death price; in-run Ember banks (Q-T152 (a)).
+## The Seam's own score is not reported, so it pays nothing. Saves `run_end`, as any abandon.
+func abandon_from_seam() -> bool:
+	if not _run.is_active():
+		return false
+	_in_seam = false
+	return abandon()
 
 
 func _end_run(outcome: StringName) -> void:

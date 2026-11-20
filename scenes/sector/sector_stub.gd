@@ -2,12 +2,23 @@ extends Node2D
 ## SectorHost stub — owns one sector's lifetime (TECH-001 §2.1): spawn, run, tear down.
 ## Bootstrap scope: one empty wrapping arena, the Vigil, a hull readout and the pause flow.
 ## No kit assembly yet (SeamAssembler is future work).
+## The run's back door (Q-T275..Q-T279): SeamExit opens the exit throat when the Sepulchre is unmade;
+## flying into it reports the Seam (`take_exit`). A hull breach (`die`) and Abandon Run
+## (`abandon_from_seam`) end the run; every run end routes to the Ruins, never the title.
 ## Q-T58: the M1 sandbox is a torus the size of the Cabinet's field. The size has ONE source, the
 ## Cabinet stage's `field_size` (`arena_source`); real kit bounds come from ZONES-001 later.
 
 const PAUSE_SCENE := preload("res://scenes/sector/pause_screen.tscn")
+const EXIT_STATS := preload("res://data/sector/seam_exit.tres")
+## Where a run goes when it ends (Q-T152 (d), Q-T279): the hub, never the title.
+const RUINS_ROUTE := &"ruins"
+const SECTOR_ROUTE := &"sector"
+## Route param the Ruins receives: the outcome the run ended with (`RunSessionCore.OUTCOME_*`).
+const PARAM_RUN_OUTCOME := "run_outcome"
 
 @export var vigil_scene: PackedScene
+## How this Seam clears and is left (Q-T275, Q-T278).
+@export var exit_stats: SeamExitStats = EXIT_STATS
 ## Where the arena size comes from: the Cabinet stage resource (its `field_size`, 1920×720 ✱).
 @export var arena_source: CabinetStage
 ## Stats for the throwaway run core built when no `session` route param is handed in (§4.2a).
@@ -60,6 +71,27 @@ var _far_last := Vector2.ZERO
 var soundscape: SectorSoundscape
 var flight_voice: VigilFlightVoice
 var _breached := false
+## The Seam's clear rule and exit throat (built in _start_exit).
+var seam_exit: SeamExit
+## Who receives route requests (SceneRouter unless a test injects one): needs go_to(id, params).
+var router: Object
+## True once this sector has asked to leave (exit, death or abandon): one request per sector.
+var left := false
+## Seconds left before a breached hull returns to the Ruins (< 0 = none pending).
+var _return_in := -1.0
+## The outcome the pending return carries.
+var _return_outcome: StringName = &""
+
+## Read-only scalars for the automation id `sector/run` (exit). Dev/QA reads.
+var seam_cleared: bool:
+	get: return seam_exit.cleared if seam_exit else false
+var exit_taken: bool:
+	get: return seam_exit.entered if seam_exit else false
+## Torus offset (px) from the Vigil to the open throat: steer by it in captures.
+var throat_dx: float:
+	get: return seam_exit.throat_offset().x if seam_exit else 0.0
+var throat_dy: float:
+	get: return seam_exit.throat_offset().y if seam_exit else 0.0
 
 ## Read-only scalars for the automation id `sector/run` (the golden path). Dev/QA reads.
 var seam_index: int:
@@ -170,6 +202,8 @@ var grubs_carrying: int:
 	get: return _grubs.carrying_count() if _grubs else 0
 var segments: int:
 	get: return _procession.sepulchre.segments if _procession and is_instance_valid(_procession.sepulchre) else 0
+var segments_knocked: int:
+	get: return _procession.sepulchre.segments_knocked if _procession and is_instance_valid(_procession.sepulchre) else 0
 var deposited_shards: int:
 	get: return _procession.sepulchre.deposited_shards if _procession and is_instance_valid(_procession.sepulchre) else 0
 var sepulchre_complete: bool:
@@ -209,6 +243,9 @@ func _ready() -> void:
 	vigil.hull_breached.connect(_on_hull_breached)
 	_overlays.emptied.connect(_on_overlays_emptied)
 	_start_sound()
+	_start_exit()
+	if router == null:
+		router = get_node_or_null(^"/root/SceneRouter")
 	_use_session(_throwaway_session(), true)
 	_start_far()
 	_bind_warp()
@@ -241,6 +278,21 @@ func _start_sound() -> void:
 	vigil.add_child(flight_voice)
 
 
+## The Seam's clear rule and its exit throat (Q-T275, Q-T278). Added last, so its physics tick runs
+## after SectorWrap's (the Vigil is on the canonical field when the pass is checked). Dev switches
+## `--clear-knocks=N` / `--sepulchre-start=N` (captures) apply in dev builds only.
+func _start_exit() -> void:
+	seam_exit = SeamExit.new()
+	seam_exit.name = "SeamExit"
+	seam_exit.stats = exit_stats
+	var sep: Sepulchre = _procession.sepulchre if _procession else null
+	seam_exit.bind(torus, vigil, sep, _actors, bool(SettingsService.get_value(&"reduced_motion")))
+	if LaunchRoute.is_dev_build():
+		seam_exit.apply_dev_args(OS.get_cmdline_user_args())
+	seam_exit.throat_entered.connect(take_exit)
+	add_child(seam_exit)
+
+
 ## The Lantern Tree nodes bought in the Ruins shape the Vigil's Aether handling (Q-T191). A `--tree=`
 ## tester override (captures) wins; the throwaway core owns nothing, so it leaves the Vigil alone.
 func _apply_bought_nodes() -> void:
@@ -264,9 +316,13 @@ func _start_far() -> void:
 	# vigil.lantern_radius, vigil.lantern_lit) each frame once the Vigil exposes them.
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	_step_far()
 	_refresh_hud()
+	if _return_in >= 0.0:
+		_return_in -= delta
+		if _return_in < 0.0:
+			_return_to_ruins(_return_outcome)
 
 
 ## Warp at Seam entry (WARP-001 §1.3): the composer reads the session's drives and builds the tier's set.
@@ -341,14 +397,49 @@ func _use_session(s: RunSessionCore, throwaway: bool) -> void:
 
 
 ## Seam clear (TECH-001 §4.2a): the only write-back, a SeamReport built from the live nodes.
-## The M1 sandbox has no exit yet, so nothing in the sector calls this; tests and tools do.
+## `end_seam` only (no route); the exit throat goes through `take_exit`.
 func clear_seam() -> bool:
+	return session.end_seam(seam_report())
+
+
+## The SeamReport of this Seam now: Composure, Charges, and Ember = floor(score / divisor) (SYS-001 §7.1).
+func seam_report() -> SeamReport:
 	var report := SeamReport.new()
 	_composure.report_into(report)
 	_magazine.report_into(report)
 	var per_ember := maxi(1, session.stats.score_per_ember) if session and session.stats else 1
 	report.ember_earned = floori(float(score) / float(per_ember))
-	return session.end_seam(report)
+	return report
+
+
+## The Vigil passed the open throat (Q-T278): report the Seam and route on. At the slice frontier
+## (Q-T276) the run ends `returned` and the hub follows; otherwise the next Seam is entered (a fifth
+## clear wins and returns to the hub). The throwaway core (dev route) reports in memory and stays.
+func take_exit() -> bool:
+	if left or session == null:
+		return false
+	var frontier := session.at_frontier()
+	if not session.return_from_frontier(seam_report()):
+		return false
+	if is_instance_valid(vigil):
+		vigil.motor.enabled = false
+	if throwaway_session:
+		return true
+	if session.run().is_active():
+		left = true
+		return bool(router.call("go_to", SECTOR_ROUTE, session.enter_seam())) if router else false
+	return _return_to_ruins(RunSessionCore.OUTCOME_RETURNED if frontier else RunSessionCore.OUTCOME_WON)
+
+
+## The run is over: back to the Ruins (Q-T279), where `arrive_at_ruins` writes `ruins_entry`.
+## The throwaway core (dev route, M1 sandboxes) never leaves for the hub.
+func _return_to_ruins(outcome: StringName) -> bool:
+	_return_in = -1.0
+	if left or throwaway_session or router == null:
+		return false
+	left = true
+	get_tree().paused = false
+	return bool(router.call("go_to", RUINS_ROUTE, {PARAM_RUN_OUTCOME: String(outcome)}))
 
 
 func _exit_tree() -> void:
@@ -383,9 +474,20 @@ func _release_menu_pause() -> void:
 	_menu_paused = false
 
 
+## Abandon Run (Q-T277, Q-T279): the session prices it as a death and banks the run's Ember, then the
+## Ruins. The throwaway core (dev route) has no run to abandon and leaves for the title as before.
 func _on_abandon_requested() -> void:
 	get_tree().paused = false
-	SceneRouter.go_to(&"attract")
+	if throwaway_session:
+		if router:
+			router.call("go_to", &"attract")
+		return
+	if _return_in >= 0.0:   # already breached: the death stands, only the wait is cut short
+		_return_to_ruins(_return_outcome)
+		return
+	if session and not left:
+		session.abandon_from_seam()
+	_return_to_ruins(RunSessionCore.OUTCOME_ABANDONED)
 
 
 ## Pushes the honest values into the brass HUD (it redraws only on a change).
@@ -409,5 +511,9 @@ func _refresh_hud() -> void:
 func _on_hull_breached() -> void:
 	_breached = true
 	_refresh_hud()
-	if session:
+	if session and not left:
 		session.die()   # §4.2a: on death the sector calls session.die(); the core saves at run_end
+	# Q-T279: the breach plays, then the hub (D-08 stays data: whatever hull HP breaches, this follows).
+	if not throwaway_session and not left and _return_in < 0.0:
+		_return_outcome = RunSessionCore.OUTCOME_DIED
+		_return_in = maxf(0.0, exit_stats.return_hold_s if exit_stats else 0.0)

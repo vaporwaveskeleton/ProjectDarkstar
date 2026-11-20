@@ -10,6 +10,8 @@
 **Rev 1.6 (2026-11-19, Act 0 arcade expansion P1, "the shift"; PM (delegated owner authority)):** new §1.6 Act 0 stage table (five stages); §7.1 rows for lives at start, lives cap and the extra-life schedule (schedule approved, built in P2). No Vigil number was changed.
 **Rev 1.7 (2026-11-19, M2 RunSession; PM under owner autonomy grant 2026-11-19, TECH-001 §11.1a Q-T136, Q-T138, Q-T144–Q-T147, Q-T149):** §6 new rows Hourglass Clock rate (1:1), Hourglass Clock pauses, Abandon (costs the death clock cost); §7.1 `Act 0 bank` gains a floor of 40 Ember (`max(floor(VI / 200), 40)`); §7.2 Seam clears pay 40 each **including Seam 5** (won-run row 160 → 200) and in-run Ember banks on a win and on a death; §7.2 Run-Sigil picks timing stated (after Seams 1–3); new §7.7 Lantern Tree node prices by tier and the Run Sigil reroll ladder, moved from LOOP-001 with no value change.
 
+**Rev 1.8 (2026-11-19 overnight, the run's back door; PM under owner direction, TECH-001 Q-T275..Q-T277):** §6 two **proposed** rows, `Seam clear: Sepulchre segments knocked` (3) and `Slice frontier Seam` (1), and a proposed amendment to `Abandon` (mid-Seam Abandon Run at the same price). Owner confirmation: TECH-001 Q-T282.
+
 ---
 
 ## 0. How this doc works
@@ -412,10 +414,12 @@ Cosmic horror design rev 3 (PM ruling 2026-11-18 (owner grant)). The rules are Z
 | Hourglass Clock rate (loop-minute to real time) | 1 loop-minute = 1 real minute (1:1). PM under owner grant 2026-11-19 (TECH-001 §11.1a Q-T136) |
 | Hourglass Clock pauses | the clock stops only for: the Codex, scripted cinematics, attract mode, a route curtain or loading, the pause menu, and the Ruins menus (Lantern Tree, Chalk Desk). Slow-motion and hit-stop do **not** pause it. Route curtains/loading and the Ruins menus were added to the GDD §20 Q1 list the same day. PM under owner grant 2026-11-19 (TECH-001 §11.1a Q-T138) |
 | Death clock cost | `10 + 2 × (Seam index − 1)` loop-minutes ✱ (Seam 1 = 10, Seam 5 = 18; GDD §6.2 range) |
-| Abandon | allowed only in the Ruins or at a Seam boundary; costs the `Death clock cost` row. PM under owner grant 2026-11-19 (TECH-001 §11.1a Q-T144) |
+| Abandon | allowed only in the Ruins or at a Seam boundary; costs the `Death clock cost` row. PM under owner grant 2026-11-19 (TECH-001 §11.1a Q-T144). **Proposed amendment (2026-11-19 overnight, TECH-001 Q-T277, owner confirmation Q-T282):** the sector pause's Abandon Run is also allowed mid-Seam, at the same price; in-run Ember banks |
 | Run-won refund | +15 loop-minutes ✱, never above the 120 budget (LOOP-001 LR-09) |
 | Run length target | 25–35 min 🔒 |
 | Seam clear time | 4–6 min ✱ |
+| Seam clear: Sepulchre segments knocked (`ds_sector.exit.knocks_required`) | **3, proposed** (2026-11-19 overnight, TECH-001 Q-T275): a Seam clears when its Sepulchre stands at 0 segments after Charges knocked at least this many off ("the Sepulchre unmade"). Slice stand-in for "kit cleared" until the Waking and kit exit anchors exist (Q-T283) |
+| Slice frontier Seam (`ds_run.session.slice_last_seam`) | **1, proposed** (2026-11-19 overnight, TECH-001 Q-T276, owner confirmation Q-T282): the cleared exit of this Seam ends the run (outcome `returned`: Seam clear and score Ember bank in full; no death cost, no win refund) while later Seams have no content. 0 = off (all 5 Seams). `Seams per run` is unchanged |
 | Seam sealing under **H2** (a warp-eaten rule) | `seam_close_after` = **20 s** ✱ — the seam you crossed seals 20 s after your crossing. While sealed, the boundary refuses the crossing and the Vigil slides along the edge, with no input lock. Seams re-open at the sector boundary; a sealed seam is never a permanent wall. Requested by WARP-001 §8 R-01; the rule itself is WARP-001 §3.2 H2 |
 | Sector size | 3–7 Encounter Kits stitched (1 screen cluster each, ~640×360 base unit) |
 | Biomes | 6 (GDD §8.8; ZONES-001 §2 for the full table) |

@@ -126,6 +126,10 @@ var paid_ember: int:
 	get: return paid
 var dark_revealed: bool:
 	get: return onboarding.dark_revealed if onboarding else false
+## The outcome of the run this visit returned from (`RunSessionCore.OUTCOME_*` id), "" when the
+## visit did not follow a run (route param `run_outcome`, set by the sector; Q-T279).
+var return_outcome: String:
+	get: return _string_param(_params, "run_outcome")
 
 
 func _ready() -> void:
@@ -159,6 +163,15 @@ static func _bool_param(params: Dictionary, key: String) -> bool:
 			var v: Variant = params[k]
 			return typeof(v) == TYPE_BOOL and bool(v)
 	return false
+
+
+static func _string_param(params: Dictionary, key: String) -> String:
+	for k: Variant in [key, StringName(key)]:
+		if params.has(k):
+			var v: Variant = params[k]
+			if typeof(v) == TYPE_STRING or typeof(v) == TYPE_STRING_NAME:
+				return str(v)
+	return ""
 
 
 func _arrive() -> void:
