@@ -50,6 +50,37 @@ func test_the_maker_badge_clears_the_rocker_and_the_stripes() -> void:
 	assert_bool(r.intersects(CabinetBezel.COIN_PLATE_LOCAL)).is_false()
 
 
+## The haunt overlays' anchors (cursed turn): four named rects in rig units, inside the sheet, off the screen.
+func test_haunt_anchors_name_the_eye_figure_marquee_and_card() -> void:
+	var a := BezelArt.haunt_anchors()
+	var sx := CabinetBezel.sheet_x()
+	for k: StringName in [&"eye", &"figure", &"marquee_letters", &"how_to_play"]:
+		assert_bool(a.has(k)).override_failure_message("missing %s" % k).is_true()
+		var r: Rect2 = a[k]
+		assert_bool(r.has_area()).override_failure_message("%s is empty" % k).is_true()
+		assert_bool(r.intersects(SCREEN)).override_failure_message("%s over the screen" % k).is_false()
+		assert_bool(r.position.x >= sx.x and r.end.x <= sx.y).override_failure_message("%s leaves the sheet" % k).is_true()
+	assert_bool(CabinetBezel.marquee().encloses(a[&"marquee_letters"])).is_true()
+	assert_bool((a[&"eye"] as Rect2).position.x >= CabinetBezel.right_x()).is_true()
+	var print_node := BezelPrint.new()
+	assert_object(print_node.haunt_anchors()[&"how_to_play"]).is_equal(a[&"how_to_play"])
+	print_node.free()
+
+
+func test_the_marquee_takes_a_lettering_override_and_an_ink_hook() -> void:
+	var sign := BezelMarquee.new()
+	add_child(sign)
+	auto_free(sign)
+	var seen: Array[Rect2] = []
+	sign.ink_hook = func(_ci: CanvasItem, r: Rect2) -> void: seen.append(r)
+	sign.lettering_override = "RAKDSTAR"
+	sign.refresh_ink()
+	await get_tree().process_frame
+	await get_tree().process_frame
+	assert_int(seen.size()).is_greater(0)
+	assert_bool(Rect2(Vector2.ZERO, sign.size).grow(2.0).encloses(seen[0])).is_true()
+
+
 func test_the_backdrop_fills_the_window_beyond_the_sheet_at_every_size_and_never_the_sheet() -> void:
 	var s := CabinetSurface.default() as CabinetSurface
 	var sx := CabinetBezel.sheet_x()

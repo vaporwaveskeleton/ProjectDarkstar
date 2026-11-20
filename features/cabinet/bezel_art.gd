@@ -44,6 +44,8 @@ const HOWTO_TITLE_CAP := 4.4   ## ✱ how-to card title cap height (real-bezel f
 const HOWTO_CAP := 3.6         ## ✱ how-to card line cap height (about 1 % of the sheet's height)
 const HOWTO_LEAD := 6.6        ## ✱ line pitch on the card
 const STRIPE_X: Array[float] = [13.0, 15.5, 17.5]   ## ✱ the outer pinstripes' distance from the outer edge (inside the bolts)
+## Right column, column-local: the crag's summit where a haunt figure can stand (feet on the bottom edge). Empty sky against the moon.
+const FIGURE_STAND := Rect2(128.0, 148.0, 14.0, 30.0)
 
 
 
@@ -155,6 +157,30 @@ static func build_right() -> Array[BezelPiece]:
 	return sorted(a.items)
 
 
+
+
+## Where the haunt overlays (the cursed turn, ART-001 §12.7b) may attach to the printed art, in rig units
+## (bezel space, the 640 × 360 reference the bezel is drawn in): Rect2 values keyed
+## `eye` (the Sepulchre's one slit eye on the right column: the motif that can come alive and look at the player),
+## `figure` (a standing place on the crag's summit, silhouetted against the moon: feet on the rect's bottom edge),
+## `marquee_letters` (the marquee's printed title) and `how_to_play` (the instruction card). Read-only data;
+## the overlays draw over the bezel and never edit it. Derived from the built pieces, so it follows the art.
+static func haunt_anchors() -> Dictionary:
+	var eye := Rect2()
+	for p in build_right():
+		if p.id == &"right_sep_eye":
+			var lo := Vector2(INF, INF)
+			var hi := Vector2(-INF, -INF)
+			for q in p.points:
+				lo = lo.min(q)
+				hi = hi.max(q)
+			eye = CabinetBezel.to_screen(R, Rect2(lo, hi - lo))
+	return {
+		&"eye": eye,
+		&"figure": CabinetBezel.to_screen(R, FIGURE_STAND),
+		&"marquee_letters": BezelMarquee.lettering_rect(),
+		&"how_to_play": CabinetBezel.to_screen(L, CabinetBezel.LEFT_HOWTO),
+	}
 
 
 ## The string a TEXT piece prints: the whole translation, or one stacked half of it.

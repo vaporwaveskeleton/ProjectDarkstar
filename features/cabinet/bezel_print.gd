@@ -67,6 +67,11 @@ func _build_hardware() -> void:
 		add_child(h)
 
 
+## The haunt overlays' anchors in rig units (BezelArt.haunt_anchors); the same on both columns.
+func haunt_anchors() -> Dictionary:
+	return BezelArt.haunt_anchors()
+
+
 func pieces() -> Array[BezelPiece]:
 	return _pieces
 
