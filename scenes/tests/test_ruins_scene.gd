@@ -218,3 +218,79 @@ func test_a_later_visit_lights_the_tree_from_the_bought_nodes() -> void:
 	core.buy_tree_node(preload("res://data/lantern_tree/tier1_stock.tres"))
 	var ruins := await _ruins(core, RouterSpy.new(), {})
 	assert_bool(bool(ruins.get("gate_open"))).is_true()
+
+
+# --- the return chalk (NARR-001 §5.7a; Q-T284) ---------------------------------------------------
+
+## A core that has finished one run (seed 4242) and is back at the Ruins with the lamp lit.
+func _core_after_run(runs_before := 0) -> RunSessionCore:
+	var core := RunSessionCore.new(STATS, saver)
+	core.arrive_at_ruins({"act0_vigil_index": 1200})
+	core.buy_tree_node(preload("res://data/lantern_tree/tier1_stock.tres"))
+	core.start_run(4242)
+	core.die()
+	core.profile().runs_ended = runs_before
+	return core
+
+
+func test_each_outcome_writes_a_line_from_its_pool() -> void:
+	for outcome: StringName in RuinsReturnChalk.PREFIXES.keys():
+		var ruins := await _ruins(_core_after_run(), RouterSpy.new(), {"run_outcome": String(outcome)})
+		assert_str(String(ruins.get("return_outcome"))).is_equal(String(outcome))
+		var key: StringName = ruins.call("return_chalk_key")
+		assert_bool(RuinsReturnChalk.pool(outcome).has(key)).is_true()
+		var ob: RuinsOnboarding = ruins.get("onboarding")
+		assert_int(ob.lines.size()).is_equal(2)
+		assert_str(ob.lines[1]).is_equal(tr(key))
+		assert_str(ob.lines[1]).is_not_equal(String(key))   # translated, not the raw key
+		_drive(ruins, 0.0, func() -> bool: return ob.line_index >= ob.lines.size())
+		assert_str(ob.chalk_text(1)).is_equal(tr(key))      # written on the slate
+
+
+func test_the_choice_is_deterministic_for_a_seed() -> void:
+	var a := RuinsReturnChalk.key_for(&"died", 4242, 1)
+	assert_str(String(RuinsReturnChalk.key_for(&"died", 4242, 1))).is_equal(String(a))
+	var seen := {}
+	for s in range(1, 60):
+		seen[RuinsReturnChalk.key_for(&"abandoned", s, 1)] = true
+	assert_int(seen.size()).is_equal(RuinsReturnChalk.POOL_SIZE)   # the whole pool is reachable
+	var one := await _ruins(_core_after_run(), RouterSpy.new(), {"run_outcome": "died"})
+	var two := await _ruins(_core_after_run(), RouterSpy.new(), {"run_outcome": "died"})
+	assert_str(String(one.call("return_chalk_key"))).is_equal(String(two.call("return_chalk_key")))
+
+
+func test_rare_lines_wait_for_several_runs() -> void:
+	for s in range(1, 200):
+		for outcome: StringName in RuinsReturnChalk.PREFIXES.keys():
+			assert_bool(RuinsReturnChalk.pool(outcome).has(RuinsReturnChalk.key_for(outcome, s, 1))).is_true()
+	var rare := 0
+	for s in range(1, 200):
+		if RuinsReturnChalk.rare_pool().has(RuinsReturnChalk.key_for(&"returned", s, 6)):
+			rare += 1
+	assert_int(rare).is_greater(0)
+	assert_int(rare).is_less(100)
+
+
+func test_won_and_no_outcome_keep_the_plain_line() -> void:
+	var won := await _ruins(_core_after_run(), RouterSpy.new(), {"run_outcome": "won"})
+	assert_int((won.get("onboarding") as RuinsOnboarding).lines.size()).is_equal(1)
+	var plain := await _ruins(_core_after_run(), RouterSpy.new(), {})
+	assert_int((plain.get("onboarding") as RuinsOnboarding).lines.size()).is_equal(1)
+
+
+func test_a_run_end_records_its_seed_and_count() -> void:
+	var core := _core_after_run()
+	assert_int(core.last_run_seed).is_equal(4242)
+	assert_int(core.runs_ended()).is_equal(0)   # the helper reset the count after the die()
+	core.start_run(7)
+	core.die()
+	assert_int(core.runs_ended()).is_equal(1)
+
+
+func test_every_return_chalk_key_has_a_line() -> void:
+	var keys: Array[StringName] = RuinsReturnChalk.rare_pool()
+	for o: StringName in RuinsReturnChalk.PREFIXES.keys():
+		keys.append_array(RuinsReturnChalk.pool(o))
+	assert_int(keys.size()).is_equal(20)
+	for k in keys:
+		assert_str(tr(k)).is_not_equal(String(k))
