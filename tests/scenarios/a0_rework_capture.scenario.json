@@ -1,0 +1,82 @@
+{
+	"format": "darkstar.scenario",
+	"version": 1,
+	"id": "a0_rework_capture",
+	"profile": "dev",
+	"args": [],
+	"fixtures": {},
+	"fail_on_errors": true,
+	"timeout_frames": 60000,
+	"steps": [
+		{ "do": "wait_route", "route": "attract", "within": 240
+		},
+		{ "do": "coin"
+		},
+		{ "do": "wait_until", "id": "attract/ui/NewVigil", "prop": "enabled", "eq": true, "within": 240
+		},
+		{ "do": "activate", "id": "attract/ui/NewVigil"
+		},
+		{ "do": "wait_route", "route": "cabinet", "within": 240
+		},
+		{ "do": "wait_until", "id": "cabinet/game", "prop": "state", "eq": "briefing", "within": 600
+		},
+		{ "do": "wait_frames", "frames": 30
+		},
+		{ "do": "screenshot", "name": "01_card_a0_1", "target": "arcade"
+		},
+		{ "do": "screenshot", "name": "02_card_a0_1_window", "target": "window"
+		},
+		{ "do": "hold", "action": "fire_lance", "frames": 3
+		},
+		{ "do": "wait_until", "id": "cabinet/game", "prop": "state", "eq": "play", "within": 600
+		},
+		{ "do": "autopilot", "on": true
+		},
+		{ "do": "wait_frames", "frames": 420
+		},
+		{ "do": "screenshot", "name": "03_play_a0_1_scale", "target": "arcade"
+		},
+		{ "do": "set_stage", "index": 2
+		},
+		{ "do": "wait_until", "id": "cabinet/game", "prop": "stage_index", "eq": 2, "within": 10
+		},
+		{ "do": "wait_until", "id": "cabinet/game", "prop": "state", "eq": "briefing", "within": 30
+		},
+		{ "do": "autopilot", "on": false
+		},
+		{ "do": "wait_frames", "frames": 30
+		},
+		{ "do": "screenshot", "name": "04_card_a0_3", "target": "arcade"
+		},
+		{ "do": "hold", "action": "fire_lance", "frames": 3
+		},
+		{ "do": "wait_until", "id": "cabinet/game", "prop": "state", "eq": "play", "within": 600
+		},
+		{ "do": "autopilot", "on": true
+		},
+		{ "do": "set_lives", "lives": 9
+		},
+		{ "do": "wait_frames", "frames": 900
+		},
+		{ "do": "screenshot", "name": "05_play_a0_3_mining", "target": "arcade"
+		},
+		{ "do": "wake_entity"
+		},
+		{ "do": "wait_until", "id": "cabinet/world", "prop": "entity_awake", "eq": true, "within": 600
+		},
+		{ "do": "wait_frames", "frames": 90
+		},
+		{ "do": "screenshot", "name": "06_awake_scanner", "target": "arcade"
+		},
+		{ "do": "wait_event", "event": "entity_unmade", "within": 50000
+		},
+		{ "do": "screenshot", "name": "07_unmaking", "target": "arcade"
+		},
+		{ "do": "wait_frames", "frames": 24
+		},
+		{ "do": "screenshot", "name": "08_unmaking_after", "target": "window"
+		},
+		{ "do": "quit"
+		}
+	]
+}
