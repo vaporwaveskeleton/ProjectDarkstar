@@ -63,13 +63,20 @@ extends TunableResource
 @export var flue_noise_hz: float = 14.0
 @export var surge_bloom_s: float = 0.25
 
-@export_group("Brass plating ✱ (loom ds_vigil_brass, ART-001 §14.8a)")
+@export_group("Brass plating ✱ (loom ds_vigil_brass + vigil_plating.gdshader, ART-001 §14.8a, owner 2026-11-19)")
 @export var brass_tile: float = 40.0                   ## px of hull per texture repeat
-@export var brass_specular: Color = Pal.BONE_4          ## CanvasTexture specular colour (the lamp's glint on the plate)
-@export_range(0.0, 1.0) var brass_shininess: float = 0.6
-@export var brass_light_energy: float = 0.9            ## the lantern's own light on the plating (lit lamp = 1)
-@export var brass_light_radius: float = 48.0           ## px
-@export var brass_light_height: float = 12.0           ## px above the hull, for the normal map
+@export var rivet_radius: float = 1.0                  ## rivet head radius, px (rim and glint drawn round it)
+@export var plating_lamp_energy: float = 1.0           ## the lamp's light on the plates at full lamp (scaled by the lamp level)
+@export var plating_lamp_radius: float = 40.0          ## px
+@export var plating_lamp_height: float = 9.0           ## px above the hull; lower = longer raking highlights
+@export var plating_sky_dir: Vector2 = Vector2(-0.6, -0.8)   ## the Aether sky key, world direction toward the light
+@export var plating_sky_color: Color = Pal.BONE_5
+@export var plating_sky_gain: float = 0.35
+@export var plating_ambient: float = 0.9 
+@export var plating_normal_strength: float = 1.6
+@export var plating_diffuse_gain: float = 0.75
+@export var plating_spec_gain: float = 1.2
+@export var plating_spec_power: float = 22.0
 
 @export_group("Glow ✱")
 @export var lamp_glow_radius: float = 26.0

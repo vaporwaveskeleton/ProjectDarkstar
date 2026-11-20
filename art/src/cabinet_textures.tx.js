@@ -48,3 +48,30 @@ material("ds_cab_steel", { size: 256, depth: 0.03 }, {
   color: ramp(peelS, ["bone3", "bone4"]).mix("bone5", scuffs.mul(0.7)).mix("bone1", steelGrime.mul(0.85)),
   rough: peelS.levels(0, 1, 0.5, 0.6).mix(0.3, scuffs).mix(0.9, steelGrime),
 })
+
+// ---- brushed, scratched metal trim (coin-door entry plate, control-panel lip): long brush lines, cross scratches
+const brushLines = noise({ scale: [1, 160], octaves: 3, seed: 61 }).as("brush")
+const brushBands = noise({ scale: [2, 24], octaves: 2, seed: 62 })
+const crossScratch = ridged({ scale: [4, 6], octaves: 2, seed: 63 }).warp(noise({ scale: 6, seed: 64 }), 0.08).threshold(0.93, 0.03)
+  .mul(noise({ scale: 3, seed: 65 }).levels(0.35, 0.65)).as("cross_scratches")
+const brushH = brushLines.mul(0.08).add(brushBands.mul(0.04)).sub(crossScratch.mul(0.12)).add(0.5)
+
+material("ds_cab_brushed", { size: 256, depth: 0.015 }, {
+  height: brushH,
+  color: ramp(brushLines.mix(brushBands, 0.35), ["bone2", "bone4", "bone5"]).mix("bone5", crossScratch.mul(0.8)),
+  rough: brushLines.levels(0, 1, 0.3, 0.45).mix(0.2, crossScratch),
+})
+
+// ---- fingerprint grease on the bezel glass: whorled prints and palm smears. A mask (NULL = clean glass, BONE-5 =
+// heavy grease) the glass shader turns into a lit, hazy sheen in the places hands go (wear_k).
+const printSpots = dots({ scale: 6, radius: 0.34, jitter: 0.9, soft: 0.7, seed: 51 }).as("print_spots")
+const film = noise({ scale: 24, octaves: 2, seed: 52 }).levels(0.3, 0.8).as("film")   // greasy film breaking up, no ridge lines
+const prints = printSpots.mul(film.mul(0.5).add(0.5)).as("prints")
+const smear = noise({ scale: [2, 4], octaves: 4, seed: 53 }).warp(noise({ scale: 3, seed: 54 }), 0.12).levels(0.55, 0.9).blur(0.01).as("smear")
+const grease = prints.max(smear.mul(0.5)).clamp(0, 1)
+
+material("ds_cab_glass_smudge", { size: 256, depth: 0.004 }, {
+  height: grease.mul(0.2).add(0.4),
+  color: ramp(grease, ["null", "bone3", "bone5"]),
+  rough: grease.levels(0, 1, 0.05, 0.6),
+})

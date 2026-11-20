@@ -2,10 +2,10 @@
  "name": "ds_vigil_brass",
  "size": 256,
  "normal": "gl",
- "depth": 0.035,
+ "depth": 0.06,
  "seam": {
-  "worst": 0.86,
-  "map": "height"
+  "worst": 0.98,
+  "map": "rough"
  },
  "maps": {
   "albedo": "ds_vigil_brass_albedo.png",

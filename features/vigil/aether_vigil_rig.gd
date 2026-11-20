@@ -6,14 +6,11 @@ extends Node2D
 ## Origin = the lamp (near the 12 px hitbox). Hull points along local +X, rotated by hull_heading.
 
 const LOOK_PATH := "res://data/vigil/aether_vigil_look.tres"
-## Hammered-brass plating (loom render of art/src/vigil_textures.tx.js, ART-001 §14.8a): a near-white luminance
-## map the plate bands multiply, and an OpenGL normal map lit by the skiff's own lantern (BRASS_LIGHT_LAYER).
+## Hammered-brass plating (loom render of art/src/vigil_textures.tx.js, ART-001 §14.8a): albedo (dents, tarnish)
+## and an OpenGL normal map, lit in the Plating shader by the lamp and the Aether's sky key (owner 2026-11-19).
 const BRASS_ALBEDO := preload("res://assets/art/generated/textures/ds_vigil_brass/ds_vigil_brass_albedo.png")
 const BRASS_NORMAL := preload("res://assets/art/generated/textures/ds_vigil_brass/ds_vigil_brass_normal.png")
-## ✱ light/visibility layer bit (value) only the lantern's own brass light and the hull plating share.
-const BRASS_LIGHT_LAYER := 1 << 9
-## ✱ size in px of the generated radial texture of that light.
-const BRASS_LIGHT_TEX := 128
+const PLATING_SHADER := preload("res://shaders/vigil/vigil_plating.gdshader")
 
 ## Lantern Tree node id -> part (ART-002 §4.1). Parts not listed here are always present.
 const MODULE_PARTS := {
@@ -56,9 +53,11 @@ var _sparks: Array[Dictionary] = []
 var _glows: Array[Dictionary] = []
 var _glow_node: Node2D
 var _glow_tex: GradientTexture2D
-var _hull_node: Node2D
+var _under_node: Node2D
+var _plating_node: Node2D
+var _detail_node: Node2D
 var _brass_tex: CanvasTexture
-var _brass_light: PointLight2D
+var _plating_mat: ShaderMaterial
 
 
 func _init() -> void:
@@ -92,55 +91,55 @@ func _ready() -> void:
 	_build_brass()
 
 
-## The plating layer (wake, keel, hull: drawn behind the rest of the rig, as before) wears the brass
-## CanvasTexture; the lantern's PointLight2D lights only that layer, so the hammered relief catches the lamp
-## and nothing else in the world changes (the Aether's lantern key light stays the brightest, ART-001 §5).
+## Three layers drawn behind the rest of the rig, in the old draw order: Under (wake, keel), Plating (the hull's
+## brass plates: CanvasTexture + vigil_plating.gdshader, lit by the lamp and the sky key) and HullDetail (seams,
+## ribs, rivet heads, filigree, the cockpit window), so only the plates take the brass shader.
 func _build_brass() -> void:
 	var lk := _look()
 	_brass_tex = CanvasTexture.new()
 	_brass_tex.diffuse_texture = BRASS_ALBEDO
 	_brass_tex.normal_texture = BRASS_NORMAL
-	_brass_tex.specular_color = lk.brass_specular
-	_brass_tex.specular_shininess = lk.brass_shininess
 	_brass_tex.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	_brass_tex.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
-	var hull := _HullLayer.new()
-	hull.name = "Plating"
-	hull.owner_rig = self
-	hull.show_behind_parent = true
-	hull.light_mask = light_mask | BRASS_LIGHT_LAYER
-	_hull_node = hull
-	add_child(hull)
-	_brass_light = PointLight2D.new()
-	_brass_light.name = "BrassLight"
-	var g := Gradient.new()
-	g.set_color(0, Color.WHITE)
-	g.set_color(1, Color.BLACK)
-	var t := GradientTexture2D.new()
-	t.gradient = g
-	t.fill = GradientTexture2D.FILL_RADIAL
-	t.fill_from = Vector2(0.5, 0.5)
-	t.fill_to = Vector2(1.0, 0.5)
-	t.width = BRASS_LIGHT_TEX
-	t.height = BRASS_LIGHT_TEX
-	_brass_light.texture = t
-	_brass_light.texture_scale = lk.brass_light_radius * 2.0 / float(BRASS_LIGHT_TEX)
-	_brass_light.color = lk.lamp_glass_hi
-	_brass_light.height = lk.brass_light_height
-	_brass_light.blend_mode = Light2D.BLEND_MODE_ADD
-	_brass_light.range_item_cull_mask = BRASS_LIGHT_LAYER
-	_brass_light.shadow_enabled = false
-	add_child(_brass_light)
-	_apply_brass_light()
+	_plating_mat = ShaderMaterial.new()
+	_plating_mat.shader = PLATING_SHADER
+	_plating_mat.set_shader_parameter(&"tile", lk.brass_tile)
+	_plating_mat.set_shader_parameter(&"lamp_color", lk.lamp_glass_hi)
+	_plating_mat.set_shader_parameter(&"lamp_radius", lk.plating_lamp_radius)
+	_plating_mat.set_shader_parameter(&"lamp_height", lk.plating_lamp_height)
+	_plating_mat.set_shader_parameter(&"sky_color", lk.plating_sky_color)
+	_plating_mat.set_shader_parameter(&"sky_gain", lk.plating_sky_gain)
+	_plating_mat.set_shader_parameter(&"ambient", lk.plating_ambient)
+	_plating_mat.set_shader_parameter(&"normal_strength", lk.plating_normal_strength)
+	_plating_mat.set_shader_parameter(&"diffuse_gain", lk.plating_diffuse_gain)
+	_plating_mat.set_shader_parameter(&"spec_gain", lk.plating_spec_gain)
+	_plating_mat.set_shader_parameter(&"spec_power", lk.plating_spec_power)
+	_under_node = _add_layer("Under", 0)
+	_plating_node = _add_layer("Plating", 1)
+	_plating_node.material = _plating_mat
+	_detail_node = _add_layer("HullDetail", 2)
+	_apply_plating_light()
 
 
-func _apply_brass_light() -> void:
-	if _brass_light == null:
+func _add_layer(layer_name: String, pass_id: int) -> Node2D:
+	var l := _HullLayer.new()
+	l.name = layer_name
+	l.owner_rig = self
+	l.pass_id = pass_id
+	l.show_behind_parent = true
+	add_child(l)
+	return l
+
+
+## Feed the plating shader the lamp (hull frame, follows the gimbal and the lamp's level) and the sky key
+## rotated into the hull frame, so the dents' highlights slide as the skiff turns.
+func _apply_plating_light() -> void:
+	if _plating_mat == null:
 		return
-	var e: float = _look().brass_light_energy * _lamp
-	_brass_light.position = _gimbal
-	_brass_light.energy = e
-	_brass_light.enabled = e > 0.001 and is_visible_in_tree()
+	var lk := _look()
+	_plating_mat.set_shader_parameter(&"lamp_hull", _gimbal.rotated(-_heading))
+	_plating_mat.set_shader_parameter(&"lamp_energy", lk.plating_lamp_energy * _lamp)
+	_plating_mat.set_shader_parameter(&"sky_hull", lk.plating_sky_dir.normalized().rotated(-_heading))
 
 
 ## The hull plating's CanvasTexture (albedo + normal), for tests and captures.
@@ -148,9 +147,9 @@ func brass_texture() -> CanvasTexture:
 	return _brass_tex
 
 
-## The lantern's own brass light (lights the plating only), for tests and captures.
-func brass_light() -> PointLight2D:
-	return _brass_light
+## The plating shader material (lamp and sky uniforms), for tests and captures.
+func plating_material() -> ShaderMaterial:
+	return _plating_mat
 
 
 ## Per-frame pose. Angles in radians, world space. accel in px/s² (world). thrust 0..1.
@@ -248,8 +247,9 @@ func _process(delta: float) -> void:
 		queue_redraw()
 		if _glow_node != null:
 			_glow_node.queue_redraw()
-		if _hull_node != null:
-			_hull_node.queue_redraw()
+		for l: Node2D in [_under_node, _plating_node, _detail_node]:
+			if l != null:
+				l.queue_redraw()
 
 
 ## Advance the rig's own motion (springs, easing, wake). Public so tests can step it deterministically.
@@ -286,7 +286,7 @@ func step(delta: float) -> void:
 	_surge_t = maxf(_surge_t - delta, 0.0)
 	_step_wake(delta)
 	_step_sparks(delta)
-	_apply_brass_light()
+	_apply_plating_light()
 
 
 func _hull_dark() -> float:
@@ -374,12 +374,18 @@ func _draw() -> void:
 		_add_glow(_gimbal, lk.surge_glow_radius, lk.lamp_glass_hi, 0.6 * f)
 
 
-## Wake, keel and the brass hull, onto the Plating layer `ci` (behind the rest of the rig, as before).
-func _draw_plating(ci: CanvasItem) -> void:
-	_draw_wake(ci)
+## One of the three layers behind the rig (pass 0 Under: wake + keel; 1 Plating: brass plates; 2 HullDetail).
+func _draw_plating(ci: CanvasItem, pass_id: int) -> void:
+	if pass_id == 0:
+		_draw_wake(ci)
 	ci.draw_set_transform(Vector2.ZERO, _heading)
-	_draw_keel(ci)
-	_draw_hull(ci, _lamp)
+	match pass_id:
+		0:
+			_draw_keel(ci)
+		1:
+			_draw_hull_plates(ci)
+		2:
+			_draw_hull(ci, _lamp)
 	ci.draw_set_transform(Vector2.ZERO, 0.0)
 
 
@@ -433,10 +439,10 @@ func _draw_keel(ci: CanvasItem) -> void:
 			_add_glow(p.rotated(_heading), 9.0, lk.lamp_glass, 0.35 * _lamp)
 
 
-func _draw_hull(ci: CanvasItem, lamp: float) -> void:
+## The hull's brass plates: every band wears the hammered brass (band colour x albedo, lit by vigil_plating).
+func _draw_hull_plates(ci: CanvasItem) -> void:
 	var lk := _look()
 	var out := _outline()
-	# Every plate wears the hammered brass (CanvasTexture: albedo x band colour, normal lit by the lantern).
 	ci.draw_colored_polygon(out, _tint(lk.brass_dark), _brass_uv(out), _brass_tex)
 	# Plate bands: nested, lighter toward the lit centre (cheap brass gradient).
 	var bands: Array[Color] = [lk.brass_mid, lk.brass_light, lk.brass_high]
@@ -446,7 +452,29 @@ func _draw_hull(ci: CanvasItem, lamp: float) -> void:
 		for p in out:
 			inner.append(Vector2(p.x * lerpf(1.0, 0.92, float(i) * 0.4), p.y * sc))
 		ci.draw_colored_polygon(inner, _tint(bands[i]), _brass_uv(inner), _brass_tex)
+
+
+## Raised rivet head at p (hull frame), two circles: its shadow on the side away from the lamp, then the lit dome
+## nudged toward the lamp. lamp_hull = the lamp in the hull frame; dark/lit = the two tints (computed once per pass).
+func _rivet(ci: CanvasItem, p: Vector2, r: float, lamp_hull: Vector2, dark: Color, lit: Color) -> void:
+	var to_lamp: Vector2 = (lamp_hull - p).normalized()
+	ci.draw_circle(p - to_lamp * r * 0.35, r, dark)
+	ci.draw_circle(p + to_lamp * r * 0.2, r * 0.72, lit)
+
+
+## Seams, ribs, rivet heads, filigree and the cockpit window, over the plates.
+func _draw_hull(ci: CanvasItem, lamp: float) -> void:
+	var lk := _look()
+	var out := _outline()
 	ci.draw_polyline(_close(out), _tint(lk.brass_shadow), 1.5)
+	var lamp_hull: Vector2 = _gimbal.rotated(-_heading)
+	var r_dark: Color = _tint(lk.brass_shadow)
+	var r_lit: Color = _tint(lk.rivet.lerp(lk.brass_gleam, 0.5).lerp(lk.lamp_glass_hi, 0.3 * lamp))
+	# A rivet row just inside the hull's edge, where the skin plates overlap.
+	for i in range(1, out.size(), 2):
+		var q: Vector2 = out[i]
+		if absf(q.y) > 2.5:
+			_rivet(ci, Vector2(q.x * 0.97, q.y * 0.8), lk.rivet_radius * 0.8, lamp_hull, r_dark, r_lit)
 	# Ribs and rivets.
 	var rib_x: Array[float] = [-23.0, -15.0, -7.0, 1.0, 9.0, 17.0, 25.0]
 	for x in rib_x:
@@ -454,7 +482,7 @@ func _draw_hull(ci: CanvasItem, lamp: float) -> void:
 		if h > 1.0:
 			ci.draw_line(Vector2(x, -h + 0.5), Vector2(x, h - 0.5), _tint(lk.engraving), 1.0)
 			for sgn in [-1.0, 1.0]:
-				ci.draw_circle(Vector2(x + 1.5, (h - 1.8) * (sgn as float)), 0.7, _tint(lk.rivet))
+				_rivet(ci, Vector2(x + 1.5, (h - 1.8) * (sgn as float)), lk.rivet_radius, lamp_hull, r_dark, r_lit)
 	# Engraved filigree: two mirrored scrolls along the flanks.
 	for sgn in [-1.0, 1.0]:
 		var sg: float = sgn as float
@@ -678,10 +706,11 @@ func _close(pts: PackedVector2Array) -> PackedVector2Array:
 ## Additive glow layer: soft radial blobs from the rig's list (child of the rig so it draws on top).
 class _HullLayer extends Node2D:
 	var owner_rig: AetherVigilRig
+	var pass_id: int = 0
 
 	func _draw() -> void:
 		if owner_rig != null:
-			owner_rig._draw_plating(self)
+			owner_rig._draw_plating(self, pass_id)
 
 
 class _GlowLayer extends Node2D:

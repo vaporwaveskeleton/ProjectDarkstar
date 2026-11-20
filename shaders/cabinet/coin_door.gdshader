@@ -29,6 +29,7 @@ uniform float dust : hint_range(0.0, 1.0) = 0.7;
 uniform float finger_halo : hint_range(0.0, 1.0) = 0.85;
 uniform float thumb_wear : hint_range(0.0, 1.0) = 0.85;
 uniform float micro_texture : hint_range(0.0, 1.0) = 0.55;
+uniform float door_edge_grime : hint_range(0.0, 1.0) = 0.85;
 uniform float lamp_spill = 0.6;
 uniform float lamp_spill_radius = 13.0;
 uniform vec2 slot_c = vec2(28.0, 20.0);
@@ -159,8 +160,8 @@ void fragment() {
 		vec2 gr = vec2(vnoise(p * 3.0 + 3.1), vnoise(p * 3.0 + 11.7)) - 0.5;
 		n.xy += gr * 0.14 * grain_fade;
 		// the steel itself (loom ds_cab_steel, mipmapped so it never aliases): dents, scuffs, grime in the low spots
-		n.xy += detail_tilt(rp, 0.6 * micro_texture);
-		col *= detail_tone(rp, 1.4 * micro_texture);
+		n.xy += detail_tilt(rp, 1.6 * micro_texture);
+		col *= detail_tone(rp, 3.0 * micro_texture);
 
 		// dull zinc-plated steel: the entry plate (brushed), lock collar, screws, flap
 		float brush_fade = smoothstep(1.5, 3.5, 1.0 / (16.0 * px));
@@ -168,7 +169,7 @@ void fragment() {
 		brush += 0.5 * (vnoise(vec2(p.x * 1.4 + 9.0, p.y * 38.0)) - 0.5) * smoothstep(1.5, 3.5, 1.0 / (38.0 * px));
 		vec3 zinc = zinc_color.rgb * (0.82 + 0.3 * nz2);
 		float m_zinc = max(max(m_ent, m_lockc), max(m_screw * 0.9, m_flap));
-		col = mix(col, zinc * (1.0 + brush * 0.4 * brush_fade * m_ent), m_zinc);
+		col = mix(col, zinc * (1.0 + brush * 0.4 * brush_fade * m_ent) * mix(1.0, trim_tone(rp, 1.8), m_ent), m_zinc);
 		n.y += brush * 0.12 * brush_fade * m_ent;
 		metal = max(metal, m_zinc * 0.75);
 		rough = mix(rough, 0.58, m_zinc);
@@ -367,6 +368,15 @@ void fragment() {
 		float sc_spill = exp(-max(length(plate_c - sc) - plate_half.x, 0.0) / (lamp_spill_radius * 1.8)) * glow * lamp_spill;
 		float catch_light = smoothstep(1.0, 0.0, length(p - (sc + to_plate * 0.9))) * m_screw;
 		lit += lens_color.rgb * catch_light * sc_spill * 2.2;
+
+		// dirt packed along the door's edge and into its corners (thickest at the bottom, where feet scuff),
+		// ragged by the steel texture's own low spots
+		float edge_in = 1.0 - smoothstep(0.0, 5.5, -dd);
+		vec2 cq = abs(p - plate_size * 0.5) - plate_size * 0.5 + 7.0;
+		float door_corner = smoothstep(0.0, 6.0, min(cq.x, cq.y) + 4.0);
+		float low = 1.0 - smoothstep(0.6, 1.05, detail_luma(rp) / max(detail_mean, 1e-3));
+		float packed = clamp((edge_in * (0.55 + 0.45 * p.y / plate_size.y) + door_corner * 0.8) * (0.45 + 0.9 * low), 0.0, 1.0);
+		lit = mix(lit, lit * vec3(0.32, 0.29, 0.26), packed * door_edge_grime * detail_gain);
 
 		COLOR = vec4(clamp(lit, 0.0, 1.0), cover);
 	}

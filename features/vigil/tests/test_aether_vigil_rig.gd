@@ -117,27 +117,30 @@ func test_draws_without_error() -> void:
 	assert_bool(is_instance_valid(r)).is_true()
 
 
-## Owner direction 2026-11-19 (ART-001 §14.8a, §15.1a): the hull wears loom's hammered brass as a CanvasTexture
-## with a normal map, lit only by the skiff's own lantern; the lantern going down takes that light with it.
-func test_brass_plating_is_a_lit_canvas_texture_that_follows_the_lamp() -> void:
+## Owner direction 2026-11-19 (ART-001 §14.8a, §15.1a): the hull plates wear loom hammered brass (CanvasTexture with
+## a normal map) on their own layer with vigil_plating.gdshader, lit by the lamp (which goes out with the lantern)
+## and a sky key rotated into the hull frame, so the highlights move as the skiff turns. No extra Light2D.
+func test_brass_plating_is_textured_lamp_lit_and_turns_with_the_hull() -> void:
 	var r := _rig()
 	var tex := r.brass_texture()
-	assert_object(tex).is_not_null()
 	assert_object(tex.diffuse_texture).is_not_null()
 	assert_object(tex.normal_texture).is_not_null()
 	assert_int(tex.texture_repeat).is_equal(CanvasItem.TEXTURE_REPEAT_ENABLED)
-	var light := r.brass_light()
-	assert_int(light.range_item_cull_mask).is_equal(AetherVigilRig.BRASS_LIGHT_LAYER)
 	var plating := r.get_node("Plating") as CanvasItem
-	assert_bool(plating.show_behind_parent).is_true()
-	assert_int(plating.light_mask & AetherVigilRig.BRASS_LIGHT_LAYER).is_equal(AetherVigilRig.BRASS_LIGHT_LAYER)
-	assert_int(r.light_mask & AetherVigilRig.BRASS_LIGHT_LAYER).override_failure_message("only the plating takes the brass light").is_equal(0)
+	assert_object(plating.material).is_same(r.plating_material())
+	for n in ["Under", "Plating", "HullDetail"]:
+		assert_bool((r.get_node(n) as CanvasItem).show_behind_parent).is_true()
+	assert_int(r.find_children("*", "Light2D", true, false).size()).is_equal(0)
+	var mat := r.plating_material()
 	_pose(r)
 	_run(r, 1.0)
-	assert_bool(light.enabled).is_true()
-	var lit := light.energy
-	assert_float(lit).is_greater(0.0)
+	var lit: float = mat.get_shader_parameter(&"lamp_energy")
+	assert_float(lit).is_greater(0.5)
+	var sky0: Vector2 = mat.get_shader_parameter(&"sky_hull")
+	r.set_pose(PI * 0.5, 0.0, Vector2.ZERO, Vector2.ZERO, 0.0, false, true, false)
+	r.step(1.0 / 60.0)
+	var sky1: Vector2 = mat.get_shader_parameter(&"sky_hull")
+	assert_float(sky0.angle_to(sky1)).is_equal_approx(-PI * 0.5, 0.01)
 	_pose(r, Vector2.ZERO, false, false)
 	_run(r, 2.0)
-	assert_float(light.energy).is_less(lit * 0.5)
-	assert_float(light.energy).is_less(1.0)   # never a second key light (ART-001 §5, test_aether_lantern_key)
+	assert_float(mat.get_shader_parameter(&"lamp_energy") as float).is_less(lit * 0.5)

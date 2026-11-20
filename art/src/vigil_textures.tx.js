@@ -1,21 +1,24 @@
 include("darkstar_palette.tx.js")
-// The Aether Vigil's hull plating (ART-001 §16.7, §14.8a; features/vigil): hammered brass with tarnish in the
-// hollows, for a CanvasTexture (albedo + normal) lit by the skiff's own lantern. Build:
+// The Aether Vigil's hull plating (ART-001 §16.7, §14.8a; features/vigil): hammered brass, dark tarnish in the
+// hollows and seams, for a CanvasTexture (albedo + normal) the Plating shader lights with the skiff's lantern.
+// Build:
 //   node .claude/skills/loom/bin/loom.js build art/src/vigil_textures.tx.js --out assets/art/generated/textures
 // The brass colour itself stays AetherVigilLook's plate bands (BONE ramp; GAS is the lamp's alone, ART-001 §4):
-// this albedo is a near-white luminance map the band colour multiplies, so the plate reads the same at a glance
-// and only gains surface. Keep its contrast low: the silhouette and the 12 px hitbox read first (ART-001 §16.3).
+// this albedo is a luminance map the band colour multiplies (tarnish dark, polished crowns bright). Sized so one
+// hammer blow is about 4 px of hull at 640×360 (owner 2026-11-19: dents must read at 1280×720).
 
-const hammer = cells({ scale: 11, jitter: 0.9, seed: 41 }).as("hammer")
-const peen = hammer.levels(0, 0.7).pow(0.5).blur(0.006)           // a soft round dish per blow, 0 at its centre
-const fine = noise({ scale: 40, octaves: 3, seed: 42 }).as("fine")
-const brassH = peen.mul(0.5).add(fine.mul(0.08)).as("height")
-const tarnish = brassH.cavity(0.02, 10).max(peen.invert().mul(0.25)).mul(noise({ scale: 5, seed: 43 }).levels(0.3, 0.7)).as("tarnish")
-const polish = brassH.convex(0.01, 12).as("polish")
+const hammer = cells({ scale: 7, jitter: 0.85, seed: 41 }).as("hammer")
+const dish = hammer.levels(0, 0.6).pow(1.6).blur(0.006).as("dish")       // a broad shallow bowl per blow, 0 at its centre
+const fine = noise({ scale: 32, octaves: 3, seed: 42 }).as("fine")
+const brassH = dish.mul(0.7).add(fine.mul(0.06)).as("height")
+const seams = hammer.edge.levels(0, 0.06).invert().as("seams")             // the ridges between blows
+const hollows = brassH.cavity(0.03, 8).as("hollows")
+const tarnish = hollows.mul(1.6).max(dish.invert().pow(3).mul(0.45)).mul(noise({ scale: 4, seed: 43 }).levels(0.2, 0.6)).clamp(0, 1).as("tarnish")
+const polish = brassH.convex(0.012, 10).max(seams.mul(0.6)).as("polish")
 
-material("ds_vigil_brass", { size: 256, depth: 0.035 }, {
+material("ds_vigil_brass", { size: 256, depth: 0.06 }, {
   height: brassH,
-  color: ramp(fine.mix(hammer.id, 0.3), ["bone3", "bone5"]).mix("bone1", tarnish.mul(0.9)).mix("bone5", polish.mul(0.5)),
-  rough: fine.levels(0, 1, 0.3, 0.45).mix(0.75, tarnish).mix(0.18, polish),
+  color: ramp(fine.mix(hammer.id, 0.4), ["bone3", "bone5"]).mix("void1", tarnish.mul(0.85)).mix("bone5", polish.mul(0.6)),
+  rough: fine.levels(0, 1, 0.25, 0.4).mix(0.85, tarnish.blur(0.004)).mix(0.12, polish.blur(0.004)),
   metal: 1,
 })

@@ -19,6 +19,8 @@ uniform float front_width = 5.5;
 uniform float contact : hint_range(0.0, 1.0) = 0.8;
 uniform float palm : hint_range(0.0, 1.0) = 0.8;
 uniform float grain : hint_range(0.0, 1.0) = 0.5;
+uniform float worn_through : hint_range(0.0, 1.0) = 0.8;   // laminate rubbed through to the core where hands rest
+uniform vec4 core_color : source_color = vec4(0.54, 0.45, 0.33, 1.0);
 uniform vec2 palm_c = vec2(86.0, 15.0);       // panel-local: the polished patch beside START
 uniform vec2 palm_r = vec2(20.0, 8.0);
 uniform int btn_n = 0;
@@ -40,13 +42,24 @@ void fragment() {
 	float wearing = 1.0 - 0.85 * polish;
 	vec3 base = panel_color.rgb * (0.86 + 0.28 * g1 * grain * wearing + 0.06 * (g2 - 0.5) * wearing);
 	// the worn laminate (loom ds_cab_laminate): its tone and relief, both rubbed smooth in the polish
-	base *= detail_tone(rp, 0.9 * wearing);
+	base *= detail_tone(rp, 1.8 * wearing);
 	vec3 n = normalize(vec3(0.0, -0.34, 1.0));
-	n = normalize(n + vec3(detail_tilt(rp, 0.9 * wearing), 0.0));
+	n = normalize(n + vec3(detail_tilt(rp, 1.6 * wearing), 0.0));
+
+	// worn THROUGH the laminate to the core where hands rest: along the front edge (wrists) and round the palm
+	// patch, ragged by the laminate texture; a pale chipped rim where the laminate's edge is exposed
+	float yb0 = panel_size.y - p.y;
+	float wrist = 1.0 - smoothstep(2.5, 9.0, yb0);
+	float rub = wrist * 0.7 + polish * 0.75 + (detail_luma(rp) - detail_mean) * 2.2 + (fbm(p * 0.6 + 17.0, 0.5, px) - 0.5) * 0.5;
+	float thru = smoothstep(0.62, 0.72, rub) * worn_through * detail_gain;
+	float rim = smoothstep(0.55, 0.62, rub) * (1.0 - thru) * worn_through * detail_gain;
+	base = mix(base, core_color.rgb * (0.75 + 0.5 * fbm(p * 2.0 + 9.0, 1.2, px)), thru);
+	base = mix(base, base * 1.9 + 0.03, rim * 0.6);
 
 	// the lip: a bright bevel on the top edge, a dark seam just beneath it where the slab meets the bezel
 	float yt = p.y - 0.0;
-	float in_lip = 1.0 - smoothstep(lip_width - 0.35, lip_width + 0.2, yt);
+	float in_lip = 1.0 - smoothstep(lip_width - 0.35, lip_width + 0.2, yt) ;
+	base = mix(base, base * trim_tone(rp, 1.6), in_lip);                     // brushed, scratched metal lip
 	float seam = smoothstep(lip_width + 0.0, lip_width + 0.5, yt) * (1.0 - smoothstep(lip_width + 0.7, lip_width + 1.4, yt));
 	n = normalize(mix(n, vec3(0.0, -0.8, 0.6), in_lip));
 

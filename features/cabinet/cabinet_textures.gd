@@ -13,9 +13,20 @@ const SIDE_NORMAL := preload("res://assets/art/generated/textures/ds_cab_side/ds
 const STEEL_ALBEDO := preload("res://assets/art/generated/textures/ds_cab_steel/ds_cab_steel_albedo.png")
 const STEEL_NORMAL := preload("res://assets/art/generated/textures/ds_cab_steel/ds_cab_steel_normal.png")
 
+const BRUSHED_ALBEDO := preload("res://assets/art/generated/textures/ds_cab_brushed/ds_cab_brushed_albedo.png")
+const GLASS_SMUDGE := preload("res://assets/art/generated/textures/ds_cab_glass_smudge/ds_cab_glass_smudge_albedo.png")
+
 ## ✱ mean albedo luma of each neutral detail map, from `loom info` (rebuild the texture → update these).
 const LAMINATE_MEAN := 0.86
 const STEEL_MEAN := 0.80
+const BRUSHED_MEAN := 0.86
+
+
+## Bind the brushed-metal trim map to `mat`'s `trim_*` uniforms (cabinet_detail.gdshaderinc).
+static func bind_trim(mat: ShaderMaterial, tile: float) -> void:
+	mat.set_shader_parameter(&"trim_albedo", BRUSHED_ALBEDO)
+	mat.set_shader_parameter(&"trim_tile", tile)
+	mat.set_shader_parameter(&"trim_mean", BRUSHED_MEAN)
 
 
 ## Bind one albedo/normal pair to `mat`'s `detail_*` uniforms. `tile` = rig units per texture repeat.

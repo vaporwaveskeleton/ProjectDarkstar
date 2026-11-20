@@ -133,6 +133,12 @@ extends TunableResource
 @export var laminate_tile: float = 40.0                           ## control-panel laminate: rig units per texture repeat
 @export var side_tile: float = 48.0                               ## the side panel's chipped paint over plywood: rig units per repeat
 @export var steel_tile: float = 30.0                              ## the coin door's painted steel: rig units per repeat
+@export var trim_tile: float = 24.0                               ## brushed, scratched metal (door entry plate, panel lip): rig units per repeat
+@export var smudge_tile: float = 90.0                             ## fingerprint grease on the glass: rig units per repeat
+@export_range(0.0, 1.0) var glass_prints: float = 0.8             ## how strongly the greasy prints catch the light where hands go
+@export_range(0.0, 1.0) var panel_worn_through: float = 0.8       ## laminate rubbed through to the core along the front edge and round the palm patch
+@export var panel_core_color: Color = Color8(0x8A, 0x73, 0x54)     ## the particleboard core under the laminate
+@export_range(0.0, 1.0) var door_edge_grime: float = 0.85         ## dirt packed along the coin door's edge and corners
 
 const _DEFAULT_PATH := "res://data/cabinet/cabinet_surface.tres"
 
