@@ -237,3 +237,13 @@ func _icon(kind: String, c: Vector2) -> void:
 			# the only true black is the entity (ART-001 §16), even in the costume
 			draw_rect(Rect2(c - Vector2(5, 5), Vector2(10, 10)), Pal.NULL)
 			draw_rect(Rect2(c - Vector2(5, 5), Vector2(10, 10)), Look.c(Pal.PHOS_4), false, 1.0)
+
+
+## Jump to page `p` now (dev captures), with the same stranger bookkeeping as a turn of the loop.
+func show_page(p: int) -> void:
+	page = p
+	_page_t = 0.0
+	stranger_shown = p == Page.ROLL and _stranger_pending
+	if stranger_shown:
+		_stranger_pending = false
+	queue_redraw()

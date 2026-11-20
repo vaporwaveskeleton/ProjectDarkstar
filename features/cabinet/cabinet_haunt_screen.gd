@@ -33,8 +33,9 @@ func _ready() -> void:
 	material = m
 
 
-func show_figure() -> void:
-	_figure_frames = tuning.figure_frames
+## `frames` < 0: the tuned one field (figure_frames). Only dev captures hold it longer (AttractMode showcase).
+func show_figure(frames: int = -1) -> void:
+	_figure_frames = tuning.figure_frames if frames < 0 else frames
 	queue_redraw()
 
 

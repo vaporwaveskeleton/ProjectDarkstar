@@ -133,6 +133,8 @@ func _on_power_on_finished() -> void:
 	_coin.hint_armed = true
 	idle = 0.0
 	focus_entered_screen()
+	if OS.is_debug_build() and OS.get_cmdline_user_args().has("--haunt-showcase"):
+		_haunt_showcase()
 
 
 func _process(delta: float) -> void:
@@ -288,3 +290,23 @@ func _finish_power_off() -> void:
 		quit_action.call()
 	else:
 		get_tree().quit()
+
+
+## Dev captures only (`-- --haunt-showcase`, debug builds): every attract Haunting once, a few seconds apart,
+## so one short windowed run can photograph them (normally they are rare and minutes apart). The figure is
+## held for 20 fields here so a still can catch it; in play it lasts one (Q-T253). Never in a release build.
+func _haunt_showcase() -> void:
+	if haunts == null:
+		return
+	var steps: Array = [
+		[1.0, func() -> void: haunts.perform(CabinetHauntDeck.GHOST_PRESS)],
+		[3.0, func() -> void:
+			haunts.perform(CabinetHauntDeck.STRANGER)
+			_pages.show_page(AttractPages.Page.ROLL)],
+		[8.0, func() -> void: haunts.perform(CabinetHauntDeck.WARM_COIN)],
+		[11.0, func() -> void: haunts.screen.show_figure(20)],
+		[14.0, func() -> void: haunts.perform(CabinetHauntDeck.LITANY)],
+		[14.0, func() -> void: haunts.perform(CabinetHauntDeck.SOUR_JINGLE)],
+	]
+	for s: Array in steps:
+		get_tree().create_timer(float(s[0])).timeout.connect(s[1] as Callable)
