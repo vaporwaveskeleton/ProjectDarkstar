@@ -13,6 +13,10 @@
 | Checkpoint | Source | Size | Licence | Commercial use |
 |---|---|---|---|---|
 | `sd_xl_base_1.0.safetensors` | stabilityai/stable-diffusion-xl-base-1.0 | 6.94 GB | CreativeML OpenRAIL++-M | Permitted, with use-based restrictions (verify the licence text before shipping an image) |
+| `flux-2-klein-4b.safetensors` (+ `qwen_3_4b.safetensors` 8.04 GB, `flux2-vae.safetensors` 0.34 GB) | Comfy-Org/flux2-klein repack of black-forest-labs/FLUX.2-klein-4B | 7.75 GB | Apache 2.0 (card tag, README and full `LICENSE.md` in the official repo) | Yes |
+| `z_image_turbo_int8_convrot.safetensors` (+ `qwen_3_4b_fp8_mixed.safetensors` 5.63 GB, `ae.safetensors` 0.34 GB) | Comfy-Org/z_image_turbo repack of Tongyi-MAI/Z-Image-Turbo | 6.20 GB | Apache 2.0 (card tag; official repo has no separate LICENSE file) | Yes |
+
+Verified 2026-11-20: both official model cards say Apache 2.0. Discrepancies: the Comfy-Org repack repos carry no licence of their own, so the licence rests on the upstream cards; no fp8 file exists for either model in Comfy-Org (klein runs bf16 cast to fp8 at load via `UNETLoader weight_dtype=fp8_e4m3fn`; Z-Image uses the `int8_convrot` file); the klein card says ~13 GB VRAM, yet it ran on this 12 GB card because ComfyUI offloads weights to RAM. SDXL stays the licence-restricted option (OpenRAIL++-M).
 
 ## Start the server
 ```powershell
@@ -31,3 +35,20 @@ Each image gets a sidecar `<name>.json` (prompt, negative, seed, steps, cfg, siz
 
 ## Smoke test (2026-11-20)
 Prompt "vintage 1983 arcade cabinet flyer illustration ... neon magenta and cyan on deep black", seed 1983, 30 steps, cfg 7, 1024x1024, dpmpp_2m/karras: 16.2 s warm on the RTX 4070. Output: `research\comfyui_out\20261120_192406_cabinet_flyer_1983.png`.
+
+## Model comparison (2026-11-20, RTX 4070 12 GB, seed 1983, 1024x1024, one image per cell)
+Prompts: P1 cabinet flyer (above), P2 warm 1983 arcade interior backdrop, P3 strip of worn masking tape across a coin slot with a hand-lettered warning. Times are wall-clock; the P1 cell includes model load. VRAM is whole-GPU `nvidia-smi` peak and includes ~7-9 GB of models the server keeps cached between runs, so read it as "fits in 12 GB" (peaks 10-11.7 GB), not as per-model need.
+
+| Model | Steps | P1 s | P2 s | P3 s |
+|---|---|---|---|---|
+| FLUX.2 klein 4B (fp8 cast) | 4 | 13.2 | 5.0 | 5.0 |
+| Z-Image-Turbo (int8) | 8 | 27.7 | 21.2 | 16.6 |
+| SDXL base | 30 | 24.1 | 10.1 | 10.1 |
+
+Observations (single seed, so indicative only; contact sheet at `research/comfyui_out/compare_sheet.png`, rows klein / Z-Image / SDXL):
+- Klein: fastest by far; flyer has good neon-on-black but garbled headline text; backdrop and tape are the most photographic and convincing.
+- Z-Image-Turbo: cleanest graphic flyer ("1983" legible, flat vector-like neon) and a believable warm backdrop; tape had the best coin-slot layout but mangled lettering.
+- SDXL: stylised and busy; backdrop drifts to flat illustration; text is garbled everywhere. Not recommended over the two newer models.
+- All three garble hand-lettered text; any readable lettering must be added in post (or by `VectorLabel`/pxl), not generated.
+
+Recommendation (n=1, not a benchmark): cabinet illustration / flyer: Z-Image-Turbo (cleaner graphic read), klein for fast iteration and editing; arcade backdrop: klein (5 s, photographic, moody); coin-slot tape texture: klein for realism, then clean up in post. Both are Apache 2.0, so both satisfy the commercial-use condition. Note the owner's brief ranked Z-Image for photorealism and klein for stylisation; these runs showed the reverse on these prompts.
