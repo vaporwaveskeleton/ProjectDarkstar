@@ -35,6 +35,7 @@ var roll_blink_period := 1.0     ## s, INSERT CREDIT's blink period (0 = steady)
 var roll_seed := 9               ## ✱ the order glyphs are lost in is fixed per seed (deterministic captures)
 var _roll_t := 0.0
 var _hold := ""                  ## ending 5 (NARR-001 §9.5): one held screen of Theodora's message, "" = none
+var _hold_prompt := false         ## the held screen waits for a press: show the press-fire line under it
 
 signal credits_stat_shown(index: int)       ## stat line `index` (0..3) just scrolled into view
 
@@ -112,18 +113,25 @@ func roll_credits(lines: PackedStringArray, stat_indices: PackedInt32Array = Pac
 
 
 ## Ending 5: hold one screen (≤ 2 lines, Cabinet face) until replaced; "" clears it.
-func hold_screen(text: String) -> void:
+func hold_screen(text: String, awaiting_press: bool = false) -> void:
 	_hold = text
+	_hold_prompt = awaiting_press and not text.is_empty()
 
 
 func held_screen() -> String:
 	return _hold
 
 
+## True while the held screen waits for a press (the PRESS FIRE line is drawn under it).
+func held_prompt() -> bool:
+	return _hold_prompt
+
+
 func clear() -> void:
 	_brief = {}
 	roll_page = false
 	_hold = ""
+	_hold_prompt = false
 	_ready_t = 0.0
 	_banner_t = 0.0
 	_caption_t = 0.0
@@ -278,6 +286,8 @@ func _draw() -> void:
 		_draw_roll()
 	if not _hold.is_empty():
 		_block(cy - block_height(_hold, 1) * 0.5, _hold, 1, Look.c(Pal.BONE_5))
+		if _hold_prompt:
+			_centered(cy + block_height(_hold, 1) * 0.5 + 14.0, tr("CAB_BRIEF_PRESS_FIRE"), 1, Look.c(Pal.GAS_4))
 	if not _brief.is_empty():
 		_draw_brief()
 	if _ready_t > 0.0:

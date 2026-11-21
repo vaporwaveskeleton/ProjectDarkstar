@@ -1293,7 +1293,7 @@ Positions on the question §1.6 withholds — **does the entity, once unmade, be
 
 **The only hint:** from beat 3 the honour roll's top line is *T.L. · 0 WARD 0 SURGE* (§5.4). The game never explains it.
 
-**Theodora Lune's message.** Cabinet register, one screen per beat, each ≤ 2 lines, held until a button is pressed. The last screen breaks into sentence case: it is the only sentence-case text the Cabinet ever shows. Screen 8 leads directly into the screen it names.
+**Theodora Lune's message.** Cabinet register, one screen per beat, each ≤ 2 lines, held until a button is pressed (the lance button, Enter/Space or Esc; the screen shows PRESS FIRE TO CONTINUE). The last screen breaks into sentence case: it is the only sentence-case text the Cabinet ever shows. Screen 8 leads directly into the screen it names.
 
 | Screen | Text |
 |---|---|
