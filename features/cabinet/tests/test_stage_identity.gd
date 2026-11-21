@@ -38,8 +38,8 @@ func test_every_stage_has_its_own_backdrop() -> void:
 		assert_bool(Starfield.BACKDROPS.has(st.backdrop)).override_failure_message("%s backdrop %s" % [st.id, st.backdrop]).is_true()
 		assert_bool(seen.has(st.backdrop)).override_failure_message("%s repeats backdrop %s" % [st.id, st.backdrop]).is_false()
 		seen[st.backdrop] = true
-	assert_int(seen.size()).is_equal(5)
-	assert_str(String((game.stages[0] as CabinetStage).backdrop)).is_empty()   # a0_1 keeps the plain sky
+	assert_int(seen.size()).is_equal(3)
+	assert_str(String((load("res://data/cabinet/stage_first_vigil.tres") as CabinetStage).backdrop)).is_empty()   # the retired a0_1 keeps the plain sky
 
 
 func test_signatures_are_drawn_inside_the_playfield_and_differ() -> void:
@@ -69,7 +69,7 @@ func test_signatures_use_void_registers_only() -> void:
 
 
 func test_the_signature_never_touches_the_spawn_rng() -> void:
-	var st := (game.stages[1] as CabinetStage).duplicate() as CabinetStage
+	var st := (load("res://data/cabinet/stage_drift.tres") as CabinetStage).duplicate() as CabinetStage
 	st.backdrop = &""
 	world.start(st)
 	var plain := world.rng.state
@@ -80,7 +80,7 @@ func test_the_signature_never_touches_the_spawn_rng() -> void:
 
 
 func test_the_currents_flow_with_sim_time() -> void:
-	var a := _marks_for(game.stages[1] as CabinetStage)
+	var a := _marks_for(load("res://data/cabinet/stage_drift.tres") as CabinetStage)
 	world.time += 2.0
 	var b := world.stars.backdrop_marks()
 	assert_bool(a == b).is_false()

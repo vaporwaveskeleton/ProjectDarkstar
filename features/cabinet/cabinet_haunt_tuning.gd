@@ -6,7 +6,7 @@ extends TunableResource
 
 # --- When (moments and odds) ---
 @export var min_wear_level: int = 1                  ## a stage haunts only from this wear level (a0_3, W0-11)
-@export var attract_min_stage: int = 2               ## the attract haunts once the profile has reached this stage index (a0_3) or finished Act 0
+@export var attract_min_stage: int = 0               ## the attract haunts once the profile has reached this stage index (0 = a0_3, the first stage since F-14) or finished Act 0
 @export var chance_ready: float = 0.35               ## odds a READY card haunts (one kind at most)
 @export var chance_hold: float = 0.3                 ## odds a stage-end hold haunts
 @export var chance_attract: float = 0.2              ## odds an attract page cycle haunts when it wraps

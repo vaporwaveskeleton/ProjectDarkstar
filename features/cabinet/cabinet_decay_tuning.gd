@@ -49,7 +49,7 @@ extends TunableResource
 @export var ending5_line_hold_s: float = 4.0
 
 # --- Wear (W0-11) ---
-@export var wear_level_by_stage: PackedInt32Array = PackedInt32Array([0, 0, 1, 2, 3])
+@export var wear_level_by_stage: PackedInt32Array = PackedInt32Array([1, 2, 3])
 @export var wear_detune_cents_per_level: float = -2.0
 @export var wear_dead_bulbs_per_level: int = 1
 @export var wear_bleach_per_level: float = 0.06       ## ✱ edge bleach per wear level (≪ print_bleach_max)

@@ -1,6 +1,6 @@
 class_name CabinetStageRoster
 extends Resource
-## The Act 0 shift: every CabinetStage in play order (a0_1 … a0_5; SYS-001 §1.6, PM 2026-11-19).
+## The Act 0 shift: every CabinetStage in play order (three stages since F-14: a0_3, a0_4, a0_5; the five-stage shift is stage_roster_five.tres; SYS-001 §1.6).
 ## Content, not tuning. CabinetGame plays them in order; the Pretence follows the last one.
 
 const DEFAULT_PATH := "res://data/cabinet/stage_roster.tres"   ## the shift the cabinet scene plays

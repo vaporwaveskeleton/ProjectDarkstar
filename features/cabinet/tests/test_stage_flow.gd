@@ -38,7 +38,7 @@ func _last() -> int:
 # --- credits → next stage -----------------------------------------------------------------
 
 func test_a_mid_shift_unmade_holds_the_banner_then_starts_the_next_stage() -> void:
-	game.start_stage(2)    # a0_3: the entity wakes, but the shift goes on
+	game.start_stage(0)    # a0_3: the entity wakes, but the shift goes on
 	game.state = game.State.UNMADE
 	game._on_timer()
 	assert_int(game.state).is_equal(game.State.CREDITS)
@@ -48,19 +48,19 @@ func test_a_mid_shift_unmade_holds_the_banner_then_starts_the_next_stage() -> vo
 	assert_float(game._timer).is_equal(game.MID_SHIFT_HOLD_SECONDS)
 	game._on_timer()
 	assert_int(game.state).is_equal(game.State.BRIEFING)   # the next stage opens on its stage card
-	assert_int(game.stage_index).is_equal(3)
+	assert_int(game.stage_index).is_equal(1)
 	assert_str(String(world.stage.id)).is_equal("a0_4")
 
 
 func test_a_cleared_stage_starts_the_next_stage() -> void:
-	game.start_stage(1)    # a0_2: cold
+	game.start_stage(0)    # (a cold stage is off the shift since F-14; the hand-off does not depend on the goal)
 	game.state = game.State.CLEARED
 	game._on_timer()
 	assert_float(messages.credits_t).override_failure_message("no roll mid-shift: banner only").is_less(0.0)
 	assert_str(messages._banner).is_equal(tr("CAB_VIGIL_COMPLETE"))
 	game._on_timer()
 	assert_int(game.state).is_equal(game.State.BRIEFING)   # the next stage opens on its stage card
-	assert_int(game.stage_index).is_equal(2)
+	assert_int(game.stage_index).is_equal(1)
 
 
 func test_every_stage_but_the_last_has_a_next_stage() -> void:
@@ -86,9 +86,9 @@ func test_the_last_stage_unmade_rolls_the_full_credits() -> void:
 
 func test_game_over_hands_attract_the_current_stage_and_the_shift_total() -> void:
 	game.on_route_entered({})
-	game.start_stage(3)
+	game.start_stage(1)
 	game.score.add(1500)
-	assert_dict(game._game_over_params()).is_equal({"continue_stage": 3, "shift_total": 1500})
+	assert_dict(game._game_over_params()).is_equal({"continue_stage": 1, "shift_total": 1500})
 
 
 func test_the_demo_game_over_hands_nothing() -> void:
@@ -100,8 +100,8 @@ func test_continue_starts_a_new_game_at_that_stage() -> void:
 	game.score.add(500)
 	game.score.lose_life()
 	game.record.grubs_destroyed = 4
-	game.on_route_entered({"continue_stage": 3})
-	assert_int(game.stage_index).is_equal(3)
+	game.on_route_entered({"continue_stage": 1})
+	assert_int(game.stage_index).is_equal(1)
 	assert_str(String(world.stage.id)).is_equal("a0_4")
 	assert_int(game.state).is_equal(game.State.BRIEFING)   # the next stage opens on its stage card
 	assert_int(game.score.score).is_equal(0)
@@ -139,11 +139,11 @@ func test_the_continue_line_counts_stages_from_one() -> void:
 func test_the_ready_card_shows_the_zone_line_when_the_stage_has_one() -> void:
 	game.start_stage(0)
 	game.dismiss_brief()                # the READY card follows the stage card
-	assert_str(messages.ready_zone()).is_empty()
+	assert_str(messages.ready_zone()).is_equal(tr("CAB_ZONE_CENSER_WATCH"))
 	game.start_stage(1)
 	game.dismiss_brief()
-	assert_str(messages.ready_zone()).is_equal(tr("CAB_ZONE_DRIFT"))
 	var top := messages.ready_zone_top()
+	assert_str(messages.ready_zone()).is_equal(tr("CAB_ZONE_SHOAL"))
 	assert_float(top).is_greater_equal(0.0)
 	assert_float(top + messages.block_height(messages.ready_zone(), 1)).is_less_equal(messages.ready_title_top())
 
@@ -200,12 +200,12 @@ func test_a_fresh_shift_starts_at_zero_and_restarts_the_furthest_stage() -> void
 
 func test_stage_start_saves_the_furthest_stage_as_a_max() -> void:
 	game.on_route_entered({})
-	game.start_stage(3)
-	assert_int(_reached()).is_equal(3)
 	game.start_stage(1)
-	assert_int(_reached()).is_equal(3)
-	game.start_stage(4)
-	assert_int(_reached()).is_equal(4)
+	assert_int(_reached()).is_equal(1)
+	game.start_stage(0)
+	assert_int(_reached()).is_equal(1)
+	game.start_stage(2)
+	assert_int(_reached()).is_equal(2)
 
 
 func test_an_unrouted_start_opens_a_fresh_shift_once_the_frame_ends() -> void:
@@ -256,7 +256,7 @@ func test_shift_total_parsing() -> void:
 
 func test_the_reveal_clears_the_furthest_stage() -> void:
 	game.on_route_entered({})
-	game.start_stage(4)
+	game.start_stage(2)
 	game.score.add(300)
 	game._save_act0_complete()
 	var p := _saved()
@@ -271,7 +271,7 @@ func test_the_reveal_clears_the_furthest_stage() -> void:
 func test_the_demo_never_writes() -> void:
 	_remount({})
 	game.on_route_entered({"demo": true})
-	game.start_stage(3)
+	game.start_stage(1)
 	game._save_hi_score()
 	game._save_act0_complete()
 	await get_tree().process_frame                     # the deferred fresh-shift fallback, too
@@ -280,15 +280,25 @@ func test_the_demo_never_writes() -> void:
 
 
 func test_saved_continue_stage_edge_cases() -> void:
-	assert_int(game.saved_continue_stage({}, 5)).is_equal(-1)
-	assert_int(game.saved_continue_stage({"act0_stage_reached": -1}, 5)).is_equal(-1)
-	assert_int(game.saved_continue_stage({"act0_stage_reached": 5}, 5)).is_equal(-1)
-	assert_int(game.saved_continue_stage({"act0_stage_reached": "2"}, 5)).is_equal(-1)
-	assert_int(game.saved_continue_stage({"act0_stage_reached": 2}, 5)).is_equal(2)
-	assert_int(game.saved_continue_stage({"act0_stage_reached": 2.0}, 5)).override_failure_message("JSON numbers load as floats").is_equal(2)
-	assert_int(game.saved_continue_stage({"act0_stage_reached": 3, "act0_complete": true}, 5)).is_equal(-1)
-	assert_int(game.saved_continue_stage({"act0_stage_reached": 3, "act0_complete": false}, 5)).is_equal(3)
-	assert_int(CabinetGame.saved_continue_stage({"act0_stage_reached": 4}, CabinetStageRoster.default_size())).is_equal(4)
+	assert_int(game.saved_continue_stage({}, 3)).is_equal(-1)
+	assert_int(game.saved_continue_stage({"act0_stage_reached": -1}, 3)).is_equal(-1)
+	assert_int(game.saved_continue_stage({"act0_stage_reached": "2"}, 3)).is_equal(-1)
+	assert_int(game.saved_continue_stage({"act0_stage_reached": 1}, 3)).is_equal(1)
+	assert_int(game.saved_continue_stage({"act0_stage_reached": 1.0}, 3)).override_failure_message("JSON numbers load as floats").is_equal(1)
+	assert_int(game.saved_continue_stage({"act0_stage_reached": 2, "act0_complete": true}, 3)).is_equal(-1)
+	assert_int(game.saved_continue_stage({"act0_stage_reached": 2, "act0_complete": false}, 3)).is_equal(2)
+	assert_int(CabinetGame.saved_continue_stage({"act0_stage_reached": 2}, CabinetStageRoster.default_size())).is_equal(2)
+
+
+## F-14: a profile saved by the five-stage build (stage_reached 3 or 4) clamps to the last of the three stages.
+func test_a_stage_reached_from_the_five_stage_build_clamps_to_the_last_stage() -> void:
+	var n := CabinetStageRoster.default_size()
+	assert_int(n).is_equal(3)
+	assert_int(CabinetGame.saved_continue_stage({"act0_stage_reached": 3}, n)).is_equal(2)
+	assert_int(CabinetGame.saved_continue_stage({"act0_stage_reached": 4}, n)).is_equal(2)
+	assert_int(CabinetGame.saved_continue_stage({"act0_stage_reached": 4.0}, n)).is_equal(2)
+	assert_int(CabinetGame.saved_continue_stage({"act0_stage_reached": 0}, n)).is_equal(0)
+	assert_int(CabinetGame.saved_continue_stage({"act0_stage_reached": 4, "act0_complete": true}, n)).is_equal(-1)
 
 
 func test_stage_record_start_is_taken_at_each_stage_start() -> void:
@@ -298,7 +308,7 @@ func test_stage_record_start_is_taken_at_each_stage_start() -> void:
 	game.record.glass_mined = 2
 	game.start_stage(2)
 	assert_array(game.stage_record_start).is_equal([4, 2, 0, 0])
-	game.new_game(3)
+	game.new_game(0)
 	assert_array(game.stage_record_start).is_equal([0, 0, 0, 0])
 
 
@@ -306,7 +316,7 @@ func test_stage_record_start_is_taken_at_each_stage_start() -> void:
 
 func test_the_reveal_hands_off_to_the_unmaking_without_a_curtain() -> void:
 	game.on_route_entered({})
-	game.start_stage(4)
+	game.start_stage(2)
 	game.score.add(300)
 	var to_aether: Dictionary = game.unmaking_params()
 	assert_str(String(game.UNMAKING_ROUTE)).is_equal("aether")

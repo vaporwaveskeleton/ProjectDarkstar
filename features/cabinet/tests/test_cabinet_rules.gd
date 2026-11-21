@@ -319,7 +319,7 @@ func test_acolyte_censer_lags_the_vigil_by_a_quarter_second() -> void:
 # --- End to end ----------------------------------------------------------------------------
 
 func test_autopilot_can_clear_the_first_vigil() -> void:
-	var stage: CabinetStage = (game.stages[0] as CabinetStage)
+	var stage := load("res://data/cabinet/stage_first_vigil.tres") as CabinetStage   # a0_1: off the three-stage shift (F-14) but still data
 	world.start(stage)
 	var cleared := [false]
 	world.sepulchre_cleared.connect(func() -> void: cleared[0] = true)

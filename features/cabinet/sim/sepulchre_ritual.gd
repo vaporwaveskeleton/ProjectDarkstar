@@ -157,8 +157,8 @@ func _knock_modules(at: Vector2) -> void:
 	world.segments_changed.emit(segments)
 	for k in n:
 		world.award(t.score_module, world.torus.wrap(pos + Vector2.from_angle(world.rng.randf() * TAU) * 20.0))
-	world.sfx(&"segment_knocked")
-	world.sfx(&"charge_hit", -4.0)
+	world.sfx(&"segment_knocked", -3.0)    # F-10 (Q-T453): the pair is -3 / -9 dB, peak -13 dBFS together (was 0 / -4: -6 dBFS)
+	world.sfx(&"charge_hit", -9.0)
 	world.fx.burst(pos, Look.c(Pal.BONE_4), world.fx_tuning.modules_knocked_burst_per_module * n, world.fx_tuning.modules_knocked_burst_speed)
 	world.fx.ring(at, Look.c(Pal.PHOS_4), world.fx_tuning.modules_knocked_ring_radius)
 	world.shake(world.fx_tuning.modules_knocked_shake_amp, world.fx_tuning.modules_knocked_shake_dur)

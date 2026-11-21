@@ -2,7 +2,7 @@ class_name GrubStats
 extends TunableResource
 ## Oubliette Grub tunables (GDD §8.5, SYS-001 §3). Values live in data/choir/grub.tres.
 
-## SYS-001 §3: HP 4 (hits at base lance).
+## SYS-001 §3: HP 2 (hits at base lance; owner F-11, 2026-11-20, was 4).
 @export var hp: int = 1
 ## SYS-001 §3: 130 px/s while carrying.
 @export var carry_speed_px_s: float = 0.0

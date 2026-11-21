@@ -9,7 +9,7 @@ extends ArcadeLayer
 
 const SEEK_SPEED := 160.0     ## ✱ between the carry (130) and flee (190) speeds of SYS-001 §3
 
-enum State { SEEK, CARRY, FLEE, IDLE, WORSHIP, INTERCEPT }
+enum State { SEEK, CARRY, FLEE, IDLE, WORSHIP, INTERCEPT, MINE }
 
 class Grub:
 	var pos: Vector2
@@ -23,6 +23,8 @@ class Grub:
 	var alive: bool = true
 	var id: int = 0
 	var think: float = 0.0
+	var rock: GeodeField.Geode = null     ## F-13: the geode it is gnawing (CabinetStage.grub_mine)
+	var gnaw: float = 0.0                 ## s until its next bite
 
 var items: Array[Grub] = []
 var _respawn_timers: Array[float] = []
@@ -75,7 +77,7 @@ func tick(delta: float) -> void:
 			if g.think <= 0.0:
 				g.think = 0.4
 				_claim(g)
-			g.state = State.SEEK if g.shard != null else State.IDLE
+			g.state = State.SEEK if g.shard != null else (State.MINE if _pick_rock(g) else State.IDLE)
 		else:
 			if world.stage.grub_pilfer and g.think <= 0.0:
 				g.think = 0.4
@@ -89,7 +91,7 @@ func tick(delta: float) -> void:
 				speed = t.grub_speed_flee
 			State.CARRY:
 				target = world.ritual.pos
-				speed = t.grub_speed_carry
+				speed = haul_speed(g)
 			State.SEEK:
 				target = g.shard.pos
 			State.IDLE:
@@ -98,6 +100,10 @@ func tick(delta: float) -> void:
 				var dir := 1.0 if g.id % 2 == 0 else -1.0
 				target = world.torus.wrap(world.vigil.pos + Vector2.from_angle(g.id * 2.4 + dir * world.time * 0.35) * ring)
 				speed = clampf(60.0 + 1.5 * world.torus.distance(g.pos, target), 70.0, 200.0)   # catches up with a Vigil on the move, settles to a slow orbit
+			State.MINE:
+				var away := world.torus.delta(g.rock.pos, g.pos).normalized()
+				target = world.torus.wrap(g.rock.pos + away * (g.rock.radius + t.grub_mine_standoff_px))
+				speed = SEEK_SPEED
 			State.INTERCEPT:
 				var c := _charge_to_intercept(g)
 				if c != null:
@@ -111,6 +117,8 @@ func tick(delta: float) -> void:
 		var want := d.normalized() * speed if d.length() > 2.0 else Vector2.ZERO
 		g.vel = g.vel.lerp(want, clampf(delta * t.grub_ease_rate, 0.0, 1.0))
 		g.pos = world.torus.wrap(g.pos + g.vel * delta)
+		if g.state == State.MINE:
+			_gnaw(g, delta)
 		if g.state == State.SEEK and g.shard != null and world.torus.distance(g.pos, g.shard.pos) < radius() + 4.0:
 			g.carrying = true
 			g.shard.carried = true
@@ -129,6 +137,61 @@ func tick(delta: float) -> void:
 			_respawn_timers.remove_at(i)
 			if not world.ritual.awake or world.stage.grubs_after_wake:   # P2: some stages keep birthing after the wake
 				_spawn(world.neighbourhood.random_spot(world.tuning.size_grub_px))   # SYS-001 §1.7: births land in the box, off view
+
+
+## F-13 (Q-T451): an idle Grub with no loose glass to claim picks the nearest live geode within
+## grub_mine_range_px (CabinetStage.grub_mine); true when it has one. Analogue of the source Sinistar's
+## miners working a planetoid slowly (research note sinistar_mining.md).
+func _pick_rock(g: Grub) -> bool:
+	if not world.stage.grub_mine or world.tuning.grub_mine_period_s <= 0.0:
+		return false
+	if g.rock != null and g.rock.alive and world.torus.distance(g.pos, g.rock.pos) <= world.tuning.grub_mine_range_px:
+		return true
+	g.rock = null
+	var miners := 0
+	for o in items:
+		if o != g and o.alive and o.state == State.MINE:
+			miners += 1
+	if miners >= world.tuning.grub_mine_max:
+		return false       # the rest keep shadowing the Vigil (Q-T381 density) and stay out of the lance's line
+	var best_d := world.tuning.grub_mine_range_px
+	for r in world.geodes.items:
+		if not r.alive or world.torus.distance(r.pos, world.vigil.pos) < world.tuning.grub_mine_clear_px:
+			continue
+		var d := world.torus.distance(g.pos, r.pos)
+		if d < best_d:
+			best_d = d
+			g.rock = r
+	return g.rock != null
+
+
+## One slow bite once the Grub has arrived: the ordinary face/shard rule (GeodeField.lance_hit, by_player =
+## false: nobody's score or service-record glass). At grub_mine_period_s a lone Grub is far below the over-fire
+## rate, so it frees glass calmly and never detonates a rock by itself.
+func _gnaw(g: Grub, delta: float) -> void:
+	if g.rock == null or not g.rock.alive:
+		return
+	var reach := g.rock.radius + world.tuning.grub_mine_standoff_px + radius() + 4.0
+	if world.torus.distance(g.pos, g.rock.pos) > reach:
+		return
+	g.gnaw -= delta
+	if g.gnaw > 0.0:
+		return
+	g.gnaw = world.tuning.grub_mine_period_s
+	world.geodes.lance_hit(g.rock, false)
+
+
+## F-12 (Q-T449): a laden Grub's speed. The glass lives round the Vigil while the Sepulchre stays where
+## it was built (up to the 4,096 px leash away), so at the SYS-001 §3 carry speed (130 px/s) a trip took
+## 20-30 s each way and a human who works away from the altar (the autopilot homes on it, a human does
+## not) starved the build. Beyond grub_haul_catchup_px a laden Grub hauls at grub_haul_catchup_speed
+## (the source Sinistar's workers also hurry when far, as its chase does, Q-T446); inside it, the table speed.
+## 0 = off (the pre-F-12 game).
+func haul_speed(g: Grub) -> float:
+	var t := world.tuning
+	if t.grub_haul_catchup_px > 0.0 and world.torus.distance(g.pos, world.ritual.pos) > t.grub_haul_catchup_px:
+		return maxf(t.grub_speed_carry, t.grub_haul_catchup_speed)
+	return t.grub_speed_carry
 
 
 ## F-3 (Sinibomb-intercept analogue): the nearest Charge in flight at the not-yet-awake Sepulchre

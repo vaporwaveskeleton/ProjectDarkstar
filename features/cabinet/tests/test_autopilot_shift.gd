@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## The autopilot plays the whole Act 0 shift (a0_1 → a0_5) honestly: the real CabinetGame scene,
+## The autopilot plays the whole Act 0 shift (a0_3 → a0_5, three stages since F-14) honestly: the real CabinetGame scene,
 ## its default lives and extra-life schedule, its own death → respawn → GAME OVER state machine.
 ## The bot only reads the world and writes the Vigil's scripted inputs; nothing here touches lives,
 ## shields or stage data. Seeds vary by giving every stage `seed + k * SEED_STRIDE` (k = 0 is the
@@ -12,14 +12,16 @@ const STAGE_LIMIT_S := 420.0       ## sim seconds a stage may take before the ru
 const State := CabinetGame.State
 
 ## The fixed seeds this suite plays, and the honest floor: at least MIN_REACHED of them clear all
-## MIN_STAGES stages (the whole shift, a0_1–a0_5) with the default lives. Measured 2026-11-20 on seeds
+## MIN_STAGES stages (the whole three-stage shift, a0_3–a0_5) with the default lives. Measured 2026-11-20 on seeds
 ## +0…+19 after the density pass (640 px box, Grubs shadowing the Vigil, more geodes; SYS-001 §1.7, PROPOSED):
-## 20/20 full shifts cleared on seeds +0…+19 (round 2: 34/40/44/72/14 geodes, 6/14/14/10/6 Grubs).
-## Median sim s per stage: a0_1 38, a0_2 46, a0_3 256, a0_4 207, a0_5 224 (the wake stages stay over §1.7's skilled
-## targets: glass supply, about 168 Grub deposits to build the Choir). Takes ~5 min headless.
+## 20/20 full five-stage shifts cleared on seeds +0…+19 (round 2: 34/40/44/72/14 geodes, 6/14/14/10/6 Grubs).
+## F-14 (three stages, 2026-11-20): with the shift cut to a0_3, a0_4, a0_5 the same seeds on a working tree that also held the
+## in-flight F-11/F-13 Grub changes (HP 2, Grubs mine geodes) measured 16/20 full shifts (seeds +1, +8, +16, +19 lost to the awake entity); medians a0_3 120 s,
+## a0_4 149, a0_5 166 sim s. The same tree on the five-stage roster measured 17/20, so the floor miss comes from that in-flight
+## Grub work, not from the shorter shift; the floor is deliberately NOT lowered here (TECH-001 Q-T452). Takes ~3.5 min headless.
 const SEEDS: Array[int] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
 ## Re-measured 2026-11-20 under the Momentum ship (F-9, Q-T445) with the retuned bot: 19/20 full shifts (seed +10 lost to the awake entity); floor unchanged at 18. Takes ~4 min.
-const MIN_STAGES := 5
+const MIN_STAGES := 3
 const MIN_REACHED := 18
 
 
@@ -117,7 +119,7 @@ func test_autopilot_plays_the_shift_with_default_lives() -> void:
 	var reached := 0
 	var clears := 0
 	var lines := PackedStringArray()
-	var per_stage: Array = [[], [], [], [], []]
+	var per_stage: Array = [[], [], []]
 	for k in SEEDS:
 		var r := play_shift(k)
 		var n := stages_cleared(r, total)
@@ -137,7 +139,7 @@ func test_autopilot_plays_the_shift_with_default_lives() -> void:
 		var xs: Array = per_stage[si]
 		xs.sort()
 		if not xs.is_empty():
-			summary.append("a0_%d median %.0f range %.0f-%.0f (n=%d)" % [si + 1, xs[xs.size() >> 1], xs[0], xs[xs.size() - 1], xs.size()])
+			summary.append("a0_%d median %.0f range %.0f-%.0f (n=%d)" % [si + 3, xs[xs.size() >> 1], xs[0], xs[xs.size() - 1], xs.size()])
 	print("autopilot stage sim seconds (cleared stages): ", " | ".join(summary))
 	print("autopilot shift: %d/%d cleared all, %d/%d cleared >= %d stages\n  %s" % [clears, SEEDS.size(), reached,
 			SEEDS.size(), MIN_STAGES, "\n  ".join(lines)])

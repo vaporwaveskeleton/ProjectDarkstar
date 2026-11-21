@@ -24,8 +24,6 @@
 		{"do": "autopilot", "on": true},
 		{"do": "wait_until", "id": "cabinet/game", "prop": "stage_index", "eq": 1, "within": 30000},
 		{"do": "wait_until", "id": "cabinet/game", "prop": "stage_index", "eq": 2, "within": 30000},
-		{"do": "wait_until", "id": "cabinet/game", "prop": "stage_index", "eq": 3, "within": 30000},
-		{"do": "wait_until", "id": "cabinet/game", "prop": "stage_index", "eq": 4, "within": 30000},
 		{"do": "wait_frames", "frames": 120},
 		{"do": "screenshot", "name": "02_act0_play", "target": "window"},
 		{"do": "snapshot", "name": "last_stage"},

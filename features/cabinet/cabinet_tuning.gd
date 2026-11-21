@@ -54,9 +54,16 @@ enum MoveModel { DIRECT, MOMENTUM }
 @export var knock_max: int = 3
 
 # --- Choir units (SYS-001 §3) ---
-@export var grub_hp: int = 4
+@export var grub_hp: int = 2                      ## SYS-001 §3 (F-11, owner 2026-11-20: 50% of the old 4)
 @export var grub_speed_carry: float = 130.0
 @export var grub_speed_flee: float = 190.0
+@export var grub_mine_period_s: float = 0.0        ## s ✱ PROVISIONAL (Q-T451): a mining Grub gnaws its geode once per this many seconds; 0 = off 
+@export var grub_mine_range_px: float = 240.0      ## px ✱ PROVISIONAL (Q-T451): an idle Grub with no loose glass looks for a geode this near (about one screen)
+@export var grub_mine_max: int = 0                 ## ✱ PROVISIONAL (Q-T451): at most this many Grubs mine at once (data 3); the rest keep shadowing the Vigil
+@export var grub_mine_clear_px: float = 0.0        ## px ✱ PROVISIONAL (Q-T451): they only mine rock at least this far from the Vigil, out of its lance's line (data 160)
+@export var grub_mine_standoff_px: float = 6.0     ## px ✱ PROVISIONAL (Q-T451): it hovers this far past the geode's edge
+@export var grub_haul_catchup_px: float = 0.0      ## px ✱ PROVISIONAL (Q-T449): a laden Grub farther than this from the Sepulchre hauls at grub_haul_catchup_speed; 0 = off (data sets 600)
+@export var grub_haul_catchup_speed: float = 0.0   ## px/s ✱ PROVISIONAL (Q-T449): the far haul speed (data 260: above the 190 flee speed, below the Vigil's 340); never below grub_speed_carry
 @export var grub_ease_rate: float = 5.0           ## 1/s ✱ exponential ease of a Grub's velocity toward its wanted velocity (was a code literal; the reference's `asrdN` shift, larger = snappier; Q-T444)
 @export var grub_flee_radius: float = 70.0        ## px ✱ (flees the Vigil's lamp in Act 0; was 110, which pushed them off a 128 px half-view)
 @export var grub_shadow_radius: float = 100.0     ## px ✱ an idle Grub circles the Vigil at about this distance (the reference's workers wait near the player)

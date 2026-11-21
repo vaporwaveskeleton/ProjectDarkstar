@@ -24,7 +24,7 @@ var marquee: CanvasItem                 ## the backlit sign (litany)
 var pages: AttractPages                 ## attract only (stranger)
 var ghost_button: ArcadeButton          ## attract only (ghost press)
 var rig: Control                        ## where the ember glow is drawn (rig units)
-var enabled := false                    ## the scene decides: a0_3 reached (attract) or the stage's wear level
+var enabled := false                    ## the scene decides: the first stage (a0_3) reached (attract) or the stage's wear level
 var last_kind := &""
 var _litany_t := -1.0
 var _ember: _Ember

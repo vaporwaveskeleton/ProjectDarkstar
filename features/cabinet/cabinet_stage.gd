@@ -2,7 +2,7 @@ class_name CabinetStage
 extends Resource
 ## One authored Act 0 level (GDD §6.1). Content, not tuning: which units, how the Sepulchre starts,
 ## and what ends the stage. Per-stage counts are the Act 0 stage table, SYS-001 §1.6 (PM 2026-11-19).
-## The five stages run in order from CabinetStageRoster (data/cabinet/stage_roster.tres).
+## The roster stages (three since F-14; five in stage_roster_five.tres) run in order from CabinetStageRoster (data/cabinet/stage_roster.tres).
 
 enum Goal { CLEAR_SEPULCHRE, UNMAKE_ENTITY }
 
@@ -34,4 +34,5 @@ enum Goal { CLEAR_SEPULCHRE, UNMAKE_ENTITY }
 @export var grub_pilfer: bool = false                ## Grubs snatch nearby loose glass the Vigil's magnet is not pulling
 @export var acolyte_escort: bool = false             ## idle non-guard Acolytes trail laden Grubs instead of mining
 @export var carry_charges_in: bool = false           ## as the next stage of a running shift, start with the Charges held at the last stage's end
+@export var grub_mine: bool = false                  ## idle Grubs with no loose glass slowly gnaw the nearest geode for glass (F-13, Q-T451; a0_3-a0_5)
 @export var acolyte_mine: bool = false               ## idle Acolytes with no Vigil in range fly to the nearest geode and lance it (SYS-001 §1.7; a0_3–a0_5)

@@ -27,3 +27,4 @@ grub_pilfer = true
 acolyte_escort = true
 carry_charges_in = true
 acolyte_mine = true
+grub_mine = true

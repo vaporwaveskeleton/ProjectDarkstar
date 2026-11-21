@@ -27,3 +27,4 @@ grubs_after_wake = true
 grub_pilfer = true
 carry_charges_in = true
 acolyte_mine = true
+grub_mine = true
