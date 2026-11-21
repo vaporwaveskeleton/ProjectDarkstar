@@ -844,6 +844,7 @@ IDs are stable for TECH-001's audio tables (TECH-001 §6). Levels are relative t
 | G04 | The protected silence | GDD-001 §12 🔒 | nothing; and the mix's room tone is faded out over 0.3 s ✱ so the silence is real | −∞ |
 | G05 | Shrine conversion step | SYS-001 §6 | a bell being added to the field, one per step | −18 dB |
 | G06 | Shrine purged | SYS-001 §6 | that bell removed, and the bed opening | −17 dB |
+| G07 (Act 0 only; no cue-table id) | Sepulchre down (`sepulchre_down`) | the last module falls, the stage ends (TECH-001 Q-T457; owner 2026-11-20: immediate feedback, quiet) | a soft sine chime sagging a fifth over a low breath-out; no noise burst, 12 ms attack, 1.8 kHz lowpass; played with the last `segment_knocked`; peak −12.9 dBFS on its own, level with the quietest Act 0 impacts; `BUS-FLY`, P4, 1 voice; no stinger, no duck (§1.1) | −13 dB |
 | H01 | Lantern Tree purchase | LOOP-001 §3 | chalk on the desk, one stroke per branch tier | −16 dB |
 | H02 | Capstone first purchase | LOOP-001 §3.4 | the §6.7 stinger set | −13 dB |
 | H03 | Run Sigil stamped | LOOP-001 §4 | the chalk-strike family, pitched per Sigil family | −15 dB |

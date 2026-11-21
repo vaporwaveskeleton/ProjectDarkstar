@@ -166,7 +166,19 @@ func _knock_modules(at: Vector2) -> void:
 	_set_phase(_phase_for(segments))
 	if segments <= 0 and not cleared:
 		cleared = true                                  # F-6: destroying the Sepulchre ends the stage, whatever its goal (SYS-001 §1.6)
+		_sepulchre_down()                               # Q-T457: the feedback lands on this frame, before the hand-off timers
 		world.sepulchre_cleared.emit()
+
+
+## The last module falls: a bigger burst and ring than a knock, the shake at its cap, a longer hit-stop and the
+## quiet `sepulchre_down` chime. All on the frame the module falls (Reduced Motion scales the shake and hit-stop).
+func _sepulchre_down() -> void:
+	var ft := world.fx_tuning
+	world.sfx(&"sepulchre_down")
+	world.fx.burst(pos, Look.c(Pal.BONE_5), ft.sepulchre_down_burst_count, ft.sepulchre_down_burst_speed)
+	world.fx.ring(pos, Look.c(Pal.BONE_4), ft.sepulchre_down_ring_radius)
+	world.shake(ft.sepulchre_down_shake_amp, ft.sepulchre_down_shake_dur)
+	world.hitstop(ft.hitstop_sepulchre_down_frames, &"sepulchre_down")
 
 
 func _hit_entity(at: Vector2) -> void:

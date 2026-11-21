@@ -461,6 +461,9 @@ msgstr "GAME OVER"
 msgid "CAB_VIGIL_COMPLETE"
 msgstr "VIGIL COMPLETE"
 
+msgid "CAB_SEPULCHRE_DOWN"
+msgstr "SEPULCHRE DOWN"
+
 msgid "CAB_ENTITY_DOWN"
 msgstr "THE DARK STAR IS DOWN"
 

@@ -42,6 +42,12 @@ const HORIZON_PARALLAX := 0.25     ## ✱ x parallax of the ripples
 const HORIZON_RIPPLES := [[4.0, 9], [9.0, 6], [15.0, 4], [22.0, 2]]   ## ✱ [px below the line, dashes]
 
 var backdrop: StringName = &""      ## set from the stage in reset()
+## The stage hand-off (Q-T457): the next stage's signature dissolves in over this stage's. `morph` runs 0..1; every
+## mark leaves or arrives by a fixed per-mark threshold (a dither, never a blend, so only Pal registers are drawn).
+var morph_to: StringName = &""
+var morph := 0.0
+var _morph_dur := 0.0
+const MORPH_STEP := 0.61803399   ## per-mark threshold = frac(i x this): an even, formula-only dissolve (no RNG)
 
 var _stars: Array[PackedVector2Array] = []
 var _spine: PackedVector2Array = PackedVector2Array()   ## tile-space spine star positions (formula, no RNG)
@@ -61,6 +67,9 @@ var _streak_len := 0.0
 
 
 func reset() -> void:
+	morph = 0.0
+	morph_to = &""
+	_morph_dur = 0.0
 	_stars.clear()
 	_spine = PackedVector2Array()
 	pull_target = maw.centre if maw != null else world.screen_centre   # the sky drains into the wound (MawView, Q-T262)
@@ -81,6 +90,35 @@ func reset() -> void:
 		var head := Vector2(world.view_size.x * SPINE_X_FRAC, world.view_size.y * SPINE_TOP_FRAC)
 		var width_scale := length / (SepulchreRitual.TRUE_LENGTH_MULT * SepulchreRitual.BODY_DRAWN_RADIUS)   # the S2 silhouette, enlarged to the sky column
 		_spine = MawView.spine_ladder(head, Vector2.DOWN, length, width_scale)
+
+
+## Begin the hand-off morph toward stage signature `to` over `seconds` (reset() ends it: the next stage starts on the finished look).
+func begin_morph(to: StringName, seconds: float) -> void:
+	morph_to = to if BACKDROPS.has(to) else &""
+	morph = 0.0
+	_morph_dur = maxf(seconds, 0.05)
+
+
+func morphing() -> bool:
+	return _morph_dur > 0.0
+
+
+func tick(delta: float) -> void:
+	if _morph_dur > 0.0:
+		morph = minf(1.0, morph + delta / _morph_dur)
+
+
+## Horizontal warp of the sky at this row: a travelling sine, loudest mid-morph (bell), 0 at both ends. None under
+## photosensitivity or reduced motion (the dissolve alone remains: it is dim, small and never a flash).
+func warp_dx(y: float) -> float:
+	if _morph_dur <= 0.0 or not streaks_enabled():
+		return 0.0
+	return roundf(sin(y * 0.09 + world.shader_time * 9.0) * world.fx_tuning.handoff_warp_px * sin(PI * morph))
+
+
+## Is mark / star number `i` of the OLD look still drawn at this morph? (the new look draws it when this is false)
+func morph_keeps_old(i: int) -> bool:
+	return fposmod(float(i) * MORPH_STEP, 1.0) >= morph
 
 
 ## Where a tile-space star sits on screen for a parallax factor (no pull).
@@ -143,9 +181,12 @@ func _draw() -> void:
 	var tile := world.view_size
 	var origin := world.view_rect.position
 	if pull <= 0.0:                     # the sky drains in the reveal: the signature goes first
-		var bcol := backdrop_color()
-		for m: Rect2 in backdrop_marks():
-			draw_rect(m, bcol)
+		if morph > 0.0:
+			_draw_morph()
+		else:
+			var bcol := backdrop_color()
+			for m: Rect2 in backdrop_marks():
+				draw_rect(m, bcol)
 	for li in LAYERS.size():
 		var layer: Dictionary = LAYERS[li]
 		var par: float = layer.parallax
@@ -159,7 +200,12 @@ func _draw() -> void:
 			if pull > 0.0:
 				p = p.lerp(pull_target, clampf(pull * (1.0 + par), 0.0, 1.0))
 			var twinkle := (i * 7 + int(world.time * 3.0)) % 23 == 0
-			draw_rect(Rect2(p.round(), Vector2.ONE), Look.c(Pal.BONE_5) if twinkle else col)
+			var scol := Look.c(Pal.BONE_5) if twinkle else col
+			if morph > 0.0 and pull <= 0.0:
+				p.x += warp_dx(p.y)
+				if streaks_enabled() and not twinkle and fposmod(float(i + li * 31) * MORPH_STEP, 1.0) < 0.25 * sin(PI * morph):
+					scol = Look.c(Pal.BONE_3)    # a sparkle sweep mid-morph: 1 px dots, never a field flash
+			draw_rect(Rect2(p.round(), Vector2.ONE), scol)
 	for i in _spine.size():
 		if spine_star_drawn(i):
 			draw_rect(Rect2(spine_star_pos(i).round(), spine_star_size()), spine_star_color())
@@ -193,11 +239,13 @@ func _draw_seams() -> void:
 
 ## The signature's colour: a VOID register (Drift and Censer Watch the darkest; Shoal the brightest), greyed by the
 ## T0→T1 costume removal like the stars.
-func backdrop_color() -> Color:
+func backdrop_color(kind: StringName = &"-") -> Color:
+	if kind == &"-":
+		kind = backdrop
 	var col := Look.c(Pal.VOID_3)
-	if backdrop == &"shoal":
+	if kind == &"shoal":
 		col = Look.c(Pal.VOID_5)            # the glass motes: the brightest VOID, still never a faction hue
-	elif backdrop == &"horizon":
+	elif kind == &"horizon":
 		col = Look.c(Pal.VOID_4)
 	if desaturate > 0.0:
 		col = col.lerp(Look.c(Pal.BONE_1), desaturate * 0.6)
@@ -207,10 +255,32 @@ func backdrop_color() -> Color:
 ## Every mark of this stage's signature this frame, in screen (grid) pixels, inside the playfield
 ## (never over the HUD strip or the footer). Empty for the plain sky (a0_1, off the three-stage shift).
 func backdrop_marks() -> Array[Rect2]:
+	return _marks_of(backdrop, false)
+
+
+## The hand-off frame: this look's marks that survive the dissolve, in its register, then the next look's that
+## have arrived, in its register; both warped by warp_dx and clipped to the playfield. Mark order is stable
+## (formula-placed), so the thresholds do not shimmer.
+func _draw_morph() -> void:
+	var old_col := backdrop_color(backdrop)
+	var new_col := backdrop_color(morph_to)
+	var old_marks := _marks_of(backdrop, true)
+	for i in old_marks.size():
+		if morph_keeps_old(i):
+			draw_rect(old_marks[i], old_col)
+	var new_marks := _marks_of(morph_to, true)
+	for i in new_marks.size():
+		if not morph_keeps_old(i):
+			draw_rect(new_marks[i], new_col)
+
+
+## `kind`'s marks this frame. With `warped`, each mark is shifted by the morph's row warp BEFORE the playfield clip,
+## and a mark that clips away is kept as an empty rect so the mark numbering (the dissolve threshold) never moves.
+func _marks_of(kind: StringName, warped: bool) -> Array[Rect2]:
 	var out: Array[Rect2] = []
 	if world == null or world.torus == null:
 		return out
-	match backdrop:
+	match kind:
 		&"currents":
 			_currents(out)
 		&"chains":
@@ -222,12 +292,15 @@ func backdrop_marks() -> Array[Rect2]:
 	var field := world.playfield_rect
 	var kept: Array[Rect2] = []
 	for m in out:
+		if warped:
+			m.position.x += warp_dx(m.position.y)
 		var c := m.intersection(field)
+		var r := Rect2()
 		if c.has_area():
 			# rounding can nudge a sliver across the playfield edge: clip once more after it
-			var r := Rect2(c.position.round(), c.size.round().max(Vector2.ONE)).intersection(field)
-			if r.has_area():
-				kept.append(r)
+			r = Rect2(c.position.round(), c.size.round().max(Vector2.ONE)).intersection(field)
+		if r.has_area() or warped:
+			kept.append(r)
 	return kept
 
 

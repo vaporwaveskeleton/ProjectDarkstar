@@ -64,7 +64,15 @@ sfx("segment_knocked", { vol: 0.22, fx: [crush({ bits: 10 })] },
   tone({ wave: "square", freq: 330, to: 110, dur: 0.22, duty: 0.4, env: [0.006, 0.13, 0.2, 0.08], filter: { type: "lp", cutoff: 1600 } }),
   noise({ color: "white", dur: 0.15, env: [0.006, 0.08, 0.1, 0.06], filter: { type: "lp", from: 1500, to: 500 }, vol: 0.4 }))
 
-// --- The Choir (AUDIO-001 F-family, §5) -------------------------------------------------------
+// the last module falls (Sepulchre down, the stage ends): a soft bone chime that sags a fifth, over a low
+// breath-out. Same family and level as the quieter impact cues (peak target <= -13 dBFS: the owner found the
+// Charge hit too loud): vol 0.22, 12 ms attack, 1.8 kHz lowpass, no noise burst, 0.9 s. Plays at the instant of
+// the fall (SepulchreRitual._knock_modules), after the last segment_knocked (stage hand-off, Q-T457).
+sfx("sepulchre_down", { vol: 0.22, fx: [reverb({ size: 0.5, mix: 0.1 })] },
+  tone({ wave: "sine", freq: "A4", to: "E4", slide: 0.6, dur: 0.8, env: [0.012, 0.5, 0.2, 0.45], filter: { type: "lp", cutoff: 1800 } }),
+  at(0.06, tone({ wave: "sine", freq: "E3", to: "A2", slide: 0.7, dur: 0.8, env: [0.02, 0.4, 0.2, 0.4], vol: 0.6 })))
+
+// --- The Choir (AUDIO-001 F-family, §5)-------------------------------------------------------
 
 // F06 keening: a Grub mourns a lost deposit
 sfx("grub_keen", { vol: 0.28 },

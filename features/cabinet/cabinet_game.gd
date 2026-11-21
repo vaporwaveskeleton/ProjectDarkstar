@@ -517,13 +517,16 @@ func _on_timer() -> void:
 		State.GAME_OVER:
 			SceneRouter.go_to(&"attract", _game_over_params())
 		State.CLEARED:
-			_hold_banner("CAB_VIGIL_COMPLETE")
+			if is_last_stage():
+				_hold_banner("CAB_VIGIL_COMPLETE")
+			else:
+				_begin_morph()
 		State.UNMADE:
 			if is_last_stage():
 				messages.roll_credits(_full_credit_lines(), PackedInt32Array(STAT_ENTRY_INDICES))
 				_enter(State.CREDITS, world.fx_tuning.credits_full_seconds)
-			else:   # mid-shift unmade (a0_3, a0_4 on the four-stage shift; a0_1 is cleared, not unmade): the banner holds, then the next stage
-				_hold_banner("CAB_ENTITY_DOWN")
+			else:   # mid-shift unmade (a0_3, a0_4 on the four-stage shift; a0_1 is cleared, not unmade): the sky morphs, then the next stage
+				_begin_morph()
 		State.CREDITS:
 			_note_hands()
 			var next := next_stage_index()
@@ -546,6 +549,26 @@ func _poll_unmaking_warmup() -> void:
 		return
 	_warm_started = true
 	SceneWarmup.warm_spread(self, SceneRouter.table.path_for(UNMAKING_ROUTE), _warm)
+
+
+## The stage hand-off's whole length: the collapse beat plus the morph (Q-T457; both in CabinetFxTuning).
+func handoff_seconds() -> float:
+	return world.fx_tuning.handoff_collapse_s + world.fx_tuning.handoff_morph_s
+
+
+## The ordinary stage-to-stage hand-off (Q-T457, owner 2026-11-20): no banner and no roll; the stage's sky dissolves and warps
+## into the next stage's signature while the last stage's sim runs on, then start_stage(next) opens the next stage card (which
+## still waits for the lance button: it carries the orders). Replaces the old banner hold (MID_SHIFT_HOLD_SECONDS, 5.4 s).
+func _begin_morph() -> void:
+	var next := next_stage_index()
+	if next >= 0:
+		world.stars.begin_morph(stages[next].backdrop, world.fx_tuning.handoff_morph_s)
+		AudioService.play(&"quota", -3.0)
+	if haunts != null:
+		if haunts.enabled and decay_tuning.wear_level(stage_index) == haunts.tuning.min_wear_level:
+			haunts.plant_crag_slope()
+		haunts.moment(CabinetHauntDeck.HOLD)
+	_enter(State.CREDITS, world.fx_tuning.handoff_morph_s)
 
 
 ## A mid-shift stage end (PM 2026-11-19): banner only, no roll. The stage-end banner stays up for
@@ -585,9 +608,13 @@ func _on_sepulchre_cleared() -> void:
 		return
 	world.vigil.input_enabled = false
 	_end_charges = world.glass.charges
-	messages.banner(tr("CAB_VIGIL_COMPLETE"), CLEAR_SECONDS)
-	AudioService.play(&"quota")
-	_enter(State.CLEARED, CLEAR_SECONDS)
+	if is_last_stage():
+		messages.banner(tr("CAB_VIGIL_COMPLETE"), CLEAR_SECONDS)
+		AudioService.play(&"quota")
+		_enter(State.CLEARED, CLEAR_SECONDS)
+	else:   # the ordinary hand-off (Q-T457): a caption now, a short beat, then the sky morphs into the next stage
+		messages.caption(tr("CAB_SEPULCHRE_DOWN"), handoff_seconds())
+		_enter(State.CLEARED, world.fx_tuning.handoff_collapse_s)
 
 
 func _on_entity_unmade() -> void:
@@ -596,8 +623,12 @@ func _on_entity_unmade() -> void:
 		music.stop()
 	world.vigil.input_enabled = false
 	_end_charges = world.glass.charges
-	messages.banner(tr("CAB_ENTITY_DOWN"), UNMADE_SECONDS)
-	_enter(State.UNMADE, UNMADE_SECONDS)
+	if is_last_stage():
+		messages.banner(tr("CAB_ENTITY_DOWN"), UNMADE_SECONDS)
+		_enter(State.UNMADE, UNMADE_SECONDS)
+	else:
+		messages.caption(tr("CAB_ENTITY_DOWN"), handoff_seconds())
+		_enter(State.UNMADE, world.fx_tuning.handoff_collapse_s)
 
 
 func _on_extra_life() -> void:
