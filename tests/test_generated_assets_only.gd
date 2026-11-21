@@ -171,14 +171,20 @@ func test_every_comfyui_manifest_entry_has_provenance_and_a_file() -> void:
 func test_an_unmanifested_comfyui_image_is_rejected() -> void:
 	# the rule the folder test enforces, applied to a made-up name: no entry → not allowed
 	assert_bool(_comfy_manifest().has("not_in_the_manifest.png")).is_false()
-	assert_bool(_comfy_manifest().has("bezel_p4_a.png")).is_true()
+	assert_bool(_comfy_manifest().has("tape_3.png")).is_true()
 
 
-func test_the_bezel_art_switch_defaults_to_the_code_built_bezel() -> void:
-	var m := BezelArtMode.default() as BezelArtMode
-	assert_int(m.mode).is_equal(BezelArtMode.Mode.CODE)
-	assert_bool(_comfy_manifest().has(m.texture)).override_failure_message("%s is not in the manifest" % m.texture).is_true()
-	assert_str(str(_comfy_manifest()[m.texture].get("category", ""))).is_equal("bezel")
+func test_comfy_art_switches_default_on_and_point_at_manifested_files() -> void:
+	var a := ComfyArt.default() as ComfyArt
+	assert_bool(a.tape_enabled).is_true()
+	assert_bool(a.backdrop_enabled).is_true()
+	var files := _comfy_manifest()
+	assert_bool(files.has(a.tape_file)).override_failure_message("%s not in the manifest" % a.tape_file).is_true()
+	assert_bool(files.has(a.backdrop_file)).override_failure_message("%s not in the manifest" % a.backdrop_file).is_true()
+	assert_str(str(files[a.tape_file].get("category", ""))).is_equal("tape")
+	assert_str(str(files[a.backdrop_file].get("category", ""))).is_equal("backdrop")
+	assert_object(ComfyArt.texture(a.tape_file)).is_not_null()
+	assert_object(ComfyArt.texture(a.backdrop_file)).is_not_null()
 
 
 static func _is_loom_map(path: String) -> bool:

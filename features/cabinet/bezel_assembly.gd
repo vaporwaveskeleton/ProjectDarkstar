@@ -26,10 +26,6 @@ static func add_sheet_parts(host: Control, rig: ScreenRig) -> Array[Control]:
 	trim.rig = rig
 	host.add_child(trim)
 	out.append(trim)
-	if (BezelArtMode.default() as BezelArtMode).generated_active():
-		var tex := BezelTexture.new()   # the generated sheet over everything code-built; the HUD moves its door above it
-		host.add_child(tex)
-		out.append(tex)
 	return out
 
 

@@ -3,9 +3,9 @@
 Run with the ComfyUI venv python:  python tools/comfyui/stage1_finish.py [RAW_ROOT]
 RAW_ROOT defaults to research/comfyui_out (subfolders stage1, stage1b) in the main checkout (git-ignored). Every shipped image
 gets a manifest entry (model, licence, prompt, seed, steps, size) taken from the render's .json sidecar
-(ART-001 section 14.9). Post: bezels via make_bezel.py (exact screen cut-out), tape via a luminance key.
+(ART-001 section 14.9). Post: tape via a luminance key. Kept after owner picks (2026-11-20): tape_3 and backdrop_2 only.
 """
-import glob, json, os, subprocess, sys
+import glob, json, os, sys
 import numpy as np
 from PIL import Image, ImageDraw
 
@@ -21,23 +21,10 @@ MODELS = {
 # (output name, category, tag, seed, post, note)
 JOBS = [
     # (output name, category, subdir of RAW_ROOT, tag, seed, post, note)
-    ("bezel_p4_a.png", "bezel", "stage1b", "p4", 401, "bezel", "P4 pristine print; the art's own dark opening is warped onto the exact 256x304 hole"),
-    ("bezel_p4_b.png", "bezel", "stage1b", "p4", 402, "bezel", "P4 pristine print; opening warped onto the hole"),
-    ("bezel_p4_c.png", "bezel", "stage1b", "p4", 403, "bezel", "P4 pristine print; opening warped onto the hole"),
-    ("bezel_p2_a.png", "bezel", "stage1b", "p2", 404, "bezel", "P2 worn print (comparison cell; wear should come from the overlay shader); opening warped onto the hole"),
-    ("bezel_p2_b.png", "bezel", "stage1b", "p2", 405, "bezel", "P2 worn print (comparison cell); opening warped onto the hole"),
-    ("marquee_1.png", "cabinet_art", "stage1b", "marquee", 411, "", "lettering-free marquee art; the title is post-added"),
-    ("marquee_2.png", "cabinet_art", "stage1b", "marquee", 412, "", "lettering-free marquee art; the title is post-added"),
-    ("marquee_3.png", "cabinet_art", "stage1b", "marquee", 413, "", "lettering-free marquee art; the title is post-added"),
-    ("tape_1.png", "tape", "stage1", "tape", 201, "tape", "alpha by luminance key"),
-    ("tape_2.png", "tape", "stage1", "tape", 202, "tape", "alpha by luminance key"),
-    ("tape_3.png", "tape", "stage1", "tape", 203, "tape", "alpha by luminance key"),
-    ("tape_4.png", "tape", "stage1", "tape", 204, "tape", "alpha by luminance key"),
-    ("backdrop_1.png", "backdrop", "stage1", "backdrop", 301, "", "unmodified; blurred bokeh, lettering unreadable"),
+    ("tape_3.png", "tape", "stage1", "tape", 203, "tape", "alpha by luminance key, cropped to the strip, downscaled to 640 px wide"),
     ("backdrop_2.png", "backdrop", "stage1", "backdrop", 302, "", "unmodified; blurred bokeh, lettering unreadable"),
-    ("backdrop_3.png", "backdrop", "stage1", "backdrop", 303, "", "unmodified; blurred bokeh, lettering unreadable"),
-    ("backdrop_4.png", "backdrop", "stage1", "backdrop", 304, "", "unmodified; blurred bokeh, lettering unreadable"),
 ]
+REF_NOTE = "Third-party reference images were looked at only to write better prompts; none was used as an image input."
 REF_NOTE = "Third-party reference bezels and photos were looked at only to write better prompts; none was used as an image input (no img2img, no edit input)."
 REF_NOTE = "Third-party reference bezels and photos were looked at only to write better prompts; none was used as an image input (no img2img, no edit input)."
 
@@ -56,7 +43,8 @@ def key_tape(path, dst):
     ys, xs = np.where(alpha > 0.5)
     x0, x1, y0, y1 = xs.min(), xs.max() + 1, ys.min(), ys.max() + 1
     rgba = np.dstack([im, alpha * 255.0])[y0:y1, x0:x1]
-    Image.fromarray(rgba.astype(np.uint8), "RGBA").save(dst, optimize=True)
+    im = Image.fromarray(rgba.astype(np.uint8), "RGBA")
+    im.resize((640, round(im.height * 640 / im.width)), Image.LANCZOS).save(dst, optimize=True)
 
 
 def main():
@@ -67,11 +55,7 @@ def main():
         RAW = os.path.join(RAW_ROOT, sub)
         raw = find(tag, seed, "png"); meta = json.load(open(find(tag, seed, "json")))
         dst = os.path.join(OUT, name)
-        if post == "bezel":
-            cmd = [sys.executable, os.path.join(HERE, "make_bezel.py"), raw, dst]
-            cmd += ["--fit-opening"]
-            subprocess.check_call(cmd)
-        elif post == "tape":
+        if post == "tape":
             key_tape(raw, dst)
         else:
             Image.open(raw).convert("RGB").save(dst, optimize=True)

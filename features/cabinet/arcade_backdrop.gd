@@ -48,6 +48,14 @@ func _ready() -> void:
 		var c := surface.backdrop_neon[i % surface.backdrop_neon.size()] if surface.backdrop_neon.size() > 0 else Color.WHITE
 		neon.append(_rgb(c))
 	_mat.set_shader_parameter(&"neon", neon)
+	var art := ComfyArt.default() as ComfyArt
+	var photo: Texture2D = ComfyArt.texture(art.backdrop_file) if art.backdrop_enabled else null
+	if photo != null:   # the generated arcade photo replaces the code-drawn room as the base; the decay still sours and dims it
+		_mat.set_shader_parameter(&"photo", photo)
+		_mat.set_shader_parameter(&"photo_on", 1.0)
+		_mat.set_shader_parameter(&"photo_aspect", float(photo.get_width()) / float(photo.get_height()))
+		_mat.set_shader_parameter(&"photo_exposure", art.backdrop_exposure)
+		_mat.set_shader_parameter(&"photo_sour", art.backdrop_sour)
 	SettingsService.setting_changed.connect(_on_setting_changed)
 	if rig != null:
 		rig.refitted.connect(set_area)

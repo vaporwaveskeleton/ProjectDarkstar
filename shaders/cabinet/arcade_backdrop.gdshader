@@ -34,6 +34,15 @@ uniform float dark : hint_range(0.0, 1.0) = 0.0;
 // The cursed turn (PM 2026-11-20): the whole room dims with them, ceiling cans and neon too, by this much at `dark` 1.
 uniform float room_dim : hint_range(0.0, 1.0) = 0.5;
 
+// ComfyUI arcade photo (ART-001 §14.9, data/cabinet/comfy_art.tres): when photo_on is 1 it replaces the code-drawn room
+// (wall, ceiling, carpet, cabinets, bokeh) as the base, cover-fitted to the window; the screen light, room dim, `dark`
+// (it sours: desaturates and cools), desaturate, cabinet shadow, vignette and grain still apply on top.
+uniform sampler2D photo : source_color, filter_linear;
+uniform float photo_on : hint_range(0.0, 1.0) = 0.0;
+uniform float photo_aspect = 1.7778;
+uniform float photo_exposure = 0.75;
+uniform float photo_sour = 0.6;
+
 const float HORIZON = 238.0;    // where the far row stands (rig y)
 
 float sd_box(vec2 p, vec2 b) {
@@ -239,6 +248,15 @@ void fragment() {
 		float floor_pool = smoothstep(0.45, 1.0, yk);
 		glow += cab_screen_light.rgb * lum * room_glow * (0.12 * far * (0.3 + 1.4 * floor_pool * floor_pool));
 		vec3 c = (col + glow) * exposure;
+		if (photo_on > 0.5) {
+			vec2 uv = (rp - rig_origin) / rect_size;
+			float ra = rect_size.x / rect_size.y;
+			uv = ra > photo_aspect ? vec2(uv.x, 0.5 + (uv.y - 0.5) * (photo_aspect / ra)) : vec2(0.5 + (uv.x - 0.5) * (ra / photo_aspect), uv.y);
+			vec3 pc = texture(photo, clamp(uv, 0.0, 1.0)).rgb * photo_exposure;
+			float pl = dot(pc, vec3(0.299, 0.587, 0.114));
+			pc = mix(pc, vec3(pl) * vec3(0.75, 0.85, 1.1), photo_sour * dark);   // the cursed turn: the warm room goes cold and grey
+			c = (pc + cab_screen_light.rgb * lum * room_glow * (0.12 * far * (0.3 + 1.4 * floor_pool * floor_pool))) * exposure * 2.0;
+		}
 		c *= 1.0 - room_dim * dark;
 		// keep it out of the way: desaturate, darken next to the cabinet (its body and shadow) and toward the
 		// window's top and bottom

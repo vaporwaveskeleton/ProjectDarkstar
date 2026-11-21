@@ -20,6 +20,10 @@ uniform float crease_on : hint_range(0.0, 1.0) = 0.0;
 uniform vec2 crease_c = vec2(40.0, 30.0);
 uniform vec4 yellow : source_color = vec4(0.93, 0.745, 0.11, 1.0);
 uniform vec4 black : source_color = vec4(0.086, 0.078, 0.078, 1.0);
+// ComfyUI masking tape (ART-001 §14.9, data/cabinet/comfy_art.tres): when use_tex is 1 the printed face is this image
+// (alpha-keyed strip, its torn ends cut the body), lit and lifted like the vinyl; the adhesive flap stays procedural.
+uniform sampler2D tape_tex : source_color, filter_linear;
+uniform float use_tex : hint_range(0.0, 1.0) = 0.0;
 uniform float sheen = 0.7;
 uniform float misreg = 0.4;
 uniform float edge_lift = 0.8;
@@ -80,7 +84,14 @@ void fragment() {
 
 	vec3 base;
 	float gloss = sheen;
-	if (face_up > 0.5) {
+	float tex_a = 1.0;
+	if (face_up > 0.5 && use_tex > 0.5) {
+		// worn masking tape: the image runs along the strip, a little off the stick centre line so the ends differ
+		vec4 tc = texture(tape_tex, vec2(clamp(u / len, 0.0, 1.0), clamp(v / (2.0 * half_w) + 0.5, 0.0, 1.0)));
+		base = tc.rgb;
+		tex_a = tc.a;
+		gloss = sheen * 0.35;
+	} else if (face_up > 0.5) {
 		// the yellow vinyl, then the black plate printed over it out of register
 		vec3 y = yellow.rgb * (0.86 + 0.14 * fbm(p + seed, 0.5, px));
 		vec2 pb = p - vec2(0.55, -0.35) * misreg * 2.0;
@@ -134,7 +145,7 @@ void fragment() {
 	lit = mix(lit, vec3(0.13, 0.1, 0.07), grime);
 	float specks = smoothstep(0.72, 0.85, vnoise(vec2(u * 1.7, sd * 2.0) + seed * 5.0)) * smoothstep(1.3, 0.0, sd) * step(0.0, sd) * dirt;
 	over(col, al, vec3(0.1, 0.085, 0.07), specks * 0.8);
-	over(col, al, clamp(lit, 0.0, 1.0), m_body);
+	over(col, al, clamp(lit, 0.0, 1.0), m_body * tex_a);
 
 	COLOR = vec4(col, al);
 }

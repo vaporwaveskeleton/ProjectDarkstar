@@ -1,6 +1,6 @@
 class_name TapeStrip
 extends ColorRect
-## One drawn length of the coin door's hazard tape (pass 2c): shaders/cabinet/hazard_tape.gdshader draws printed vinyl
+## One drawn length of the coin door's tape (hazard vinyl, or the generated masking tape, ComfyArt) (pass 2c): shaders/cabinet/hazard_tape.gdshader draws printed vinyl
 ## with a sheen, a misregistered black plate, lifting edges with a shadow, dirt on the adhesive edge and a crease, or (the
 ## peeled flap) the adhesive side. CoinSlot owns the tape's behaviour (peel, drag, hold, fall) and only says where this
 ## length lies each frame: `place(a, b, ...)` takes plate-local end points, exactly as the old vector strip did.
@@ -35,6 +35,11 @@ func _ready() -> void:
 	_mat.set_shader_parameter(&"dirt", surface.tape_dirt)
 	_mat.set_shader_parameter(&"crease_amt", surface.tape_crease)
 	_mat.set_shader_parameter(&"seed", _seed)
+	var art := ComfyArt.default() as ComfyArt
+	var tex: Texture2D = ComfyArt.texture(art.tape_file) if art.tape_enabled else null
+	if tex != null:   # the generated masking tape; missing file or switch off = the code-drawn hazard tape
+		_mat.set_shader_parameter(&"tape_tex", tex)
+		_mat.set_shader_parameter(&"use_tex", 1.0)
 
 
 ## Which strip this is (its own wrinkles and dirt).

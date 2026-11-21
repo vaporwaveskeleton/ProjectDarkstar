@@ -89,8 +89,6 @@ func _ready() -> void:
 	_glass = BezelGlass.new()
 	_glass.rig = get_parent() as ScreenRig
 	add_child(_glass)
-	if (BezelArtMode.default() as BezelArtMode).generated_active():
-		move_child(_door, _glass.get_index())   # the generated sheet was added after the door: keep the door above it
 	_glass.peel = peel
 	_tube = BezelAssembly.add_tube(self)
 	BezelAssembly.add_light(self, light_source)
