@@ -28,7 +28,7 @@ func after_test() -> void:
 
 
 ## A game on its last stage, unmade, as a human leaves it (no autopilot, no Surgelight).
-func _human_shift(stage_count: int) -> void:
+func _human_shift(stage_count: int, replay: bool = false) -> void:
 	game = SCENE.instantiate()
 	add_child(game)
 	game.set_process(false)
@@ -45,6 +45,8 @@ func _human_shift(stage_count: int) -> void:
 	assert_int(game.stages.size()).is_equal(stage_count)
 	game.autopilot.enabled = false
 	game.clean_hands = true
+	if replay:
+		game._profile["pretence_seen"] = true   # the Pretence has been seen: a replay of Act 0
 	game.start_stage(stage_count - 1)
 	game.dismiss_brief()
 	game.state = game.State.UNMADE
@@ -82,7 +84,7 @@ func _reach_decay(action: StringName) -> void:
 
 
 func test_ending5_screen_one_says_thank_you_and_shows_how_to_go_on() -> void:
-	_human_shift(4)
+	_human_shift(4, true)
 	await get_tree().process_frame
 	await get_tree().process_frame
 	assert_str(messages.held_screen()).is_equal(tr("CAB_E5_SCREEN_01"))
@@ -90,17 +92,17 @@ func test_ending5_screen_one_says_thank_you_and_shows_how_to_go_on() -> void:
 
 
 func test_the_lance_button_moves_on_through_ending5_to_the_decay_on_the_data_roster() -> void:
-	_human_shift(4)
+	_human_shift(4, true)
 	await _reach_decay(&"fire_lance")
 
 
 func test_the_lance_button_moves_on_through_ending5_to_the_decay_on_a_debug_menu_roster() -> void:
-	_human_shift(3)
+	_human_shift(3, true)
 	await _reach_decay(&"fire_lance")
 
 
 func test_enter_and_space_still_move_on() -> void:
-	_human_shift(4)
+	_human_shift(4, true)
 	await _reach_decay(&"ui_accept")
 
 
@@ -111,3 +113,22 @@ func test_ending5_never_runs_for_an_autopilot_shift() -> void:
 	game.clean_hands = true
 	game._note_hands()
 	assert_bool(game.clean_hands).is_false()
+
+
+## The owner's run: default roster, a human, clean hands, a first shift, no button pressed. The reveal must
+## follow the last Unmaking by itself: no held screen, the Decay starts.
+func _assert_automatic(stage_count: int) -> void:
+	_human_shift(stage_count)
+	for i in 3:
+		await get_tree().process_frame
+	assert_str(messages.held_screen()).override_failure_message("no held screen on a first shift").is_empty()
+	assert_object(game.reveal.decay).override_failure_message("the Decay must begin with no input").is_not_null()
+	assert_int(game.state).is_equal(game.State.REVEAL)
+
+
+func test_a_first_shift_goes_to_the_reveal_by_itself_on_the_data_roster() -> void:
+	await _assert_automatic(4)
+
+
+func test_a_first_shift_goes_to_the_reveal_by_itself_on_a_debug_menu_roster() -> void:
+	await _assert_automatic(3)

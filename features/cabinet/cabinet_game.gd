@@ -427,6 +427,17 @@ func _note_hands() -> void:
 		clean_hands = false
 
 
+## Ending 5 is the secret (LOOP-001 §11.6): never on a first shift, whatever the hands. The reveal follows the last
+## Unmaking by itself. It shows only once the Pretence has been seen (a replay), with clean hands; dev `--clean-hands`
+## forces it for captures.
+func _ending5_due() -> bool:
+	if demo:
+		return false
+	if OS.is_debug_build() and OS.get_cmdline_user_args().has("--clean-hands"):
+		return true
+	return clean_hands and _reveal_seen_before
+
+
 ## Stage start is a boundary (before play): save the furthest stage reached this shift.
 ## Only once the shift is open (route decided), never in the demo.
 func _write_stage_reached() -> void:
@@ -533,7 +544,7 @@ func _on_timer() -> void:
 				_enter(State.REVEAL)
 				_end_haunting()
 				_reveal_seen_before = bool(_profile.get("pretence_seen", false))
-				reveal.play(self, _reveal_seen_before, clean_hands and not demo)
+				reveal.play(self, _reveal_seen_before, _ending5_due())
 				SceneRouter.prewarm(UNMAKING_ROUTE)   # Q-T243: load the Unmaking while the reveal plays
 
 
