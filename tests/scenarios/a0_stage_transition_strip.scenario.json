@@ -87,7 +87,7 @@
 		{
 			"do": "screenshot",
 			"name": "strip_00_before",
-			"target": "arcade"
+			"target": "window"
 		},
 		{
 			"do": "fell_sepulchre"
@@ -95,7 +95,7 @@
 		{
 			"do": "screenshot",
 			"name": "strip_f00",
-			"target": "arcade"
+			"target": "window"
 		},
 		{
 			"do": "wait_frames",
@@ -104,7 +104,7 @@
 		{
 			"do": "screenshot",
 			"name": "strip_f02",
-			"target": "arcade"
+			"target": "window"
 		},
 		{
 			"do": "wait_frames",
@@ -113,7 +113,7 @@
 		{
 			"do": "screenshot",
 			"name": "strip_f04",
-			"target": "arcade"
+			"target": "window"
 		},
 		{
 			"do": "wait_frames",
@@ -122,7 +122,7 @@
 		{
 			"do": "screenshot",
 			"name": "strip_f06",
-			"target": "arcade"
+			"target": "window"
 		},
 		{
 			"do": "wait_frames",
@@ -131,7 +131,7 @@
 		{
 			"do": "screenshot",
 			"name": "strip_f08",
-			"target": "arcade"
+			"target": "window"
 		},
 		{
 			"do": "wait_frames",
@@ -140,7 +140,7 @@
 		{
 			"do": "screenshot",
 			"name": "strip_f10",
-			"target": "arcade"
+			"target": "window"
 		},
 		{
 			"do": "wait_frames",
@@ -149,7 +149,7 @@
 		{
 			"do": "screenshot",
 			"name": "strip_f12",
-			"target": "arcade"
+			"target": "window"
 		},
 		{
 			"do": "wait_frames",
@@ -158,7 +158,7 @@
 		{
 			"do": "screenshot",
 			"name": "strip_f14",
-			"target": "arcade"
+			"target": "window"
 		},
 		{
 			"do": "wait_frames",
@@ -167,7 +167,7 @@
 		{
 			"do": "screenshot",
 			"name": "strip_f16",
-			"target": "arcade"
+			"target": "window"
 		},
 		{
 			"do": "wait_frames",
@@ -176,7 +176,7 @@
 		{
 			"do": "screenshot",
 			"name": "strip_f18",
-			"target": "arcade"
+			"target": "window"
 		},
 		{
 			"do": "wait_frames",
@@ -185,7 +185,7 @@
 		{
 			"do": "screenshot",
 			"name": "strip_f20",
-			"target": "arcade"
+			"target": "window"
 		},
 		{
 			"do": "wait_frames",
@@ -194,7 +194,7 @@
 		{
 			"do": "screenshot",
 			"name": "strip_f22",
-			"target": "arcade"
+			"target": "window"
 		},
 		{
 			"do": "wait_frames",
@@ -203,7 +203,70 @@
 		{
 			"do": "screenshot",
 			"name": "strip_f24",
-			"target": "arcade"
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 4
+		},
+		{
+			"do": "screenshot",
+			"name": "strip_f28",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 4
+		},
+		{
+			"do": "screenshot",
+			"name": "strip_f32",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 4
+		},
+		{
+			"do": "screenshot",
+			"name": "strip_f36",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 4
+		},
+		{
+			"do": "screenshot",
+			"name": "strip_f40",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 8
+		},
+		{
+			"do": "screenshot",
+			"name": "strip_f48",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 8
+		},
+		{
+			"do": "screenshot",
+			"name": "strip_f56",
+			"target": "window"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 10
+		},
+		{
+			"do": "screenshot",
+			"name": "strip_f66",
+			"target": "window"
 		},
 		{
 			"do": "quit"

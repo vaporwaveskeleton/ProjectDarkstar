@@ -14,6 +14,10 @@ extends TunableResource
 @export var handoff_shock_width: float = 0.13             ## ✱ the ring's half-width, in screen heights
 @export var handoff_swirl_px: float = 14.0                ## px ✱ marks fly off their old line this far (random direction, bell over the morph) as they re-form
 @export var handoff_slip_px: float = 2.0                  ## px ✱ the whole play view's register slip: a second copy of the picture, offset (picks registers, adds no colour)
+@export var handoff_ring_speed: float = 600.0            ## px/s ✱ the 1 px shock ring: 0 to 200 px in 20 frames, on past the far corner
+@export var handoff_scan_px: float = 7.0                  ## px ✱ per-scanline horizontal offset of the whole play view behind the ring (entities included; 6 to 8 px)
+@export var handoff_scan_hz: float = 34.0                 ## rad/s ✱ the scanline wave's travel
+@export var handoff_counter_px: float = 2.0               ## px ✱ the damped counter-ripple of the last 12 frames
 @export var handoff_wash: float = 0.05                    ## ✱ peak alpha of the one kill-frame wash over the playfield (VOID_5, a single pulse)
 @export var handoff_wash_s: float = 0.3                   ## s ✱ the wash falls over this long (one event, never a strobe)
 @export var handoff_wear_gain: float = 0.35               ## ✱ every displacement x (1 + wear level x this): later stages tear harder

@@ -560,13 +560,22 @@ func _drive_hand_off(mat: ShaderMaterial) -> void:
 	if not active and not _hand_off_driven:
 		return
 	_hand_off_driven = active
-	var st := world.stars.shock_state() if active else {"centre": Vector2(0.5, 0.5), "r": 0.0, "w": 0.1, "amp": 0.0, "slip": 0.0}
+	var st := world.stars.shock_state() if active else {"centre": Vector2(0.5, 0.5), "r": 0.0, "w": 0.1, "amp": 0.0, "slip": 0.0, "scan": 0.0, "flat": 0.0, "phase": 0.0, "ring": 0.0, "bleed": 0.0, "tear_dx": 0.0}
 	if mat != null:
 		mat.set_shader_parameter(&"shock_centre", st["centre"])
 		mat.set_shader_parameter(&"shock_r", st["r"])
 		mat.set_shader_parameter(&"shock_w", st["w"])
 		mat.set_shader_parameter(&"shock_amp", st["amp"])
 		mat.set_shader_parameter(&"slip", st["slip"])
+		mat.set_shader_parameter(&"fx_top", float(screen.spec.hud_strip_height) / float(screen.spec.grid.y))
+		mat.set_shader_parameter(&"scan_amp", st["scan"])
+		mat.set_shader_parameter(&"scan_flat", st["flat"])
+		mat.set_shader_parameter(&"scan_phase", st["phase"])
+		mat.set_shader_parameter(&"ring_on", st["ring"])
+		mat.set_shader_parameter(&"hud_bleed", st["bleed"])
+		mat.set_shader_parameter(&"hud_tear_dx", st["tear_dx"])
+		var cr := hud.screen_hud.counter_rect if hud.screen_hud != null else Rect2()
+		mat.set_shader_parameter(&"hud_tear_rect", Vector4(cr.position.x, cr.position.y, cr.end.x, cr.end.y))
 	var sh := hud.screen_hud
 	if sh != null:
 		sh.pulse = world.stars.hud_pulse() if active else 0.0
@@ -641,7 +650,7 @@ func _on_sepulchre_cleared() -> void:
 		AudioService.play(&"quota")
 		_enter(State.CLEARED, CLEAR_SECONDS)
 	else:   # the ordinary hand-off (Q-T457): a caption now, a short beat, then the sky morphs into the next stage
-		messages.caption(tr("CAB_SEPULCHRE_DOWN"), handoff_seconds())
+		messages.caption(tr("CAB_SEPULCHRE_DOWN"), handoff_seconds() * 0.8)   # clears on the frame the new geometry locks (the morph's dissolve ends at 0.8)
 		_start_sky_morph()
 		_enter(State.CLEARED, handoff_seconds())
 
@@ -656,7 +665,7 @@ func _on_entity_unmade() -> void:
 		messages.banner(tr("CAB_ENTITY_DOWN"), UNMADE_SECONDS)
 		_enter(State.UNMADE, UNMADE_SECONDS)
 	else:
-		messages.caption(tr("CAB_ENTITY_DOWN"), handoff_seconds())
+		messages.caption(tr("CAB_ENTITY_DOWN"), handoff_seconds() * 0.8)
 		_start_sky_morph()
 		_enter(State.UNMADE, handoff_seconds())
 

@@ -32,6 +32,16 @@ uniform float shock_r : hint_range(0.0, 3.0) = 0.0;     // ring radius, in scree
 uniform float shock_w : hint_range(0.01, 0.5) = 0.09;   // ring half-width, in screen heights
 uniform float shock_amp : hint_range(-40.0, 40.0) = 0.0; // push in texels (negative = inward)
 uniform float slip : hint_range(0.0, 8.0) = 0.0;        // register slip in texels
+// Pass 3: a per-scanline horizontal wave behind the ring (whole play view, entities included), a flat wobble, the 1 px ring,
+// the HUD edge bleed and the counter tear. Whole texels only; all 0 outside the hand-off and when calm.
+uniform float scan_amp : hint_range(0.0, 16.0) = 0.0;   // wave peak, texels
+uniform float scan_flat : hint_range(-8.0, 8.0) = 0.0;  // uniform wobble of every play row, texels
+uniform float scan_phase = 0.0;                         // wave travel (radians)
+uniform float ring_on : hint_range(0.0, 1.0) = 0.0;     // the 1 px ring (the existing white register)
+uniform float hud_bleed : hint_range(0.0, 4.0) = 0.0;   // the offset bleeds into the divider rule and the footer line, texels
+uniform vec4 hud_tear_rect = vec4(0.0);                 // the Sepulchre counter, texels (x0, y0, x1, y1)
+uniform float fx_top : hint_range(0.0, 1.0) = 0.0;       // the hand-off never touches the HUD strip above this UV y (score, lives, scanner stay honest)
+uniform float hud_tear_dx : hint_range(-4.0, 4.0) = 0.0;   // one glyph row of it slips by this
 
 const float LINE_END = 0.55;        // share of `collapse` spent squeezing to the line; the rest shrinks and fades the dot
 const float LINE_H = 0.005;         // the line's half height (screen height = 1)
@@ -52,6 +62,18 @@ vec3 crt_dot_phase(vec2 suv, float asp) {
 void fragment() {
 	vec2 suv0 = UV;
 	float keep = 1.0;
+	if (hud_bleed > 0.0 || hud_tear_dx != 0.0) {
+		vec2 tsb = vec2(textureSize(TEXTURE, 0));
+		vec2 pxb = UV * tsb;
+		float dxb = 0.0;
+		if (hud_bleed > 0.0 && (abs(pxb.y - play_top * tsb.y) < 3.0 || pxb.y > tsb.y - 14.0)) {
+			dxb += floor(hud_bleed * sin(pxb.y * 2.3 + scan_phase) + 0.5);   // the divider rule and the footer line shiver
+		}
+		if (hud_tear_dx != 0.0 && pxb.x >= hud_tear_rect.x && pxb.x <= hud_tear_rect.z && floor(pxb.y) == floor((hud_tear_rect.y + hud_tear_rect.w) * 0.5)) {
+			dxb += hud_tear_dx;                                              // one row of the counter's glyphs slips
+		}
+		suv0.x -= dxb / tsb.x;
+	}
 	bool in_play = UV.y >= play_top;
 	if (sag > 0.0 && in_play) {
 		// the play view's raster loses height toward its own middle; outside it the tube is dark
@@ -71,7 +93,20 @@ void fragment() {
 		suv0 = focus + d * (1.0 - 0.42 * k);
 		suv0.y = max(suv0.y, play_top);
 	}
-	if (shock_amp != 0.0 && in_play) {
+	bool in_fx = in_play && UV.y >= fx_top;
+	if ((scan_amp > 0.0 || scan_flat != 0.0) && in_fx) {
+		vec2 tss = vec2(textureSize(TEXTURE, 0));
+		vec2 das = (suv0 - shock_centre) * tss;
+		float dpx = length(das);
+		float front = shock_r * tss.y;
+		float behind = front - dpx;
+		float env = smoothstep(0.0, 10.0, behind) * exp(-max(behind, 0.0) / (0.5 * tss.y));
+		float wob = sin(suv0.y * tss.y * 0.42 + scan_phase);
+		float dxs = floor(scan_amp * wob * env + scan_flat * sin(suv0.y * tss.y * 0.3 + scan_phase * 0.7) + 0.5);
+		suv0.x -= dxs / tss.x;                                               // whole texels: the picture only moves, per scanline
+		suv0.x = clamp(suv0.x, 0.0, 1.0);
+	}
+	if (shock_amp != 0.0 && in_fx) {
 		vec2 ts1 = vec2(textureSize(TEXTURE, 0));
 		vec2 da = (suv0 - shock_centre) * vec2(ts1.x / ts1.y, 1.0);
 		float dist = length(da);
@@ -80,7 +115,7 @@ void fragment() {
 		vec2 dir = da / max(dist, 0.0001);
 		suv0 -= dir * shock_amp * prof / ts1;
 		suv0 = (floor(suv0 * ts1) + 0.5) / ts1;               // pixel-snapped
-		suv0.y = max(suv0.y, play_top);
+		suv0.y = max(suv0.y, max(play_top, fx_top));
 	}
 	vec2 uv = crt_sample_uv(suv0);
 	if (in_play && play_top > 0.0 && uv.y < play_top) {
@@ -91,7 +126,7 @@ void fragment() {
 		// the Decay's persistence and bleed, quantised so the register limits hold
 		// (inline: a canvas shader cannot pass TEXTURE to a function)
 		vec3 pick = crt_quantize(texture(TEXTURE, uv).rgb);
-		if (slip > 0.0) {
+		if (slip > 0.0 && in_fx) {
 			vec3 other = crt_quantize(texture(TEXTURE, uv - vec2(floor(slip) / float(textureSize(TEXTURE, 0).x), 0.0)).rgb);
 			pick = dot(other, vec3(1.0)) > dot(pick, vec3(1.0)) ? other : pick;   // the brighter register of the pair: a doubled picture
 		}
@@ -112,6 +147,13 @@ void fragment() {
 				bl += texture(TEXTURE, uv + vec2(0.0, px.y * bleed)).rgb;
 				bl += texture(TEXTURE, vec2(uv.x, max(uv.y - px.y * bleed, play_top))).rgb;
 				pick += crt_quantize(bl * 0.25) * 0.18 * bleed;
+			}
+		}
+		if (ring_on > 0.0 && in_fx) {
+			vec2 tsr = vec2(textureSize(TEXTURE, 0));
+			float rr = abs(length((UV - shock_centre) * tsr) - shock_r * tsr.y);
+			if (rr < 0.75) {
+				pick = max(pick, crt_quantize(vec3(1.0)) * ring_on);          // a 1 px ring in the existing white register
 			}
 		}
 		col = crt_finish(pick, suv0, uv) * keep;

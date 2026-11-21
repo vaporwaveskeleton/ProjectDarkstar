@@ -37,6 +37,7 @@ var hi_score := 0
 var lives := 3
 var charges := 0
 var magazine := 5
+var counter_rect := Rect2()   ## where the Sepulchre counter was last drawn (the hand-off tears one glyph row of it, in the CRT shader)
 var pulse := 0.0       ## 0 → 1: the stage hand-off jolts the scanner frame and tints it (CabinetGame feeds it from the starfield; Q-T457)
 var eaten := 0.0       ## 0 → 1: the Unmaking swallows the readouts
 var peel := 0.0        ## 0 → 1: the maker mark falls away with the costume
@@ -171,6 +172,7 @@ func _draw_right() -> void:
 	var rit := world.ritual
 	var val := tr("CAB_SEP_AWAKE") if rit.awake else sepulchre_text(rit.segments, world.tuning.segments_total, false)
 	var b := _text_box(true, SEPULCHRE_END_X, SEPULCHRE_BASE, val, 1)
+	counter_rect = b
 	PixelText.draw(self, b.position, val, Look.c(Pal.BONE_5))
 
 

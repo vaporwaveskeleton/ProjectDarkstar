@@ -179,25 +179,25 @@ func wash() -> float:
 	return clampf(1.0 - t / world.fx_tuning.handoff_wash_s, 0.0, 1.0) * clampf(t / 0.04, 0.0, 1.0)
 
 
-## Ring progress 0..1 (ease-out): the held breath first, then the ring runs to the far corner by p 0.7.
-func shock_q() -> float:
-	var q := clampf((morph - HELD) / 0.63, 0.0, 1.0)
-	return 1.0 - (1.0 - q) * (1.0 - q)
+## Seconds into the hand-off.
+func _t() -> float:
+	return morph * _morph_dur
 
 
-## Signed strength: negative in the held breath (the picture is pulled inward), then +1 fading to 0 as the ring runs out.
+## Signed strength of the ring's radial push: negative in the held breath (an inward pull), then 1 fading out by p 0.8.
 func shock_gain() -> float:
 	if _morph_dur <= 0.0 or not streaks_enabled():
 		return 0.0
 	if morph < HELD:
 		return -0.6 * sin(morph / HELD * PI)
-	return pow(1.0 - clampf((morph - HELD) / 0.63, 0.0, 1.0), 1.3)
+	return clampf(1.0 - (morph - 0.45) / 0.35, 0.0, 1.0)
 
 
+## The ring's radius: 0 to 200 px in about 20 frames, then on out past the far corner at the same speed (px/s in CabinetFxTuning).
 func shock_radius_px() -> float:
 	if morph < HELD:
 		return world.view_rect.size.y * 0.12
-	return world.view_rect.size.length() * 1.05 * shock_q()
+	return maxf(0.0, _t() - HELD * _morph_dur) * world.fx_tuning.handoff_ring_speed
 
 
 ## The ring's push on a screen point: radial (away from the bearing at the ring, pixel-rounded), 0 elsewhere.
@@ -221,19 +221,34 @@ func warp_vec(p: Vector2, layer: int = 0) -> Vector2:
 	return Vector2(warp_dx(p.y, layer), roundf(vy)) + shock_push(p)
 
 
-## What CabinetGame feeds the CRT shader this frame: the ring (centre in screen UV, radius and width in screen-height units,
-## amplitude in texels) and the register slip (texels). All 0 when calm or not morphing.
+## What CabinetGame feeds the CRT shader this frame: the front (centre in screen UV, radius and width in screen-height
+## units), the per-scanline wave (texels), the whole-field flat wobble of the resolution (texels), the 1 px ring's strength,
+## the register slip and the HUD edge bleed / counter tear (texels). All 0 when calm or not morphing.
 func shock_state() -> Dictionary:
 	var grid := Vector2(world.screen_spec.grid) if world.screen_spec != null else world.view_rect.end
+	var none := {"centre": Vector2(0.5, 0.5), "r": 0.0, "w": 0.1, "amp": 0.0, "slip": 0.0, "scan": 0.0, "flat": 0.0, "phase": 0.0, "ring": 0.0, "bleed": 0.0, "tear_dx": 0.0}
 	if _morph_dur <= 0.0 or not streaks_enabled():
-		return {"centre": Vector2(0.5, 0.5), "r": 0.0, "w": 0.1, "amp": 0.0, "slip": 0.0}
+		return none
 	var ft := world.fx_tuning
+	var g := shock_gain()
+	var wave := clampf(1.0 - (morph - 0.45) / 0.4, 0.0, 1.0) if morph >= HELD else 0.0
+	var tail := clampf((morph - 0.857) / 0.143, 0.0, 1.0)             # the last 12 frames: a small damped counter-ripple
+	var flat := 0.0
+	if morph > 0.857:
+		flat = ft.handoff_counter_px * sin(tail * PI * 3.0) * (1.0 - tail) * minf(_power, 1.6)
+	var tear_on := morph > 0.1 and morph < 0.24                    # about 10 frames
 	return {
 		"centre": _bearing / Vector2(maxf(grid.x, 1.0), maxf(grid.y, 1.0)),
 		"r": shock_radius_px() / maxf(grid.y, 1.0),
 		"w": ft.handoff_shock_width,
-		"amp": ft.handoff_shock_px * 2.0 * _power * shock_gain(),
+		"amp": ft.handoff_shock_px * 0.5 * _power * g,
 		"slip": roundf(ft.handoff_slip_px * clampf(_tear_env(1) * 1.6, 0.0, 1.0) * minf(_power, 1.6)),
+		"scan": roundf(ft.handoff_scan_px * _power * wave),
+		"flat": roundf(flat),
+		"phase": _t() * ft.handoff_scan_hz,
+		"ring": clampf(wave * 1.5, 0.0, 1.0) if morph >= HELD else 0.0,
+		"bleed": roundf(2.0 * clampf(_tear_env(0) * 1.6, 0.0, 1.0)),
+		"tear_dx": (2.0 if int(_t() * 30.0) % 2 == 0 else -2.0) if tear_on else 0.0,
 	}
 
 
@@ -246,28 +261,31 @@ func hud_pulse() -> float:
 	return clampf(_tear_env(0) * 1.4, 0.0, 1.0)
 
 
-## A short fan of lines from the screen edge toward the Sepulchre's bearing when it was off screen at the kill, so the kill reads
-## wherever it happened (calm: a steady pip).
+## A soft, glyph-like marker when the Sepulchre was off screen at the kill, so the kill reads wherever it happened: three
+## nested chevrons stepping in from the screen edge on its bearing, dimming as they go (steady pip when calm).
 func _draw_bearing_flare() -> void:
 	if not _bearing_off or _morph_dur <= 0.0:
 		return
-	var t := morph * _morph_dur
-	var life := 0.55
+	var t := _t()
+	var life := 0.6
 	if t >= life:
 		return
-	var k := 1.0 - t / life
-	var field := world.playfield_rect
-	var inward := (field.get_center() - _bearing).normalized()
+	var inward := (world.playfield_rect.get_center() - _bearing).normalized()
 	if not streaks_enabled():
-		draw_rect(Rect2(_bearing.round() - Vector2(2, 2), Vector2(5, 5)), Look.c(Pal.BONE_3))
+		draw_rect(Rect2(_bearing.round() - Vector2(2, 2), Vector2(5, 5)), Look.c(Pal.BONE_2))
 		return
-	var col := Look.c(Pal.BONE_4) if k > 0.5 else Look.c(Pal.BONE_2)
-	for i in 9:
-		var a := (float(i) - 4.0) * 0.16
-		var dir := inward.rotated(a)
-		var len := (10.0 + 18.0 * absf(sin(float(i) * 2.1))) * (1.0 - 0.5 * (1.0 - k))
-		var start := _bearing + dir * (4.0 + (1.0 - k) * 20.0)
-		draw_line(start.round(), (start + dir * len).round(), col)
+	var cols := [Look.c(Pal.BONE_4), Look.c(Pal.BONE_3), Look.c(Pal.BONE_2)]
+	for j in 3:
+		var on := clampf((t - 0.08 * float(j)) / 0.12, 0.0, 1.0) * (1.0 - clampf((t - 0.35) / 0.25, 0.0, 1.0))
+		if on <= 0.0:
+			continue
+		var tip := _bearing + inward * (7.0 + 8.0 * float(j))
+		var wing := 5.0 - float(j)
+		var a := tip - inward.rotated(0.75) * wing
+		var b := tip - inward.rotated(-0.75) * wing
+		var col: Color = cols[j]
+		draw_line(a.round(), tip.round(), col)
+		draw_line(b.round(), tip.round(), col)
 
 
 ## Is mark / star number `i` of the OLD look still drawn at this morph? (the new look draws it when this is false)
@@ -421,12 +439,20 @@ func backdrop_marks() -> Array[Rect2]:
 ## The hand-off frame: this look's marks that survive the dissolve, in its register, then the next look's that
 ## have arrived, in its register; both warped by warp_dx and clipped to the playfield. Mark order is stable
 ## (formula-placed), so the thresholds do not shimmer.
+## The two background blues rotate through existing registers while the sky is in flight: blue, violet (CHOIR_1), dim magenta
+## (CHOIR_2), at 2.5 steps a second (flash rule: at most 3), on small-area lines only.
+func cycle_color() -> Color:
+	var cols := [Look.c(Pal.VOID_5), Look.c(Pal.CHOIR_1), Look.c(Pal.CHOIR_2)]
+	return cols[int(_t() * 2.5) % 3]
+
+
 func _draw_morph() -> void:
 	var old_col := backdrop_color(backdrop)
 	var new_col := backdrop_color(morph_to)
-	var ghost := Look.c(Pal.VOID_5)
 	var ft := world.fx_tuning
 	var calm := not streaks_enabled()
+	var mid_col := old_col if calm else cycle_color()
+	var ghost := Look.c(Pal.VOID_5) if calm else mid_col
 	var ghost_dx := 0.0 if calm else float(ft.handoff_ghost_px) * clampf(_tear_env(2) * 2.0, 0.0, 1.0) * _power
 	var old_raw := _marks_raw(backdrop)
 	var new_raw := _marks_raw(morph_to)
@@ -434,12 +460,14 @@ func _draw_morph() -> void:
 	var nn := new_raw.size()
 	if no + nn == 0:
 		return
+	var field := world.playfield_rect
 	var e := dissolve()
-	var n := int(roundf(lerpf(float(no), float(nn), e))) if no > 0 and nn > 0 else (nn if no == 0 else no)
-	if no == 0 or nn == 0:
-		n = maxi(no, nn)
-	var bell := sin(PI * e)
+	var n := maxi(no, nn)
+	if no > 0 and nn > 0:
+		n = int(roundf(lerpf(float(no), float(nn), e)))
+	var slide := world.view_size.y * 0.45
 	for i in n:
+		var h := fposmod(float(i) * MORPH_STEP, 1.0)
 		var a: Rect2
 		var b: Rect2
 		if no > 0:
@@ -447,29 +475,39 @@ func _draw_morph() -> void:
 		if nn > 0:
 			b = new_raw[i % nn]
 		if no == 0:
-			a = Rect2(b.position + Vector2(0.0, -world.view_size.y * 0.45), b.size)   # a plain sky grows the new look in from above
+			a = Rect2(b.position + Vector2(0.0, -slide), b.size)   # a plain sky: the new look streaks in from above
 		if nn == 0:
-			b = Rect2(a.position + Vector2(0.0, world.view_size.y * 0.45), a.size)    # the new sky is plain: the marks sink away
-		if no == 0 and fposmod(float(i) * MORPH_STEP, 1.0) >= e:
-			continue
-		if nn == 0 and fposmod(float(i) * MORPH_STEP, 1.0) < e:
-			continue
-		var pos := a.position.lerp(b.position, e)
-		var sz := a.size.lerp(b.size, e)
-		if not calm:
-			var ang := float(i) * 2.39996
-			pos += Vector2(cos(ang), sin(ang)) * bell * ft.handoff_swirl_px * _power   # the marks fly off the old line and re-form: vertical and radial, not only x
+			b = Rect2(a.position + Vector2(0.0, slide), a.size)    # a plain sky next: the marks streak away downward
+		# one 0..1 parameter drives old shape -> horizontal dashes -> new shape, staggered by row over ~16 frames
+		var row := clampf(((a.position.y + b.position.y) * 0.5 - field.position.y) / field.size.y, 0.0, 1.0)
+		var u := clampf((e - 0.19 * row) / 0.81, 0.0, 1.0)
+		var dash := 11.0 + 12.0 * h
+		var ang := float(i) * 2.39996
+		var drift := Vector2(cos(ang), sin(ang)) * ft.handoff_swirl_px * _power * (0.0 if calm else 1.0)
+		var dash_pos := a.position.lerp(b.position, 0.5) + drift - Vector2(dash * 0.5, 0.0)
+		var pos: Vector2
+		var sz: Vector2
+		if u < 0.5:
+			var k := u * 2.0
+			pos = a.position.lerp(dash_pos, k)
+			sz = Vector2(lerpf(a.size.x, dash, k), lerpf(a.size.y, 1.0, k))
+		else:
+			var k2 := (u - 0.5) * 2.0
+			pos = dash_pos.lerp(b.position, k2)
+			sz = Vector2(lerpf(dash, b.size.x, k2), lerpf(1.0, b.size.y, k2))
 		var r := Rect2(pos, sz.max(Vector2.ONE))
 		r.position += warp_vec(r.position, 2)
 		r.size.x += warp_stretch(2)
-		var col := old_col if fposmod(float(i) * MORPH_STEP, 1.0) >= e else new_col
+		var col := old_col if u < 0.3 else (mid_col if u < 0.72 else new_col)
+		if no == 0 and u <= 0.0:
+			continue
 		var clipped := _clip_mark(r)
 		if not clipped.has_area():
 			continue
 		if ghost_dx >= 1.0 and i % 2 == 0:
 			var g := _clip_mark(Rect2(r.position + Vector2(roundf(ghost_dx), 0.0), r.size))
 			if g.has_area():
-				draw_rect(g, ghost)   # colour-register separation: a second register slips off the line
+				draw_rect(g, ghost)
 		draw_rect(clipped, col)
 
 
