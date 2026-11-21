@@ -4,6 +4,29 @@ extends TunableResource
 ## All ✱ engineering presentation params (TECH-001); SYS-001 §9 holds only the shake caps
 ## (4.0 px / 0.25 s), which stay literal 🔒 constants in ArcadeWorld.shake().
 
+# --- Stage hand-off (Q-T457, owner 2026-11-20: the 4 s hold was too long; feedback at the fall; the sky warps into the next stage) ---
+@export var handoff_collapse_s: float = 0.5               ## s ✱ PROVISIONAL: the beat after the last module falls (caption up, sim running), mid-shift ends only
+@export var handoff_morph_s: float = 0.9                  ## s ✱ PROVISIONAL: the sky dissolves and warps into the next stage's look; then its stage card opens
+@export var handoff_warp_px: float = 9.0                  ## px ✱ the sky's low-frequency bend, peak mid-morph (0 under photosensitivity / reduced motion)
+@export var handoff_tear_px: float = 12.0                 ## px ✱ the high-frequency tear: a third of the 5 px row bands jump by up to this
+@export var handoff_ghost_px: float = 3.0                 ## px ✱ colour-register separation: a second VOID register slips off every other mark
+@export var handoff_shock_px: float = 9.0                 ## px ✱ the shock ring's radial push on the sky and (x1.6, in texels) on the whole play view (CRT shader)
+@export var handoff_shock_width: float = 0.13             ## ✱ the ring's half-width, in screen heights
+@export var handoff_swirl_px: float = 14.0                ## px ✱ marks fly off their old line this far (random direction, bell over the morph) as they re-form
+@export var handoff_slip_px: float = 2.0                  ## px ✱ the whole play view's register slip: a second copy of the picture, offset (picks registers, adds no colour)
+@export var handoff_ring_speed: float = 600.0            ## px/s ✱ the 1 px shock ring: 0 to 200 px in 20 frames, on past the far corner
+@export var handoff_scan_px: float = 7.0                  ## px ✱ per-scanline horizontal offset of the whole play view behind the ring (entities included; 6 to 8 px)
+@export var handoff_scan_hz: float = 34.0                 ## rad/s ✱ the scanline wave's travel
+@export var handoff_counter_px: float = 2.0               ## px ✱ the damped counter-ripple of the last 12 frames
+@export var handoff_wash: float = 0.05                    ## ✱ peak alpha of the one kill-frame wash over the playfield (VOID_5, a single pulse)
+@export var handoff_wash_s: float = 0.3                   ## s ✱ the wash falls over this long (one event, never a strobe)
+@export var handoff_wear_gain: float = 0.35               ## ✱ every displacement x (1 + wear level x this): later stages tear harder
+@export var sepulchre_down_burst_count: int = 60          ## ✱
+@export var sepulchre_down_burst_speed: float = 150.0     ## px/s ✱
+@export var sepulchre_down_ring_radius: float = 90.0      ## px ✱
+@export var sepulchre_down_shake_amp: float = 4.0         ## px ✱ (≤ 4.0 cap)
+@export var sepulchre_down_shake_dur: float = 0.25        ## s ✱ (≤ 0.25 cap)
+
 # --- Ring spawn / deposit / pickup ---
 @export var acolyte_guard_ring_radius: float = 24.0       ## px ✱ guard acolyte spawns
 @export var ritual_deposit_ring_radius: float = 16.0      ## px ✱ a Grub delivers a shard

@@ -1,0 +1,246 @@
+{
+	"format": "darkstar.scenario",
+	"version": 1,
+	"id": "a0_stage_transition_perf",
+	"profile": "dev",
+	"args": [],
+	"timeout_frames": 9000,
+	"steps": [
+		{
+			"do": "wait_route",
+			"route": "attract",
+			"within": 240
+		},
+		{
+			"do": "coin"
+		},
+		{
+			"do": "wait_until",
+			"id": "attract/ui/NewVigil",
+			"prop": "enabled",
+			"eq": true,
+			"within": 240
+		},
+		{
+			"do": "activate",
+			"id": "attract/ui/NewVigil"
+		},
+		{
+			"do": "wait_route",
+			"route": "cabinet",
+			"within": 240
+		},
+		{
+			"do": "wait_until",
+			"id": "cabinet/game",
+			"prop": "state",
+			"eq": "briefing",
+			"within": 600
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "hold",
+			"action": "fire_lance",
+			"frames": 3
+		},
+		{
+			"do": "wait_until",
+			"id": "cabinet/game",
+			"prop": "state",
+			"eq": "play",
+			"within": 600
+		},
+		{
+			"do": "assert",
+			"id": "cabinet/game",
+			"prop": "stage_id",
+			"eq": "a0_1"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 60
+		},
+		{
+			"do": "perf_begin",
+			"name": "tr_a0_1_a0_3"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 10
+		},
+		{
+			"do": "fell_sepulchre"
+		},
+		{
+			"do": "wait_until",
+			"id": "cabinet/game",
+			"prop": "stage_id",
+			"eq": "a0_3",
+			"within": 600
+		},
+		{
+			"do": "wait_until",
+			"id": "cabinet/game",
+			"prop": "state",
+			"eq": "briefing",
+			"within": 60
+		},
+		{
+			"do": "perf_end",
+			"name": "tr_a0_1_a0_3"
+		},
+		{
+			"do": "wait_until",
+			"id": "cabinet/game",
+			"prop": "state",
+			"eq": "briefing",
+			"within": 600
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "hold",
+			"action": "fire_lance",
+			"frames": 3
+		},
+		{
+			"do": "wait_until",
+			"id": "cabinet/game",
+			"prop": "state",
+			"eq": "play",
+			"within": 600
+		},
+		{
+			"do": "assert",
+			"id": "cabinet/game",
+			"prop": "stage_id",
+			"eq": "a0_3"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 60
+		},
+		{
+			"do": "perf_begin",
+			"name": "tr_a0_3_a0_4"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 10
+		},
+		{
+			"do": "fell_sepulchre"
+		},
+		{
+			"do": "wait_until",
+			"id": "cabinet/game",
+			"prop": "stage_id",
+			"eq": "a0_4",
+			"within": 600
+		},
+		{
+			"do": "wait_until",
+			"id": "cabinet/game",
+			"prop": "state",
+			"eq": "briefing",
+			"within": 60
+		},
+		{
+			"do": "perf_end",
+			"name": "tr_a0_3_a0_4"
+		},
+		{
+			"do": "wait_until",
+			"id": "cabinet/game",
+			"prop": "state",
+			"eq": "briefing",
+			"within": 600
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "hold",
+			"action": "fire_lance",
+			"frames": 3
+		},
+		{
+			"do": "wait_until",
+			"id": "cabinet/game",
+			"prop": "state",
+			"eq": "play",
+			"within": 600
+		},
+		{
+			"do": "assert",
+			"id": "cabinet/game",
+			"prop": "stage_id",
+			"eq": "a0_4"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 60
+		},
+		{
+			"do": "perf_begin",
+			"name": "tr_a0_4_a0_5"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 10
+		},
+		{
+			"do": "fell_sepulchre"
+		},
+		{
+			"do": "wait_until",
+			"id": "cabinet/game",
+			"prop": "stage_id",
+			"eq": "a0_5",
+			"within": 600
+		},
+		{
+			"do": "wait_until",
+			"id": "cabinet/game",
+			"prop": "state",
+			"eq": "briefing",
+			"within": 60
+		},
+		{
+			"do": "perf_end",
+			"name": "tr_a0_4_a0_5"
+		},
+		{
+			"do": "wait_until",
+			"id": "cabinet/game",
+			"prop": "state",
+			"eq": "briefing",
+			"within": 600
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "hold",
+			"action": "fire_lance",
+			"frames": 3
+		},
+		{
+			"do": "wait_until",
+			"id": "cabinet/game",
+			"prop": "state",
+			"eq": "play",
+			"within": 600
+		},
+		{
+			"do": "quit"
+		}
+	]
+}

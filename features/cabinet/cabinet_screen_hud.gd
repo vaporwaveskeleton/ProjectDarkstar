@@ -37,6 +37,8 @@ var hi_score := 0
 var lives := 3
 var charges := 0
 var magazine := 5
+var counter_rect := Rect2()   ## where the Sepulchre counter was last drawn (the hand-off tears one glyph row of it, in the CRT shader)
+var pulse := 0.0       ## 0 → 1: the stage hand-off jolts the scanner frame and tints it (CabinetGame feeds it from the starfield; Q-T457)
 var eaten := 0.0       ## 0 → 1: the Unmaking swallows the readouts
 var peel := 0.0        ## 0 → 1: the maker mark falls away with the costume
 var attract := false   ## attract screen: 1UP, score, HI and `credit_line` only
@@ -170,6 +172,7 @@ func _draw_right() -> void:
 	var rit := world.ritual
 	var val := tr("CAB_SEP_AWAKE") if rit.awake else sepulchre_text(rit.segments, world.tuning.segments_total, false)
 	var b := _text_box(true, SEPULCHRE_END_X, SEPULCHRE_BASE, val, 1)
+	counter_rect = b
 	PixelText.draw(self, b.position, val, Look.c(Pal.BONE_5))
 
 
@@ -222,7 +225,13 @@ func _draw_compass() -> void:
 	var v := world.vigil.pos
 	var centre := inner.get_center().round()
 	draw_rect(r, Look.c(Pal.VOID_0))
-	draw_rect(r, Look.c(Pal.BONE_1) if eaten <= 0.0 else Look.c(Pal.BONE_0), false, 1.0)
+	var frame := Look.c(Pal.BONE_1) if eaten <= 0.0 else Look.c(Pal.BONE_0)
+	var jit := Vector2.ZERO
+	if pulse > 0.0:
+		frame = Look.c(Pal.GAS_4) if pulse > 0.3 else Look.c(Pal.GAS_2)   # the hand-off: the scanner frame takes the next zone's ink (hue only, readouts untouched)
+		if pulse > 0.5:
+			jit = Vector2(roundf(sin(world.time * 83.0) * 1.0), 0.0)       # and jolts a pixel with the tear
+	draw_rect(Rect2(r.position + jit, r.size), frame, false, 1.0)
 	var at := func(p: Vector2) -> Vector2: return (centre + compass_offset(world.torus.delta(v, p), ppd)).round()
 	var near := func(p: Vector2) -> bool: return compass_in_range(world.torus.delta(v, p), inner, ppd)
 	# the view window: the play view, 8 × 8 Compass px, centred

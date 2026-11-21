@@ -57,6 +57,7 @@ var state: int = State.INTRO
 var stage_index := 0
 var unmakings := 0                ## Unmakings done this shift (run-scoped, never saved); on a stage start it is derived from the stage index
 var _brief_t := 0.0               ## s the stage card has been up
+var _hand_off_driven := false      ## the shader / scanner were last set by a hand-off (so they are cleared once it ends)
 var _brief_froze := false         ## the card paused the world (and so must unpause it)
 var _timer := 0.0
 var _profile: Dictionary = {}
@@ -489,6 +490,7 @@ func _process(delta: float) -> void:
 	if mat:
 		mat.set_shader_parameter(&"time_s", world.shader_time)
 	_poll_unmaking_warmup()
+	_drive_hand_off(mat)
 	if demo:
 		_demo_t -= delta
 		if _demo_t <= 0.0 or state == State.GAME_OVER:
@@ -528,13 +530,16 @@ func _on_timer() -> void:
 		State.GAME_OVER:
 			SceneRouter.go_to(&"attract", _game_over_params())
 		State.CLEARED:
-			_hold_banner("CAB_VIGIL_COMPLETE")
+			if is_last_stage():
+				_hold_banner("CAB_VIGIL_COMPLETE")
+			else:
+				_begin_morph()
 		State.UNMADE:
 			if is_last_stage():
 				messages.roll_credits(_full_credit_lines(), PackedInt32Array(STAT_ENTRY_INDICES))
 				_enter(State.CREDITS, world.fx_tuning.credits_full_seconds)
-			else:   # mid-shift unmade (a0_3, a0_4 on the four-stage shift; a0_1 is cleared, not unmade): the banner holds, then the next stage
-				_hold_banner("CAB_ENTITY_DOWN")
+			else:   # mid-shift unmade (a0_3, a0_4 on the four-stage shift; a0_1 is cleared, not unmade): the sky morphs, then the next stage
+				_begin_morph()
 		State.CREDITS:
 			_note_hands()
 			var next := next_stage_index()
@@ -557,6 +562,61 @@ func _poll_unmaking_warmup() -> void:
 		return
 	_warm_started = true
 	SceneWarmup.warm_spread(self, SceneRouter.table.path_for(UNMAKING_ROUTE), _warm)
+
+
+## Feeds the hand-off's screen-space part to the CRT shader (the shock ring and the register slip) and the scanner frame.
+## Idle (nothing set) outside a hand-off.
+func _drive_hand_off(mat: ShaderMaterial) -> void:
+	var active := world.stars.morphing()
+	if not active and not _hand_off_driven:
+		return
+	_hand_off_driven = active
+	var st := world.stars.shock_state() if active else {"centre": Vector2(0.5, 0.5), "r": 0.0, "w": 0.1, "amp": 0.0, "slip": 0.0, "scan": 0.0, "flat": 0.0, "phase": 0.0, "ring": 0.0, "bleed": 0.0, "tear_dx": 0.0}
+	if mat != null:
+		mat.set_shader_parameter(&"shock_centre", st["centre"])
+		mat.set_shader_parameter(&"shock_r", st["r"])
+		mat.set_shader_parameter(&"shock_w", st["w"])
+		mat.set_shader_parameter(&"shock_amp", st["amp"])
+		mat.set_shader_parameter(&"slip", st["slip"])
+		mat.set_shader_parameter(&"fx_top", float(screen.spec.hud_strip_height) / float(screen.spec.grid.y))
+		mat.set_shader_parameter(&"scan_amp", st["scan"])
+		mat.set_shader_parameter(&"scan_flat", st["flat"])
+		mat.set_shader_parameter(&"scan_phase", st["phase"])
+		mat.set_shader_parameter(&"ring_on", st["ring"])
+		mat.set_shader_parameter(&"hud_bleed", st["bleed"])
+		mat.set_shader_parameter(&"hud_tear_dx", st["tear_dx"])
+		var cr := hud.screen_hud.counter_rect if hud.screen_hud != null else Rect2()
+		mat.set_shader_parameter(&"hud_tear_rect", Vector4(cr.position.x, cr.position.y, cr.end.x, cr.end.y))
+	var sh := hud.screen_hud
+	if sh != null:
+		sh.pulse = world.stars.hud_pulse() if active else 0.0
+		sh.queue_redraw()
+
+
+## The stage hand-off's whole length: the collapse beat plus the morph (Q-T457; both in CabinetFxTuning).
+func handoff_seconds() -> float:
+	return world.fx_tuning.handoff_collapse_s + world.fx_tuning.handoff_morph_s
+
+
+## The ordinary stage-to-stage hand-off (Q-T457, owner 2026-11-20): no banner and no roll; the stage's sky dissolves and warps
+## into the next stage's signature while the last stage's sim runs on, then start_stage(next) opens the next stage card (which
+## still waits for the lance button: it carries the orders). Replaces the old banner hold (MID_SHIFT_HOLD_SECONDS, 5.4 s).
+func _begin_morph() -> void:
+	AudioService.play(&"quota", -3.0)
+	if haunts != null:
+		if haunts.enabled and decay_tuning.wear_level(stage_index) == haunts.tuning.min_wear_level:
+			haunts.plant_crag_slope()
+		haunts.moment(CabinetHauntDeck.HOLD)
+	_enter(State.CREDITS, 0.01)   # the morph already ran from the kill frame: on to the next stage
+
+
+## The sky starts to break on the kill frame and runs for the whole hand-off (Q-T457): wear scales how hard it tears.
+func _start_sky_morph() -> void:
+	var next := next_stage_index()
+	if next >= 0:
+		var power := 1.0 + float(decay_tuning.wear_level(stage_index)) * world.fx_tuning.handoff_wear_gain
+		var bearing := world.to_screen(world.ritual.pos)
+		world.stars.begin_morph(stages[next].backdrop, handoff_seconds(), power, bearing)
 
 
 ## A mid-shift stage end (PM 2026-11-19): banner only, no roll. The stage-end banner stays up for
@@ -596,9 +656,14 @@ func _on_sepulchre_cleared() -> void:
 		return
 	world.vigil.input_enabled = false
 	_end_charges = world.glass.charges
-	messages.banner(tr("CAB_VIGIL_COMPLETE"), CLEAR_SECONDS)
-	AudioService.play(&"quota")
-	_enter(State.CLEARED, CLEAR_SECONDS)
+	if is_last_stage():
+		messages.banner(tr("CAB_VIGIL_COMPLETE"), CLEAR_SECONDS)
+		AudioService.play(&"quota")
+		_enter(State.CLEARED, CLEAR_SECONDS)
+	else:   # the ordinary hand-off (Q-T457): a caption now, a short beat, then the sky morphs into the next stage
+		messages.caption(tr("CAB_SEPULCHRE_DOWN"), handoff_seconds() * 0.8)   # clears on the frame the new geometry locks (the morph's dissolve ends at 0.8)
+		_start_sky_morph()
+		_enter(State.CLEARED, handoff_seconds())
 
 
 func _on_entity_unmade() -> void:
@@ -607,8 +672,13 @@ func _on_entity_unmade() -> void:
 		music.stop()
 	world.vigil.input_enabled = false
 	_end_charges = world.glass.charges
-	messages.banner(tr("CAB_ENTITY_DOWN"), UNMADE_SECONDS)
-	_enter(State.UNMADE, UNMADE_SECONDS)
+	if is_last_stage():
+		messages.banner(tr("CAB_ENTITY_DOWN"), UNMADE_SECONDS)
+		_enter(State.UNMADE, UNMADE_SECONDS)
+	else:
+		messages.caption(tr("CAB_ENTITY_DOWN"), handoff_seconds() * 0.8)
+		_start_sky_morph()
+		_enter(State.UNMADE, handoff_seconds())
 
 
 func _on_extra_life() -> void:

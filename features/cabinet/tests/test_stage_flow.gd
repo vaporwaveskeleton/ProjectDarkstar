@@ -37,30 +37,54 @@ func _last() -> int:
 
 # --- credits → next stage -----------------------------------------------------------------
 
-func test_a_mid_shift_unmade_holds_the_banner_then_starts_the_next_stage() -> void:
+func test_a_mid_shift_unmade_morphs_the_sky_then_starts_the_next_stage() -> void:
 	game.start_stage(1)    # a0_3: the entity wakes, but the shift goes on
-	game.state = game.State.UNMADE
+	game.state = game.State.PLAY
+	game._on_entity_unmade()
+	assert_int(game.state).is_equal(game.State.UNMADE)
+	assert_bool(world.stars.morphing()).override_failure_message("the sky breaks on the kill frame").is_true()
+	assert_str(String(world.stars.morph_to)).is_equal(String(game.stages[2].backdrop))
 	game._on_timer()
 	assert_int(game.state).is_equal(game.State.CREDITS)
-	assert_float(messages.credits_t).override_failure_message("no roll mid-shift: banner only").is_less(0.0)
-	assert_str(messages._banner).is_equal(tr("CAB_ENTITY_DOWN"))
-	assert_float(messages._banner_t).is_equal(game.MID_SHIFT_HOLD_SECONDS)
-	assert_float(game._timer).is_equal(game.MID_SHIFT_HOLD_SECONDS)
+	assert_float(messages.credits_t).override_failure_message("no roll mid-shift").is_less(0.0)
 	game._on_timer()
 	assert_int(game.state).is_equal(game.State.BRIEFING)   # the next stage opens on its stage card
 	assert_int(game.stage_index).is_equal(2)
 	assert_str(String(world.stage.id)).is_equal("a0_4")
+	assert_bool(world.stars.morphing()).override_failure_message("the next stage starts on the finished look").is_false()
 
 
 func test_a_cleared_stage_starts_the_next_stage() -> void:
 	game.start_stage(0)    # a0_1: a cold stage, cleared (never unmade); the hand-off does not depend on the goal
-	game.state = game.State.CLEARED
+	game.state = game.State.PLAY
+	game._on_sepulchre_cleared()
+	assert_bool(world.stars.morphing()).is_true()
 	game._on_timer()
-	assert_float(messages.credits_t).override_failure_message("no roll mid-shift: banner only").is_less(0.0)
-	assert_str(messages._banner).is_equal(tr("CAB_VIGIL_COMPLETE"))
+	assert_float(messages.credits_t).override_failure_message("no roll mid-shift").is_less(0.0)
 	game._on_timer()
 	assert_int(game.state).is_equal(game.State.BRIEFING)   # the next stage opens on its stage card
 	assert_int(game.stage_index).is_equal(1)
+
+
+func test_the_mid_shift_hand_off_is_well_under_two_seconds_and_has_a_caption() -> void:
+	game.start_stage(1)
+	game.state = game.State.PLAY
+	game._on_sepulchre_cleared()
+	assert_int(game.state).is_equal(game.State.CLEARED)
+	assert_float(game._timer).is_equal(game.handoff_seconds())
+	assert_float(game.handoff_seconds()).is_less(2.0)
+	assert_str(messages._caption).is_equal(tr("CAB_SEPULCHRE_DOWN"))
+	assert_float(messages._banner_t).override_failure_message("no stage-end banner mid-shift").is_equal(0.0)
+
+
+func test_the_last_stage_keeps_its_banner_and_hold() -> void:
+	game.start_stage(_last())
+	game.state = game.State.PLAY
+	game._on_sepulchre_cleared()
+	assert_float(game._timer).is_equal(game.CLEAR_SECONDS)
+	assert_str(messages._banner).is_equal(tr("CAB_VIGIL_COMPLETE"))
+	game._on_timer()
+	assert_float(game._timer).is_equal(game.MID_SHIFT_HOLD_SECONDS)
 
 
 func test_every_stage_but_the_last_has_a_next_stage() -> void:
