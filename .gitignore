@@ -81,3 +81,8 @@ desktop.ini
 /assets/art/generated/textures/*/*_metallic.png*
 /assets/art/generated/textures/*/*_ao.png*
 /art/src/out/
+
+# ComfyUI concept-art outputs are local-only reference (docs/04-production/COMFYUI_WORKFLOW.md)
+/research/comfyui_out/
+/tools/comfyui/out/
+/tools/comfyui/__pycache__/
