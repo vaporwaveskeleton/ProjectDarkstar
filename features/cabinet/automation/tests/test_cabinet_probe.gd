@@ -577,7 +577,7 @@ func test_the_chalk_draws_on_over_time_and_is_instant_under_reduced_motion() -> 
 func test_stage_id_is_a_lower_case_id_for_every_roster_stage() -> void:
 	assert_array(probe.describe().props["cabinet/game"]).contains(["stage_id"])
 	assert_bool(probe.snapshot().game.has("stage_id")).is_true()
-	var want: Array[String] = ["a0_3", "a0_4", "a0_5"]
+	var want: Array[String] = ["a0_1", "a0_4", "a0_5"]
 	assert_int(game.stages.size()).is_equal(want.size())
 	for i in want.size():
 		assert_str(probe.dev_op("set_stage", {"index": i})).is_empty()

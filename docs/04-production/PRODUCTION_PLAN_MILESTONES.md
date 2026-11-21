@@ -262,7 +262,7 @@ Not covered yet: Composure, the full Ledger Compass and the Litany Ring are not 
 
 | Item | Source | Milestone |
 |---|---|---|
-| Act 0: three stages (A0-3, A0-4, A0-5 since F-14; was A0-1 to A0-3, then five) + first Unmaking cinematic | GDD-001 §6.1 | M2 |
+| Act 0: three stages (A0-1, A0-4, A0-5 since the 2026-11-20 F-14 re-ruling; was A0-3, A0-4, A0-5, before that A0-1 to A0-3, then five) + first Unmaking cinematic | GDD-001 §6.1 | M2 |
 | A 5-Seam Act 1 run, 2 biomes | GDD-001 §6.3; §5 below | M2 |
 | Grubs, Acolytes, Deceiver | GDD-001 §8.5 | M2 |
 | 1 Matron gate | GDD-001 §9.2 | M2 |
@@ -328,7 +328,7 @@ The "THAT WAS A PRETENCE." title card is replaced by a wordless Decay of the arc
 13. ⏳ Marketing captures: G8 "The skin", the trailer's 0:32–0:44 (MARKET-001 §4.6–§4.7), the TATE cut and the browser Cabinet's new end.
 14. ✅ Suite and smoke green; docs updated (the DoD in CLAUDE.md §6).
 
-### 4.3 Act 0 rework: scale, three Unmakings, stage card (owner direction 2026-11-19; lands in M2)
+### 4.3 Act 0 rework: scale, Unmakings (three when ruled, two since 2026-11-20), stage card (owner direction 2026-11-19; lands in M2)
 
 The owner found Act 0 "a bit too simple". Ruled by the PM under owner direction, 2026-11-19 overnight push (TECH-001 Q-T365–Q-T377). Numbers: SYS-001 §1.7 (all PROPOSED). Study: `research/arcade_layer_study.md` §10.
 
@@ -336,13 +336,14 @@ The owner found Act 0 "a bit too simple". Ruled by the PM under owner direction,
 2. ✅ The 65,536 px field with a travelling neighbourhood (768 px half-size); Sepulchre start, leash and drift.
 3. ✅ HUD band 48 px, play view 256 × 256; local square Ledger Compass with an off-range pip.
 4. ✅ Re-proportioned Grubs, Acolytes, geodes and shards (`ds_cabinet.size.*`; shards 5 px).
-5. ✅ `acolyte_mine` on a0_3–a0_5.
-6. ✅ Three-Unmaking count (`unmakings_required` = 3, asserted against the roster).
+5. ✅ `acolyte_mine` on a0_3–a0_5 (the shift now uses a0_4 and a0_5).
+6. ✅ Three-Unmaking count (`unmakings_required` = 3, asserted against the roster; now 2 after the 2026-11-20 re-ruling, item 12).
 7. ✅ Stage card: paused, PRESS FIRE TO CONTINUE on `fire_lance`, `pause`/`ui_cancel` open the pause overlay; `CAB_BRIEF_*` keys in `locale/en.po`.
 8. ✅ Autopilot clears Act 0 at the new scale (17/20 seeds, Q-T379); tests; headless golden path. ⏳ windowed capture pass (card, scale, scanner, an Unmaking).
 9. ✅ Hauntings reconciled, no change needed (Q-T374: they run at stage start, the card's opening); #101's bezel unaffected.
 10. ✅ Density and feel pass (Q-T381–Q-T384): 4–8 units and 1–3 geodes in a typical view; streaks; autopilot 20/20. ⏳ Stage times vs targets (Q-T383), human playtest.
 11. ✅ F-14 (owner ruling 2026-11-20, Q-T452): Act 0 is three stages (a0_3, a0_4, a0_5), so three stages = three Unmakings; a0_1 and a0_2 stay as data, `stage_roster_five.tres` is the rollback. Stage times (Q-T383) now judged over three stages; autopilot floor re-measured on the shorter shift.
+12. ✅ F-14 re-ruled (owner, 2026-11-20, Q-T452): the shift is a0_1 (cold), a0_4, a0_5 = two Unmakings (`unmakings_required` = 2, derived and asserted; item 6's 3 is superseded). Wear [1, 2, 3] unchanged, so hauntings start at a0_1. Stage scenarios renamed. ⏳ Open for the owner: Q-T454 (two Unmakings), Q-T455 (card titles), Q-T456 (difficulty curve / haunt onset). Autopilot clear rate on the new shift not measured here.
 
 ---
 

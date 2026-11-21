@@ -69,7 +69,7 @@
 		},
 		{
 			"do": "screenshot",
-			"name": "10_a0_3_after_image",
+			"name": "10_a0_1_after_image",
 			"target": "window"
 		},
 		{
@@ -78,7 +78,7 @@
 		},
 		{
 			"do": "screenshot",
-			"name": "11_a0_3_after_image_arcade",
+			"name": "11_a0_1_after_image_arcade",
 			"target": "arcade"
 		},
 		{

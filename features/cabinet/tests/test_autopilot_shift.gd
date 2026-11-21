@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## The autopilot plays the whole Act 0 shift (a0_3 → a0_5, three stages since F-14) honestly: the real CabinetGame scene,
+## The autopilot plays the whole Act 0 shift (a0_1 → a0_4 → a0_5, three stages; Q-T452) honestly: the real CabinetGame scene,
 ## its default lives and extra-life schedule, its own death → respawn → GAME OVER state machine.
 ## The bot only reads the world and writes the Vigil's scripted inputs; nothing here touches lives,
 ## shields or stage data. Seeds vary by giving every stage `seed + k * SEED_STRIDE` (k = 0 is the
@@ -12,7 +12,7 @@ const STAGE_LIMIT_S := 420.0       ## sim seconds a stage may take before the ru
 const State := CabinetGame.State
 
 ## The fixed seeds this suite plays, and the honest floor: at least MIN_REACHED of them clear all
-## MIN_STAGES stages (the whole three-stage shift, a0_3–a0_5) with the default lives. Measured 2026-11-20 on seeds
+## MIN_STAGES stages (the whole three-stage shift, a0_1, a0_4, a0_5) with the default lives. Measured 2026-11-20 on seeds
 ## +0…+19 after the density pass (640 px box, Grubs shadowing the Vigil, more geodes; SYS-001 §1.7, PROPOSED):
 ## 20/20 full five-stage shifts cleared on seeds +0…+19 (round 2: 34/40/44/72/14 geodes, 6/14/14/10/6 Grubs).
 ## F-14 (three stages, 2026-11-20): with the shift cut to a0_3, a0_4, a0_5 the same seeds on a working tree that also held the
@@ -21,6 +21,7 @@ const State := CabinetGame.State
 ## Grub work, not from the shorter shift; the floor is deliberately NOT lowered here (TECH-001 Q-T452). Takes ~3.5 min headless.
 const SEEDS: Array[int] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
 ## Re-measured 2026-11-20 under the Momentum ship (F-9, Q-T445) with the retuned bot: 19/20 full shifts (seed +10 lost to the awake entity); floor unchanged at 18. Takes ~4 min.
+## Q-T452 (shift = a0_1, a0_4, a0_5), measured 2026-11-20: 18/20 cleared all three stages (seeds +1 and one other lost to the awake entity); medians a0_1 35 s, a0_4 152, a0_5 172 sim s. Floor unchanged at 18 (met exactly, no margin).
 const MIN_STAGES := 3
 const MIN_REACHED := 18
 

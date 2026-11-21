@@ -150,10 +150,10 @@ func test_catalog_and_validator_agree() -> void:
 ## a1_two_seams: Ruins -> PM-01 -> clear -> PM-02 -> clear -> Ruins (same dev args; Q-T281, PM-02). pm02_look_capture: the PM-02
 ## dark-kit stills (dev `--kit=pm_02` arg, capture only). ui_menus_capture: the restyled overlay menus capture
 ## (timeout_frames 1500, over the suite's 1200; listed here when merging main into the run-loop branch).
-## a0_cursed_cabinet_capture: the a0_3 after-image (dev `--haunt=after_image`), then a0_5 by autopilot and the
+## a0_cursed_cabinet_capture: the a0_1 after-image (dev `--haunt=after_image`), then a0_5 by autopilot and the
 ## cursed turn, one still every 0.5 s, with a luma window (~3100 frames). a0_haunt_attract_capture: every attract
 ## Haunting once (dev `--haunt-showcase`, fixture profile_act0_done, ~950 frames). TECH-001 Q-T268, §9.1.
-## a0_rework_capture: stage cards, the new scale and one a0_3 Unmaking by autopilot (~5000 frames; Q-T365..Q-T380).
+## a0_rework_capture: stage cards, the new scale and one a0_5 Unmaking by autopilot (cards a0_1, a0_4, a0_5) (~5000 frames; Q-T365..Q-T380).
 const LONG_SCENARIOS: Array[String] = ["a1_golden_path.scenario.json", "ruins_onboarding_first_visit.scenario.json", "perf_golden_path.scenario.json", "a11y_flash_pass.scenario.json",
 	"warp_t1_capture.scenario.json", "a0_reveal_decay_capture.scenario.json", "perf_ruins.scenario.json", "a1_run_loop.scenario.json",
 	"ui_menus_capture.scenario.json", "a0_cursed_cabinet_capture.scenario.json", "a0_haunt_attract_capture.scenario.json",

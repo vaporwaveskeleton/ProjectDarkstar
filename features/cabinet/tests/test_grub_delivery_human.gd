@@ -86,9 +86,9 @@ func _seconds_to_wake(stage_i: int, limit_s: float, min_far_px: float) -> float:
 	return -1.0
 
 
-func test_a_far_working_human_wakes_the_sepulchre_on_a0_3() -> void:
-	var s := _seconds_to_wake(CabinetStageRoster.default_roster().index_of(&"a0_3"), 170.0, 1500.0)
-	assert_float(s).override_failure_message("a0_3 did not wake inside 170 s of mining").is_greater(0.0)
+func test_a_far_working_human_wakes_the_sepulchre_on_a0_4() -> void:
+	var s := _seconds_to_wake(CabinetStageRoster.default_roster().index_of(&"a0_4"), 170.0, 1500.0)
+	assert_float(s).override_failure_message("a0_4 did not wake inside 170 s of mining (limit PROPOSED, Q-T452: a0_3 left the shift)").is_greater(0.0)
 
 
 func test_a_far_working_human_wakes_the_sepulchre_on_the_scarce_a0_5() -> void:

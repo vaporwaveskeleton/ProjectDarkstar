@@ -5,7 +5,7 @@ extends GdUnitTestSuite
 const BootScript := preload("res://scenes/boot/boot.gd")
 const MenuScript := preload("res://core/automation/debug_menu.gd")
 const GAME := preload("res://features/cabinet/cabinet_game.tscn")
-const DATA_IDS: Array[StringName] = [&"a0_3", &"a0_4", &"a0_5"]
+const DATA_IDS: Array[StringName] = [&"a0_1", &"a0_4", &"a0_5"]
 
 var _menu: Node
 var _host: Node
@@ -101,7 +101,7 @@ func test_lists_all_five_stages_and_the_data_shift_is_picked() -> void:
 	assert_array(_ids(_menu.active_roster())).is_equal(DATA_IDS)
 	_menu.toggle()
 	var screen: Control = _menu.stack.top()
-	assert_array(screen._picked).is_equal([2, 3, 4])   # indices of a0_3..a0_5
+	assert_array(screen._picked).is_equal([0, 3, 4])   # indices of a0_1, a0_4, a0_5 in the five-stage list
 	assert_int(screen._toggles.size()).is_equal(5)
 
 
@@ -112,7 +112,7 @@ func test_menu_text_has_no_missing_glyphs_or_raw_keys() -> void:
 	for t: MenuText in [screen._shift_text, screen._unmake_text]:
 		assert_array(t.missing_glyphs()).is_empty()
 		assert_bool(t.shown_text().contains("MENU_DEBUG")).is_false()
-	assert_str(screen._unmake_text.text).is_equal("Unmakings: 3")
+	assert_str(screen._unmake_text.text).is_equal("Unmakings: 2")
 
 
 func test_apply_shift_is_a_runtime_override_in_the_chosen_order() -> void:
@@ -140,9 +140,9 @@ func test_play_stage_inside_the_shift_keeps_its_slot() -> void:
 
 func test_play_stage_outside_the_shift_plays_it_alone() -> void:
 	var cab := await _mount_cabinet()
-	assert_bool(_menu.play_stage(_stage(&"a0_1"))).is_true()
+	assert_bool(_menu.play_stage(_stage(&"a0_3"))).is_true()
 	assert_int(cab.stage_index).is_equal(0)
-	assert_str(String(cab.stages[0].id)).is_equal("a0_1")
+	assert_str(String(cab.stages[0].id)).is_equal("a0_3")
 	assert_int(cab.stages.size()).is_equal(1)
 	assert_object(_menu.override).is_null()   # a single play is not the session shift
 

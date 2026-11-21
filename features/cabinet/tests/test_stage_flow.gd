@@ -38,7 +38,7 @@ func _last() -> int:
 # --- credits → next stage -----------------------------------------------------------------
 
 func test_a_mid_shift_unmade_holds_the_banner_then_starts_the_next_stage() -> void:
-	game.start_stage(0)    # a0_3: the entity wakes, but the shift goes on
+	game.start_stage(1)    # a0_4: the entity wakes, but the shift goes on
 	game.state = game.State.UNMADE
 	game._on_timer()
 	assert_int(game.state).is_equal(game.State.CREDITS)
@@ -48,12 +48,12 @@ func test_a_mid_shift_unmade_holds_the_banner_then_starts_the_next_stage() -> vo
 	assert_float(game._timer).is_equal(game.MID_SHIFT_HOLD_SECONDS)
 	game._on_timer()
 	assert_int(game.state).is_equal(game.State.BRIEFING)   # the next stage opens on its stage card
-	assert_int(game.stage_index).is_equal(1)
-	assert_str(String(world.stage.id)).is_equal("a0_4")
+	assert_int(game.stage_index).is_equal(2)
+	assert_str(String(world.stage.id)).is_equal("a0_5")
 
 
 func test_a_cleared_stage_starts_the_next_stage() -> void:
-	game.start_stage(0)    # (a cold stage is off the shift since F-14; the hand-off does not depend on the goal)
+	game.start_stage(0)    # a0_1: a cold stage, cleared (never unmade); the hand-off does not depend on the goal
 	game.state = game.State.CLEARED
 	game._on_timer()
 	assert_float(messages.credits_t).override_failure_message("no roll mid-shift: banner only").is_less(0.0)
@@ -137,9 +137,9 @@ func test_the_continue_line_counts_stages_from_one() -> void:
 # --- the READY card's zone line --------------------------------------------------------------
 
 func test_the_ready_card_shows_the_zone_line_when_the_stage_has_one() -> void:
-	game.start_stage(0)
+	game.start_stage(0)                 # a0_1: no zone line (the cold first vigil)
 	game.dismiss_brief()                # the READY card follows the stage card
-	assert_str(messages.ready_zone()).is_equal(tr("CAB_ZONE_CENSER_WATCH"))
+	assert_str(messages.ready_zone()).is_empty()
 	game.start_stage(1)
 	game.dismiss_brief()
 	var top := messages.ready_zone_top()

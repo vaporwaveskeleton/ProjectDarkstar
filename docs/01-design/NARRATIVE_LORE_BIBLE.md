@@ -907,6 +907,8 @@ The A0-5 card is the last honest thing the Cabinet says. Nothing on any card hin
 
 **F-14 (owner ruling 2026-11-20, TECH-001 Q-T452):** the shift plays three cards, A0-3, A0-4 and A0-5, so the Unmakings line reads `UNMAKINGS 0 / 3`, `1 / 3`, `2 / 3` on its three cards (`{total}` = `unmakings_required` = 3, unchanged). The keys keep their stage-id numbers (`CAB_BRIEF_A0_3_*` is the first card on screen); the A0-1 and A0-2 cards stay in `locale/en.po` for the five-stage rollback roster. The stage titles still read "THIRD VIGIL" and "FOURTH VIGIL" on the first two cards; retitling is open for the owner (Q-T452).
 
+**Re-ruled 2026-11-20 (owner, TECH-001 Q-T452; supersedes the paragraph above):** the shift plays A0-1, A0-4 and A0-5. The briefing cards read FIRST VIGIL, SECOND VIGIL (`CAB_STAGE_A0_4`, was FOURTH VIGIL) and THE LAST NORMAL DAY. The Unmakings line (`{total}` = `unmakings_required` = 2) shows only on waking stages: A0-1 none (cold), A0-4 `UNMAKINGS 0 / 2`, A0-5 `UNMAKINGS 1 / 2`. `CAB_BRIEF_A0_1_*`, `_A0_4_*` and `_A0_5_*` are the cards on screen; the A0-2 and A0-3 cards stay in `locale/en.po` for the five-stage rollback roster. Open: A0-5 still reads THE LAST NORMAL DAY, not THIRD VIGIL, and the rollback list shows two SECOND VIGILs (Q-T455); whether two Unmakings is enough (Q-T454). The Codex stamp "Act 0's third stage cleared" is unchanged (A0-5 is the third stage).
+
 ### 7.6 Office text (environmental)
 
 Posters and stencils in Act 0 and in Pale Marches / Ossuary Belt ruins. Office register. ≤ 6 words. Examples: "KEEP THE VIGIL" · "EVERY SHARD IS SOMEONE'S SKY" · "QUOTA IS SERVICE" · "THE LIGHT IS NEARLY FINISHED" · "LAMPS LIT, LAMPKEEPERS" · "REPORT TO YOUR VIGIL HALL". The last two are what the Penitent obeys (§2.3).

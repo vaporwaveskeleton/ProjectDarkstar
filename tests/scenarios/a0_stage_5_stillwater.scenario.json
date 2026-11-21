@@ -1,7 +1,7 @@
 {
 	"format": "darkstar.scenario",
 	"version": 1,
-	"id": "a0_stage_4_stillwater",
+	"id": "a0_stage_5_stillwater",
 	"args": [],
 	"timeout_frames": 1200,
 	"steps": [
@@ -18,13 +18,13 @@
 		{"do": "wait_until", "id": "cabinet/game", "prop": "stage_index", "eq": 2, "within": 10},
 		{"do": "wait_until", "id": "cabinet/game", "prop": "state", "eq": "briefing", "within": 10},
 		{"do": "wait_frames", "frames": 20},
-		{"do": "screenshot", "name": "stage_4_brief", "target": "arcade"},
+		{"do": "screenshot", "name": "stage_5_brief", "target": "arcade"},
 		{"do": "wait_until", "id": "cabinet/game", "prop": "state", "eq": "briefing", "within": 600},
 		{"do": "wait_frames", "frames": 30},
 		{"do": "hold", "action": "fire_lance", "frames": 3},
 		{"do": "wait_until", "id": "cabinet/game", "prop": "state", "eq": "intro", "within": 60},
 		{"do": "wait_frames", "frames": 20},
-		{"do": "screenshot", "name": "stage_4_ready", "target": "arcade"},
+		{"do": "screenshot", "name": "stage_5_ready", "target": "arcade"},
 		{"do": "wait_until", "id": "cabinet/game", "prop": "state", "eq": "play", "within": 600},
 		{"do": "assert", "id": "cabinet/game", "prop": "stage_index", "eq": 2},
 		{"do": "assert", "id": "cabinet/game", "prop": "stage_id", "eq": "a0_5"},
@@ -34,11 +34,11 @@
 		{"do": "assert", "id": "cabinet/world", "prop": "entity_awake", "eq": false},
 		{"do": "wake_entity"},
 		{"do": "wait_until", "id": "cabinet/world", "prop": "entity_awake", "eq": true, "within": 600},
-		{"do": "screenshot", "name": "stage_4_awake", "target": "arcade"},
+		{"do": "screenshot", "name": "stage_5_awake", "target": "arcade"},
 		{"do": "wait_frames", "frames": 30},
-		{"do": "screenshot", "name": "stage_4_play", "target": "arcade"},
-		{"do": "screenshot", "name": "stage_4_window", "target": "window"},
-		{"do": "snapshot", "name": "stage_4"},
+		{"do": "screenshot", "name": "stage_5_play", "target": "arcade"},
+		{"do": "screenshot", "name": "stage_5_window", "target": "window"},
+		{"do": "snapshot", "name": "stage_5"},
 		{"do": "quit"}
 	]
 }

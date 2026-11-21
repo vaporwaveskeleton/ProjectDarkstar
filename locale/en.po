@@ -348,9 +348,9 @@ msgstr "THIRD VIGIL"
 msgid "CAB_STAGE_A0_3_SUB"
 msgstr "CENSERS SWING. UNMAKE WHAT WAKES."
 
-#. A0-4 title card: a dense Glass field. WORDING PROPOSED.
+#. A0-4 title card: a dense Glass field. Reads SECOND VIGIL: the second card of the shift [a0_1, a0_4, a0_5] (Q-T452, owner 2026-11-20); the five-stage rollback roster shows it after THIRD VIGIL. WORDING PROPOSED.
 msgid "CAB_STAGE_A0_4"
-msgstr "FOURTH VIGIL"
+msgstr "SECOND VIGIL"
 
 #. WORDING PROPOSED.
 msgid "CAB_STAGE_A0_4_SUB"

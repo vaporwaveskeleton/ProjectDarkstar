@@ -1,6 +1,6 @@
 class_name CabinetStageRoster
 extends Resource
-## The Act 0 shift: every CabinetStage in play order (three stages since F-14: a0_3, a0_4, a0_5; the five-stage shift is stage_roster_five.tres; SYS-001 §1.6).
+## The Act 0 shift: every CabinetStage in play order (three stages: a0_1, a0_4, a0_5, Q-T452; the five-stage shift is stage_roster_five.tres; SYS-001 §1.6).
 ## Content, not tuning. CabinetGame plays them in order; the Pretence follows the last one.
 
 const DEFAULT_PATH := "res://data/cabinet/stage_roster.tres"   ## the shift the cabinet scene plays
@@ -38,7 +38,7 @@ func index_of(stage_id: StringName) -> int:
 	return -1
 
 
-## How many Unmakings the shift needs: the stages whose goal is to unmake the entity (SYS-001 §1.7, 3).
+## How many Unmakings the shift needs: the stages whose goal is to unmake the entity (SYS-001 §1.7; 2 on [a0_1, a0_4, a0_5]).
 func unmakings_required() -> int:
 	return unmakings_before(stages.size())
 

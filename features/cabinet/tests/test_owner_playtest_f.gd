@@ -73,12 +73,12 @@ func _throw_at_sepulchre() -> void:
 	_steps(2.0)
 
 
-## F-6 cause: only a cold stage (goal CLEAR_SEPULCHRE) listened for the Sepulchre going down; on a0_3-a0_5
+## F-6 cause: only a cold stage (goal CLEAR_SEPULCHRE) listened for the Sepulchre going down; on a0_4 and a0_5
 ## (goal UNMAKE_ENTITY) the knock-downs reached 0 segments and nothing ended the stage (#120 then re-seeded
 ## it after 8 s, which made three knock-downs three rebuilds). A human throws at an unbuilt Sepulchre; the
 ## autopilot never does, so no scenario saw it. Now 0 segments clears the stage, whatever the goal.
 func test_knocking_a_waking_stages_sepulchre_to_nothing_ends_the_stage() -> void:
-	_human_start(0)                                   # a0_3: goal UNMAKE_ENTITY, Sepulchre starts at 4 segments
+	_human_start(1)                                   # a0_4: goal UNMAKE_ENTITY, Sepulchre starts at 6 segments
 	assert_int(world.stage.goal).is_equal(CabinetStage.Goal.UNMAKE_ENTITY)
 	var cleared := [0]
 	world.sepulchre_cleared.connect(func() -> void: cleared[0] += 1)
@@ -92,7 +92,7 @@ func test_knocking_a_waking_stages_sepulchre_to_nothing_ends_the_stage() -> void
 	assert_bool(world.vigil.input_enabled).is_false()
 	game._on_timer()                                  # banner holds ...
 	game._on_timer()                                  # ... then the next stage opens on its card
-	assert_int(game.stage_index).is_equal(1)
+	assert_int(game.stage_index).is_equal(2)
 
 
 func test_three_knock_downs_in_a_row_progress_the_shift() -> void:
@@ -107,7 +107,7 @@ func test_three_knock_downs_in_a_row_progress_the_shift() -> void:
 
 
 func test_a_cleared_sepulchre_takes_no_more_glass_and_never_wakes() -> void:
-	_human_start(0)
+	_human_start(1)   # a0_4: a waking stage
 	while world.ritual.segments > 0:
 		_throw_at_sepulchre()
 	assert_bool(world.ritual.accepts_deposits()).is_false()
@@ -137,7 +137,7 @@ func test_a_cold_stage_still_clears() -> void:
 ## woke, it just never came. Now it sprints while the Vigil is far (rampage_catchup_*), as the source
 ## Sinistar does (Q-T446), then closes at rampage_speed. Real held input, the Vigil fleeing flat out.
 func test_a_completed_sepulchre_reaches_a_fleeing_human_vigil() -> void:
-	_human_start(0)
+	_human_start(1)   # a0_4: a waking stage
 	world.vigil.pos = world.torus.wrap(world.ritual.pos + Vector2(t.field_sepulchre_start_px, 0))
 	world.vigil.vel = Vector2.ZERO
 	world.ritual.segments = t.segments_total - 1
