@@ -171,7 +171,7 @@ func test_every_comfyui_manifest_entry_has_provenance_and_a_file() -> void:
 func test_an_unmanifested_comfyui_image_is_rejected() -> void:
 	# the rule the folder test enforces, applied to a made-up name: no entry → not allowed
 	assert_bool(_comfy_manifest().has("not_in_the_manifest.png")).is_false()
-	assert_bool(_comfy_manifest().has("bezel_navy.png")).is_true()
+	assert_bool(_comfy_manifest().has("bezel_p4_a.png")).is_true()
 
 
 func test_the_bezel_art_switch_defaults_to_the_code_built_bezel() -> void:

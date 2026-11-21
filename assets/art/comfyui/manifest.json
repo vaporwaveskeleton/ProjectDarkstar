@@ -1,12 +1,12 @@
 {
   "_about": "ART-001 section 14.9: provenance for every ComfyUI image under assets/art/comfyui/. Rebuilt by tools/comfyui/stage1_finish.py.",
   "files": {
-    "bezel_navy.png": {
+    "bezel_p4_a.png": {
       "category": "bezel",
       "model": "Z-Image-Turbo (z_image_turbo_int8_convrot.safetensors, Tongyi-MAI/Z-Image-Turbo)",
       "licence": "Apache-2.0",
-      "prompt": "flat orthographic face-on straight-on photograph of the painted front panel of a vintage 1983 arcade cabinet, filling the whole frame edge to edge, perfectly flat, evenly lit, no shadows, no perspective, no objects, no room, no screen, no buttons, no text, no letters, no logos, deep navy blue laminate with bold magenta and cyan racing stripes, screen-printed, chipped paint, scuffs, fingerprints, worn edges",
-      "seed": 101,
+      "prompt": "flat orthographic face-on screen-printed 1983 arcade cabinet bezel artwork, full-bleed print filling the entire frame, the artwork only in a wide left column, a wide right column and a top band, the large middle area a plain dark empty field, saturated flat spot-colour inks in navy, magenta, cyan and day-glo orange, thick black key lines, concentric coloured bands, coarse halftone dots, comic space action with a ringed planet horizon and a glass geode crystal and a small angular spaceship breaking out of its frames, no text, no letters, no numbers, no logos, pristine factory-fresh print, clean crisp inks, no scratches, no wear, no dirt",
+      "seed": 401,
       "steps": 8,
       "cfg": 1.0,
       "generated_size": [
@@ -18,16 +18,17 @@
         720
       ],
       "sampler": "res_multistep/simple",
-      "post": "flat face, exact 256x304 cut-out",
+      "post": "P4 pristine print; the art's own dark opening is warped onto the exact 256x304 hole",
       "no_lettering": true,
-      "raw": "20261120_195024_face_navy_101.png"
+      "raw": "t_20261120_200505_p4_401.png",
+      "reference_use": "Third-party reference bezels and photos were looked at only to write better prompts; none was used as an image input (no img2img, no edit input)."
     },
-    "bezel_oxblood.png": {
+    "bezel_p4_b.png": {
       "category": "bezel",
       "model": "Z-Image-Turbo (z_image_turbo_int8_convrot.safetensors, Tongyi-MAI/Z-Image-Turbo)",
       "licence": "Apache-2.0",
-      "prompt": "extreme close-up flat orthographic macro photograph of a single smooth painted laminate panel texture, the panel fills the entire image edge to edge with nothing else visible, no border, no edges, no frame, no background, evenly lit, burgundy oxblood red laminate with thin cream and cyan pinstripes, aged glossy lacquer, fine scratches, scuffs, fingerprints, dust, no text, no letters, no logos",
-      "seed": 105,
+      "prompt": "flat orthographic face-on screen-printed 1983 arcade cabinet bezel artwork, full-bleed print filling the entire frame, the artwork only in a wide left column, a wide right column and a top band, the large middle area a plain dark empty field, saturated flat spot-colour inks in navy, magenta, cyan and day-glo orange, thick black key lines, concentric coloured bands, coarse halftone dots, comic space action with a ringed planet horizon and a glass geode crystal and a small angular spaceship breaking out of its frames, no text, no letters, no numbers, no logos, pristine factory-fresh print, clean crisp inks, no scratches, no wear, no dirt",
+      "seed": 402,
       "steps": 8,
       "cfg": 1.0,
       "generated_size": [
@@ -39,16 +40,17 @@
         720
       ],
       "sampler": "res_multistep/simple",
-      "post": "flat face, exact 256x304 cut-out",
+      "post": "P4 pristine print; opening warped onto the hole",
       "no_lettering": true,
-      "raw": "20261120_195419_face2_oxblood_105.png"
+      "raw": "t_20261120_200521_p4_402.png",
+      "reference_use": "Third-party reference bezels and photos were looked at only to write better prompts; none was used as an image input (no img2img, no edit input)."
     },
-    "bezel_black.png": {
+    "bezel_p4_c.png": {
       "category": "bezel",
       "model": "Z-Image-Turbo (z_image_turbo_int8_convrot.safetensors, Tongyi-MAI/Z-Image-Turbo)",
       "licence": "Apache-2.0",
-      "prompt": "extreme close-up flat orthographic macro photograph of a single smooth painted laminate panel texture, the panel fills the entire image edge to edge with nothing else visible, no border, no edges, no frame, no background, evenly lit, charcoal black laminate with bold neon magenta and cyan diagonal stripes, screen-printed, worn, scratched, no text, no letters, no logos",
-      "seed": 106,
+      "prompt": "flat orthographic face-on screen-printed 1983 arcade cabinet bezel artwork, full-bleed print filling the entire frame, the artwork only in a wide left column, a wide right column and a top band, the large middle area a plain dark empty field, saturated flat spot-colour inks in navy, magenta, cyan and day-glo orange, thick black key lines, concentric coloured bands, coarse halftone dots, comic space action with a ringed planet horizon and a glass geode crystal and a small angular spaceship breaking out of its frames, no text, no letters, no numbers, no logos, pristine factory-fresh print, clean crisp inks, no scratches, no wear, no dirt",
+      "seed": 403,
       "steps": 8,
       "cfg": 1.0,
       "generated_size": [
@@ -60,9 +62,120 @@
         720
       ],
       "sampler": "res_multistep/simple",
-      "post": "flat face, exact 256x304 cut-out",
+      "post": "P4 pristine print; opening warped onto the hole",
       "no_lettering": true,
-      "raw": "20261120_195441_face2_black_106.png"
+      "raw": "t_200538_p4_403.png",
+      "reference_use": "Third-party reference bezels and photos were looked at only to write better prompts; none was used as an image input (no img2img, no edit input)."
+    },
+    "bezel_p2_a.png": {
+      "category": "bezel",
+      "model": "Z-Image-Turbo (z_image_turbo_int8_convrot.safetensors, Tongyi-MAI/Z-Image-Turbo)",
+      "licence": "Apache-2.0",
+      "prompt": "flat orthographic face-on screen-printed 1983 arcade cabinet bezel artwork, full-bleed print filling the entire frame, the artwork only in a wide left column, a wide right column and a top band, the large middle area a plain dark empty field, saturated flat spot-colour inks in navy, magenta, cyan and day-glo orange, thick black key lines, concentric coloured bands, coarse halftone dots, comic space action with a ringed planet horizon and a glass geode crystal and a small angular spaceship breaking out of its frames, no text, no letters, no numbers, no logos, heavily worn: scuffs, scratches, peeling print, grime in the recesses, fingerprints, faded reds",
+      "seed": 404,
+      "steps": 8,
+      "cfg": 1.0,
+      "generated_size": [
+        1344,
+        768
+      ],
+      "size": [
+        1280,
+        720
+      ],
+      "sampler": "res_multistep/simple",
+      "post": "P2 worn print (comparison cell; wear should come from the overlay shader); opening warped onto the hole",
+      "no_lettering": true,
+      "raw": "t_20261120_200558_p2_404.png",
+      "reference_use": "Third-party reference bezels and photos were looked at only to write better prompts; none was used as an image input (no img2img, no edit input)."
+    },
+    "bezel_p2_b.png": {
+      "category": "bezel",
+      "model": "Z-Image-Turbo (z_image_turbo_int8_convrot.safetensors, Tongyi-MAI/Z-Image-Turbo)",
+      "licence": "Apache-2.0",
+      "prompt": "flat orthographic face-on screen-printed 1983 arcade cabinet bezel artwork, full-bleed print filling the entire frame, the artwork only in a wide left column, a wide right column and a top band, the large middle area a plain dark empty field, saturated flat spot-colour inks in navy, magenta, cyan and day-glo orange, thick black key lines, concentric coloured bands, coarse halftone dots, comic space action with a ringed planet horizon and a glass geode crystal and a small angular spaceship breaking out of its frames, no text, no letters, no numbers, no logos, heavily worn: scuffs, scratches, peeling print, grime in the recesses, fingerprints, faded reds",
+      "seed": 405,
+      "steps": 8,
+      "cfg": 1.0,
+      "generated_size": [
+        1344,
+        768
+      ],
+      "size": [
+        1280,
+        720
+      ],
+      "sampler": "res_multistep/simple",
+      "post": "P2 worn print (comparison cell); opening warped onto the hole",
+      "no_lettering": true,
+      "raw": "t_200615_p2_405.png",
+      "reference_use": "Third-party reference bezels and photos were looked at only to write better prompts; none was used as an image input (no img2img, no edit input)."
+    },
+    "marquee_1.png": {
+      "category": "cabinet_art",
+      "model": "Z-Image-Turbo (z_image_turbo_int8_convrot.safetensors, Tongyi-MAI/Z-Image-Turbo)",
+      "licence": "Apache-2.0",
+      "prompt": "flat face-on backlit arcade cabinet marquee panel artwork, wide horizontal strip, glowing deep violet to magenta gradient starfield with a ringed planet and thin chrome frame border, the centre area left empty and plain for a title, symmetrical, no text, no letters, no numbers, no logos",
+      "seed": 411,
+      "steps": 8,
+      "cfg": 1.0,
+      "generated_size": [
+        1344,
+        256
+      ],
+      "size": [
+        1344,
+        256
+      ],
+      "sampler": "res_multistep/simple",
+      "post": "lettering-free marquee art; the title is post-added",
+      "no_lettering": true,
+      "raw": "20261120_200626_marquee_411.png",
+      "reference_use": "Third-party reference bezels and photos were looked at only to write better prompts; none was used as an image input (no img2img, no edit input)."
+    },
+    "marquee_2.png": {
+      "category": "cabinet_art",
+      "model": "Z-Image-Turbo (z_image_turbo_int8_convrot.safetensors, Tongyi-MAI/Z-Image-Turbo)",
+      "licence": "Apache-2.0",
+      "prompt": "flat face-on backlit arcade cabinet marquee panel artwork, wide horizontal strip, glowing deep violet to magenta gradient starfield with a ringed planet and thin chrome frame border, the centre area left empty and plain for a title, symmetrical, no text, no letters, no numbers, no logos",
+      "seed": 412,
+      "steps": 8,
+      "cfg": 1.0,
+      "generated_size": [
+        1344,
+        256
+      ],
+      "size": [
+        1344,
+        256
+      ],
+      "sampler": "res_multistep/simple",
+      "post": "lettering-free marquee art; the title is post-added",
+      "no_lettering": true,
+      "raw": "20261120_200634_marquee_412.png",
+      "reference_use": "Third-party reference bezels and photos were looked at only to write better prompts; none was used as an image input (no img2img, no edit input)."
+    },
+    "marquee_3.png": {
+      "category": "cabinet_art",
+      "model": "Z-Image-Turbo (z_image_turbo_int8_convrot.safetensors, Tongyi-MAI/Z-Image-Turbo)",
+      "licence": "Apache-2.0",
+      "prompt": "flat face-on backlit arcade cabinet marquee panel artwork, wide horizontal strip, glowing deep violet to magenta gradient starfield with a ringed planet and thin chrome frame border, the centre area left empty and plain for a title, symmetrical, no text, no letters, no numbers, no logos",
+      "seed": 413,
+      "steps": 8,
+      "cfg": 1.0,
+      "generated_size": [
+        1344,
+        256
+      ],
+      "size": [
+        1344,
+        256
+      ],
+      "sampler": "res_multistep/simple",
+      "post": "lettering-free marquee art; the title is post-added",
+      "no_lettering": true,
+      "raw": "20261120_200641_marquee_413.png",
+      "reference_use": "Third-party reference bezels and photos were looked at only to write better prompts; none was used as an image input (no img2img, no edit input)."
     },
     "tape_1.png": {
       "category": "tape",
@@ -83,7 +196,8 @@
       "sampler": "euler/simple",
       "post": "alpha by luminance key",
       "no_lettering": true,
-      "raw": "20261120_195146_tape_201.png"
+      "raw": "20261120_195146_tape_201.png",
+      "reference_use": "Third-party reference bezels and photos were looked at only to write better prompts; none was used as an image input (no img2img, no edit input)."
     },
     "tape_2.png": {
       "category": "tape",
@@ -104,7 +218,8 @@
       "sampler": "euler/simple",
       "post": "alpha by luminance key",
       "no_lettering": true,
-      "raw": "20261120_195149_tape_202.png"
+      "raw": "20261120_195149_tape_202.png",
+      "reference_use": "Third-party reference bezels and photos were looked at only to write better prompts; none was used as an image input (no img2img, no edit input)."
     },
     "tape_3.png": {
       "category": "tape",
@@ -125,7 +240,8 @@
       "sampler": "res_multistep/simple",
       "post": "alpha by luminance key",
       "no_lettering": true,
-      "raw": "20261120_195210_tape_203.png"
+      "raw": "20261120_195210_tape_203.png",
+      "reference_use": "Third-party reference bezels and photos were looked at only to write better prompts; none was used as an image input (no img2img, no edit input)."
     },
     "tape_4.png": {
       "category": "tape",
@@ -146,7 +262,8 @@
       "sampler": "res_multistep/simple",
       "post": "alpha by luminance key",
       "no_lettering": true,
-      "raw": "20261120_195220_tape_204.png"
+      "raw": "20261120_195220_tape_204.png",
+      "reference_use": "Third-party reference bezels and photos were looked at only to write better prompts; none was used as an image input (no img2img, no edit input)."
     },
     "backdrop_1.png": {
       "category": "backdrop",
@@ -167,7 +284,8 @@
       "sampler": "euler/simple",
       "post": "unmodified; blurred bokeh, lettering unreadable",
       "no_lettering": true,
-      "raw": "20261120_195233_backdrop_301.png"
+      "raw": "20261120_195233_backdrop_301.png",
+      "reference_use": "Third-party reference bezels and photos were looked at only to write better prompts; none was used as an image input (no img2img, no edit input)."
     },
     "backdrop_2.png": {
       "category": "backdrop",
@@ -188,7 +306,8 @@
       "sampler": "euler/simple",
       "post": "unmodified; blurred bokeh, lettering unreadable",
       "no_lettering": true,
-      "raw": "20261120_195238_backdrop_302.png"
+      "raw": "20261120_195238_backdrop_302.png",
+      "reference_use": "Third-party reference bezels and photos were looked at only to write better prompts; none was used as an image input (no img2img, no edit input)."
     },
     "backdrop_3.png": {
       "category": "backdrop",
@@ -209,7 +328,8 @@
       "sampler": "res_multistep/simple",
       "post": "unmodified; blurred bokeh, lettering unreadable",
       "no_lettering": true,
-      "raw": "20261120_195303_backdrop_303.png"
+      "raw": "20261120_195303_backdrop_303.png",
+      "reference_use": "Third-party reference bezels and photos were looked at only to write better prompts; none was used as an image input (no img2img, no edit input)."
     },
     "backdrop_4.png": {
       "category": "backdrop",
@@ -230,7 +350,8 @@
       "sampler": "res_multistep/simple",
       "post": "unmodified; blurred bokeh, lettering unreadable",
       "no_lettering": true,
-      "raw": "20261120_195319_backdrop_304.png"
+      "raw": "20261120_195319_backdrop_304.png",
+      "reference_use": "Third-party reference bezels and photos were looked at only to write better prompts; none was used as an image input (no img2img, no edit input)."
     }
   }
 }

@@ -12,7 +12,7 @@ const FOLDER := "res://assets/art/comfyui/"
 const _DEFAULT_PATH := "res://data/cabinet/bezel_art_mode.tres"
 
 @export var mode: Mode = Mode.CODE             ## ✱ CODE = the code-built bezel (default); GENERATED = the texture below
-@export var texture: String = "bezel_navy.png"  ## ✱ file name under assets/art/comfyui/ (bezel_navy, bezel_oxblood, bezel_black)
+@export var texture: String = "bezel_p4_a.png"  ## ✱ file name under assets/art/comfyui/ (bezel_p4_a..c pristine, bezel_p2_a..b worn)
 
 
 ## Returns Resource on purpose (see CabinetSurface.default).

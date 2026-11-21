@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b8x173y2u4hrt"
-path="res://.godot/imported/bezel_oxblood.png-7673083ca18f358725830a9cbf29b49c.ctex"
+uid="uid://ddedkatdrp2kh"
+path="res://.godot/imported/bezel_p4_b.png-841f1cfc009ef829e59ecc4629f7d5da.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/art/comfyui/bezel_oxblood.png"
-dest_files=["res://.godot/imported/bezel_oxblood.png-7673083ca18f358725830a9cbf29b49c.ctex"]
+source_file="res://assets/art/comfyui/bezel_p4_b.png"
+dest_files=["res://.godot/imported/bezel_p4_b.png-841f1cfc009ef829e59ecc4629f7d5da.ctex"]
 
 [params]
 

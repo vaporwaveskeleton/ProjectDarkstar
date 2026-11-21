@@ -12,7 +12,7 @@ static func _image(name: String) -> Image:
 func test_every_bezel_candidate_fits_the_rig_and_the_hole() -> void:
 	var h := CabinetBezel.hole()
 	var sx := CabinetBezel.sheet_x()
-	for name in ["bezel_navy.png", "bezel_oxblood.png", "bezel_black.png"]:
+	for name in ["bezel_p4_a.png", "bezel_p4_b.png", "bezel_p4_c.png", "bezel_p2_a.png", "bezel_p2_b.png"]:
 		var img := _image(name)
 		assert_vector(Vector2(img.get_size())).is_equal(Vector2(ScreenFit.REF) * 2.0)
 		# hole: every corner and the centre fully transparent, one texel outside each corner opaque

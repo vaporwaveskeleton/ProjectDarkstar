@@ -6,6 +6,6 @@
 script = ExtResource("1")
 ds_namespace = "ds_cabinet.bezel_art"
 source_section = "✱ owner ruling 2026-11-20 (D-13/D-14 amended, ART-001 §14.9): code-built bezel vs ComfyUI texture; mode 0 = CODE (default), 1 = GENERATED"
-; Flip to compare in-game: mode = 1, texture = "bezel_navy.png" | "bezel_oxblood.png" | "bezel_black.png".
+; Flip to compare in-game: mode = 1, texture = "bezel_p4_a.png" | "bezel_p4_b.png" | "bezel_p4_c.png" | "bezel_p2_a.png" | "bezel_p2_b.png".
 mode = 0
-texture = "bezel_navy.png"
+texture = "bezel_p4_a.png"

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cd6w4clig2to3"
-path="res://.godot/imported/bezel_navy.png-21362afee4854b0777c2930e53ebf83b.ctex"
+uid="uid://ccf3uevlo7tvj"
+path="res://.godot/imported/marquee_1.png-934691d290c866e1c8f65a7462597b83.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/art/comfyui/bezel_navy.png"
-dest_files=["res://.godot/imported/bezel_navy.png-21362afee4854b0777c2930e53ebf83b.ctex"]
+source_file="res://assets/art/comfyui/marquee_1.png"
+dest_files=["res://.godot/imported/marquee_1.png-934691d290c866e1c8f65a7462597b83.ctex"]
 
 [params]
 
