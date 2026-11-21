@@ -1,0 +1,49 @@
+{
+  "_about": "ART-001 section 14.9: provenance for every ComfyUI image under assets/art/comfyui/. Rebuilt by tools/comfyui/stage1_finish.py.",
+  "files": {
+    "tape_3.png": {
+      "category": "tape",
+      "model": "Z-Image-Turbo (z_image_turbo_int8_convrot.safetensors, Tongyi-MAI/Z-Image-Turbo)",
+      "licence": "Apache-2.0",
+      "prompt": "one single straight strip of worn beige masking tape, flat top-down view, crinkled edges slightly torn ends, faint adhesive grime and dirt, centered on a plain pure black background, no text, no letters, no writing, no marks",
+      "seed": 203,
+      "steps": 8,
+      "cfg": 1.0,
+      "generated_size": [
+        1344,
+        448
+      ],
+      "size": [
+        640,
+        149
+      ],
+      "sampler": "res_multistep/simple",
+      "post": "alpha by luminance key, cropped to the strip, downscaled to 640 px wide",
+      "no_lettering": true,
+      "raw": "20261120_195210_tape_203.png",
+      "reference_use": "Third-party reference bezels and photos were looked at only to write better prompts; none was used as an image input (no img2img, no edit input)."
+    },
+    "backdrop_2.png": {
+      "category": "backdrop",
+      "model": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, black-forest-labs/FLUX.2-klein-4B)",
+      "licence": "Apache-2.0",
+      "prompt": "warm dim 1980s arcade interior, out of focus background, rows of dark arcade cabinets with glowing neon marquees as soft bokeh, amber tungsten ceiling lights, patterned carpet, moody, atmospheric haze, wide shot, no text, no letters, no signs",
+      "seed": 302,
+      "steps": 4,
+      "cfg": 1.0,
+      "generated_size": [
+        1344,
+        768
+      ],
+      "size": [
+        1344,
+        768
+      ],
+      "sampler": "euler/simple",
+      "post": "unmodified; blurred bokeh, lettering unreadable",
+      "no_lettering": true,
+      "raw": "20261120_195238_backdrop_302.png",
+      "reference_use": "Third-party reference bezels and photos were looked at only to write better prompts; none was used as an image input (no img2img, no edit input)."
+    }
+  }
+}

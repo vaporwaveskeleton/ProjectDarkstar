@@ -207,7 +207,9 @@ func _rect(pts: PackedVector2Array) -> Rect2:
 ## Generated art only (D-13/D-14): the backdrop is a shader with no texture samplers and no external files.
 func test_the_backdrop_is_generated() -> void:
 	var code := FileAccess.get_file_as_string("res://shaders/cabinet/arcade_backdrop.gdshader")
-	assert_bool(code.contains("sampler2D")).is_false()
+	# the code room stays in the shader; the one sampler is the manifested ComfyUI photo (ART-001 §14.9, ComfyArt), off by default in the shader
+	assert_int(code.count("sampler2D")).is_equal(1)
+	assert_bool(code.contains("uniform sampler2D photo")).is_true()
 	assert_bool(code.contains("res://assets")).is_false()
 	var s := CabinetSurface.default() as CabinetSurface
 	assert_int(s.backdrop_neon.size()).is_equal(6)

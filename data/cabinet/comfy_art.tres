@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ComfyArt" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://features/cabinet/comfy_art.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+ds_namespace = "ds_cabinet.comfy_art"
+source_section = "✱ owner ruling 2026-11-20 (D-13/D-14 amended, ART-001 §14.9): generated tape and arcade backdrop; both on by default, off = the code-drawn versions"
+tape_enabled = true
+tape_file = "tape_3.png"
+backdrop_enabled = true
+backdrop_file = "backdrop_2.png"
+backdrop_exposure = 0.75
+backdrop_sour = 0.6
