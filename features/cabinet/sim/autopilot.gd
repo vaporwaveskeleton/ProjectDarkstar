@@ -31,6 +31,11 @@ const FEED_ENOUGH := 3            ## ✱ loose shards that keep the Grubs busy: 
 const CULL_RANGE := 600.0         ## px ✱ how far the bot goes to put down a stuck Grub
 const SEPULCHRE_FAR := 600.0      ## px ✱ farther than this from the Sepulchre the bot heads for it (the field is 65,536 px wide; Grubs would carry glass the whole way)
 const SEPULCHRE_NEAR := 250.0       ## px ✱ …and keeps heading for it until it is this close (hysteresis: no tug-of-war with the geodes)
+const HOLD_BELOW := 0.2           ## ✱ momentum model: a wanted move shorter than this means "hold here"
+const HOLD_SPEED := 30.0          ## px/s ✱ …and the bot has stopped once it is this slow (it then lets go and coasts)
+const STOP_TIME := 0.3            ## s ✱ how long a full-speed ship needs to turn round and stop (reverse thrust, then let go)
+const RAMP_PX := 60.0             ## px ✱ the length of the arrival ramps above (the moves shrink to 0 over this distance)
+const HUNT_FLEE_EXTRA := 160.0    ## px ✱ momentum model: inside ENTITY_KEEP + this the bot never holds or brakes while the entity hunts
 
 @export var world: ArcadeWorld
 var enabled := false
@@ -149,8 +154,19 @@ func _physics_process(delta: float) -> void:
 		safe = Vector2.ZERO
 	if safe != Vector2.ZERO:
 		move = move.limit_length(1.0) * 0.5 + safe
-	v.scripted_move = move.limit_length(1.0)
+	var momentum := world.tuning.move_model == CabinetTuning.MoveModel.MOMENTUM
+	var stick := stick_for(move.limit_length(1.0), v.vel, safe == Vector2.ZERO) if momentum else move.limit_length(1.0)
+	if momentum and hunting and (stick == Vector2.ZERO or stick.dot(v.vel) < 0.0):
+		# never hold or brake with the entity near: keep flying, away from it and round it (a ship that stops is eaten)
+		var away := world.torus.delta(world.ritual.entity_pos, v.pos)
+		if away.length() < ENTITY_KEEP + HUNT_FLEE_EXTRA:
+			var n := away.normalized() if away.length() > 0.1 else Vector2.UP
+			stick = (n + n.orthogonal() * _strafe * 0.5).normalized()
+	v.scripted_move = stick
 	if aim != Vector2.ZERO:
+		v.scripted_aim = aim
+	if momentum and fire and aim != Vector2.ZERO:
+		aim = lead_aim(aim, v.vel, world.tuning.lance_speed)   # a lance carries half the ship's velocity (ShotLayer.fire_lance)
 		v.scripted_aim = aim
 	v.scripted_fire = fire
 
@@ -351,3 +367,24 @@ func _nearest_stuck_grub(v: VigilShip, within: float) -> Vector2:
 				bd = d
 				best = _lead(v.pos, g.pos, g.vel)
 	return best
+
+
+## Momentum model (F-9, Q-T445): the stick cannot ask for a speed, only for a heading, and letting go
+## coasts. So "hold here" becomes what a player does: turn round and thrust against the motion, then let
+## go once nearly stopped; and an arrival ramp (`intent` shrinking toward 0) starts that stop early enough
+## for STOP_TIME. `ramp_ok` is false while a dodge or strafe is in the move (never brake out of those).
+static func stick_for(intent: Vector2, vel: Vector2, ramp_ok: bool) -> Vector2:
+	var spd := vel.length()
+	var m := intent.length()
+	var hold := m < HOLD_BELOW
+	if ramp_ok and not hold and m < 1.0 and intent.dot(vel) > 0.0 and spd * STOP_TIME > m * RAMP_PX:
+		hold = true
+	if not hold:
+		return intent
+	return -vel.normalized() if spd > HOLD_SPEED else Vector2.ZERO
+
+
+## Aim that makes a lance (speed `lance_speed`, plus half the ship's velocity) travel along `aim`.
+static func lead_aim(aim: Vector2, vel: Vector2, lance_speed: float) -> Vector2:
+	var want := aim.normalized() * lance_speed - vel * 0.5
+	return want if want != Vector2.ZERO else aim

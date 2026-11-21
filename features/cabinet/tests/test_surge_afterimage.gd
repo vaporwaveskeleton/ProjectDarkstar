@@ -123,6 +123,7 @@ func test_afterimage_hidden_when_dead() -> void:
 
 
 func test_wake_only_while_thrusting() -> void:
+	v.heading = 0.0       # the Momentum model thrusts only along the hull heading (Q-T445): start it facing the stick
 	_run(3, Vector2.ZERO)
 	assert_bool(v.wake_active()).is_false()
 	_run(1, Vector2.RIGHT)

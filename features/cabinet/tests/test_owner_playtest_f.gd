@@ -168,15 +168,18 @@ func test_the_sprint_only_applies_while_the_vigil_is_far() -> void:
 	var dir := Vector2.RIGHT
 	r.entity_dir = dir
 	r.entity_pos = world.torus.wrap(world.vigil.pos - dir * (t.rampage_catchup_px + 200.0))
+	r.entity_vel = dir * t.rampage_catchup_speed    # steady state of the far row (the eased chase, Q-T446)
 	var p0 := r.entity_pos
 	r._rampage(DT)
 	assert_float(world.torus.distance(p0, r.entity_pos)).is_equal_approx(t.rampage_catchup_speed * DT, 0.01)
 	r.entity_pos = world.torus.wrap(world.vigil.pos - dir * 200.0)
+	r.entity_vel = dir * t.rampage_speed
 	p0 = r.entity_pos
 	r._rampage(DT)
 	assert_float(world.torus.distance(p0, r.entity_pos)).is_equal_approx(t.rampage_speed * DT, 0.01)
 	# the sprint is spent once it has arrived: a Vigil that kites it out again is not sprinted after
 	r.entity_pos = world.torus.wrap(world.vigil.pos - dir * (t.rampage_catchup_px + 200.0))
+	r.entity_vel = dir * t.rampage_speed
 	p0 = r.entity_pos
 	r._rampage(DT)
 	assert_float(world.torus.distance(p0, r.entity_pos)).is_equal_approx(t.rampage_speed * DT, 0.01)

@@ -7,7 +7,15 @@ script = ExtResource("1")
 ds_namespace = "ds_cabinet.tuning"
 source_section = "SYS-001 §1.1, §1.3, §1.7, §1.4, §2, §2.1, §3, §7.1, §9; GDD §9.4; ✱ rows requested in TECH-001 §11.1"
 ; PROVISIONAL (owner playtest F-3/F-4/F-7, 2026-11-20; TECH-001 Q-T440, Q-T441, Q-T447; SYS-001 §2.1 proposals). Retune at playtest.
+; PROVISIONAL (owner F-9, Q-T445): ship handling. move_model 0 = DIRECT (old twin-stick numbers), 1 = MOMENTUM (arcade original). Switch to compare.
+move_model = 1
+momentum_max_speed = 340.0
+momentum_ease_rate = 3.8
+momentum_turn_rate = 40.0
+momentum_thrust_arc_deg = 45.0
 rampage_speed = 380.0
+rampage_ease_rate = 4.0
+rampage_catchup_ease_rate = 2.0
 grub_intercept_range = 150.0
 grub_intercept_speed = 220.0
 rampage_catchup_px = 640.0

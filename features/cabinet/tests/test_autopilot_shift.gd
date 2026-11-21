@@ -18,6 +18,7 @@ const State := CabinetGame.State
 ## Median sim s per stage: a0_1 38, a0_2 46, a0_3 256, a0_4 207, a0_5 224 (the wake stages stay over §1.7's skilled
 ## targets: glass supply, about 168 Grub deposits to build the Choir). Takes ~5 min headless.
 const SEEDS: Array[int] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+## Re-measured 2026-11-20 under the Momentum ship (F-9, Q-T445) with the retuned bot: 19/20 full shifts (seed +10 lost to the awake entity); floor unchanged at 18. Takes ~4 min.
 const MIN_STAGES := 5
 const MIN_REACHED := 18
 
