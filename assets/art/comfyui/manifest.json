@@ -1,0 +1,236 @@
+{
+  "_about": "ART-001 section 14.9: provenance for every ComfyUI image under assets/art/comfyui/. Rebuilt by tools/comfyui/stage1_finish.py.",
+  "files": {
+    "bezel_navy.png": {
+      "category": "bezel",
+      "model": "Z-Image-Turbo (z_image_turbo_int8_convrot.safetensors, Tongyi-MAI/Z-Image-Turbo)",
+      "licence": "Apache-2.0",
+      "prompt": "flat orthographic face-on straight-on photograph of the painted front panel of a vintage 1983 arcade cabinet, filling the whole frame edge to edge, perfectly flat, evenly lit, no shadows, no perspective, no objects, no room, no screen, no buttons, no text, no letters, no logos, deep navy blue laminate with bold magenta and cyan racing stripes, screen-printed, chipped paint, scuffs, fingerprints, worn edges",
+      "seed": 101,
+      "steps": 8,
+      "cfg": 1.0,
+      "generated_size": [
+        1344,
+        768
+      ],
+      "size": [
+        1280,
+        720
+      ],
+      "sampler": "res_multistep/simple",
+      "post": "flat face, exact 256x304 cut-out",
+      "no_lettering": true,
+      "raw": "20261120_195024_face_navy_101.png"
+    },
+    "bezel_oxblood.png": {
+      "category": "bezel",
+      "model": "Z-Image-Turbo (z_image_turbo_int8_convrot.safetensors, Tongyi-MAI/Z-Image-Turbo)",
+      "licence": "Apache-2.0",
+      "prompt": "extreme close-up flat orthographic macro photograph of a single smooth painted laminate panel texture, the panel fills the entire image edge to edge with nothing else visible, no border, no edges, no frame, no background, evenly lit, burgundy oxblood red laminate with thin cream and cyan pinstripes, aged glossy lacquer, fine scratches, scuffs, fingerprints, dust, no text, no letters, no logos",
+      "seed": 105,
+      "steps": 8,
+      "cfg": 1.0,
+      "generated_size": [
+        1344,
+        768
+      ],
+      "size": [
+        1280,
+        720
+      ],
+      "sampler": "res_multistep/simple",
+      "post": "flat face, exact 256x304 cut-out",
+      "no_lettering": true,
+      "raw": "20261120_195419_face2_oxblood_105.png"
+    },
+    "bezel_black.png": {
+      "category": "bezel",
+      "model": "Z-Image-Turbo (z_image_turbo_int8_convrot.safetensors, Tongyi-MAI/Z-Image-Turbo)",
+      "licence": "Apache-2.0",
+      "prompt": "extreme close-up flat orthographic macro photograph of a single smooth painted laminate panel texture, the panel fills the entire image edge to edge with nothing else visible, no border, no edges, no frame, no background, evenly lit, charcoal black laminate with bold neon magenta and cyan diagonal stripes, screen-printed, worn, scratched, no text, no letters, no logos",
+      "seed": 106,
+      "steps": 8,
+      "cfg": 1.0,
+      "generated_size": [
+        1344,
+        768
+      ],
+      "size": [
+        1280,
+        720
+      ],
+      "sampler": "res_multistep/simple",
+      "post": "flat face, exact 256x304 cut-out",
+      "no_lettering": true,
+      "raw": "20261120_195441_face2_black_106.png"
+    },
+    "tape_1.png": {
+      "category": "tape",
+      "model": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, black-forest-labs/FLUX.2-klein-4B)",
+      "licence": "Apache-2.0",
+      "prompt": "one single straight strip of worn beige masking tape, flat top-down view, crinkled edges slightly torn ends, faint adhesive grime and dirt, centered on a plain pure black background, no text, no letters, no writing, no marks",
+      "seed": 201,
+      "steps": 4,
+      "cfg": 1.0,
+      "generated_size": [
+        1344,
+        448
+      ],
+      "size": [
+        1155,
+        203
+      ],
+      "sampler": "euler/simple",
+      "post": "alpha by luminance key",
+      "no_lettering": true,
+      "raw": "20261120_195146_tape_201.png"
+    },
+    "tape_2.png": {
+      "category": "tape",
+      "model": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, black-forest-labs/FLUX.2-klein-4B)",
+      "licence": "Apache-2.0",
+      "prompt": "one single straight strip of worn beige masking tape, flat top-down view, crinkled edges slightly torn ends, faint adhesive grime and dirt, centered on a plain pure black background, no text, no letters, no writing, no marks",
+      "seed": 202,
+      "steps": 4,
+      "cfg": 1.0,
+      "generated_size": [
+        1344,
+        448
+      ],
+      "size": [
+        1125,
+        226
+      ],
+      "sampler": "euler/simple",
+      "post": "alpha by luminance key",
+      "no_lettering": true,
+      "raw": "20261120_195149_tape_202.png"
+    },
+    "tape_3.png": {
+      "category": "tape",
+      "model": "Z-Image-Turbo (z_image_turbo_int8_convrot.safetensors, Tongyi-MAI/Z-Image-Turbo)",
+      "licence": "Apache-2.0",
+      "prompt": "one single straight strip of worn beige masking tape, flat top-down view, crinkled edges slightly torn ends, faint adhesive grime and dirt, centered on a plain pure black background, no text, no letters, no writing, no marks",
+      "seed": 203,
+      "steps": 8,
+      "cfg": 1.0,
+      "generated_size": [
+        1344,
+        448
+      ],
+      "size": [
+        1119,
+        260
+      ],
+      "sampler": "res_multistep/simple",
+      "post": "alpha by luminance key",
+      "no_lettering": true,
+      "raw": "20261120_195210_tape_203.png"
+    },
+    "tape_4.png": {
+      "category": "tape",
+      "model": "Z-Image-Turbo (z_image_turbo_int8_convrot.safetensors, Tongyi-MAI/Z-Image-Turbo)",
+      "licence": "Apache-2.0",
+      "prompt": "one single straight strip of worn beige masking tape, flat top-down view, crinkled edges slightly torn ends, faint adhesive grime and dirt, centered on a plain pure black background, no text, no letters, no writing, no marks",
+      "seed": 204,
+      "steps": 8,
+      "cfg": 1.0,
+      "generated_size": [
+        1344,
+        448
+      ],
+      "size": [
+        1161,
+        195
+      ],
+      "sampler": "res_multistep/simple",
+      "post": "alpha by luminance key",
+      "no_lettering": true,
+      "raw": "20261120_195220_tape_204.png"
+    },
+    "backdrop_1.png": {
+      "category": "backdrop",
+      "model": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, black-forest-labs/FLUX.2-klein-4B)",
+      "licence": "Apache-2.0",
+      "prompt": "warm dim 1980s arcade interior, out of focus background, rows of dark arcade cabinets with glowing neon marquees as soft bokeh, amber tungsten ceiling lights, patterned carpet, moody, atmospheric haze, wide shot, no text, no letters, no signs",
+      "seed": 301,
+      "steps": 4,
+      "cfg": 1.0,
+      "generated_size": [
+        1344,
+        768
+      ],
+      "size": [
+        1344,
+        768
+      ],
+      "sampler": "euler/simple",
+      "post": "unmodified; blurred bokeh, lettering unreadable",
+      "no_lettering": true,
+      "raw": "20261120_195233_backdrop_301.png"
+    },
+    "backdrop_2.png": {
+      "category": "backdrop",
+      "model": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, black-forest-labs/FLUX.2-klein-4B)",
+      "licence": "Apache-2.0",
+      "prompt": "warm dim 1980s arcade interior, out of focus background, rows of dark arcade cabinets with glowing neon marquees as soft bokeh, amber tungsten ceiling lights, patterned carpet, moody, atmospheric haze, wide shot, no text, no letters, no signs",
+      "seed": 302,
+      "steps": 4,
+      "cfg": 1.0,
+      "generated_size": [
+        1344,
+        768
+      ],
+      "size": [
+        1344,
+        768
+      ],
+      "sampler": "euler/simple",
+      "post": "unmodified; blurred bokeh, lettering unreadable",
+      "no_lettering": true,
+      "raw": "20261120_195238_backdrop_302.png"
+    },
+    "backdrop_3.png": {
+      "category": "backdrop",
+      "model": "Z-Image-Turbo (z_image_turbo_int8_convrot.safetensors, Tongyi-MAI/Z-Image-Turbo)",
+      "licence": "Apache-2.0",
+      "prompt": "warm dim 1980s arcade interior, out of focus background, rows of dark arcade cabinets with glowing neon marquees as soft bokeh, amber tungsten ceiling lights, patterned carpet, moody, atmospheric haze, wide shot, no text, no letters, no signs",
+      "seed": 303,
+      "steps": 8,
+      "cfg": 1.0,
+      "generated_size": [
+        1344,
+        768
+      ],
+      "size": [
+        1344,
+        768
+      ],
+      "sampler": "res_multistep/simple",
+      "post": "unmodified; blurred bokeh, lettering unreadable",
+      "no_lettering": true,
+      "raw": "20261120_195303_backdrop_303.png"
+    },
+    "backdrop_4.png": {
+      "category": "backdrop",
+      "model": "Z-Image-Turbo (z_image_turbo_int8_convrot.safetensors, Tongyi-MAI/Z-Image-Turbo)",
+      "licence": "Apache-2.0",
+      "prompt": "warm dim 1980s arcade interior, out of focus background, rows of dark arcade cabinets with glowing neon marquees as soft bokeh, amber tungsten ceiling lights, patterned carpet, moody, atmospheric haze, wide shot, no text, no letters, no signs",
+      "seed": 304,
+      "steps": 8,
+      "cfg": 1.0,
+      "generated_size": [
+        1344,
+        768
+      ],
+      "size": [
+        1344,
+        768
+      ],
+      "sampler": "res_multistep/simple",
+      "post": "unmodified; blurred bokeh, lettering unreadable",
+      "no_lettering": true,
+      "raw": "20261120_195319_backdrop_304.png"
+    }
+  }
+}

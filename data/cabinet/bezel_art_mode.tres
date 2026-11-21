@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="BezelArtMode" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://features/cabinet/bezel_art_mode.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+ds_namespace = "ds_cabinet.bezel_art"
+source_section = "✱ owner ruling 2026-11-20 (D-13/D-14 amended, ART-001 §14.9): code-built bezel vs ComfyUI texture; mode 0 = CODE (default), 1 = GENERATED"
+; Flip to compare in-game: mode = 1, texture = "bezel_navy.png" | "bezel_oxblood.png" | "bezel_black.png".
+mode = 0
+texture = "bezel_navy.png"
