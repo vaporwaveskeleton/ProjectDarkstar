@@ -47,6 +47,7 @@ var backdrop: StringName = &""      ## set from the stage in reset()
 var morph_to: StringName = &""
 var morph := 0.0
 var _morph_dur := 0.0
+var _power := 1.0
 const MORPH_STEP := 0.61803399   ## per-mark threshold = frac(i x this): an even, formula-only dissolve (no RNG)
 
 var _stars: Array[PackedVector2Array] = []
@@ -70,6 +71,7 @@ func reset() -> void:
 	morph = 0.0
 	morph_to = &""
 	_morph_dur = 0.0
+	_power = 1.0
 	_stars.clear()
 	_spine = PackedVector2Array()
 	pull_target = maw.centre if maw != null else world.screen_centre   # the sky drains into the wound (MawView, Q-T262)
@@ -92,10 +94,12 @@ func reset() -> void:
 		_spine = MawView.spine_ladder(head, Vector2.DOWN, length, width_scale)
 
 
-## Begin the hand-off morph toward stage signature `to` over `seconds` (reset() ends it: the next stage starts on the finished look).
-func begin_morph(to: StringName, seconds: float) -> void:
+## Begin the hand-off toward stage signature `to` over `seconds` (reset() ends it: the next stage starts on the finished look).
+## `power` scales every displacement (CabinetGame passes 1 + wear level x handoff_wear_gain, so later stages tear harder).
+func begin_morph(to: StringName, seconds: float, power: float = 1.0) -> void:
 	morph_to = to if BACKDROPS.has(to) else &""
 	morph = 0.0
+	_power = power
 	_morph_dur = maxf(seconds, 0.05)
 
 
@@ -108,17 +112,68 @@ func tick(delta: float) -> void:
 		morph = minf(1.0, morph + delta / _morph_dur)
 
 
-## Horizontal warp of the sky at this row: a travelling sine, loudest mid-morph (bell), 0 at both ends. None under
-## photosensitivity or reduced motion (the dissolve alone remains: it is dim, small and never a flash).
-func warp_dx(y: float) -> float:
+func _smooth(e0: float, e1: float, x: float) -> float:
+	var t := clampf((x - e0) / (e1 - e0), 0.0, 1.0)
+	return t * t * (3.0 - 2.0 * t)
+
+
+## The old look's share that has left (0..1): holds through the anticipation and the first tear, then eases out.
+func dissolve() -> float:
+	return _smooth(0.25, 0.8, morph)
+
+
+## The sky's disturbance this frame, lagged per layer (0 = near stars lead, 2 = the stage signature lags): an
+## anticipation dip first (a small pull the other way, p < 0.1), then a bell that peaks near p 0.5 and settles by 1.
+func disturbance(layer: int) -> float:
+	var p := clampf((morph - 0.05 * float(layer)) / (1.0 - 0.05 * float(layer)), 0.0, 1.0)
+	if p < 0.1:
+		return -0.35 * sin(p / 0.1 * PI)
+	return sin(PI * _smooth(0.1, 1.0, p))
+
+
+func _tear_env(layer: int) -> float:
+	var p := clampf((morph - 0.05 * float(layer)) * 1.5, 0.0, 1.0)
+	return maxf(0.0, sin(PI * p))
+
+
+static func _hash01(n: float) -> float:
+	return fposmod(sin(n * 12.9898) * 43758.5453, 1.0)
+
+
+## Horizontal offset of the sky at screen row `y` for `layer`: a low-frequency bend (a travelling sine, the whole sky
+## sagging) plus a high-frequency tear (about a third of the 5 px row bands jump by a random amount, re-rolled 18 times a
+## second). None under photosensitivity or reduced motion (the dissolve alone remains: dim, small, never a flash).
+func warp_dx(y: float, layer: int = 0) -> float:
 	if _morph_dur <= 0.0 or not streaks_enabled():
 		return 0.0
-	return roundf(sin(y * 0.09 + world.shader_time * 9.0) * world.fx_tuning.handoff_warp_px * sin(PI * morph))
+	var ft := world.fx_tuning
+	var bend := sin(y * 0.021 + world.shader_time * 4.0) * ft.handoff_warp_px * disturbance(layer)
+	var band := floorf(y / 5.0)
+	var tick_n := floorf(world.shader_time * 18.0)
+	var tear := 0.0
+	if _hash01(band * 3.7 + 11.0) < 0.35:
+		tear = (_hash01(band * 7.1 + tick_n * 13.0) - 0.5) * 2.0 * ft.handoff_tear_px * _tear_env(layer)
+	return roundf((bend + tear) * _power)
+
+
+## How far a mark or star is stretched along x by the tear (px), so the sky smears as it breaks.
+func warp_stretch(layer: int = 0) -> float:
+	if _morph_dur <= 0.0 or not streaks_enabled():
+		return 0.0
+	return roundf(_tear_env(layer) * world.fx_tuning.handoff_tear_px * 0.5 * _power)
+
+
+## The kill-frame colour wash, 0..1: one soft pulse (a quick rise, then a short fall; a single event, never a strobe). 0 when calm.
+func wash() -> float:
+	if _morph_dur <= 0.0 or not streaks_enabled():
+		return 0.0
+	var t := morph * _morph_dur
+	return clampf(1.0 - t / world.fx_tuning.handoff_wash_s, 0.0, 1.0) * clampf(t / 0.04, 0.0, 1.0)
 
 
 ## Is mark / star number `i` of the OLD look still drawn at this morph? (the new look draws it when this is false)
 func morph_keeps_old(i: int) -> bool:
-	return fposmod(float(i) * MORPH_STEP, 1.0) >= morph
+	return fposmod(float(i) * MORPH_STEP, 1.0) >= dissolve()
 
 
 ## Where a tile-space star sits on screen for a parallax factor (no pull).
@@ -200,12 +255,17 @@ func _draw() -> void:
 			if pull > 0.0:
 				p = p.lerp(pull_target, clampf(pull * (1.0 + par), 0.0, 1.0))
 			var twinkle := (i * 7 + int(world.time * 3.0)) % 23 == 0
+			var star_size := Vector2.ONE
 			var scol := Look.c(Pal.BONE_5) if twinkle else col
 			if morph > 0.0 and pull <= 0.0:
-				p.x += warp_dx(p.y)
+				p.x += warp_dx(p.y, li)
 				if streaks_enabled() and not twinkle and fposmod(float(i + li * 31) * MORPH_STEP, 1.0) < 0.25 * sin(PI * morph):
 					scol = Look.c(Pal.BONE_3)    # a sparkle sweep mid-morph: 1 px dots, never a field flash
-			draw_rect(Rect2(p.round(), Vector2.ONE), scol)
+				star_size = Vector2(1.0 + warp_stretch(li) * par, 1.0)   # the tear smears the sky; the far layer smears least
+			draw_rect(Rect2(p.round(), star_size), scol)
+	var w := wash()
+	if w > 0.0:
+		draw_rect(world.playfield_rect, Color(Look.c(Pal.VOID_5), w * world.fx_tuning.handoff_wash))   # one restrained pulse behind the sprites
 	for i in _spine.size():
 		if spine_star_drawn(i):
 			draw_rect(Rect2(spine_star_pos(i).round(), spine_star_size()), spine_star_color())
@@ -264,13 +324,19 @@ func backdrop_marks() -> Array[Rect2]:
 func _draw_morph() -> void:
 	var old_col := backdrop_color(backdrop)
 	var new_col := backdrop_color(morph_to)
+	var ghost := Look.c(Pal.VOID_5)
+	var ghost_dx := 0.0
+	if streaks_enabled():
+		ghost_dx = float(world.fx_tuning.handoff_ghost_px) * clampf(_tear_env(2) * 2.0, 0.0, 1.0) * _power
 	var old_marks := _marks_of(backdrop, true)
 	for i in old_marks.size():
-		if morph_keeps_old(i):
+		if morph_keeps_old(i) and old_marks[i].has_area():
+			if ghost_dx >= 1.0 and i % 2 == 0:
+				draw_rect(Rect2(old_marks[i].position + Vector2(roundf(ghost_dx), 0.0), old_marks[i].size), ghost)   # colour-register separation: a second register slips off the line
 			draw_rect(old_marks[i], old_col)
 	var new_marks := _marks_of(morph_to, true)
 	for i in new_marks.size():
-		if not morph_keeps_old(i):
+		if not morph_keeps_old(i) and new_marks[i].has_area():
 			draw_rect(new_marks[i], new_col)
 
 
@@ -293,7 +359,8 @@ func _marks_of(kind: StringName, warped: bool) -> Array[Rect2]:
 	var kept: Array[Rect2] = []
 	for m in out:
 		if warped:
-			m.position.x += warp_dx(m.position.y)
+			m.position.x += warp_dx(m.position.y, 2)
+			m.size.x += warp_stretch(2)
 		var c := m.intersection(field)
 		var r := Rect2()
 		if c.has_area():

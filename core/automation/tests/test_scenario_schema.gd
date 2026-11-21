@@ -37,7 +37,7 @@ const MINIMAL := {
 	"shoot_vigil": {"dx": 0, "dy": -450}, "kill_acolyte": {"acolyte_id": "last"},
 	"kill_all": {},
 	"pause_sim": {"on": true},
-	"step_sim": {"frames": 30}, "wake_entity": {}, "place_entity": {"dx": 0, "dy": -20},
+	"step_sim": {"frames": 30}, "wake_entity": {}, "place_entity": {"dx": 0, "dy": -20}, "fell_sepulchre": {},
 }
 
 
@@ -153,11 +153,11 @@ func test_catalog_and_validator_agree() -> void:
 ## a0_cursed_cabinet_capture: the a0_3 after-image (dev `--haunt=after_image`), then a0_5 by autopilot and the
 ## cursed turn, one still every 0.5 s, with a luma window (~3100 frames). a0_haunt_attract_capture: every attract
 ## Haunting once (dev `--haunt-showcase`, fixture profile_act0_done, ~950 frames). TECH-001 Q-T268, §9.1.
-## a0_rework_capture: stage cards, the new scale and one a0_5 Unmaking by autopilot (cards a0_1, a0_4, a0_5) (~5000 frames; Q-T365..Q-T380).
+## a0_stage_transition_capture / _perf: the three stage hand-offs (a0_1 to a0_5), windowed stills and a luma / frame-time window each (~1200 frames; Q-T457). a0_rework_capture: stage cards, the new scale and one a0_5 Unmaking by autopilot (cards a0_1, a0_4, a0_5) (~5000 frames; Q-T365..Q-T380).
 const LONG_SCENARIOS: Array[String] = ["a1_golden_path.scenario.json", "ruins_onboarding_first_visit.scenario.json", "perf_golden_path.scenario.json", "a11y_flash_pass.scenario.json",
 	"warp_t1_capture.scenario.json", "a0_reveal_decay_capture.scenario.json", "perf_ruins.scenario.json", "a1_run_loop.scenario.json",
 	"ui_menus_capture.scenario.json", "a0_cursed_cabinet_capture.scenario.json", "a0_haunt_attract_capture.scenario.json",
-	"a0_rework_capture.scenario.json", "a1_two_seams.scenario.json", "a1_two_seams_acolyte.scenario.json", "pm02_look_capture.scenario.json"]
+	"a0_rework_capture.scenario.json", "a0_stage_transition_capture.scenario.json", "a0_stage_transition_perf.scenario.json", "a1_two_seams.scenario.json", "a1_two_seams_acolyte.scenario.json", "pm02_look_capture.scenario.json"]
 
 
 func test_shipped_scenarios_are_valid_for_the_suite() -> void:
@@ -196,7 +196,7 @@ func test_profile_field_values() -> void:
 
 
 func test_phase2_steps_validate_and_reject_bad_args() -> void:
-	for n in ["snapshot", "wait_event", "perf_sample", "set_stage", "set_lives", "teleport", "spawn", "shoot_vigil", "kill_acolyte", "kill_all", "pause_sim", "step_sim", "wake_entity", "place_entity"]:
+	for n in ["snapshot", "wait_event", "perf_sample", "set_stage", "set_lives", "teleport", "spawn", "shoot_vigil", "kill_acolyte", "kill_all", "pause_sim", "step_sim", "wake_entity", "place_entity", "fell_sepulchre"]:
 		assert_array(Schema.validate(_sc([_step(n)]), false)).override_failure_message(n).is_empty()
 	_expect(_sc([_step("snapshot", {"name": "Bad Name"})]), "name must match")
 	_expect(_sc([_step("wait_event", {"count": 0})]), "count")
@@ -218,7 +218,7 @@ func test_phase2_steps_validate_and_reject_bad_args() -> void:
 
 func test_cabinet_dev_steps_are_dev_only_and_probe_ops() -> void:
 	var defs: Dictionary = Schema.catalog().steps
-	for n in ["set_stage", "set_lives", "teleport", "spawn", "shoot_vigil", "kill_acolyte", "kill_all", "pause_sim", "step_sim", "wake_entity", "place_entity"]:
+	for n in ["set_stage", "set_lives", "teleport", "spawn", "shoot_vigil", "kill_acolyte", "kill_all", "pause_sim", "step_sim", "wake_entity", "place_entity", "fell_sepulchre"]:
 		assert_bool(Schema.is_dev_step(n)).override_failure_message(n).is_true()
 		assert_bool(bool(defs[n].get("probe_op", false))).is_true()
 		assert_str(str(defs[n].route)).is_equal("cabinet")

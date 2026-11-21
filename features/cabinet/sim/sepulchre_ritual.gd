@@ -170,7 +170,7 @@ func _knock_modules(at: Vector2) -> void:
 		world.sepulchre_cleared.emit()
 
 
-## The last module falls: a bigger burst and ring than a knock, the shake at its cap, a longer hit-stop and the
+## The last module falls: a bigger burst and ring than a knock, the shake at its cap and the
 ## quiet `sepulchre_down` chime. All on the frame the module falls (Reduced Motion scales the shake and hit-stop).
 func _sepulchre_down() -> void:
 	var ft := world.fx_tuning
@@ -178,7 +178,6 @@ func _sepulchre_down() -> void:
 	world.fx.burst(pos, Look.c(Pal.BONE_5), ft.sepulchre_down_burst_count, ft.sepulchre_down_burst_speed)
 	world.fx.ring(pos, Look.c(Pal.BONE_4), ft.sepulchre_down_ring_radius)
 	world.shake(ft.sepulchre_down_shake_amp, ft.sepulchre_down_shake_dur)
-	world.hitstop(ft.hitstop_sepulchre_down_frames, &"sepulchre_down")
 
 
 func _hit_entity(at: Vector2) -> void:

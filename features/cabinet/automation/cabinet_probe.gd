@@ -43,7 +43,7 @@ const ENTITIES: Dictionary = {
 const EVENTS: Array[String] = ["vigil_destroyed", "score_awarded", "hitstop_started", "slowmo_changed",
 	"sepulchre_cleared", "entity_unmade", "phase_changed", "segments_changed", "charges_changed"]
 const DEV_OPS: Array[String] = ["set_stage", "set_lives", "teleport", "spawn", "shoot_vigil", "kill_all", "pause_sim", "step_sim",
-	"wake_entity", "place_entity", "kill_acolyte"]
+	"wake_entity", "place_entity", "kill_acolyte", "fell_sepulchre"]
 
 var _root: Node
 var _world: ArcadeWorld
@@ -368,6 +368,13 @@ func dev_op(op: String, args: Dictionary) -> String:
 			return ""
 		"wake_entity":
 			return _wake_entity()
+		"fell_sepulchre":
+			var rit := _world.ritual
+			if rit == null or rit.awake or rit.phase >= SepulchreRitual.Phase.AWAKENING or rit.cleared:
+				return "fell_sepulchre: the Sepulchre is waking, gone or already down"
+			rit.segments = 1
+			rit._knock_modules(rit.pos)
+			return ""
 		"place_entity":
 			var eo := _vec_arg(args, "dx", "dy")
 			if not _in_range(eo):

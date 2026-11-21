@@ -1,0 +1,594 @@
+{
+	"format": "darkstar.scenario",
+	"version": 1,
+	"id": "a0_stage_transition_capture",
+	"profile": "dev",
+	"args": [],
+	"timeout_frames": 9000,
+	"steps": [
+		{
+			"do": "wait_route",
+			"route": "attract",
+			"within": 240
+		},
+		{
+			"do": "coin"
+		},
+		{
+			"do": "wait_until",
+			"id": "attract/ui/NewVigil",
+			"prop": "enabled",
+			"eq": true,
+			"within": 240
+		},
+		{
+			"do": "activate",
+			"id": "attract/ui/NewVigil"
+		},
+		{
+			"do": "wait_route",
+			"route": "cabinet",
+			"within": 240
+		},
+		{
+			"do": "wait_until",
+			"id": "cabinet/game",
+			"prop": "state",
+			"eq": "briefing",
+			"within": 600
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "hold",
+			"action": "fire_lance",
+			"frames": 3
+		},
+		{
+			"do": "wait_until",
+			"id": "cabinet/game",
+			"prop": "state",
+			"eq": "play",
+			"within": 600
+		},
+		{
+			"do": "assert",
+			"id": "cabinet/game",
+			"prop": "stage_id",
+			"eq": "a0_1"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 60
+		},
+		{
+			"do": "screenshot",
+			"name": "tr_a0_1_a0_3_00_before",
+			"target": "arcade"
+		},
+		{
+			"do": "luma_begin",
+			"name": "tr_a0_1_a0_3",
+			"target": "arcade"
+		},
+		{
+			"do": "fell_sepulchre"
+		},
+		{
+			"do": "screenshot",
+			"name": "tr_a0_1_a0_3_f00",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 2
+		},
+		{
+			"do": "screenshot",
+			"name": "tr_a0_1_a0_3_f02",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 3
+		},
+		{
+			"do": "screenshot",
+			"name": "tr_a0_1_a0_3_f05",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 4
+		},
+		{
+			"do": "screenshot",
+			"name": "tr_a0_1_a0_3_f09",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 5
+		},
+		{
+			"do": "screenshot",
+			"name": "tr_a0_1_a0_3_f14",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 6
+		},
+		{
+			"do": "screenshot",
+			"name": "tr_a0_1_a0_3_f20",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 8
+		},
+		{
+			"do": "screenshot",
+			"name": "tr_a0_1_a0_3_f28",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 10
+		},
+		{
+			"do": "screenshot",
+			"name": "tr_a0_1_a0_3_f38",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 12
+		},
+		{
+			"do": "screenshot",
+			"name": "tr_a0_1_a0_3_f50",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 14
+		},
+		{
+			"do": "screenshot",
+			"name": "tr_a0_1_a0_3_f64",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 16
+		},
+		{
+			"do": "screenshot",
+			"name": "tr_a0_1_a0_3_f80",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_until",
+			"id": "cabinet/game",
+			"prop": "stage_id",
+			"eq": "a0_3",
+			"within": 600
+		},
+		{
+			"do": "wait_until",
+			"id": "cabinet/game",
+			"prop": "state",
+			"eq": "briefing",
+			"within": 60
+		},
+		{
+			"do": "luma_end",
+			"name": "tr_a0_1_a0_3",
+			"report_only": true
+		},
+		{
+			"do": "wait_frames",
+			"frames": 20
+		},
+		{
+			"do": "screenshot",
+			"name": "tr_a0_1_a0_3_90_card",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_until",
+			"id": "cabinet/game",
+			"prop": "state",
+			"eq": "briefing",
+			"within": 600
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "hold",
+			"action": "fire_lance",
+			"frames": 3
+		},
+		{
+			"do": "wait_until",
+			"id": "cabinet/game",
+			"prop": "state",
+			"eq": "play",
+			"within": 600
+		},
+		{
+			"do": "wait_frames",
+			"frames": 60
+		},
+		{
+			"do": "screenshot",
+			"name": "tr_a0_1_a0_3_95_next_1s",
+			"target": "arcade"
+		},
+		{
+			"do": "assert",
+			"id": "cabinet/game",
+			"prop": "stage_id",
+			"eq": "a0_3"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 60
+		},
+		{
+			"do": "screenshot",
+			"name": "tr_a0_3_a0_4_00_before",
+			"target": "arcade"
+		},
+		{
+			"do": "luma_begin",
+			"name": "tr_a0_3_a0_4",
+			"target": "arcade"
+		},
+		{
+			"do": "fell_sepulchre"
+		},
+		{
+			"do": "screenshot",
+			"name": "tr_a0_3_a0_4_f00",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 2
+		},
+		{
+			"do": "screenshot",
+			"name": "tr_a0_3_a0_4_f02",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 3
+		},
+		{
+			"do": "screenshot",
+			"name": "tr_a0_3_a0_4_f05",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 4
+		},
+		{
+			"do": "screenshot",
+			"name": "tr_a0_3_a0_4_f09",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 5
+		},
+		{
+			"do": "screenshot",
+			"name": "tr_a0_3_a0_4_f14",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 6
+		},
+		{
+			"do": "screenshot",
+			"name": "tr_a0_3_a0_4_f20",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 8
+		},
+		{
+			"do": "screenshot",
+			"name": "tr_a0_3_a0_4_f28",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 10
+		},
+		{
+			"do": "screenshot",
+			"name": "tr_a0_3_a0_4_f38",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 12
+		},
+		{
+			"do": "screenshot",
+			"name": "tr_a0_3_a0_4_f50",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 14
+		},
+		{
+			"do": "screenshot",
+			"name": "tr_a0_3_a0_4_f64",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 16
+		},
+		{
+			"do": "screenshot",
+			"name": "tr_a0_3_a0_4_f80",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_until",
+			"id": "cabinet/game",
+			"prop": "stage_id",
+			"eq": "a0_4",
+			"within": 600
+		},
+		{
+			"do": "wait_until",
+			"id": "cabinet/game",
+			"prop": "state",
+			"eq": "briefing",
+			"within": 60
+		},
+		{
+			"do": "luma_end",
+			"name": "tr_a0_3_a0_4",
+			"report_only": true
+		},
+		{
+			"do": "wait_frames",
+			"frames": 20
+		},
+		{
+			"do": "screenshot",
+			"name": "tr_a0_3_a0_4_90_card",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_until",
+			"id": "cabinet/game",
+			"prop": "state",
+			"eq": "briefing",
+			"within": 600
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "hold",
+			"action": "fire_lance",
+			"frames": 3
+		},
+		{
+			"do": "wait_until",
+			"id": "cabinet/game",
+			"prop": "state",
+			"eq": "play",
+			"within": 600
+		},
+		{
+			"do": "wait_frames",
+			"frames": 60
+		},
+		{
+			"do": "screenshot",
+			"name": "tr_a0_3_a0_4_95_next_1s",
+			"target": "arcade"
+		},
+		{
+			"do": "assert",
+			"id": "cabinet/game",
+			"prop": "stage_id",
+			"eq": "a0_4"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 60
+		},
+		{
+			"do": "screenshot",
+			"name": "tr_a0_4_a0_5_00_before",
+			"target": "arcade"
+		},
+		{
+			"do": "luma_begin",
+			"name": "tr_a0_4_a0_5",
+			"target": "arcade"
+		},
+		{
+			"do": "fell_sepulchre"
+		},
+		{
+			"do": "screenshot",
+			"name": "tr_a0_4_a0_5_f00",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 2
+		},
+		{
+			"do": "screenshot",
+			"name": "tr_a0_4_a0_5_f02",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 3
+		},
+		{
+			"do": "screenshot",
+			"name": "tr_a0_4_a0_5_f05",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 4
+		},
+		{
+			"do": "screenshot",
+			"name": "tr_a0_4_a0_5_f09",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 5
+		},
+		{
+			"do": "screenshot",
+			"name": "tr_a0_4_a0_5_f14",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 6
+		},
+		{
+			"do": "screenshot",
+			"name": "tr_a0_4_a0_5_f20",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 8
+		},
+		{
+			"do": "screenshot",
+			"name": "tr_a0_4_a0_5_f28",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 10
+		},
+		{
+			"do": "screenshot",
+			"name": "tr_a0_4_a0_5_f38",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 12
+		},
+		{
+			"do": "screenshot",
+			"name": "tr_a0_4_a0_5_f50",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 14
+		},
+		{
+			"do": "screenshot",
+			"name": "tr_a0_4_a0_5_f64",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 16
+		},
+		{
+			"do": "screenshot",
+			"name": "tr_a0_4_a0_5_f80",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_until",
+			"id": "cabinet/game",
+			"prop": "stage_id",
+			"eq": "a0_5",
+			"within": 600
+		},
+		{
+			"do": "wait_until",
+			"id": "cabinet/game",
+			"prop": "state",
+			"eq": "briefing",
+			"within": 60
+		},
+		{
+			"do": "luma_end",
+			"name": "tr_a0_4_a0_5",
+			"report_only": true
+		},
+		{
+			"do": "wait_frames",
+			"frames": 20
+		},
+		{
+			"do": "screenshot",
+			"name": "tr_a0_4_a0_5_90_card",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_until",
+			"id": "cabinet/game",
+			"prop": "state",
+			"eq": "briefing",
+			"within": 600
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "hold",
+			"action": "fire_lance",
+			"frames": 3
+		},
+		{
+			"do": "wait_until",
+			"id": "cabinet/game",
+			"prop": "state",
+			"eq": "play",
+			"within": 600
+		},
+		{
+			"do": "wait_frames",
+			"frames": 60
+		},
+		{
+			"do": "screenshot",
+			"name": "tr_a0_4_a0_5_95_next_1s",
+			"target": "arcade"
+		},
+		{
+			"do": "quit"
+		}
+	]
+}

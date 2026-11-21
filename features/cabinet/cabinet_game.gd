@@ -560,15 +560,20 @@ func handoff_seconds() -> float:
 ## into the next stage's signature while the last stage's sim runs on, then start_stage(next) opens the next stage card (which
 ## still waits for the lance button: it carries the orders). Replaces the old banner hold (MID_SHIFT_HOLD_SECONDS, 5.4 s).
 func _begin_morph() -> void:
-	var next := next_stage_index()
-	if next >= 0:
-		world.stars.begin_morph(stages[next].backdrop, world.fx_tuning.handoff_morph_s)
-		AudioService.play(&"quota", -3.0)
+	AudioService.play(&"quota", -3.0)
 	if haunts != null:
 		if haunts.enabled and decay_tuning.wear_level(stage_index) == haunts.tuning.min_wear_level:
 			haunts.plant_crag_slope()
 		haunts.moment(CabinetHauntDeck.HOLD)
-	_enter(State.CREDITS, world.fx_tuning.handoff_morph_s)
+	_enter(State.CREDITS, 0.01)   # the morph already ran from the kill frame: on to the next stage
+
+
+## The sky starts to break on the kill frame and runs for the whole hand-off (Q-T457): wear scales how hard it tears.
+func _start_sky_morph() -> void:
+	var next := next_stage_index()
+	if next >= 0:
+		var power := 1.0 + float(decay_tuning.wear_level(stage_index)) * world.fx_tuning.handoff_wear_gain
+		world.stars.begin_morph(stages[next].backdrop, handoff_seconds(), power)
 
 
 ## A mid-shift stage end (PM 2026-11-19): banner only, no roll. The stage-end banner stays up for
@@ -614,7 +619,8 @@ func _on_sepulchre_cleared() -> void:
 		_enter(State.CLEARED, CLEAR_SECONDS)
 	else:   # the ordinary hand-off (Q-T457): a caption now, a short beat, then the sky morphs into the next stage
 		messages.caption(tr("CAB_SEPULCHRE_DOWN"), handoff_seconds())
-		_enter(State.CLEARED, world.fx_tuning.handoff_collapse_s)
+		_start_sky_morph()
+		_enter(State.CLEARED, handoff_seconds())
 
 
 func _on_entity_unmade() -> void:
@@ -628,7 +634,8 @@ func _on_entity_unmade() -> void:
 		_enter(State.UNMADE, UNMADE_SECONDS)
 	else:
 		messages.caption(tr("CAB_ENTITY_DOWN"), handoff_seconds())
-		_enter(State.UNMADE, world.fx_tuning.handoff_collapse_s)
+		_start_sky_morph()
+		_enter(State.UNMADE, handoff_seconds())
 
 
 func _on_extra_life() -> void:

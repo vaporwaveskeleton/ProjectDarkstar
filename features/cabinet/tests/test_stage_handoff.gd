@@ -36,17 +36,13 @@ func after_test() -> void:
 
 
 func test_the_last_module_gives_feedback_on_the_same_frame() -> void:
-	var seen: Array = []
-	world.hitstop_started.connect(func(beat: StringName) -> void: seen.append(beat))
 	var cleared: Array = []
 	world.sepulchre_cleared.connect(func() -> void: cleared.append(true))
 	var ritual: SepulchreRitual = world.ritual
 	ritual.segments = 1
 	ritual._knock_modules(ritual.pos)
 	assert_int(cleared.size()).is_equal(1)
-	assert_array(seen).contains([&"sepulchre_down"])
-	assert_int(world.hitstop_left).is_greater_equal(world.fx_tuning.hitstop_sepulchre_down_frames)
-	assert_int(world.hitstop_left).is_less_equal(world.fx_tuning.hitstop_max_frames)
+	assert_int(world.hitstop_left).override_failure_message("only the knock's own 2-frame hit-stop: a longer one cost the autopilot 3 of 20 shifts").is_less_equal(world.fx_tuning.hitstop_modules_knocked_frames)
 
 
 func test_the_hand_off_numbers_stay_inside_the_flash_and_motion_caps() -> void:
@@ -54,7 +50,6 @@ func test_the_hand_off_numbers_stay_inside_the_flash_and_motion_caps() -> void:
 	assert_float(ft.handoff_collapse_s + ft.handoff_morph_s).is_less(2.0)
 	assert_float(ft.sepulchre_down_shake_amp).is_less_equal(4.0)
 	assert_float(ft.sepulchre_down_shake_dur).is_less_equal(0.25)
-	assert_int(ft.hitstop_sepulchre_down_frames).is_less_equal(ft.hitstop_max_frames)
 
 
 func test_the_morph_runs_from_zero_to_one_and_reset_ends_it() -> void:
@@ -71,7 +66,7 @@ func test_the_morph_runs_from_zero_to_one_and_reset_ends_it() -> void:
 
 func test_the_dissolve_hands_every_mark_to_exactly_one_look() -> void:
 	star.begin_morph(&"shoal", 1.0)
-	for m in [0.0, 0.3, 0.7, 1.0]:
+	for m in [0.0, 0.3, 0.5, 0.7, 1.0]:
 		star.morph = m
 		var keep := 0
 		for i in 200:
@@ -82,25 +77,51 @@ func test_the_dissolve_hands_every_mark_to_exactly_one_look() -> void:
 		elif m == 1.0:
 			assert_int(keep).is_equal(0)
 		else:
-			assert_float(float(keep) / 200.0).is_between(1.0 - m - 0.08, 1.0 - m + 0.08)
+			assert_float(float(keep) / 200.0).is_between(1.0 - star.dissolve() - 0.08, 1.0 - star.dissolve() + 0.08)
 
 
-func test_the_warp_is_a_bell_and_off_when_calm() -> void:
+func test_the_sky_pulls_back_before_it_tears_and_settles_clean() -> void:
 	star.begin_morph(&"shoal", 1.0)
+	star.morph = 0.05
+	assert_float(star.disturbance(0)).override_failure_message("an anticipation beat the other way").is_less(0.0)
 	star.morph = 0.5
+	assert_float(star.disturbance(0)).is_greater(0.5)
+	assert_float(star.disturbance(2)).override_failure_message("deeper layers lag").is_not_equal(star.disturbance(0))
+	star.morph = 1.0
+	assert_float(absf(star.disturbance(0))).is_less(0.01)
+
+
+func test_the_warp_is_bounded_off_when_calm_and_stronger_with_wear() -> void:
+	star.begin_morph(&"shoal", 1.0)
+	star.morph = 0.4
+	var ft := world.fx_tuning
 	var peak := 0.0
-	for y in range(0, 300, 3):
+	for y in range(0, 300, 1):
 		peak = maxf(peak, absf(star.warp_dx(float(y))))
 	assert_float(peak).is_greater(0.0)
-	assert_float(peak).is_less_equal(world.fx_tuning.handoff_warp_px)
-	star.morph = 1.0
-	assert_float(absf(star.warp_dx(40.0))).is_less(0.01)
-	star.morph = 0.5
+	assert_float(peak).is_less_equal(ft.handoff_warp_px + ft.handoff_tear_px + 1.0)
+	star.begin_morph(&"shoal", 1.0, 2.0)
+	star.morph = 0.4
+	var strong := 0.0
+	for y in range(0, 300, 1):
+		strong = maxf(strong, absf(star.warp_dx(float(y))))
+	assert_float(strong).is_greater(peak)
+	star.morph = 0.4
 	SettingsService.set_value(&"photosensitivity", true)
 	assert_float(star.warp_dx(40.0)).is_equal(0.0)
+	assert_float(star.wash()).is_equal(0.0)
 	SettingsService.set_value(&"photosensitivity", false)
 	SettingsService.set_value(&"reduced_motion", true)
 	assert_float(star.warp_dx(40.0)).is_equal(0.0)
+
+
+func test_the_kill_wash_is_one_soft_pulse_under_the_cap() -> void:
+	star.begin_morph(&"shoal", 1.4)
+	star.morph = 0.01 / 1.4
+	assert_float(star.wash()).is_greater(0.0)
+	star.morph = 0.5
+	assert_float(star.wash()).is_equal(0.0)
+	assert_float(world.fx_tuning.handoff_wash).is_less_equal(0.2)
 
 
 func test_morph_marks_stay_numbered_and_in_the_playfield() -> void:
@@ -115,7 +136,6 @@ func test_morph_marks_stay_numbered_and_in_the_playfield() -> void:
 
 
 func test_the_look_only_uses_register_colours() -> void:
-	# never a blended colour: each look draws in its own VOID register
 	for k in [&"chains", &"shoal", &"horizon", &"currents"]:
 		var c := star.backdrop_color(k)
 		assert_bool([Look.c(Pal.VOID_3), Look.c(Pal.VOID_4), Look.c(Pal.VOID_5)].has(c)).is_true()

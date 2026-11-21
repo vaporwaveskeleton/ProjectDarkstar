@@ -218,7 +218,7 @@ func test_qa_profile_refuses_every_new_dev_step_before_frame_zero() -> void:
 		"set_stage": {"index": 0}, "set_lives": {"lives": 1}, "teleport": {"x": 1, "y": 1},
 		"spawn": {"kind": "geode", "dx": 1, "dy": 1}, "shoot_vigil": {"dx": 1, "dy": 1, "acolyte_id": "last"}, "kill_acolyte": {"acolyte_id": 1},
 		"kill_all": {}, "pause_sim": {"on": true}, "step_sim": {"frames": 1},
-		"wake_entity": {}, "place_entity": {"dx": 1, "dy": 1}}
+		"wake_entity": {}, "place_entity": {"dx": 1, "dy": 1}, "fell_sepulchre": {}}
 	for n: String in steps.keys():
 		var step: Dictionary = (steps[n] as Dictionary).duplicate()
 		step["do"] = n

@@ -7,7 +7,12 @@ extends TunableResource
 # --- Stage hand-off (Q-T457, owner 2026-11-20: the 4 s hold was too long; feedback at the fall; the sky warps into the next stage) ---
 @export var handoff_collapse_s: float = 0.5               ## s ✱ PROVISIONAL: the beat after the last module falls (caption up, sim running), mid-shift ends only
 @export var handoff_morph_s: float = 0.9                  ## s ✱ PROVISIONAL: the sky dissolves and warps into the next stage's look; then its stage card opens
-@export var handoff_warp_px: float = 6.0                  ## px ✱ the sky's row warp, peak mid-morph (0 under photosensitivity / reduced motion)
+@export var handoff_warp_px: float = 9.0                  ## px ✱ the sky's low-frequency bend, peak mid-morph (0 under photosensitivity / reduced motion)
+@export var handoff_tear_px: float = 12.0                 ## px ✱ the high-frequency tear: a third of the 5 px row bands jump by up to this
+@export var handoff_ghost_px: float = 3.0                 ## px ✱ colour-register separation: a second VOID register slips off every other mark
+@export var handoff_wash: float = 0.16                    ## ✱ peak alpha of the one kill-frame wash over the playfield (VOID_5, a single pulse)
+@export var handoff_wash_s: float = 0.3                   ## s ✱ the wash falls over this long (one event, never a strobe)
+@export var handoff_wear_gain: float = 0.35               ## ✱ every displacement x (1 + wear level x this): later stages tear harder
 @export var sepulchre_down_burst_count: int = 60          ## ✱
 @export var sepulchre_down_burst_speed: float = 150.0     ## px/s ✱
 @export var sepulchre_down_ring_radius: float = 90.0      ## px ✱
@@ -132,7 +137,6 @@ extends TunableResource
 @export var hitstop_vigil_death_frames: int = 6           ## frames ⚙ owner-approved 2026-11-18, SYS-001 §9 (VigilShip.kill)
 @export var hitstop_it_wakes_frames: int = 4              ## frames ⚙ owner-approved 2026-11-18, SYS-001 §9 (AWAKENING "IT WAKES")
 @export var hitstop_modules_knocked_frames: int = 2       ## frames ⚙ owner-approved 2026-11-18, SYS-001 §9 (_knock_modules)
-@export var hitstop_sepulchre_down_frames: int = 5            ## frames ✱ PROVISIONAL (Q-T457; inside the hitstop_max_frames cap and Reduced Motion scale): the last module falls
 @export var hitstop_max_frames: int = 10                  ## frames ⚙ owner-approved 2026-11-18, SYS-001 §9: hard cap on any freeze or stack
 @export var hitstop_reduced_motion_scale: float = 0.5     ## ⚙ owner-approved 2026-11-18, SYS-001 §9: frames x this under Reduced Motion; 0 disables
 
