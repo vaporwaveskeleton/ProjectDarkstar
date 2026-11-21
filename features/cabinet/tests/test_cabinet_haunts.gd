@@ -41,7 +41,7 @@ func test_the_numbers_are_sys001s_proposed_rows() -> void:
 	var t := _t()
 	assert_str(t.ds_namespace).is_equal("ds_cabinet.haunt")
 	assert_int(t.min_wear_level).is_equal(1)
-	assert_int(t.attract_min_stage).is_equal(2)
+	assert_int(t.attract_min_stage).is_equal(0)
 	assert_float(t.chance_ready).is_equal(0.35)
 	assert_float(t.chance_hold).is_equal(0.3)
 	assert_float(t.chance_attract).is_equal(0.2)
@@ -207,18 +207,16 @@ func test_a_ghost_press_sinks_the_cap_and_does_nothing() -> void:
 	b.free()
 
 
-# --- the shift: only from a0_3, never during play; the stage loop is detuned by Wear ---
+# --- the shift: every stage (a0_3 on, F-14), never during play; the stage loop is detuned by Wear ---
 
-func test_a0_1_and_a0_2_never_haunt_and_a0_3_may() -> void:
+func test_every_shift_stage_may_haunt() -> void:
 	var game := SCENE.instantiate() as CabinetGame
 	add_child(game)
 	game.set_process(false)
-	game.start_stage(0)
-	assert_bool(game.haunts.enabled).is_false()
-	game.start_stage(1)
-	assert_bool(game.haunts.enabled).is_false()
-	game.start_stage(2)
-	assert_bool(game.haunts.enabled).is_true()
+	for i in game.stages.size():
+		game.start_stage(i)
+		assert_bool(game.haunts.enabled).override_failure_message("stage %d haunts" % i).is_true()
+	assert_int(game.stages.size()).is_equal(3)
 	game.free()
 
 
@@ -229,7 +227,7 @@ func test_a_forced_after_image_shows_on_the_ready_card_and_leaves_the_readouts_a
 	var hud := game.hud
 	var score_before := hud.score
 	game.haunts.deck.forced = &"after_image"
-	game.start_stage(3)
+	game.start_stage(1)
 	assert_str(String(game.haunts.last_kind)).is_equal("after_image")
 	await get_tree().process_frame
 	await get_tree().process_frame
@@ -243,10 +241,10 @@ func test_a0_4_and_a0_5_have_the_stage_loop_detuned_by_wear() -> void:
 	var game := SCENE.instantiate() as CabinetGame
 	add_child(game)
 	game.set_process(false)
-	assert_str(String(game.stages[3].music)).is_equal("a0_stage_loop")
-	assert_str(String(game.stages[4].music)).is_equal("a0_stage_loop")
-	assert_str(String(game.stages[2].music)).is_empty()
-	game.start_stage(4)
+	assert_str(String(game.stages[1].music)).is_equal("a0_stage_loop")
+	assert_str(String(game.stages[2].music)).is_equal("a0_stage_loop")
+	assert_str(String(game.stages[0].music)).is_empty()
+	game.start_stage(2)
 	var d := _decay()
 	assert_float(game.music.pitch_scale()).is_equal_approx(CabinetDecayTuning.cents_to_pitch(d.wear_detune_cents_per_level * 3.0), 0.00001)
 	assert_float(game.music.pitch_scale()).is_less(1.0)
@@ -319,11 +317,11 @@ func test_the_wound_is_the_aether_erasure_with_no_disc_no_eye_no_ring() -> void:
 
 # --- attract ---
 
-func test_the_attract_is_clean_until_a0_3() -> void:
+func test_the_attract_is_clean_until_the_first_stage_is_reached() -> void:
 	var t := _t()
 	assert_bool(AttractMode_haunting_unlocked({}, t)).is_false()
-	assert_bool(AttractMode_haunting_unlocked({"act0_stage_reached": 1}, t)).is_false()
-	assert_bool(AttractMode_haunting_unlocked({"act0_stage_reached": 2}, t)).is_true()
+	assert_bool(AttractMode_haunting_unlocked({"act0_stage_reached": -1}, t)).is_false()
+	assert_bool(AttractMode_haunting_unlocked({"act0_stage_reached": 0}, t)).is_true()
 	assert_bool(AttractMode_haunting_unlocked({"act0_complete": true}, t)).is_true()
 	assert_bool(AttractMode_haunting_unlocked({"act0_stage_reached": "x"}, t)).is_false()
 

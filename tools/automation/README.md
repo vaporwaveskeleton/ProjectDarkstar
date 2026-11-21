@@ -131,10 +131,10 @@ node tools/automation/darkstar_auto.js run-all [--only=<substr>]  # every scenar
   Cabinet dev steps (dev profile only, refused in QA before frame 0): `set_stage`, `set_lives`, `teleport`, `spawn`
   (acolyte|geode|shard at Vigil + dx,dy), `shoot_vigil` (a hostile censer shot from Vigil + dx,dy aimed at the Vigil; optional `acolyte_id`, int ≥ 0 or "last" = the Acolyte last made by `spawn acolyte`, becomes the shot's shooter; omitted = no shooter; a dead or missing id is accepted, which stages "shooter gone"),
   `kill_all` (Acolytes, Grubs, hostile shots), `kill_acolyte{acolyte_id}` (int or "last"; kills just that Acolyte, leaves shots alone; fails if no live Acolyte has that id), `place_entity` (dx,dy, |v| ≤ 4000; entity must be awake), `wake_entity`
-  (needs a non-Cold Sepulchre, so `set_stage 1` first; awake after about 4.2 s: wait on `cabinet/world entity_awake`), `pause_sim`, `step_sim` (needs paused_sim; steps ArcadeWorld only, not
+  (needs a non-Cold Sepulchre: every stage of the three-stage shift wakes (F-14); awake after about 4.2 s: wait on `cabinet/world entity_awake`), `pause_sim`, `step_sim` (needs paused_sim; steps ArcadeWorld only, not
   the CabinetGame state machine, so the death timer and respawn do not advance).
-- **Stage scenarios.** `cabinet/game` has prop `stage_id` (`a0_1`..`a0_5`, `""` out of range). `a0_stage_0_first_vigil`,
-  `a0_stage_1_drift`, `a0_stage_2_censer_watch`, `a0_stage_3_shoal`, `a0_stage_4_stillwater` each go coin, New Vigil, play,
+- **Stage scenarios.** `cabinet/game` has prop `stage_id` (`a0_3`..`a0_5` in the shift, `""` out of range). The scenarios keep their old stage numbers in the name (F-14: `a0_stage_0_first_vigil` and `a0_stage_1_drift` were removed with the retired stages):
+  `a0_stage_2_censer_watch`, `a0_stage_3_shoal`, `a0_stage_4_stillwater` each go coin, New Vigil, play,
   `set_stage N`, still during READY, play, then assert `stage_index`, `stage_id` and the start-of-play geode / Grub /
   Acolyte counts (entity cold); stages 2-4 also `wake_entity`, wait `entity_awake`, still. Stills `stage_N_ready`,
   `stage_N_play`, `stage_N_window` (+ `stage_N_awake`), snapshot `stage_N`. 522 frames (stages 0-1), 779 (2-4). Acolyte

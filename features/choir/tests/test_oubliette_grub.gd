@@ -77,7 +77,7 @@ func _run_until(g: OublietteGrub, cond: Callable, limit: int) -> int:
 func test_data_matches_sys001() -> void:
 	var s: GrubStats = load(STATS)
 	assert_str(s.ds_namespace).is_equal("ds_choir.grub")
-	assert_int(s.hp).is_equal(4)
+	assert_int(s.hp).is_equal(2)
 	assert_float(s.carry_speed_px_s).is_equal(130.0)
 	assert_float(s.flee_speed_px_s).is_equal(190.0)
 	assert_float(s.seek_speed_px_s).is_equal(160.0)
@@ -86,12 +86,12 @@ func test_data_matches_sys001() -> void:
 	assert_int(s.score).is_equal(150)
 
 
-func test_hurtbox_is_a_biting_choir_hurtbox_with_four_hp() -> void:
+func test_hurtbox_is_a_biting_choir_hurtbox_with_two_hp() -> void:
 	var g := _grub(Vector2(600, 300))
 	assert_int(g.hurtbox.collision_layer).is_equal(PhysicsLayers.bit(PhysicsLayers.CHOIR_HURTBOX))
 	assert_bool(g.hurtbox.bites).is_true()
 	assert_bool(LanceProjectile.can_bite(g.hurtbox)).is_true()
-	assert_int(g.health.max_hp).is_equal(4)
+	assert_int(g.health.max_hp).is_equal(2)
 
 
 func test_idles_round_the_sepulchre_without_glass() -> void:
@@ -213,13 +213,12 @@ func test_death_while_seeking_releases_the_claim_without_keening() -> void:
 	assert_array(cues).is_equal([&"grub_die"])
 
 
-func test_four_lance_hits_kill_it() -> void:
+func test_two_lance_hits_kill_it() -> void:
 	var g := _grub(Vector2(600, 300))
-	for w in 3:
-		g.hurtbox.receive_hit(HitInfo.make(1, 77, w + 1, &"arc_lance"))
+	g.hurtbox.receive_hit(HitInfo.make(1, 77, 1, &"arc_lance"))
 	assert_bool(g.dead).is_false()
 	assert_int(g.health.current_hp).is_equal(1)
-	g.hurtbox.receive_hit(HitInfo.make(1, 77, 4, &"arc_lance"))
+	g.hurtbox.receive_hit(HitInfo.make(1, 77, 2, &"arc_lance"))
 	assert_bool(g.dead).is_true()
 	assert_bool(g.visible).is_false()
 

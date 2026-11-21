@@ -3,7 +3,7 @@ extends RefCounted
 ## Duck-typed contract with core/automation/scenario_runner.gd (see its header). No class_name.
 ##
 ## Ids (lower-case, never display text) and their allow-listed props; scalars only:
-##   cabinet/game      state (lower-case enum name), stage_index, stage_id (CabinetStage.id, lower-case string e.g. "a0_1"; never display text), demo
+##   cabinet/game      state (lower-case enum name), stage_index, stage_id (CabinetStage.id, lower-case string e.g. "a0_3"; never display text), demo
 ##   cabinet/score     score, lives
 ##   cabinet/record    grubs_destroyed, glass_mined, charges_thrown, glass_carried
 ##   cabinet/vigil     alive, shield, pos_x, pos_y, use_scripted, killer_kind ("none"|"entity"|"shot", from the LATEST

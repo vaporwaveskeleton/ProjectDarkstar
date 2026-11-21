@@ -262,7 +262,7 @@ Not covered yet: Composure, the full Ledger Compass and the Litany Ring are not 
 
 | Item | Source | Milestone |
 |---|---|---|
-| Act 0: A0-1, A0-2, A0-3 + first Unmaking cinematic | GDD-001 §6.1 | M2 |
+| Act 0: three stages (A0-3, A0-4, A0-5 since F-14; was A0-1 to A0-3, then five) + first Unmaking cinematic | GDD-001 §6.1 | M2 |
 | A 5-Seam Act 1 run, 2 biomes | GDD-001 §6.3; §5 below | M2 |
 | Grubs, Acolytes, Deceiver | GDD-001 §8.5 | M2 |
 | 1 Matron gate | GDD-001 §9.2 | M2 |
@@ -342,6 +342,7 @@ The owner found Act 0 "a bit too simple". Ruled by the PM under owner direction,
 8. ✅ Autopilot clears Act 0 at the new scale (17/20 seeds, Q-T379); tests; headless golden path. ⏳ windowed capture pass (card, scale, scanner, an Unmaking).
 9. ✅ Hauntings reconciled, no change needed (Q-T374: they run at stage start, the card's opening); #101's bezel unaffected.
 10. ✅ Density and feel pass (Q-T381–Q-T384): 4–8 units and 1–3 geodes in a typical view; streaks; autopilot 20/20. ⏳ Stage times vs targets (Q-T383), human playtest.
+11. ✅ F-14 (owner ruling 2026-11-20, Q-T452): Act 0 is three stages (a0_3, a0_4, a0_5), so three stages = three Unmakings; a0_1 and a0_2 stay as data, `stage_roster_five.tres` is the rollback. Stage times (Q-T383) now judged over three stages; autopilot floor re-measured on the shorter shift.
 
 ---
 

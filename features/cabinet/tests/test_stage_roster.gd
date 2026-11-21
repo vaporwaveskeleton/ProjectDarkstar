@@ -1,9 +1,12 @@
 extends GdUnitTestSuite
-## The Act 0 shift (SYS-001 §1.5, PM 2026-11-19): five stages in order, the cold ones first, the
-## entity wakes from a0_3, the star spine only on THE LAST NORMAL DAY. Every key has English text.
+## The Act 0 shift (SYS-001 §1.5, F-14 owner ruling 2026-11-20): three stages in order (a0_3, a0_4, a0_5), each an
+## Unmaking, the star spine only on THE LAST NORMAL DAY. Every key has English text. The retired cold tutorials
+## a0_1 / a0_2 stay as data; the old five-stage shift is stage_roster_five.tres (rollback).
 
 const ROSTER := "res://data/cabinet/stage_roster.tres"
-const IDS: Array[StringName] = [&"a0_1", &"a0_2", &"a0_3", &"a0_4", &"a0_5"]
+const FIVE := "res://data/cabinet/stage_roster_five.tres"
+const IDS: Array[StringName] = [&"a0_3", &"a0_4", &"a0_5"]
+const IDS_FIVE: Array[StringName] = [&"a0_1", &"a0_2", &"a0_3", &"a0_4", &"a0_5"]
 const SHARDS_PER_GEODE := 3     ## CabinetStage.geodes lint: geodes * 3 >= 24 shards of supply
 const MIN_SHARDS := 24
 
@@ -14,9 +17,9 @@ func before_test() -> void:
 	roster = load(ROSTER) as CabinetStageRoster
 
 
-func test_the_roster_holds_the_five_stages_in_order() -> void:
+func test_the_roster_holds_the_three_stages_in_order() -> void:
 	assert_object(roster).is_not_null()
-	assert_int(roster.size()).is_equal(5)
+	assert_int(roster.size()).is_equal(3)
 	var ids: Array[StringName] = []
 	for st in roster.stages:
 		ids.append(st.id)
@@ -35,14 +38,24 @@ func test_stage_ids_are_unique_and_findable() -> void:
 	assert_int(roster.index_of(&"nope")).is_equal(-1)
 
 
-func test_the_first_two_are_cold_sepulchres_to_clear() -> void:
+## The rollback shift keeps the two cold tutorials in front of the three Unmakings.
+func test_the_five_stage_rollback_roster_keeps_the_cold_tutorials() -> void:
+	var five := load(FIVE) as CabinetStageRoster
+	assert_object(five).is_not_null()
+	var ids: Array[StringName] = []
+	for st in five.stages:
+		ids.append(st.id)
+	assert_array(ids).is_equal(IDS_FIVE)
+	assert_int(five.unmakings_required()).is_equal(3)
+	assert_int(roster.unmakings_required()).is_equal(3)
+	assert_int(roster.unmakings_before(0)).is_equal(0)
 	for id: StringName in [&"a0_1", &"a0_2"]:
-		var st := roster.get_stage(roster.index_of(id))
+		var st := five.get_stage(five.index_of(id))
 		assert_int(st.goal).override_failure_message("%s goal" % id).is_equal(CabinetStage.Goal.CLEAR_SEPULCHRE)
 		assert_bool(st.sepulchre_wakes).override_failure_message("%s must stay cold" % id).is_false()
 
 
-func test_from_a0_3_the_entity_wakes_and_must_be_unmade() -> void:
+func test_every_shift_stage_wakes_and_must_be_unmade() -> void:
 	for id: StringName in [&"a0_3", &"a0_4", &"a0_5"]:
 		var st := roster.get_stage(roster.index_of(id))
 		assert_int(st.goal).override_failure_message("%s goal" % id).is_equal(CabinetStage.Goal.UNMAKE_ENTITY)
@@ -90,10 +103,10 @@ func test_the_last_normal_day_population() -> void:
 	assert_int(st.guard_acolytes).is_equal(1)
 
 
-func test_the_default_roster_is_this_roster_and_counts_five() -> void:
+func test_the_default_roster_is_this_roster_and_counts_three() -> void:
 	assert_str(CabinetStageRoster.DEFAULT_PATH).is_equal(ROSTER)
 	assert_object(CabinetStageRoster.default_roster()).is_not_null()
-	assert_int(CabinetStageRoster.default_size()).is_equal(5)
+	assert_int(CabinetStageRoster.default_size()).is_equal(3)
 
 
 ## P2 "pressure" switches per stage (PM Q-T105, 2026-11-19); a0_1 keeps every default (= pre-P2).

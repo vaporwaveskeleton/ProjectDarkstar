@@ -32,7 +32,7 @@ const KEY_STAGE_REACHED := "act0_stage_reached"
 ## Where THE PRETENCE goes: the first Unmaking cinematic, which then routes to the Ruins.
 const UNMAKING_ROUTE := &"aether"
 
-@export var roster: CabinetStageRoster   ## the shift, a0_1 … a0_5 in play order (data/cabinet/stage_roster.tres)
+@export var roster: CabinetStageRoster   ## the shift, a0_3, a0_4, a0_5 in play order (data/cabinet/stage_roster.tres; F-14 three stages)
 @export var tuning: CabinetTuning
 
 ## Read-only view of `roster.stages` (the automation probe and tests read `stages`).
@@ -203,7 +203,7 @@ static func shift_total_of(params: Dictionary) -> int:
 
 
 ## The stage a relaunch may CONTINUE from (attract asks on a fresh boot): `act0_stage_reached` when it
-## is a valid index 0..count-1 and Act 0 is not complete, else -1.
+## is a valid index (a larger one, from a longer shift saved by the five-stage build, clamps to the last stage, F-14) and Act 0 is not complete, else -1.
 static func saved_continue_stage(profile: Dictionary, count: int) -> int:
 	var done: Variant = profile.get("act0_complete", false)
 	if typeof(done) == TYPE_BOOL and bool(done):
@@ -214,7 +214,7 @@ static func saved_continue_stage(profile: Dictionary, count: int) -> int:
 	if typeof(v) != TYPE_INT and typeof(v) != TYPE_FLOAT:
 		return -1
 	var i := int(v)
-	return i if i >= 0 and i < count else -1
+	return mini(i, count - 1) if i >= 0 and count > 0 else -1
 
 
 ## The stage a `continue_stage` route param asks for: an int (or float) inside 0..count-1, else -1.
@@ -348,8 +348,12 @@ func brief_card(st: CabinetStage) -> Dictionary:
 	}
 
 
-## 1-based stage number from the stage id ("a0_3" → 3); falls back to the roster position.
+## The stage number the card keys (CAB_BRIEF_A0_<n>_*) and the Unmakings line use, from the stage id ("a0_3" → 3)
+## so it stays the same when the roster drops a0_1 / a0_2 (F-14); falls back to the roster position.
 func stage_number(st: CabinetStage) -> int:
+	var parts := String(st.id).split("_")
+	if parts.size() == 2 and parts[1].is_valid_int():
+		return parts[1].to_int()
 	var i := roster.index_of(st.id)
 	return (i if i >= 0 else stage_index) + 1
 
@@ -369,7 +373,7 @@ func dismiss_brief() -> void:
 
 
 ## W0-11 Wear (PM under owner autonomy grant 2026-11-19, Q-T180 B): at a stage start only, the bezel ages
-## one level per stage from a0_3. Costume only: never the HUD strip, the registers or anything mid-play.
+## one level per stage (the three-stage shift: wear 1, 2, 3; F-14). Costume only: never the HUD strip, the registers or anything mid-play.
 func _apply_wear() -> void:
 	if bezel_decay == null:
 		return
@@ -518,7 +522,7 @@ func _on_timer() -> void:
 			if is_last_stage():
 				messages.roll_credits(_full_credit_lines(), PackedInt32Array(STAT_ENTRY_INDICES))
 				_enter(State.CREDITS, world.fx_tuning.credits_full_seconds)
-			else:   # mid-shift unmade (a0_3, a0_4): the banner holds, then the next stage
+			else:   # mid-shift unmade (a0_3, a0_4 in the three-stage shift): the banner holds, then the next stage
 				_hold_banner("CAB_ENTITY_DOWN")
 		State.CREDITS:
 			_note_hands()

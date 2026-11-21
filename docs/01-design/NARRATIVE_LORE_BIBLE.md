@@ -905,6 +905,8 @@ Community rule: Sable is the only character who speaks outside the game (Discord
 
 The A0-5 card is the last honest thing the Cabinet says. Nothing on any card hints at the Pretence.
 
+**F-14 (owner ruling 2026-11-20, TECH-001 Q-T452):** the shift plays three cards, A0-3, A0-4 and A0-5, so the Unmakings line reads `UNMAKINGS 0 / 3`, `1 / 3`, `2 / 3` on its three cards (`{total}` = `unmakings_required` = 3, unchanged). The keys keep their stage-id numbers (`CAB_BRIEF_A0_3_*` is the first card on screen); the A0-1 and A0-2 cards stay in `locale/en.po` for the five-stage rollback roster. The stage titles still read "THIRD VIGIL" and "FOURTH VIGIL" on the first two cards; retitling is open for the owner (Q-T452).
+
 ### 7.6 Office text (environmental)
 
 Posters and stencils in Act 0 and in Pale Marches / Ossuary Belt ruins. Office register. ≤ 6 words. Examples: "KEEP THE VIGIL" · "EVERY SHARD IS SOMEONE'S SKY" · "QUOTA IS SERVICE" · "THE LIGHT IS NEARLY FINISHED" · "LAMPS LIT, LAMPKEEPERS" · "REPORT TO YOUR VIGIL HALL". The last two are what the Penitent obeys (§2.3).
@@ -1089,7 +1091,7 @@ IDs and classes follow LOOP-001 §8.2 (`cx_<class>_<slug>`; 144 counted entries 
 
 > **cx_place_sky_4 · The Fourth Sky** — Written the first time it went dark. A sky is one layer of every place at once; when it goes out, every biome loses a layer of light and the Ledger Compass loses a row. *The chant lost a voice.*
 
-> **cx_place_act0_3 · Last Normal Day (cabinet stage)** *(the first Ruins visit's stamped page, §5.7)* — Pretence Hall curriculum, stage five, the last of the training rotation. A simulation: in it the Dark Star always lost, by design. Final screen retained as written by the curriculum's author.
+> **cx_place_act0_3 · Last Normal Day (cabinet stage)** *(the first Ruins visit's stamped page, §5.7)* — Pretence Hall curriculum, stage three, the last of the training rotation. A simulation: in it the Dark Star always lost, by design. Final screen retained as written by the curriculum's author.
 
 **The Ruins — `cx_ruins_`** (cast letters; LOOP-001 §8.2: Sable ×4, Ilse ×4, Wick ×4, Cabinet ×3, the Chalk Desk ledger)
 

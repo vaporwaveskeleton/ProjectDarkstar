@@ -20,6 +20,7 @@
 **Rev 1.15 (2026-11-20, owner playtest F-9; owner opened the §1.1 movement locks for Act 0; TECH-001 Q-T445, Q-T446, Q-T448):** new §1.1 subsection "Act 0 ship handling: Momentum" (the arcade original's one-stick tank; `move_model` data switch, the §1.1 rows below stay as the DIRECT model and the Aether/Act 1 profile); §1.7 chase rows for the awake entity's velocity ease. All new values ✱ PROVISIONAL (the owner tunes by playing). **No pre-existing 🔒 number was changed.**
 
 **Rev 1.15 (2026-11-20, owner playtest round 2, F-6/F-7; PM under owner feedback, TECH-001 Q-T442, Q-T447):** all PROPOSED. §1.6 the waking re-seed row is **removed** (a Sepulchre knocked to 0 now ends the stage on every stage, not only cold ones); new engineering rows `rampage_catchup_px` 640 and `rampage_catchup_speed` 680 (the awake entity sprints on its first approach while the Vigil is farther than this). No pre-existing locked number changed.
+**Rev 1.16 (2026-11-20, owner ruling F-14, PROPOSED; TECH-001 Q-T452, resolves Q-T380/Q-T383):** Act 0 is a **three-stage shift** (`stage_roster.tres` = a0_3, a0_4, a0_5; three stages = three Unmakings). §1.6 intro and §1.7 stage time targets now cover three stages (a0_1 and a0_2 rows and data kept, off the shift; `stage_roster_five.tres` restores them); `ds_cabinet.wear.level_by_stage` [0, 0, 1, 2, 3] → [1, 2, 3]. No per-stage number changed.
 
 ---
 
@@ -209,7 +210,7 @@ A `Hollowed` sector is a **build choice**, tracked in telemetry as `hollow_secto
 
 ### 1.6 Act 0 stage table (the shift)
 
-Act 0 is a five-stage shift (~9–11 min skilled; GDD §6.1; TECH-001 §2.10). One `CabinetStage` per row (`data/cabinet/stage_*.tres`, played in the order of `stage_roster.tres`). Field size: see §1.7 (PROPOSED 65,536 × 65,536 px wrapping field with a travelling neighbourhood, Q-T366; it replaces the 1920×720 ✱ torus). Zone names are the GDD §19 glossary words. Source for every row: **PM 2026-11-19 (arcade layer study); retune at playtest** (`⚙`). `wakes` = the Sepulchre can wake the entity (false = cold); `goal` is the stage's end condition (0 = clear the Sepulchre, 1 = unmake the entity; `CabinetStage.goal`). **Every stage also ends the moment its Sepulchre is knocked down to 0 segments** (owner F-6, 2026-11-20, Q-T442): on a waking stage that is the early, unbuilt-Sepulchre way out, and the Waking never happens.
+Act 0 is a **three-stage shift** since F-14 (owner ruling 2026-11-20, TECH-001 Q-T452): `stage_roster.tres` plays `a0_3`, `a0_4`, `a0_5`; the two cold tutorials `a0_1` and `a0_2` keep their rows and their `.tres` data but are off the shift (`stage_roster_five.tres` restores the old five-stage order). ~6.5–8 min skilled by the §1.7 stage targets (GDD §6.1; TECH-001 §2.10). One `CabinetStage` per row (`data/cabinet/stage_*.tres`, played in the order of `stage_roster.tres`). Field size: see §1.7 (PROPOSED 65,536 × 65,536 px wrapping field with a travelling neighbourhood, Q-T366; it replaces the 1920×720 ✱ torus). Zone names are the GDD §19 glossary words. Source for every row: **PM 2026-11-19 (arcade layer study); retune at playtest** (`⚙`). `wakes` = the Sepulchre can wake the entity (false = cold); `goal` is the stage's end condition (0 = clear the Sepulchre, 1 = unmake the entity; `CabinetStage.goal`). **Every stage also ends the moment its Sepulchre is knocked down to 0 segments** (owner F-6, 2026-11-20, Q-T442): on a waking stage that is the early, unbuilt-Sepulchre way out, and the Waking never happens.
 
 | Id | Name / zone | Geodes | Grubs | Acolytes | Guard Acolytes | Sepulchre start segments | Wakes | Goal |
 |---|---|---|---|---|---|---|---|---|
@@ -264,7 +265,7 @@ Owner direction 2026-11-19 ("Act 0 is too simple"), measured against the 1983 re
 | Key | Value | Notes |
 |---|---|---|
 | `ds_cabinet.shift.unmakings_required` | **3** | Act 0 ends at the third Unmaking. It equals the number of `goal = 1` stages in `stage_roster.tres` (a0_3, a0_4, a0_5), and a test asserts this |
-| Stage time targets (skilled) | a0_1 1–1.5 min · a0_2 1.5–2 · a0_3 2–2.5 · a0_4 2.5–3 · a0_5 2–2.5 | Total ≈ 9.5–11.5 min, matching GDD §6.1 (Q-T376). These are targets for playtest, not timers. Measured autopilot medians (20 seeds, Q-T383): a0_1 38 s, a0_2 46 s, a0_3 256 s, a0_4 207 s, a0_5 224 s; the wake stages are still 1.2–1.7× over target (OPEN) |
+| Stage time targets (skilled) | a0_3 2–2.5 min · a0_4 2.5–3 · a0_5 2–2.5 (a0_1 1–1.5 and a0_2 1.5–2 apply only to the five-stage roster) | The three-stage shift (F-14, Q-T452) totals ≈ 6.5–8 min by these targets (Q-T376, now over three stages). These are targets for playtest, not timers. Measured autopilot medians (20 seeds, Q-T383): a0_1 38 s, a0_2 46 s, a0_3 256 s, a0_4 207 s, a0_5 224 s; the wake stages are still 1.2–1.7× over target (OPEN) |
 
 **Field (Q-T366).** This replaces §1.6's 1920 × 720 ✱ torus.
 
@@ -394,7 +395,7 @@ All units are assembled from the 64×64 modular part kit (ART-002), which is how
 
 | Unit | HP | Speed | Attack | Tell (frames) | Threat pts | Notes |
 |---|---|---|---|---|---|---|
-| **Oubliette Grub** | 4 | 130 px/s (carry) / 190 (flee) | none 🔒 (never attacks at E<7) | n/a | 1 | flees your lantern; keening when a deposit dies 🔒; carries 1 shard |
+| **Oubliette Grub** | **2** (was 4; owner F-11, 2026-11-20) | 130 px/s (carry) / 190 (flee) | none 🔒 (never attacks at E<7) | n/a | 1 | flees your lantern; keening when a deposit dies 🔒; carries 1 shard |
 | **Acolyte (Censer Knight)** | 6 | 150 px/s | censer shot, 1 dmg, 240 px/s, 1.8 s cycle | **21 f** tell + 15 f turret lag 🔒 (0.25 s) | 4 | mines geodes at 50% rate; leading its body beats the turret |
 | **Deacon of Lies** | 10 | 110 px/s | no direct damage; casts **Phantom** every 6 s | 30 f cast | 5 | Phantom = harmless, drains 0.3 Composure on first sight, dispelled by Ward or 2 lance hits; mimics your Vigil at T ≥ 3 |
 | **Grave-Tide Deceiver** | 8 | 220 px/s | **steals 1 Charge** per successful bait (decoy lantern, 2 s) | 18 f | 5 | flees to the Sepulchre and deposits 2 segment points; drops stolen charges on death |
@@ -408,6 +409,8 @@ Oubliette Grub AI numbers (the Cabinet values, so M1 matches Act 0; closes that 
 | Field | Value | Notes |
 |---|---|---|
 | Grub seek speed | 160 px/s ✱ | speed toward a free shard, before it carries one (carry and flee speeds are in the table above). PM-approved 2026-11-18 |
+| Grub haul catch-up (`grub_haul_catchup_px` / `_speed`) | 600 px / 260 px/s ✱ PROVISIONAL (Q-T449) | a laden Grub farther than 600 px from the Sepulchre hauls at 260 px/s (0 = off); below the Vigil 340 and above flee 190 |
+| Grub mining (`grub_mine_period_s` / `_range_px` / `_standoff_px`, stage switch `grub_mine`) | 5 s / 240 px / 6 px ✱ PROVISIONAL (Q-T451); at most 1 Grub at once (`grub_mine_max`), rock ≥ 160 px from the Vigil (`grub_mine_clear_px`) | an idle Grub with no loose glass gnaws the nearest geode, one bite per 5 s; on a0_3-a0_5 only |
 | Grub flee radius | 70 px ✱ (was 110; Q-T381, Act 0 density pass) | distance from the Vigil at which a Grub starts to flee. PM-approved 2026-11-18 |
 | Grub respawn | 6.0 s ✱ | delay before a killed Grub is replaced. PM-approved 2026-11-18. In the Cabinet it stops at the wake unless the stage sets `grubs_after_wake` (§1.6, P2) |
 | Grub flee while carrying | never ✱ | a Grub carrying glass does not flee the lantern ("devotion beats fear", the Cabinet rule). PM under owner autonomy grant 2026-11-19 (TECH-001 Q-T112) |
@@ -771,7 +774,7 @@ The tree totals (LOOP-001 §3.3 node rollup, 17,480 Ember over 63 Ember nodes) a
 | Decay shell detune, end (`ds_cabinet.decay.shell_detune_cents_end`) | −40 cents | the attract shell (AUDIO-001 §2.1) sags flat across D2–D3 as a tape or failing supply would; AUDIO-001 §12.18; PM-approved 2026-11-19 under the owner autonomy grant (TECH-001 Q-T184); built in `data/cabinet/cabinet_decay.tres` |
 | Decay hum, end frequency (`ds_cabinet.decay.hum_hz_end`) | 47 Hz | the cabinet hum (AUDIO-001 §2.1, 50 Hz ✱) sags to this across D2–D3, then stops at the end of D3; PM-approved 2026-11-19 under the owner autonomy grant (TECH-001 Q-T184); built in `data/cabinet/cabinet_decay.tres` |
 | Ending 5 line hold (`ds_cabinet.decay.ending5_line_hold_s`) | 4.0 s | ending 5 only: the Cabinet's last screen THAT WAS A PRETENCE. holds this long after Theodora's screen 10 (NARR-001 §9.5), then the Decay starts at D1; PM-approved 2026-11-19 under the owner autonomy grant (TECH-001 Q-T184); built in `data/cabinet/cabinet_decay.tres` |
-| Wear level by stage (W0-11, only if Q-T180 option B) (`ds_cabinet.wear.level_by_stage`) | [0, 0, 1, 2, 3] for a0_1…a0_5 | applied at each stage start, never mid-play (WARP-001 W0-11); PM-approved 2026-11-19 under the owner autonomy grant (TECH-001 Q-T184); built in `data/cabinet/cabinet_decay.tres` |
+| Wear level by stage (W0-11, only if Q-T180 option B) (`ds_cabinet.wear.level_by_stage`) | **[1, 2, 3]** for the three-stage shift a0_3, a0_4, a0_5 (was [0, 0, 1, 2, 3] for a0_1…a0_5; F-14, Q-T452: indexed by stage position, each stage keeps its own wear look) | applied at each stage start, never mid-play (WARP-001 W0-11); PM-approved 2026-11-19 under the owner autonomy grant (TECH-001 Q-T184); built in `data/cabinet/cabinet_decay.tres` |
 | Wear detune per level (W0-11) (`ds_cabinet.wear.detune_cents_per_level`) | −2 cents | the stage chiptune runs this many cents flat per wear level (−6 at a0_5); amends AUDIO-001 §3 "`detune_cents = 0` at T0" for Act 0 stages only; PM-approved 2026-11-19 under the owner autonomy grant (TECH-001 Q-T184); built in `data/cabinet/cabinet_decay.tres` |
 | Wear dead bulbs per level (W0-11) (`ds_cabinet.wear.dead_bulbs_per_level`) | 1 | bulbs already dark on the attract card and READY card at that level; PM-approved 2026-11-19 under the owner autonomy grant (TECH-001 Q-T184); built in `data/cabinet/cabinet_decay.tres` |
 | Decay cursed turn, focus (`ds_cabinet.decay.focus_play`) | (0.70, 0.38) of the play view | the off-centre point the glass bulges toward, the collapse ends on and the wound opens at; upper right, where the a0_5 spine sits; never centred; PROPOSED, PM under owner direction 2026-11-19 overnight push (TECH-001 Q-T260, Q-T263); built in `data/cabinet/cabinet_decay.tres` |

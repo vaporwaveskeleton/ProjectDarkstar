@@ -205,7 +205,7 @@ func backdrop_color() -> Color:
 
 
 ## Every mark of this stage's signature this frame, in screen (grid) pixels, inside the playfield
-## (never over the HUD strip or the footer). Empty for the plain sky (a0_1).
+## (never over the HUD strip or the footer). Empty for the plain sky (a0_1, off the three-stage shift).
 func backdrop_marks() -> Array[Rect2]:
 	var out: Array[Rect2] = []
 	if world == null or world.torus == null:

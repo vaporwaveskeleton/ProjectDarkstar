@@ -25,6 +25,9 @@ func before_test() -> void:
 	messages = game.get_node("%Messages")
 	messages.set_process(false)
 	t = game.tuning
+	# the Hauntings are clock-seeded (35 % per READY card): keep the card text deterministic here
+	game.haunts.deck.tuning = game.haunts.deck.tuning.duplicate() as CabinetHauntTuning
+	game.haunts.deck.tuning.chance_ready = 0.0
 
 
 func after_test() -> void:
@@ -61,15 +64,15 @@ func test_the_roster_and_the_tuning_agree_on_three_unmakings() -> void:
 
 
 func test_unmakings_done_are_derived_from_the_stage_index() -> void:
-	var want := [0, 0, 0, 1, 2]
-	for i in 5:
+	var want := [0, 1, 2]
+	for i in 3:
 		game.start_stage(i)
 		assert_int(game.unmakings).override_failure_message("stage %d" % i).is_equal(want[i])
-	assert_int(game.roster.unmakings_before(5)).is_equal(3)
+	assert_int(game.roster.unmakings_before(3)).is_equal(3)
 
 
 func test_an_unmade_entity_counts_one() -> void:
-	game.start_stage(2)
+	game.start_stage(0)
 	game.dismiss_brief()
 	game._on_timer()
 	game._on_entity_unmade()
@@ -91,8 +94,8 @@ func test_the_card_is_up_at_every_stage_start_and_the_world_does_not_tick() -> v
 
 
 func test_a_continue_also_opens_the_card() -> void:
-	game.on_route_entered({"continue_stage": 3, "shift_total": 500})
-	assert_int(game.stage_index).is_equal(3)
+	game.on_route_entered({"continue_stage": 1, "shift_total": 500})
+	assert_int(game.stage_index).is_equal(1)
 	assert_int(game.state).is_equal(CabinetGame.State.BRIEFING)
 	assert_int(game.unmakings).is_equal(1)
 
@@ -189,15 +192,16 @@ func test_every_card_string_resolves_and_the_13_comes_from_data() -> void:
 			assert_bool(r.begins_with("CAB_")).override_failure_message("unresolved key %s" % r).is_false()
 			assert_bool(r.contains("{")).is_false()
 			assert_int(r.length()).is_less_equal(30)
-	assert_str(game.brief_card(game.stages[2])["reminders"][1]).is_equal("%d CHARGES UNMAKE WHAT WAKES." % world.tuning.unravel_hits)
+	assert_str(game.brief_card(game.stages[0])["reminders"][1]).is_equal("%d CHARGES UNMAKE WHAT WAKES." % world.tuning.unravel_hits)
 
 
-func test_unmakings_line_reads_0_1_2_from_a0_3() -> void:
-	assert_str(game.brief_card(game.stages[0])["unmakings"]).is_empty()
-	assert_str(game.brief_card(game.stages[1])["unmakings"]).is_empty()
+func test_unmakings_line_reads_0_1_2_across_the_shift() -> void:
+	# the retired cold tutorials (a0_1, a0_2) are still data: their card has no Unmakings line
+	for path in ["res://data/cabinet/stage_first_vigil.tres", "res://data/cabinet/stage_drift.tres"]:
+		assert_str(game.brief_card(load(path) as CabinetStage)["unmakings"]).is_empty()
 	var want := ["UNMAKINGS 0 / 3", "UNMAKINGS 1 / 3", "UNMAKINGS 2 / 3"]
 	for k in 3:
-		game.start_stage(2 + k)
+		game.start_stage(k)
 		assert_str(messages.brief()["unmakings"]).is_equal(want[k])
 
 
@@ -251,7 +255,7 @@ func test_the_unit_icons_have_extents_from_tuning() -> void:
 
 func test_a_restart_under_the_card_still_unpauses_the_world_on_dismiss() -> void:
 	game.start_stage(1)                    # set_stage / CONTINUE while the first card is up
-	game.start_stage(4)
+	game.start_stage(2)
 	game.dismiss_brief()
 	assert_bool(world.paused_sim).override_failure_message("the world must run after the card closes").is_false()
 	assert_int(game.state).is_equal(CabinetGame.State.INTRO)

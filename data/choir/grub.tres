@@ -5,8 +5,8 @@
 [resource]
 script = ExtResource("1")
 ds_namespace = "ds_choir.grub"
-source_section = "SYS-001 §3 (HP 4, carry 130, flee 190, seek 160, flee radius 110, respawn 6.0 s), §7.1 (score 150); steering, radii, idle orbit, waypoint reach, drop ✱ (Cabinet grub_flock.gd)"
-hp = 4
+source_section = "SYS-001 §3 (HP 2 [owner F-11 2026-11-20, was 4], carry 130, flee 190, seek 160, flee radius 110, respawn 6.0 s), §7.1 (score 150); steering, radii, idle orbit, waypoint reach, drop ✱ (Cabinet grub_flock.gd)"
+hp = 2
 carry_speed_px_s = 130.0
 flee_speed_px_s = 190.0
 seek_speed_px_s = 160.0
