@@ -15,6 +15,8 @@ const AUTOMATION_GATE := "res://core/automation/automation_gate.gd"
 ## Dev-only routes (e.g. the Aether gallery). Release builds exclude this file and scenes/dev/.
 const DEV_ROUTE_TABLE := "res://data/routes/dev_route_table.tres"
 const DEV_FEATURES: Array[String] = ["editor", "automation_dev", "automation_qa"]
+## Developer debug menu (P key; TECH-001 §9.1). Editor / `automation_dev` builds only, never QA or release.
+const DEBUG_MENU := "res://core/automation/debug_menu.gd"
 
 ## GdUnit injects a prepared scenario runner before add_child (dev/QA only).
 var automation_runner: Node = null
@@ -30,6 +32,9 @@ func _ready() -> void:
 	var runner: Node = automation_runner if automation_runner != null else _make_automation_runner()
 	if runner != null:
 		add_child(runner)
+	var debug_menu := _make_debug_menu(runner != null)
+	if debug_menu != null:
+		add_child(debug_menu)
 	# The first route of a launch is the Cabinet switching on (attract plays its power-on test).
 	# Dev builds may start elsewhere with `-- --route=<id>` (LaunchRoute); `--smoke` keeps its path.
 	var first: StringName = SceneRouter.table.initial_route
@@ -56,6 +61,21 @@ func _make_automation_runner() -> Node:
 	if not ResourceLoader.exists(AUTOMATION_GATE):
 		return null
 	return (load(AUTOMATION_GATE) as GDScript).call("create_node", OS.get_cmdline_user_args()) as Node
+
+
+## The P-key debug menu, or null: not in the boot smoke, a scenario run, a QA or a release build. The build
+## check comes first, then the existence check (a release build excludes the file).
+func _make_debug_menu(scenario_run: bool) -> Node:
+	if _smoke or scenario_run or not _debug_menu_allowed():
+		return null
+	if not ResourceLoader.exists(DEBUG_MENU):
+		return null
+	return (load(DEBUG_MENU) as GDScript).new() as Node
+
+
+## Editor or `automation_dev` only (not `automation_qa`). `has_feature` is injectable for tests.
+static func _debug_menu_allowed(has_feature: Callable = OS.has_feature) -> bool:
+	return bool(has_feature.call("editor")) or bool(has_feature.call("automation_dev"))
 
 
 ## Editor, dev or QA build. `has_feature` is injectable so tests can fake a release build.

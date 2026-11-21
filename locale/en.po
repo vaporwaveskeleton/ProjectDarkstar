@@ -1248,3 +1248,51 @@ msgstr "GRUB INTERCEPTED A CHARGE"
 msgid "CAB_CAPTION_BEWARE"
 msgstr "BEWARE. THE SEPULCHRE IS COMPLETE"
 
+
+#. Developer debug menu (P key, dev builds only; TECH-001 §9.1). Never shipped to players.
+msgid "MENU_DEBUG_TITLE"
+msgstr "Debug: Stages"
+
+#. One-line hint under the debug menu title. Name = play now; lamp = in the shift.
+msgid "MENU_DEBUG_HINT"
+msgstr "Name: play now. Lamp: in shift (order = switch-on order)"
+
+#. Lamp on each stage row: this stage is part of the chosen shift.
+msgid "MENU_DEBUG_IN_SHIFT"
+msgstr "In shift"
+
+#. Debug menu action: apply the chosen shift and restart on its first stage.
+msgid "MENU_DEBUG_START"
+msgstr "Start this shift"
+
+#. Debug menu action: go back to the shipped stage roster.
+msgid "MENU_DEBUG_RESET"
+msgstr "Reset to data roster"
+
+#. Debug menu action: close the menu.
+msgid "MENU_DEBUG_CLOSE"
+msgstr "Close"
+
+#. Debug menu summary line. {stages} = numbered stage names, comma separated.
+msgid "MENU_DEBUG_SHIFT"
+msgstr "Shift: {stages}"
+
+#. Debug menu summary when no stage is switched on.
+msgid "MENU_DEBUG_NONE"
+msgstr "none"
+
+#. Debug menu summary line. {n} = Unmakings the chosen shift needs.
+msgid "MENU_DEBUG_UNMAKINGS"
+msgstr "Unmakings: {n}"
+
+#. Debug menu status: the action needs a running cabinet.
+msgid "MENU_DEBUG_NO_CABINET"
+msgstr "Start a New Vigil first"
+
+#. Debug menu status: the shift choice is remembered but no cabinet is running.
+msgid "MENU_DEBUG_NO_CABINET_KEPT"
+msgstr "Kept for the next New Vigil"
+
+#. Debug menu status after Reset with no cabinet running.
+msgid "MENU_DEBUG_RESET_DONE"
+msgstr "Data roster restored"
