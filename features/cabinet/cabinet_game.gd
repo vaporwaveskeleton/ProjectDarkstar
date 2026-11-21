@@ -32,7 +32,7 @@ const KEY_STAGE_REACHED := "act0_stage_reached"
 ## Where THE PRETENCE goes: the first Unmaking cinematic, which then routes to the Ruins.
 const UNMAKING_ROUTE := &"aether"
 
-@export var roster: CabinetStageRoster   ## the shift, a0_1, a0_4, a0_5 in play order (data/cabinet/stage_roster.tres; Q-T452)
+@export var roster: CabinetStageRoster   ## the shift, a0_1, a0_3, a0_4, a0_5 in play order (data/cabinet/stage_roster.tres; Q-T452)
 @export var tuning: CabinetTuning
 
 ## Read-only view of `roster.stages` (the automation probe and tests read `stages`).
@@ -522,7 +522,7 @@ func _on_timer() -> void:
 			if is_last_stage():
 				messages.roll_credits(_full_credit_lines(), PackedInt32Array(STAT_ENTRY_INDICES))
 				_enter(State.CREDITS, world.fx_tuning.credits_full_seconds)
-			else:   # mid-shift unmade (a0_4 on the three-stage shift; a0_1 is cleared, not unmade): the banner holds, then the next stage
+			else:   # mid-shift unmade (a0_3, a0_4 on the four-stage shift; a0_1 is cleared, not unmade): the banner holds, then the next stage
 				_hold_banner("CAB_ENTITY_DOWN")
 		State.CREDITS:
 			_note_hands()
@@ -555,7 +555,7 @@ func _hold_banner(key: String) -> void:
 	messages.banner(tr(key), MID_SHIFT_HOLD_SECONDS)
 	if haunts != null:
 		if haunts.enabled and decay_tuning.wear_level(stage_index) == haunts.tuning.min_wear_level:
-			haunts.plant_crag_slope()   # the early crag figure, seeded once at the end of the first wear level, a0_1 (PM 2026-11-20, Q-T452)
+			haunts.plant_crag_slope()   # the early crag figure, seeded once at the end of the first wear level, a0_3 (PM 2026-11-20)
 		haunts.moment(CabinetHauntDeck.HOLD)
 	_enter(State.CREDITS, MID_SHIFT_HOLD_SECONDS)
 

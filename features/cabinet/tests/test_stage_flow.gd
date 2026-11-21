@@ -38,7 +38,7 @@ func _last() -> int:
 # --- credits → next stage -----------------------------------------------------------------
 
 func test_a_mid_shift_unmade_holds_the_banner_then_starts_the_next_stage() -> void:
-	game.start_stage(1)    # a0_4: the entity wakes, but the shift goes on
+	game.start_stage(1)    # a0_3: the entity wakes, but the shift goes on
 	game.state = game.State.UNMADE
 	game._on_timer()
 	assert_int(game.state).is_equal(game.State.CREDITS)
@@ -49,7 +49,7 @@ func test_a_mid_shift_unmade_holds_the_banner_then_starts_the_next_stage() -> vo
 	game._on_timer()
 	assert_int(game.state).is_equal(game.State.BRIEFING)   # the next stage opens on its stage card
 	assert_int(game.stage_index).is_equal(2)
-	assert_str(String(world.stage.id)).is_equal("a0_5")
+	assert_str(String(world.stage.id)).is_equal("a0_4")
 
 
 func test_a_cleared_stage_starts_the_next_stage() -> void:
@@ -102,7 +102,7 @@ func test_continue_starts_a_new_game_at_that_stage() -> void:
 	game.record.grubs_destroyed = 4
 	game.on_route_entered({"continue_stage": 1})
 	assert_int(game.stage_index).is_equal(1)
-	assert_str(String(world.stage.id)).is_equal("a0_4")
+	assert_str(String(world.stage.id)).is_equal("a0_3")
 	assert_int(game.state).is_equal(game.State.BRIEFING)   # the next stage opens on its stage card
 	assert_int(game.score.score).is_equal(0)
 	assert_int(game.score.lives).is_equal(game.tuning.lives_start)
@@ -143,7 +143,7 @@ func test_the_ready_card_shows_the_zone_line_when_the_stage_has_one() -> void:
 	game.start_stage(1)
 	game.dismiss_brief()
 	var top := messages.ready_zone_top()
-	assert_str(messages.ready_zone()).is_equal(tr("CAB_ZONE_SHOAL"))
+	assert_str(messages.ready_zone()).is_equal(tr("CAB_ZONE_CENSER_WATCH"))
 	assert_float(top).is_greater_equal(0.0)
 	assert_float(top + messages.block_height(messages.ready_zone(), 1)).is_less_equal(messages.ready_title_top())
 
@@ -290,13 +290,13 @@ func test_saved_continue_stage_edge_cases() -> void:
 	assert_int(CabinetGame.saved_continue_stage({"act0_stage_reached": 2}, CabinetStageRoster.default_size())).is_equal(2)
 
 
-## F-14: a profile saved by the five-stage build (stage_reached 3 or 4) clamps to the last of the three stages.
+## F-14: a profile saved by the five-stage build (stage_reached 3 or 4) clamps to the last of the four stages.
 func test_a_stage_reached_from_the_five_stage_build_clamps_to_the_last_stage() -> void:
 	var n := CabinetStageRoster.default_size()
-	assert_int(n).is_equal(3)
-	assert_int(CabinetGame.saved_continue_stage({"act0_stage_reached": 3}, n)).is_equal(2)
-	assert_int(CabinetGame.saved_continue_stage({"act0_stage_reached": 4}, n)).is_equal(2)
-	assert_int(CabinetGame.saved_continue_stage({"act0_stage_reached": 4.0}, n)).is_equal(2)
+	assert_int(n).is_equal(4)
+	assert_int(CabinetGame.saved_continue_stage({"act0_stage_reached": 3}, n)).is_equal(3)
+	assert_int(CabinetGame.saved_continue_stage({"act0_stage_reached": 4}, n)).is_equal(3)
+	assert_int(CabinetGame.saved_continue_stage({"act0_stage_reached": 4.0}, n)).is_equal(3)
 	assert_int(CabinetGame.saved_continue_stage({"act0_stage_reached": 0}, n)).is_equal(0)
 	assert_int(CabinetGame.saved_continue_stage({"act0_stage_reached": 4, "act0_complete": true}, n)).is_equal(-1)
 

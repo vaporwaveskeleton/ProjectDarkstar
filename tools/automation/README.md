@@ -78,7 +78,7 @@ follow-up). Fixtures: `{"profile": "<name>"}` loads
 
 `a1_golden_path` is long (`timeout_frames` 150000, so outside the suite), profile `dev` (dev build only), `fail_on_errors`,
 args `--segments=20 --hits=1` and `set_lives 9` per stage so the demo autopilot can finish Act 0 (it cannot
-win a0_4 or a0_5 unaided): coin, Act 0, reveal, Unmaking, Ruins, sector. About 20600 frames. Listed in `LONG_SCENARIOS` in
+win a0_3, a0_4 or a0_5 unaided): coin, Act 0, reveal, Unmaking, Ruins, sector. About 20600 frames. Listed in `LONG_SCENARIOS` in
 `core/automation/tests/test_scenario_schema.gd` (every other shipped scenario must be suite-valid). Run it with `run a1_golden_path`
 (`--windowed` for the seven stills).
 
@@ -133,11 +133,11 @@ node tools/automation/darkstar_auto.js run-all [--only=<substr>]  # every scenar
   `kill_all` (Acolytes, Grubs, hostile shots), `kill_acolyte{acolyte_id}` (int or "last"; kills just that Acolyte, leaves shots alone; fails if no live Acolyte has that id), `place_entity` (dx,dy, |v| ≤ 4000; entity must be awake), `wake_entity`
   (needs a non-Cold Sepulchre: every stage of the three-stage shift wakes (F-14); awake after about 4.2 s: wait on `cabinet/world entity_awake`), `pause_sim`, `step_sim` (needs paused_sim; steps ArcadeWorld only, not
   the CabinetGame state machine, so the death timer and respawn do not advance).
-- **Stage scenarios.** `cabinet/game` has prop `stage_id` (`a0_1`, `a0_4`, `a0_5` in the shift, `""` out of range). The scenarios are named by stage id (Q-T452: the shift is a0_1, a0_4, a0_5):
-  `a0_stage_1_first_vigil` (index 0, cold: no `wake_entity`), `a0_stage_4_shoal` (index 1), `a0_stage_5_stillwater` (index 2) each go coin, New Vigil, play,
+- **Stage scenarios.** `cabinet/game` has prop `stage_id` (`a0_1`, `a0_3`, `a0_4`, `a0_5` in the shift, `""` out of range). The scenarios are named by stage id (Q-T452: the shift is a0_1, a0_3, a0_4, a0_5):
+  `a0_stage_1_first_vigil` (index 0, cold: no `wake_entity`), `a0_stage_3_censer_watch` (1), `a0_stage_4_shoal` (2), `a0_stage_5_stillwater` (3) each go coin, New Vigil, play,
   `set_stage N`, still during READY, play, then assert `stage_index`, `stage_id` and the start-of-play geode / Grub /
-  Acolyte counts (entity cold); the waking stages (a0_4, a0_5) also `wake_entity`, wait `entity_awake`, still. Stills `stage_N_ready`,
-  `stage_N_play`, `stage_N_window` (+ `stage_N_awake`), snapshot `stage_N`. 522 frames (a0_1), 779 (a0_4, a0_5). Acolyte
+  Acolyte counts (entity cold); the waking stages (a0_3-a0_5) also `wake_entity`, wait `entity_awake`, still. Stills `stage_N_ready`,
+  `stage_N_play`, `stage_N_window` (+ `stage_N_awake`), snapshot `stage_N`. 522 frames (a0_1), 779 (a0_3-a0_5). Acolyte
   `eq` asserts may need loosening when the P2 pressure switches land; the awake phase is not asserted.
 - **Death scenarios.** `a0_death_marks_clear` (marks held through DEAD, cleared on respawn, `killer_kind` "none")
   and `a0_death_reduced_motion` (uses `set_setting`; chalk completes at once with Reduced Motion). Dev steps, so

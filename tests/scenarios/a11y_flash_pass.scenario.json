@@ -23,6 +23,7 @@
 		{"do": "wait_until", "id": "cabinet/game", "prop": "stage_index", "eq": 1, "within": 30000},
 		{"do": "set_lives", "lives": 9},
 		{"do": "wait_until", "id": "cabinet/game", "prop": "stage_index", "eq": 2, "within": 30000},
+		{"do": "wait_until", "id": "cabinet/game", "prop": "stage_index", "eq": 3, "within": 30000},
 		{"do": "set_lives", "lives": 9},
 		{"do": "set_lives", "lives": 9},
 		{"do": "luma_begin", "name": "act0_last_stage"},

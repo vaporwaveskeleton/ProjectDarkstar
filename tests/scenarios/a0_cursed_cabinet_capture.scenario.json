@@ -54,13 +54,13 @@
 		},
 		{
 			"do": "set_stage",
-			"index": 0
+			"index": 1
 		},
 		{
 			"do": "wait_until",
 			"id": "cabinet/game",
 			"prop": "stage_index",
-			"eq": 0,
+			"eq": 1,
 			"within": 10
 		},
 		{
@@ -69,7 +69,7 @@
 		},
 		{
 			"do": "screenshot",
-			"name": "10_a0_1_after_image",
+			"name": "10_a0_3_after_image",
 			"target": "window"
 		},
 		{
@@ -78,18 +78,18 @@
 		},
 		{
 			"do": "screenshot",
-			"name": "11_a0_1_after_image_arcade",
+			"name": "11_a0_3_after_image_arcade",
 			"target": "arcade"
 		},
 		{
 			"do": "set_stage",
-			"index": 2
+			"index": 3
 		},
 		{
 			"do": "wait_until",
 			"id": "cabinet/game",
 			"prop": "stage_index",
-			"eq": 2,
+			"eq": 3,
 			"within": 10
 		},
 		{

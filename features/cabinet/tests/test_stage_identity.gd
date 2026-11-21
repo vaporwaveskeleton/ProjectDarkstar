@@ -38,7 +38,7 @@ func test_every_stage_has_its_own_backdrop() -> void:
 		assert_bool(Starfield.BACKDROPS.has(st.backdrop)).override_failure_message("%s backdrop %s" % [st.id, st.backdrop]).is_true()
 		assert_bool(seen.has(st.backdrop)).override_failure_message("%s repeats backdrop %s" % [st.id, st.backdrop]).is_false()
 		seen[st.backdrop] = true
-	assert_int(seen.size()).is_equal(3)
+	assert_int(seen.size()).is_equal(4)   # a0_1 keeps the plain sky (empty), the other three their own
 	assert_str(String((load("res://data/cabinet/stage_first_vigil.tres") as CabinetStage).backdrop)).is_empty()   # the retired a0_1 keeps the plain sky
 
 

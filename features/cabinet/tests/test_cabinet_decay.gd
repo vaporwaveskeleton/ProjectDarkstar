@@ -32,7 +32,7 @@ func test_the_numbers_are_sys001s() -> void:
 	assert_float(t.shell_detune_cents_end).is_equal(-40.0)
 	assert_float(t.hum_hz_end).is_equal(47.0)
 	assert_float(t.ending5_line_hold_s).is_equal(4.0)
-	assert_array(Array(t.wear_level_by_stage)).is_equal([1, 2, 3])
+	assert_array(Array(t.wear_level_by_stage)).is_equal([0, 1, 2, 3])
 	assert_float(t.wear_detune_cents_per_level).is_equal(-2.0)
 	assert_int(t.wear_dead_bulbs_per_level).is_equal(1)
 
@@ -164,12 +164,13 @@ func test_the_reveal_has_no_title_card_and_no_entity_line() -> void:
 	assert_int(at_line).is_greater(src.find("func _ending5"))
 
 
-func test_wear_rises_per_stage_from_1_and_never_lights_the_print() -> void:
+func test_wear_rises_per_stage_from_a0_3_and_never_lights_the_print() -> void:
 	var t := _tuning()
-	assert_int(t.wear_level(0)).is_equal(1)
-	assert_int(t.wear_level(1)).is_equal(2)
-	assert_int(t.wear_level(2)).is_equal(3)
-	assert_int(t.wear_level(3)).is_equal(0)   # past the roster: no wear
+	assert_int(t.wear_level(0)).is_equal(0)   # a0_1 is cold: no wear
+	assert_int(t.wear_level(1)).is_equal(1)
+	assert_int(t.wear_level(2)).is_equal(2)
+	assert_int(t.wear_level(3)).is_equal(3)
+	assert_int(t.wear_level(4)).is_equal(0)   # past the roster: no wear
 	assert_float(t.wear_bleach_per_level * 3.0).is_less(t.print_bleach_max)
 
 

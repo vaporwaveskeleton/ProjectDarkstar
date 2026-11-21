@@ -1,11 +1,11 @@
 extends GdUnitTestSuite
-## The Act 0 shift (SYS-001 §1.5, Q-T452 owner ruling 2026-11-20): three stages in order (a0_1, a0_4, a0_5): a0_1 is a COLD stage
-## (cleared, never unmade), a0_4 and a0_5 each wake and are unmade (two Unmakings). The star spine only on THE LAST NORMAL DAY.
-## Every key has English text. a0_2 / a0_3 stay as data; the old five-stage shift is stage_roster_five.tres (rollback).
+## The Act 0 shift (SYS-001 §1.5, Q-T452 owner ruling 2026-11-20): three stages in order (a0_1, a0_3, a0_4, a0_5): a0_1 is a COLD stage
+## (cleared, never unmade, counted apart from the three); a0_3, a0_4, a0_5 each wake and are unmade (three Unmakings). The star spine only on THE LAST NORMAL DAY.
+## Every key has English text. a0_2 stays as data; the old five-stage shift is stage_roster_five.tres (rollback).
 
 const ROSTER := "res://data/cabinet/stage_roster.tres"
 const FIVE := "res://data/cabinet/stage_roster_five.tres"
-const IDS: Array[StringName] = [&"a0_1", &"a0_4", &"a0_5"]
+const IDS: Array[StringName] = [&"a0_1", &"a0_3", &"a0_4", &"a0_5"]
 const IDS_FIVE: Array[StringName] = [&"a0_1", &"a0_2", &"a0_3", &"a0_4", &"a0_5"]
 const SHARDS_PER_GEODE := 3     ## CabinetStage.geodes lint: geodes * 3 >= 24 shards of supply
 const MIN_SHARDS := 24
@@ -17,9 +17,9 @@ func before_test() -> void:
 	roster = load(ROSTER) as CabinetStageRoster
 
 
-func test_the_roster_holds_the_three_stages_in_order() -> void:
+func test_the_roster_holds_the_four_stages_in_order() -> void:
 	assert_object(roster).is_not_null()
-	assert_int(roster.size()).is_equal(3)
+	assert_int(roster.size()).is_equal(4)
 	var ids: Array[StringName] = []
 	for st in roster.stages:
 		ids.append(st.id)
@@ -47,7 +47,7 @@ func test_the_five_stage_rollback_roster_keeps_the_cold_tutorials() -> void:
 		ids.append(st.id)
 	assert_array(ids).is_equal(IDS_FIVE)
 	assert_int(five.unmakings_required()).is_equal(3)
-	assert_int(roster.unmakings_required()).is_equal(2)   # a0_1 is cold
+	assert_int(roster.unmakings_required()).is_equal(3)   # a0_1 is cold
 	assert_int(roster.unmakings_before(0)).is_equal(0)
 	for id: StringName in [&"a0_1", &"a0_2"]:
 		var st := five.get_stage(five.index_of(id))
@@ -56,7 +56,7 @@ func test_the_five_stage_rollback_roster_keeps_the_cold_tutorials() -> void:
 
 
 func test_every_waking_shift_stage_must_be_unmade() -> void:
-	for id: StringName in [&"a0_4", &"a0_5"]:
+	for id: StringName in [&"a0_3", &"a0_4", &"a0_5"]:
 		var st := roster.get_stage(roster.index_of(id))
 		assert_int(st.goal).override_failure_message("%s goal" % id).is_equal(CabinetStage.Goal.UNMAKE_ENTITY)
 		assert_bool(st.sepulchre_wakes).override_failure_message("%s must wake" % id).is_true()
@@ -106,7 +106,7 @@ func test_the_last_normal_day_population() -> void:
 func test_the_default_roster_is_this_roster_and_counts_three() -> void:
 	assert_str(CabinetStageRoster.DEFAULT_PATH).is_equal(ROSTER)
 	assert_object(CabinetStageRoster.default_roster()).is_not_null()
-	assert_int(CabinetStageRoster.default_size()).is_equal(3)
+	assert_int(CabinetStageRoster.default_size()).is_equal(4)
 
 
 ## P2 "pressure" switches per stage (PM Q-T105, 2026-11-19); a0_1 keeps every default (= pre-P2).
@@ -156,8 +156,8 @@ func test_the_shift_opens_with_the_cold_first_vigil() -> void:
 	assert_int(roster.unmakings_before(2)).is_equal(1)
 
 
-## The shift's three cards read FIRST VIGIL, SECOND VIGIL, THE LAST NORMAL DAY (a0_5 keeps its name; Q-T455 asks about THIRD VIGIL).
+## The shift's four cards read FIRST, SECOND, THIRD VIGIL and THE LAST NORMAL DAY (a0_5 keeps its name; Q-T455 asks about FOURTH VIGIL).
 func test_the_shift_card_titles() -> void:
-	var want := ["FIRST VIGIL", "SECOND VIGIL", "THE LAST NORMAL DAY"]
+	var want := ["FIRST VIGIL", "SECOND VIGIL", "THIRD VIGIL", "THE LAST NORMAL DAY"]
 	for i in roster.size():
 		assert_str(tr(roster.get_stage(i).title_key)).is_equal(want[i])

@@ -215,8 +215,8 @@ func test_every_shift_stage_may_haunt() -> void:
 	game.set_process(false)
 	for i in game.stages.size():
 		game.start_stage(i)
-		assert_bool(game.haunts.enabled).override_failure_message("stage %d haunts" % i).is_true()
-	assert_int(game.stages.size()).is_equal(3)
+		assert_bool(game.haunts.enabled).override_failure_message("stage %d haunts" % i).is_equal(i >= 1)   # a0_1 is wear 0: no hauntings
+	assert_int(game.stages.size()).is_equal(4)
 	game.free()
 
 
@@ -241,10 +241,10 @@ func test_a0_4_and_a0_5_have_the_stage_loop_detuned_by_wear() -> void:
 	var game := SCENE.instantiate() as CabinetGame
 	add_child(game)
 	game.set_process(false)
-	assert_str(String(game.stages[1].music)).is_equal("a0_stage_loop")
 	assert_str(String(game.stages[2].music)).is_equal("a0_stage_loop")
+	assert_str(String(game.stages[3].music)).is_equal("a0_stage_loop")
 	assert_str(String(game.stages[0].music)).is_empty()
-	game.start_stage(2)
+	game.start_stage(3)
 	var d := _decay()
 	assert_float(game.music.pitch_scale()).is_equal_approx(CabinetDecayTuning.cents_to_pitch(d.wear_detune_cents_per_level * 3.0), 0.00001)
 	assert_float(game.music.pitch_scale()).is_less(1.0)
