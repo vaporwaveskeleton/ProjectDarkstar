@@ -23,6 +23,9 @@ signal finished
 
 const ENDING5_KEYS: Array[String] = ["CAB_E5_SCREEN_01", "CAB_E5_SCREEN_02", "CAB_E5_SCREEN_03", "CAB_E5_SCREEN_04", "CAB_E5_SCREEN_05",
 	"CAB_E5_SCREEN_06", "CAB_E5_SCREEN_07", "CAB_E5_SCREEN_08", "CAB_E5_SCREEN_09", "CAB_E5_SCREEN_10"]
+## What counts as "a button" on a held screen: the lance button (the one the stage card and the whole shift use),
+## Enter/Space (ui_accept), and ui_cancel/pause. Lance-only players were stuck on screen 1 (THANK YOU FOR PLAYING.).
+const PRESS_ACTIONS: Array[StringName] = [&"fire_lance", &"ui_accept", &"ui_cancel", &"pause"]
 const ENDING5_AUTO_S := 3.0          ## ✱ dev capture only (`--autopilot`): a held screen advances by itself
 
 ## The tear → hand-off, 8.0 s in all (✱ split of the ruled 8 s).
@@ -140,7 +143,7 @@ func _ending5(messages: CabinetMessages) -> void:
 	messages.clear()
 	var auto := OS.get_cmdline_user_args().has("--autopilot")
 	for key in ENDING5_KEYS:
-		messages.hold_screen(tr(key))
+		messages.hold_screen(tr(key), true)
 		_pressed = false
 		_awaiting_press = true
 		var waited := 0.0
@@ -148,7 +151,7 @@ func _ending5(messages: CabinetMessages) -> void:
 		while _running and not _pressed and not (auto and waited >= ENDING5_AUTO_S):
 			await get_tree().process_frame
 			waited += get_process_delta_time()
-			if Input.is_action_just_pressed(&"ui_accept"):
+			if _is_press_now():
 				_pressed = true
 		_awaiting_press = false
 		if not _running:
@@ -157,6 +160,14 @@ func _ending5(messages: CabinetMessages) -> void:
 	messages.hold_screen(tr("REVEAL_PRETENCE"))
 	await _wait(tuning.ending5_line_hold_s)
 	messages.hold_screen("")
+
+
+## A fresh press this frame (polled; the held screen must not be dismissed by the press that showed it).
+func _is_press_now() -> bool:
+	for a in PRESS_ACTIONS:
+		if Input.is_action_just_pressed(a):
+			return true
+	return false
 
 
 func _make_decay(game: Node) -> CabinetDecay:
@@ -196,7 +207,9 @@ func _process(_delta: float) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not _running:
 		return
-	var press := event.is_action_pressed(&"ui_accept") or event.is_action_pressed(&"ui_cancel") or event.is_action_pressed(&"pause")
+	var press := false
+	for a in PRESS_ACTIONS:
+		press = press or event.is_action_pressed(a)
 	if not press:
 		return
 	if _awaiting_press:
