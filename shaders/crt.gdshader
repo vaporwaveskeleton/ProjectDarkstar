@@ -24,6 +24,15 @@ uniform vec2 focus = vec2(0.5, 0.5);
 uniform float bulge : hint_range(0.0, 1.0) = 0.0;
 uniform float bulge_radius : hint_range(0.01, 1.0) = 0.22;
 
+// The stage hand-off (TECH-001 Q-T457): a shock ring spreads from `shock_centre` (screen UV), pushing the whole play view
+// radially (pixel-snapped: it only moves texels) and a register slip doubles the picture 1-2 texels to the right
+// (picks one of two sampled registers: no new colour). All 0 outside the hand-off and under photosensitivity / reduced motion.
+uniform vec2 shock_centre = vec2(0.5, 0.5);
+uniform float shock_r : hint_range(0.0, 3.0) = 0.0;     // ring radius, in screen heights
+uniform float shock_w : hint_range(0.01, 0.5) = 0.09;   // ring half-width, in screen heights
+uniform float shock_amp : hint_range(-40.0, 40.0) = 0.0; // push in texels (negative = inward)
+uniform float slip : hint_range(0.0, 8.0) = 0.0;        // register slip in texels
+
 const float LINE_END = 0.55;        // share of `collapse` spent squeezing to the line; the rest shrinks and fades the dot
 const float LINE_H = 0.005;         // the line's half height (screen height = 1)
 
@@ -62,6 +71,17 @@ void fragment() {
 		suv0 = focus + d * (1.0 - 0.42 * k);
 		suv0.y = max(suv0.y, play_top);
 	}
+	if (shock_amp != 0.0 && in_play) {
+		vec2 ts1 = vec2(textureSize(TEXTURE, 0));
+		vec2 da = (suv0 - shock_centre) * vec2(ts1.x / ts1.y, 1.0);
+		float dist = length(da);
+		float x = (dist - shock_r) / shock_w;
+		float prof = exp(-x * x) + 0.35 * sin(x * 4.0) * exp(-x * x * 0.2);   // the ring and a few ripples behind it
+		vec2 dir = da / max(dist, 0.0001);
+		suv0 -= dir * shock_amp * prof / ts1;
+		suv0 = (floor(suv0 * ts1) + 0.5) / ts1;               // pixel-snapped
+		suv0.y = max(suv0.y, play_top);
+	}
 	vec2 uv = crt_sample_uv(suv0);
 	if (in_play && play_top > 0.0 && uv.y < play_top) {
 		keep = 0.0;   // curvature or sag would reach into the HUD strip: dark tube instead
@@ -71,6 +91,10 @@ void fragment() {
 		// the Decay's persistence and bleed, quantised so the register limits hold
 		// (inline: a canvas shader cannot pass TEXTURE to a function)
 		vec3 pick = crt_quantize(texture(TEXTURE, uv).rgb);
+		if (slip > 0.0) {
+			vec3 other = crt_quantize(texture(TEXTURE, uv - vec2(floor(slip) / float(textureSize(TEXTURE, 0).x), 0.0)).rgb);
+			pick = dot(other, vec3(1.0)) > dot(pick, vec3(1.0)) ? other : pick;   // the brighter register of the pair: a doubled picture
+		}
 		if (ghost > 0.0 || bleed > 0.0) {
 			vec2 px = 1.0 / vec2(textureSize(TEXTURE, 0));
 			if (ghost > 0.0) {

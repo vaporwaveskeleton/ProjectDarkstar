@@ -10,7 +10,11 @@ extends TunableResource
 @export var handoff_warp_px: float = 9.0                  ## px ✱ the sky's low-frequency bend, peak mid-morph (0 under photosensitivity / reduced motion)
 @export var handoff_tear_px: float = 12.0                 ## px ✱ the high-frequency tear: a third of the 5 px row bands jump by up to this
 @export var handoff_ghost_px: float = 3.0                 ## px ✱ colour-register separation: a second VOID register slips off every other mark
-@export var handoff_wash: float = 0.16                    ## ✱ peak alpha of the one kill-frame wash over the playfield (VOID_5, a single pulse)
+@export var handoff_shock_px: float = 9.0                 ## px ✱ the shock ring's radial push on the sky and (x1.6, in texels) on the whole play view (CRT shader)
+@export var handoff_shock_width: float = 0.13             ## ✱ the ring's half-width, in screen heights
+@export var handoff_swirl_px: float = 14.0                ## px ✱ marks fly off their old line this far (random direction, bell over the morph) as they re-form
+@export var handoff_slip_px: float = 2.0                  ## px ✱ the whole play view's register slip: a second copy of the picture, offset (picks registers, adds no colour)
+@export var handoff_wash: float = 0.05                    ## ✱ peak alpha of the one kill-frame wash over the playfield (VOID_5, a single pulse)
 @export var handoff_wash_s: float = 0.3                   ## s ✱ the wash falls over this long (one event, never a strobe)
 @export var handoff_wear_gain: float = 0.35               ## ✱ every displacement x (1 + wear level x this): later stages tear harder
 @export var sepulchre_down_burst_count: int = 60          ## ✱

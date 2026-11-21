@@ -157,7 +157,7 @@ func test_catalog_and_validator_agree() -> void:
 const LONG_SCENARIOS: Array[String] = ["a1_golden_path.scenario.json", "ruins_onboarding_first_visit.scenario.json", "perf_golden_path.scenario.json", "a11y_flash_pass.scenario.json",
 	"warp_t1_capture.scenario.json", "a0_reveal_decay_capture.scenario.json", "perf_ruins.scenario.json", "a1_run_loop.scenario.json",
 	"ui_menus_capture.scenario.json", "a0_cursed_cabinet_capture.scenario.json", "a0_haunt_attract_capture.scenario.json",
-	"a0_rework_capture.scenario.json", "a0_stage_transition_capture.scenario.json", "a0_stage_transition_perf.scenario.json", "a1_two_seams.scenario.json", "a1_two_seams_acolyte.scenario.json", "pm02_look_capture.scenario.json"]
+	"a0_rework_capture.scenario.json", "a0_stage_transition_capture.scenario.json", "a0_stage_transition_perf.scenario.json", "a0_stage_transition_strip.scenario.json", "a1_two_seams.scenario.json", "a1_two_seams_acolyte.scenario.json", "pm02_look_capture.scenario.json"]
 
 
 func test_shipped_scenarios_are_valid_for_the_suite() -> void:

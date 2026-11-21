@@ -57,6 +57,7 @@ var state: int = State.INTRO
 var stage_index := 0
 var unmakings := 0                ## Unmakings done this shift (run-scoped, never saved); on a stage start it is derived from the stage index
 var _brief_t := 0.0               ## s the stage card has been up
+var _hand_off_driven := false      ## the shader / scanner were last set by a hand-off (so they are cleared once it ends)
 var _brief_froze := false         ## the card paused the world (and so must unpause it)
 var _timer := 0.0
 var _profile: Dictionary = {}
@@ -478,6 +479,7 @@ func _process(delta: float) -> void:
 	if mat:
 		mat.set_shader_parameter(&"time_s", world.shader_time)
 	_poll_unmaking_warmup()
+	_drive_hand_off(mat)
 	if demo:
 		_demo_t -= delta
 		if _demo_t <= 0.0 or state == State.GAME_OVER:
@@ -551,6 +553,26 @@ func _poll_unmaking_warmup() -> void:
 	SceneWarmup.warm_spread(self, SceneRouter.table.path_for(UNMAKING_ROUTE), _warm)
 
 
+## Feeds the hand-off's screen-space part to the CRT shader (the shock ring and the register slip) and the scanner frame.
+## Idle (nothing set) outside a hand-off.
+func _drive_hand_off(mat: ShaderMaterial) -> void:
+	var active := world.stars.morphing()
+	if not active and not _hand_off_driven:
+		return
+	_hand_off_driven = active
+	var st := world.stars.shock_state() if active else {"centre": Vector2(0.5, 0.5), "r": 0.0, "w": 0.1, "amp": 0.0, "slip": 0.0}
+	if mat != null:
+		mat.set_shader_parameter(&"shock_centre", st["centre"])
+		mat.set_shader_parameter(&"shock_r", st["r"])
+		mat.set_shader_parameter(&"shock_w", st["w"])
+		mat.set_shader_parameter(&"shock_amp", st["amp"])
+		mat.set_shader_parameter(&"slip", st["slip"])
+	var sh := hud.screen_hud
+	if sh != null:
+		sh.pulse = world.stars.hud_pulse() if active else 0.0
+		sh.queue_redraw()
+
+
 ## The stage hand-off's whole length: the collapse beat plus the morph (Q-T457; both in CabinetFxTuning).
 func handoff_seconds() -> float:
 	return world.fx_tuning.handoff_collapse_s + world.fx_tuning.handoff_morph_s
@@ -573,7 +595,8 @@ func _start_sky_morph() -> void:
 	var next := next_stage_index()
 	if next >= 0:
 		var power := 1.0 + float(decay_tuning.wear_level(stage_index)) * world.fx_tuning.handoff_wear_gain
-		world.stars.begin_morph(stages[next].backdrop, handoff_seconds(), power)
+		var bearing := world.to_screen(world.ritual.pos)
+		world.stars.begin_morph(stages[next].backdrop, handoff_seconds(), power, bearing)
 
 
 ## A mid-shift stage end (PM 2026-11-19): banner only, no roll. The stage-end banner stays up for

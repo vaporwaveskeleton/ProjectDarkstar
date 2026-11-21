@@ -1,0 +1,212 @@
+{
+	"format": "darkstar.scenario",
+	"version": 1,
+	"id": "a0_stage_transition_strip",
+	"profile": "dev",
+	"args": [],
+	"timeout_frames": 1200,
+	"steps": [
+		{
+			"do": "wait_route",
+			"route": "attract",
+			"within": 240
+		},
+		{
+			"do": "coin"
+		},
+		{
+			"do": "wait_until",
+			"id": "attract/ui/NewVigil",
+			"prop": "enabled",
+			"eq": true,
+			"within": 240
+		},
+		{
+			"do": "activate",
+			"id": "attract/ui/NewVigil"
+		},
+		{
+			"do": "wait_route",
+			"route": "cabinet",
+			"within": 240
+		},
+		{
+			"do": "wait_until",
+			"id": "cabinet/game",
+			"prop": "state",
+			"eq": "briefing",
+			"within": 600
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "hold",
+			"action": "fire_lance",
+			"frames": 3
+		},
+		{
+			"do": "wait_until",
+			"id": "cabinet/game",
+			"prop": "state",
+			"eq": "play",
+			"within": 600
+		},
+		{
+			"do": "set_stage",
+			"index": 1
+		},
+		{
+			"do": "wait_until",
+			"id": "cabinet/game",
+			"prop": "state",
+			"eq": "briefing",
+			"within": 10
+		},
+		{
+			"do": "wait_frames",
+			"frames": 30
+		},
+		{
+			"do": "hold",
+			"action": "fire_lance",
+			"frames": 3
+		},
+		{
+			"do": "wait_until",
+			"id": "cabinet/game",
+			"prop": "state",
+			"eq": "play",
+			"within": 600
+		},
+		{
+			"do": "wait_frames",
+			"frames": 90
+		},
+		{
+			"do": "screenshot",
+			"name": "strip_00_before",
+			"target": "arcade"
+		},
+		{
+			"do": "fell_sepulchre"
+		},
+		{
+			"do": "screenshot",
+			"name": "strip_f00",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 2
+		},
+		{
+			"do": "screenshot",
+			"name": "strip_f02",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 2
+		},
+		{
+			"do": "screenshot",
+			"name": "strip_f04",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 2
+		},
+		{
+			"do": "screenshot",
+			"name": "strip_f06",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 2
+		},
+		{
+			"do": "screenshot",
+			"name": "strip_f08",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 2
+		},
+		{
+			"do": "screenshot",
+			"name": "strip_f10",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 2
+		},
+		{
+			"do": "screenshot",
+			"name": "strip_f12",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 2
+		},
+		{
+			"do": "screenshot",
+			"name": "strip_f14",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 2
+		},
+		{
+			"do": "screenshot",
+			"name": "strip_f16",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 2
+		},
+		{
+			"do": "screenshot",
+			"name": "strip_f18",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 2
+		},
+		{
+			"do": "screenshot",
+			"name": "strip_f20",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 2
+		},
+		{
+			"do": "screenshot",
+			"name": "strip_f22",
+			"target": "arcade"
+		},
+		{
+			"do": "wait_frames",
+			"frames": 2
+		},
+		{
+			"do": "screenshot",
+			"name": "strip_f24",
+			"target": "arcade"
+		},
+		{
+			"do": "quit"
+		}
+	]
+}

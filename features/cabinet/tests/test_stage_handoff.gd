@@ -139,3 +139,27 @@ func test_the_look_only_uses_register_colours() -> void:
 	for k in [&"chains", &"shoal", &"horizon", &"currents"]:
 		var c := star.backdrop_color(k)
 		assert_bool([Look.c(Pal.VOID_3), Look.c(Pal.VOID_4), Look.c(Pal.VOID_5)].has(c)).is_true()
+
+
+func test_the_shock_ring_holds_its_breath_then_runs_out_and_is_silent_when_calm() -> void:
+	star.begin_morph(&"shoal", 1.4, 1.0)
+	star.morph = 0.03
+	assert_float(star.shock_state()["amp"]).override_failure_message("the held breath pulls inward").is_less(0.0)
+	star.morph = 0.3
+	var mid: Dictionary = star.shock_state()
+	assert_float(mid["amp"]).is_greater(0.0)
+	assert_float(mid["r"]).is_greater(0.0)
+	star.morph = 1.0
+	assert_float(absf(star.shock_state()["amp"])).is_less(0.01)
+	star.morph = 0.3
+	assert_float(star.hud_pulse()).is_greater(0.0)
+	SettingsService.set_value(&"reduced_motion", true)
+	assert_float(star.shock_state()["amp"]).is_equal(0.0)
+	assert_float(star.shock_state()["slip"]).is_equal(0.0)
+	assert_float(star.hud_pulse()).override_failure_message("calm: a steady colour, no jitter").is_less(0.5)
+
+
+func test_an_off_screen_bearing_starts_the_ring_on_the_screen_edge() -> void:
+	star.begin_morph(&"shoal", 1.4, 1.0, Vector2(-500.0, 120.0))   # off the left edge of the screen
+	assert_bool(star._bearing_off).is_true()
+	assert_float(star._bearing.x).is_equal(world.playfield_rect.position.x)
