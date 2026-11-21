@@ -1,6 +1,6 @@
 extends GdUnitTestSuite
 ## Act 0 density (the 1983 reference shows 4-8 actors and 1-3 rocks per screen; every number PROPOSED ✱):
-## each stage of the shift (a0_3-a0_5, F-14) is played by the autopilot for 80 sim s on three seeds; every 2 s between 20 s and 80 s the
+## each stage of the shift (a0_1, a0_3, a0_4, a0_5; Q-T452) is played by the autopilot for 80 sim s on three seeds; every 2 s between 20 s and 80 s the
 ## live geodes and actors (Grubs + Acolytes) inside the 256 x 256 play view are counted. Loose bands only;
 ## the means per stage are printed. Driven tick by tick, no audio, saves in memory.
 
@@ -11,6 +11,7 @@ const SEEDS: Array[int] = [0, 1, 2]
 const SAMPLE_FROM_S := 20.0
 const SAMPLE_TO_S := 80.0
 const SAMPLE_EVERY_S := 2.0
+const IDS: Array[String] = ["a0_1", "a0_3", "a0_4", "a0_5"]   ## the shift in order (a0_1 is the cold tutorial: 6 Grubs, no Acolytes)
 
 var _means := {}
 
@@ -76,15 +77,15 @@ static func _in_view(world: ArcadeWorld, items: Array) -> int:
 
 func test_each_stage_shows_a_busy_screen_shaped_by_its_trait() -> void:
 	var lines := PackedStringArray()
-	for i in 3:
+	for i in 4:
 		_means[i] = _measure(i)
-		lines.append("a0_%d: %.2f geodes, %.2f actors in view (%.2f Grubs)" % [i + 3, _means[i]["geodes"], _means[i]["actors"], _means[i]["grubs"]])
+		lines.append("%s: %.2f geodes, %.2f actors in view (%.2f Grubs)" % [IDS[i], _means[i]["geodes"], _means[i]["actors"], _means[i]["grubs"]])
 	print("act0 density (mean over seeds %s, %.0f-%.0f s every %.0f s):\n  %s" % [str(SEEDS), SAMPLE_FROM_S, SAMPLE_TO_S, SAMPLE_EVERY_S, "\n  ".join(lines)])
 	# floors are about 80 % of the measured means (the bot kills Acolytes on sight, so a human sees more actors)
 	var msg := "\n".join(lines)
-	for i in [0, 1]:
-		assert_float(_means[i]["actors"]).override_failure_message("a0_%d actors\n%s" % [i + 3, msg]).is_greater_equal(3.2)
+	for i in [0, 1, 2]:   # a0_1 (cold: no Acolytes) has its own actor floor
+		assert_float(_means[i]["actors"]).override_failure_message("%s actors" % IDS[i]).is_greater_equal(2.7 if i == 0 else 3.2)   # a0_1: 6 Grubs, no Acolytes, measured mean 3.44 (Q-T452); ~80 %
 		assert_float(_means[i]["geodes"]).override_failure_message("a0_%d geodes\n%s" % [i + 1, msg]).is_greater_equal(0.7)   # was 1.2; the Momentum bot (F-9) sees fewer geodes (a0_2 mean 0.91, Direct 1.43); ~80 % of the new mean
-	assert_float(_means[2]["geodes"]).override_failure_message("a0_5 stays sparse\n%s" % msg).is_less_equal(0.6)
-	assert_float(_means[2]["geodes"]).override_failure_message("a0_5 sparser than a0_4\n%s" % msg).is_less_equal(_means[1]["geodes"])
-	assert_float(_means[2]["actors"]).override_failure_message("a0_5 actors\n%s" % msg).is_greater_equal(1.25)   # was 1.6; Momentum bot mean 1.57 (Direct 2.06), F-9
+	assert_float(_means[3]["geodes"]).override_failure_message("a0_5 stays sparse\n%s" % msg).is_less_equal(0.6)
+	assert_float(_means[3]["geodes"]).override_failure_message("a0_5 sparser than a0_4\n%s" % msg).is_less_equal(_means[2]["geodes"])
+	assert_float(_means[3]["actors"]).override_failure_message("a0_5 actors\n%s" % msg).is_greater_equal(1.25)   # was 1.6; Momentum bot mean 1.57 (Direct 2.06), F-9

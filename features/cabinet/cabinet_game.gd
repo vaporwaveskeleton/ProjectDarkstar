@@ -32,7 +32,7 @@ const KEY_STAGE_REACHED := "act0_stage_reached"
 ## Where THE PRETENCE goes: the first Unmaking cinematic, which then routes to the Ruins.
 const UNMAKING_ROUTE := &"aether"
 
-@export var roster: CabinetStageRoster   ## the shift, a0_3, a0_4, a0_5 in play order (data/cabinet/stage_roster.tres; F-14 three stages)
+@export var roster: CabinetStageRoster   ## the shift, a0_1, a0_3, a0_4, a0_5 in play order (data/cabinet/stage_roster.tres; Q-T452)
 @export var tuning: CabinetTuning
 
 ## Read-only view of `roster.stages` (the automation probe and tests read `stages`).
@@ -156,7 +156,7 @@ func on_route_entered(params: Dictionary) -> void:
 		autopilot.enabled = true
 		messages.demo = true
 		dismiss_brief()                # the attract demo never shows the stage card
-		# W0-12: the demo may show the figure once, if this cabinet has been played to a0_3 (Q-T253)
+		# W0-12: the demo may show the figure once, if this cabinet has been played into the shift (Q-T253)
 		if haunts != null and (int(_profile.get(KEY_STAGE_REACHED, -1)) >= haunts.tuning.attract_min_stage or bool(_profile.get("act0_complete", false))):
 			haunts.enabled = true
 			_demo_haunt_t = DEMO_SECONDS * 0.4
@@ -332,7 +332,7 @@ func brief_card(st: CabinetStage) -> Dictionary:
 		tr("CAB_BRIEF_A0_%d_1" % n).format({"n": world.tuning.unravel_hits}),
 		tr("CAB_BRIEF_A0_%d_2" % n).format({"n": world.tuning.unravel_hits})])
 	var unm := ""
-	if n >= 3:
+	if wake:   # only waking stages count Unmakings (a0_4, a0_5 on the shift; a0_1 is cold)
 		unm = tr("CAB_BRIEF_UNMAKINGS").format({"n": unmakings, "total": roster.unmakings_required()})
 	return {
 		"zone": "" if st.zone_key.is_empty() else tr(st.zone_key),
@@ -522,7 +522,7 @@ func _on_timer() -> void:
 			if is_last_stage():
 				messages.roll_credits(_full_credit_lines(), PackedInt32Array(STAT_ENTRY_INDICES))
 				_enter(State.CREDITS, world.fx_tuning.credits_full_seconds)
-			else:   # mid-shift unmade (a0_3, a0_4 in the three-stage shift): the banner holds, then the next stage
+			else:   # mid-shift unmade (a0_3, a0_4 on the four-stage shift; a0_1 is cleared, not unmade): the banner holds, then the next stage
 				_hold_banner("CAB_ENTITY_DOWN")
 		State.CREDITS:
 			_note_hands()
@@ -555,7 +555,7 @@ func _hold_banner(key: String) -> void:
 	messages.banner(tr(key), MID_SHIFT_HOLD_SECONDS)
 	if haunts != null:
 		if haunts.enabled and decay_tuning.wear_level(stage_index) == haunts.tuning.min_wear_level:
-			haunts.plant_crag_slope()   # the early crag figure, seeded once at a0_3's end (PM 2026-11-20)
+			haunts.plant_crag_slope()   # the early crag figure, seeded once at the end of the first wear level, a0_3 (PM 2026-11-20)
 		haunts.moment(CabinetHauntDeck.HOLD)
 	_enter(State.CREDITS, MID_SHIFT_HOLD_SECONDS)
 

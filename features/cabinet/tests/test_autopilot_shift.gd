@@ -1,5 +1,5 @@
 extends GdUnitTestSuite
-## The autopilot plays the whole Act 0 shift (a0_3 → a0_5, three stages since F-14) honestly: the real CabinetGame scene,
+## The autopilot plays the whole Act 0 shift (a0_1 → a0_3 → a0_4 → a0_5, four stages; Q-T452) honestly: the real CabinetGame scene,
 ## its default lives and extra-life schedule, its own death → respawn → GAME OVER state machine.
 ## The bot only reads the world and writes the Vigil's scripted inputs; nothing here touches lives,
 ## shields or stage data. Seeds vary by giving every stage `seed + k * SEED_STRIDE` (k = 0 is the
@@ -12,7 +12,7 @@ const STAGE_LIMIT_S := 420.0       ## sim seconds a stage may take before the ru
 const State := CabinetGame.State
 
 ## The fixed seeds this suite plays, and the honest floor: at least MIN_REACHED of them clear all
-## MIN_STAGES stages (the whole three-stage shift, a0_3–a0_5) with the default lives. Measured 2026-11-20 on seeds
+## MIN_STAGES stages (the whole four-stage shift, a0_1, a0_3, a0_4, a0_5) with the default lives. Measured 2026-11-20 on seeds
 ## +0…+19 after the density pass (640 px box, Grubs shadowing the Vigil, more geodes; SYS-001 §1.7, PROPOSED):
 ## 20/20 full five-stage shifts cleared on seeds +0…+19 (round 2: 34/40/44/72/14 geodes, 6/14/14/10/6 Grubs).
 ## F-14 (three stages, 2026-11-20): with the shift cut to a0_3, a0_4, a0_5 the same seeds on a working tree that also held the
@@ -21,7 +21,7 @@ const State := CabinetGame.State
 ## Grub work, not from the shorter shift; the floor is deliberately NOT lowered here (TECH-001 Q-T452). Takes ~3.5 min headless.
 const SEEDS: Array[int] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
 ## Re-measured 2026-11-20 under the Momentum ship (F-9, Q-T445) with the retuned bot: 19/20 full shifts (seed +10 lost to the awake entity); floor unchanged at 18. Takes ~4 min.
-const MIN_STAGES := 3
+const MIN_STAGES := 4
 const MIN_REACHED := 18
 
 
@@ -139,7 +139,7 @@ func test_autopilot_plays_the_shift_with_default_lives() -> void:
 		var xs: Array = per_stage[si]
 		xs.sort()
 		if not xs.is_empty():
-			summary.append("a0_%d median %.0f range %.0f-%.0f (n=%d)" % [si + 3, xs[xs.size() >> 1], xs[0], xs[xs.size() - 1], xs.size()])
+			summary.append("%s median %.0f range %.0f-%.0f (n=%d)" % [["a0_1", "a0_3", "a0_4", "a0_5"][si], xs[xs.size() >> 1], xs[0], xs[xs.size() - 1], xs.size()])
 	print("autopilot stage sim seconds (cleared stages): ", " | ".join(summary))
 	print("autopilot shift: %d/%d cleared all, %d/%d cleared >= %d stages\n  %s" % [clears, SEEDS.size(), reached,
 			SEEDS.size(), MIN_STAGES, "\n  ".join(lines)])

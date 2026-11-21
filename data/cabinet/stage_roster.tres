@@ -1,10 +1,11 @@
-[gd_resource type="Resource" script_class="CabinetStageRoster" load_steps=5 format=3]
+[gd_resource type="Resource" script_class="CabinetStageRoster" load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://features/cabinet/cabinet_stage_roster.gd" id="1"]
+[ext_resource type="Resource" path="res://data/cabinet/stage_first_vigil.tres" id="2"]
 [ext_resource type="Resource" path="res://data/cabinet/stage_censer_watch.tres" id="4"]
 [ext_resource type="Resource" path="res://data/cabinet/stage_shoal.tres" id="5"]
 [ext_resource type="Resource" path="res://data/cabinet/stage_last_normal_day.tres" id="6"]
 
 [resource]
 script = ExtResource("1")
-stages = Array[Resource]([ExtResource("4"), ExtResource("5"), ExtResource("6")])
+stages = Array[Resource]([ExtResource("2"), ExtResource("4"), ExtResource("5"), ExtResource("6")])

@@ -125,7 +125,7 @@ enum MoveModel { DIRECT, MOMENTUM }
 @export var acolyte_enter_hold_s: float = 1.0             ## s ✱ an Acolyte entering the view holds fire this long before its tell
 @export var acolyte_mine_range_px: float = 640.0          ## px ✱ ENGINEERING (not a SYS-001 §1.7 row): how far an Acolyte looks for a geode to mine; = the neighbourhood half-size
 @export var acolyte_mine_standoff_px: float = 36.0           ## px ✱ ENGINEERING (not a SYS-001 §1.7 row): a mining Acolyte hovers this far beyond the geode's edge
-@export var unmakings_required: int = 3                         ## Act 0 ends at the third Unmaking (SYS-001 §1.7, Q-T365); = the roster's UNMAKE_ENTITY stages (a test asserts it)
+@export var unmakings_required: int = 3                         ## Act 0 ends at the third Unmaking (SYS-001 §1.7, Q-T365); = the roster's UNMAKE_ENTITY stages: a0_3, a0_4, a0_5 on [a0_1, a0_3, a0_4, a0_5] (Q-T452; a test asserts it)
 
 # --- The stage card (SYS-001 §1.7, Q-T371–Q-T374; UI-001 §11; PROPOSED ✱) ---
 @export var brief_arm_s: float = 0.35                    ## s ✱ fire_lance is ignored until the card has been up this long (and it needs a fresh press)
