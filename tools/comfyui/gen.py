@@ -112,7 +112,7 @@ def main():
     os.makedirs(a.out, exist_ok=True)
     base = os.path.join(a.out, f"{time.strftime('%Y%m%d_%H%M%S')}_{a.tag}_{seed}")
     open(base + ".png", "wb").write(data)
-    meta = dict(prompt=a.prompt, negative=a.negative, seed=seed, steps=a.steps, cfg=a.cfg,
+    meta = dict(prompt=a.prompt, negative=a.negative, seed=seed, steps=a.steps, cfg=a.cfg if a.arch == "sdxl" else 1.0,
                 width=a.width, height=a.height, ckpt=a.ckpt if a.arch == "sdxl" else (a.unet or a.arch), arch=a.arch, seconds=round(secs, 1),
                 vram_peak_mb=peak[0], vram_before_mb=base_vram)
     json.dump(meta, open(base + ".json", "w"), indent=2)
